@@ -1,0 +1,15 @@
+{
+  "background_color": "#000000",
+  "categories": ["games"],
+  "description": "Accelerate and smash your way to victory in a car-based multiplayer soccer battle.",
+  "dir": "ltr",
+  "display": "standalone",
+  "id": "wheel-ball",
+  "lang": "en",
+  "name": "Wheel Ball",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "Wheel Ball",
+  "start_url": "/",
+  "theme_color": "#000000"
+}

@@ -1,0 +1,46 @@
+name: Deploy page
+
+on:
+  push:
+
+jobs:
+  build:
+    name: Build package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Bundle project
+        run: npm run bundle
+
+      - name: Upload artifact
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: static/
+
+  deploy:
+    name: Deploy package
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write  # Permissions to deploy to GitHub Pages
+      id-token: write  # To verify the deployment originates from an authorized source
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Wheel Ball</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta content="index,follow,archive" name="robots">
+    <meta content="Wheel Ball - Multiplayer Game" name="title">
+    <meta
+      content="Accelerate and smash your way to victory in a car-based multiplayer soccer battle."
+      name="description"
+    >
+    <meta content="wheel,ball,multiplayer,soccer" name="keywords">
+    <meta property="og:title" content="Wheel Ball">
+    <meta property="og:type" content="website">
+    <meta
+      property="og:description"
+      content="Accelerate and smash your way to victory in a car-based multiplayer soccer battle."
+    >
+    <link href="./css/main.css" rel="stylesheet" />
+    <script defer type="module" src="./js/bundle.js" defer></script>
+  </head>
+  <body>
+    <dialog>
+      <h1>Player ID</h1>
+      <input
+        id="username-input"
+        type="text"
+        placeholder="Display name"
+        autocomplete="username webauthn"
+      />
+      <button id="register-button">Register</button>
+      <hr />
+      <button id="sign-in-button">Sign in</button>
+    </dialog>
+    <canvas id="canvas" tabindex="1"></canvas>
+  </body>
+</html>
