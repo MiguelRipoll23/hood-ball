@@ -9,6 +9,7 @@ import { MainMenuScreen } from "../screens/main-screen/main-menu-screen.js";
 import { EventType } from "../enums/event-type.js";
 import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
 import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -66,21 +67,16 @@ export class GameLoopService {
   }
 
   private setCanvasSize(): void {
-    this.canvas.width = document.body.clientWidth;
-    this.canvas.height = document.body.clientHeight;
+    alert(document.body.clientWidth);
+    alert(document.body.clientHeight);
+
+    this.canvas.width = CANVAS_WIDTH;
+    this.canvas.height = CANVAS_HEIGHT;
   }
 
   private addEventListeners(): void {
-    this.addWindowEventListeners();
     this.gamePointer.addEventListeners();
     this.gameKeyboard.addEventListeners();
-  }
-
-  private addWindowEventListeners(): void {
-    window.addEventListener("resize", () => {
-      this.canvas.width = document.body.clientWidth;
-      this.canvas.height = document.body.clientHeight;
-    });
   }
 
   private handleServerDisconnectedEvent(
