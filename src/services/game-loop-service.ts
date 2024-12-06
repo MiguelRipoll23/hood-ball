@@ -67,9 +67,6 @@ export class GameLoopService {
   }
 
   private setCanvasSize(): void {
-    alert(document.body.clientWidth);
-    alert(document.body.clientHeight);
-
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
   }
