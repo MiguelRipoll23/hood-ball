@@ -11,8 +11,8 @@ battle.
 
 - Passkey for registration and login
 - JSON Web Tokens for game server authentication
-- WebSocket for real-time notifications and tunneled communication between host
-  and players
+- WebSocket for real-time notifications and tunneled communication between
+  server and player
 - WebRTC for real-time communication between host and players
 - Web Crypto API for server configuration and player scores handling
 
