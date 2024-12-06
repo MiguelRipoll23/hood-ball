@@ -18,9 +18,13 @@ battle.
 
 ## Inspiration
 
+### Gameplay
+
+- Rocket League for level design
+
 ### User interface
 
-- Rocket League for gameplay strategy
+- Rocket League for scoreboard and gameplay alerts
 - LittleBigPlanet for general UI and buttons, tooltips... etc.
 - Metal Gear Online 2 for server notifications and menu UX
 
