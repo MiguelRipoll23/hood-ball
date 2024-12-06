@@ -4,7 +4,7 @@ Accelerate and smash your way to victory in a car-based multiplayer soccer
 battle.
 
 > [!NOTE]
-> Public STUN server is only available during limited times. For now, please use
+> Public TURN server is only available during limited times. For now, please use
 > local area network to connect to other players.
 
 ## Technology stack
