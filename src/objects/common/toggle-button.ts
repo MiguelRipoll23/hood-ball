@@ -1,65 +1,58 @@
-import { BasePressableGameObject } from "../base/base-pressable-game-object.js";
+import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
 
-export class ToggleObject extends BasePressableGameObject {
-  private thumbPosition: number;
-  private readonly trackWidth: number;
-  private readonly trackHeight: number;
-  private readonly thumbSize: number;
+export class ToggleObject extends BaseAnimatedGameObject {
+  private width: number = 60; // Reduced width to 60
+  private height: number = 30;
+  private radius: number = 15; // Adjusted radius for rounded corners based on new height
 
-  constructor(private toggleId: string, private toggleState = false) {
+  constructor(private toggleState = false) {
     super();
-    this.width = 100; // Track width of the toggle button
-    this.height = 50; // Track height
-    this.trackWidth = this.width - 20; // Space for thumb movement
-    this.trackHeight = 30; // Track height
-    this.thumbSize = 30; // Size of the thumb
-    this.thumbPosition = this.toggleState
-      ? this.trackWidth - this.thumbSize
-      : 0; // Initial position of the thumb
   }
 
-  // Override the update method to check if the button is pressed
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.isPressed()) {
-      // Toggle state change on press
-      this.toggleState = !this.toggleState;
-      this.thumbPosition = this.toggleState
-        ? this.trackWidth - this.thumbSize
-        : 0;
-      console.log(
-        `${this.toggleId} is pressed, new state: ${this.toggleState}`
-      );
-    }
-
-    // Call the parent class's update method
-    super.update(deltaTimeStamp);
+  public setToggleState(toggleState: boolean): void {
+    this.toggleState = toggleState;
   }
 
-  // Render method to visualize the toggle button on canvas
   public override render(context: CanvasRenderingContext2D): void {
-    // Draw the track (background of the toggle)
-    context.fillStyle = this.toggleState ? "#4cd137" : "#dcdde1"; // Green for ON, Grey for OFF
-    context.fillRect(this.x, this.y, this.trackWidth, this.trackHeight);
+    super.render(context);
 
-    // Draw the thumb (circle that moves)
+    // Draw the background (rounded rectangle)
+    context.fillStyle = this.toggleState ? "#4CAF50" : "#ccc"; // Green when on, grey when off
+    context.beginPath();
+    context.moveTo(this.x + this.radius, this.y);
+    context.arcTo(
+      this.x + this.width,
+      this.y,
+      this.x + this.width,
+      this.y + this.height,
+      this.radius
+    );
+    context.arcTo(
+      this.x + this.width,
+      this.y + this.height,
+      this.x,
+      this.y + this.height,
+      this.radius
+    );
+    context.arcTo(this.x, this.y + this.height, this.x, this.y, this.radius);
+    context.arcTo(this.x, this.y, this.x + this.width, this.y, this.radius);
+    context.closePath();
+    context.fill();
+
+    // Draw the circle (toggle button)
+    const circleX = this.toggleState
+      ? this.x + this.width - this.height / 2
+      : this.x + this.height / 2;
+    context.fillStyle = "#fff"; // White color for the toggle circle
     context.beginPath();
     context.arc(
-      this.x + this.thumbPosition + this.thumbSize / 2,
-      this.y + this.trackHeight / 2,
-      this.thumbSize / 2,
+      circleX,
+      this.y + this.height / 2,
+      this.height / 2 - 5,
       0,
       Math.PI * 2
     );
-    context.fillStyle = "#ffffff"; // Thumb color (white)
-    context.fill();
     context.closePath();
-
-    // Optional: Draw border around the toggle track
-    context.strokeStyle = "#ccc";
-    context.lineWidth = 2;
-    context.strokeRect(this.x, this.y, this.trackWidth, this.trackHeight);
-
-    // Call the parent class's render method
-    super.render(context);
+    context.fill();
   }
 }

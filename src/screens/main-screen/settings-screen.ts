@@ -1,7 +1,7 @@
 import { GameController } from "../../models/game-controller.js";
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
-import { ToggleObject } from "../../objects/common/toggle-button.js";
+import { SettingObject } from "../../objects/setting-object.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 
 export class SettingsScreen extends BaseGameScreen {
@@ -15,7 +15,7 @@ export class SettingsScreen extends BaseGameScreen {
   public override loadObjects(): void {
     this.loadTitleObject();
     this.loadButtonObject();
-    this.loadToggleObjects();
+    this.loadSettingObjects();
     super.loadObjects();
   }
 
@@ -38,24 +38,38 @@ export class SettingsScreen extends BaseGameScreen {
     this.uiObjects.push(this.buttonObject);
   }
 
-  private loadToggleObjects(): void {
-    const toggleObject = new ToggleObject("debug");
-    toggleObject.setY(100);
-    this.uiObjects.push(toggleObject);
+  private loadSettingObjects(): void {
+    this.loadDebugSettingObject();
+  }
+
+  private loadDebugSettingObject(): void {
+    const settingObject = new SettingObject(
+      "debug",
+      "Debug",
+      this.gameController.isDebugging()
+    );
+
+    settingObject.setY(100);
+    settingObject.load();
+
+    this.uiObjects.push(settingObject);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    super.update(deltaTimeStamp);
+
     if (this.buttonObject?.isPressed()) {
       this.returnMainMenu();
     }
 
-    super.update(deltaTimeStamp);
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    context.save();
-    super.render(context);
-    context.restore();
+    this.uiObjects.forEach((object) => {
+      if (object instanceof SettingObject) {
+        if (object.getUpdated()) {
+          this.handleSettingObjectPress(object);
+          object.setUpdated(false);
+        }
+      }
+    });
   }
 
   private returnMainMenu(): void {
@@ -71,5 +85,19 @@ export class SettingsScreen extends BaseGameScreen {
     this.screenManagerService
       ?.getTransitionService()
       .crossfade(previousScreen, 0.2);
+  }
+
+  private handleSettingObjectPress(settingObject: SettingObject): void {
+    const id = settingObject.getSettingId();
+    const state = settingObject.getSettingState();
+
+    switch (id) {
+      case "debug":
+        return this.gameController.setDebug(state);
+
+      default:
+        console.log("Unknown setting pressed");
+        break;
+    }
   }
 }
