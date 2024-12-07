@@ -33,7 +33,6 @@ export class GameLoopService {
     this.gameKeyboard = this.gameController.getGameKeyboard();
 
     this.setCanvasSize();
-    this.addEventListeners();
     this.loadNotificationObject();
   }
 
@@ -69,10 +68,6 @@ export class GameLoopService {
   private setCanvasSize(): void {
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
-  }
-
-  private addEventListeners(): void {
-    this.gameKeyboard.addEventListeners();
   }
 
   private handleServerDisconnectedEvent(
