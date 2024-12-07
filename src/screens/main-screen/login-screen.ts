@@ -23,6 +23,8 @@ export class LoginScreen extends BaseGameScreen {
   private errorCloseableMessageObject: CloseableMessageObject | null = null;
 
   private dialogElement: HTMLDialogElement | null = null;
+  private registerButton: HTMLElement | null = null;
+  private signInButton: HTMLElement | null = null;
 
   constructor(gameController: GameController) {
     super(gameController);
@@ -35,6 +37,8 @@ export class LoginScreen extends BaseGameScreen {
     this.credentialService = new CredentialService(gameController);
 
     this.dialogElement = document.querySelector("dialog");
+    this.registerButton = document.querySelector("#register-button");
+    this.signInButton = document.querySelector("#sign-in-button");
   }
 
   public override loadObjects(): void {
@@ -101,22 +105,17 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private showDialog(): void {
-    //this.credentialService.showAutofillUI();
     this.gameController.getGamePointer().setPreventDefault(false);
 
     const usernameElement: HTMLInputElement | null =
       document.querySelector("#username-input");
 
-    const registerButton = document.querySelector("#register-button");
-
-    registerButton?.addEventListener("pointerup", () => {
+    this.registerButton?.addEventListener("pointerup", () => {
       const username = usernameElement?.value ?? "";
       this.handleRegisterClick(username);
     });
 
-    const signInButton = document.querySelector("#sign-in-button");
-
-    signInButton?.addEventListener("pointerup", () => {
+    this.signInButton?.addEventListener("pointerup", () => {
       this.handleSignInClick();
     });
 
@@ -128,18 +127,24 @@ export class LoginScreen extends BaseGameScreen {
       return;
     }
 
+    this.registerButton?.setAttribute("disabled", "true");
+
     this.credentialService
       .createCredential(username, username)
       .catch((error) => {
         console.error(error);
         alert(error.message);
+        this.registerButton?.removeAttribute("disabled");
       });
   }
 
   private async handleSignInClick(): Promise<void> {
+    this.signInButton?.setAttribute("disabled", "true");
+
     this.credentialService.getCredential().catch((error) => {
       console.error(error);
       alert(error.message);
+      this.signInButton?.removeAttribute("disabled");
     });
   }
 

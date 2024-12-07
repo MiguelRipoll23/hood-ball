@@ -61,6 +61,11 @@ button:hover {
   background: #7ed321;
 }
 
+button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 hr {
   margin: 16px 0;
 }
