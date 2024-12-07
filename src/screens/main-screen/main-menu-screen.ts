@@ -23,7 +23,7 @@ export class MainMenuScreen extends BaseGameScreen {
 
   constructor(gameController: GameController, private showNews: boolean) {
     super(gameController);
-    this.apiService = gameController.getApiService();
+    this.apiService = gameController.getAPIService();
     this.transitionService = gameController.getTransitionService();
     this.showNews = showNews;
   }
