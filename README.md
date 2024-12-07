@@ -3,9 +3,8 @@
 Accelerate and smash your way to victory in a car-based multiplayer soccer
 battle.
 
-> [!NOTE]
-> Public TURN server is only available during limited times. For now, please use
-> local area network to connect to other players.
+> [!IMPORTANT]
+> For now, please use local area network to connect to other players.
 
 ## Technology stack
 
@@ -16,7 +15,7 @@ battle.
 - WebRTC for real-time communication between host and players
 - Web Crypto API for server configuration and player scores handling
 
-## Inspiration
+## Inspirations
 
 ### Gameplay
 
