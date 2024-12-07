@@ -59,8 +59,21 @@ export class GameLoopService {
   }
 
   private setCanvasSize(): void {
-    this.canvas.width = CANVAS_WIDTH;
-    this.canvas.height = CANVAS_HEIGHT;
+    const viewportWidth = document.body.clientWidth;
+    const viewportHeight = document.body.clientHeight;
+    const canvasAspectRatio = CANVAS_WIDTH / CANVAS_HEIGHT;
+
+    let newWidth = viewportWidth;
+    let newHeight = viewportHeight;
+
+    if (viewportWidth / viewportHeight > canvasAspectRatio) {
+      newWidth = viewportHeight * canvasAspectRatio;
+    } else {
+      newHeight = viewportWidth / canvasAspectRatio;
+    }
+
+    this.canvas.width = newWidth;
+    this.canvas.height = newHeight;
   }
 
   private handleServerDisconnectedEvent(
