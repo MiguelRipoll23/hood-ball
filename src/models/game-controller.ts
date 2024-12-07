@@ -61,6 +61,22 @@ export class GameController {
     return this.debug;
   }
 
+  public setDebug(debug: boolean) {
+    this.debug = debug;
+
+    if (debug) {
+      console.info(
+        "%cDebug mode on",
+        "color: #b6ff35; font-size: 20px; font-weight: bold"
+      );
+    } else {
+      console.info(
+        "%cDebug mode off",
+        "color: #ff5733; font-size: 20px; font-weight: bold"
+      );
+    }
+  }
+
   public getGameState(): GameState {
     return this.gameState;
   }
