@@ -55,6 +55,12 @@ export class BaseGameScreen implements GameScreen {
 
   public setOpacity(opacity: number): void {
     this.opacity = opacity;
+
+    [...this.sceneObjects, ...this.uiObjects].forEach((object) => {
+      if (object.getOpacity() > opacity) {
+        object.setOpacity(opacity);
+      }
+    });
   }
 
   public hasTransitionFinished(): void {
@@ -166,18 +172,9 @@ export class BaseGameScreen implements GameScreen {
   ): void {
     objects.forEach((object) => {
       if (object.hasLoaded()) {
-        this.updateObjectOpacity(object);
         object.update(deltaTimeStamp);
       }
     });
-  }
-
-  private updateObjectOpacity(gameObject: GameObject): void {
-    const objectOpacity = gameObject.getOpacity();
-
-    if (objectOpacity > 0 && objectOpacity > this.opacity) {
-      gameObject.setOpacity(this.opacity);
-    }
   }
 
   private renderObjects(
