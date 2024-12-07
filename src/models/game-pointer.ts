@@ -13,6 +13,10 @@ export class GamePointer {
 
   private preventDefault: boolean = true;
 
+  constructor(private readonly canvas: HTMLCanvasElement) {
+    this.addEventListeners();
+  }
+
   public getX(): number {
     return this.x;
   }
@@ -87,7 +91,7 @@ export class GamePointer {
   }
 
   public addEventListeners(): void {
-    window.addEventListener(
+    this.canvas.addEventListener(
       "touchstart",
       (event) => {
         if (this.preventDefault) {
@@ -97,7 +101,7 @@ export class GamePointer {
       { passive: false }
     );
 
-    window.addEventListener(
+    this.canvas.addEventListener(
       "touchmove",
       (event) => {
         if (this.preventDefault) {
@@ -107,20 +111,20 @@ export class GamePointer {
       { passive: false }
     );
 
-    window.addEventListener(
+    this.canvas.addEventListener(
       "pointermove",
       (event) => {
         if (this.preventDefault) {
           event.preventDefault();
         }
 
-        this.setX(event.clientX);
-        this.setY(event.clientY);
+        this.setX(event.offsetX);
+        this.setY(event.offsetY);
       },
       { passive: false }
     );
 
-    window.addEventListener(
+    this.canvas.addEventListener(
       "pointerdown",
       (event) => {
         if (this.preventDefault) {
@@ -128,24 +132,24 @@ export class GamePointer {
         }
 
         this.setType(event.pointerType as PointerType);
-        this.setX(event.clientX);
-        this.setY(event.clientY);
-        this.setInitialX(event.clientX);
-        this.setInitialY(event.clientY);
+        this.setX(event.offsetX);
+        this.setY(event.offsetY);
+        this.setInitialX(event.offsetX);
+        this.setInitialY(event.offsetY);
         this.setPressing(true);
       },
       { passive: false }
     );
 
-    window.addEventListener(
+    this.canvas.addEventListener(
       "pointerup",
       (event) => {
         if (this.preventDefault) {
           event.preventDefault();
         }
 
-        this.setX(event.clientX);
-        this.setY(event.clientY);
+        this.setX(event.offsetX);
+        this.setY(event.offsetY);
         this.setPressing(false);
         this.setPressed(true);
       },

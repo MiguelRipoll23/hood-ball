@@ -72,7 +72,6 @@ export class GameLoopService {
   }
 
   private addEventListeners(): void {
-    this.gamePointer.addEventListeners();
     this.gameKeyboard.addEventListeners();
   }
 
