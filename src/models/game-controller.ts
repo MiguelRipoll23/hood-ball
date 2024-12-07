@@ -36,7 +36,7 @@ export class GameController {
   ) {
     this.gameState = new GameState();
     this.gameFrame = new GameFrame();
-    this.gamePointer = new GamePointer();
+    this.gamePointer = new GamePointer(this.canvas);
     this.gameKeyboard = new GameKeyboard();
 
     this.transitionService = new ScreenTransitionService(this.gameFrame);
