@@ -1,13 +1,17 @@
 export class GameKeyboard {
   private pressedKeys: Set<string> = new Set();
 
-  public addEventListeners(): void {
-    window.addEventListener("keydown", this.handleKeyDown.bind(this));
-    window.addEventListener("keyup", this.handleKeyUp.bind(this));
+  constructor() {
+    this.addEventListeners();
   }
 
   public getPressedKeys(): Set<string> {
     return this.pressedKeys;
+  }
+
+  private addEventListeners(): void {
+    window.addEventListener("keydown", this.handleKeyDown.bind(this));
+    window.addEventListener("keyup", this.handleKeyUp.bind(this));
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
