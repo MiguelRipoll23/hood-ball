@@ -47,6 +47,8 @@ export class SettingObject extends BasePressableGameObject {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
+    context.save();
+
     // Get the canvas width
     const canvasWidth = context.canvas.width;
     this.width = canvasWidth;
@@ -69,6 +71,8 @@ export class SettingObject extends BasePressableGameObject {
 
     // Render the toggle object (this assumes render method exists in the ToggleObject class)
     this.toggleObject?.render(context);
+
+    context.restore();
 
     // Call the parent render method (if needed)
     super.render(context);
