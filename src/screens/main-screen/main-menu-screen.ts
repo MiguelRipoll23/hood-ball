@@ -9,6 +9,7 @@ import { ScreenTransitionService } from "../../services/screen-transition-servic
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { LoadingScreen } from "../loading-screen.js";
 import { ScoreboardScreen } from "./scoreboard-screen.js";
+import { SettingsScreen } from "./settings-screen.js";
 
 export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -163,7 +164,7 @@ export class MainMenuScreen extends BaseGameScreen {
         return this.transitionToScoreboardScreen();
 
       case 2:
-        return this.closeableMessageObject?.show("Not implemented");
+        return this.transitionToSettingsScreen();
 
       default:
         return this.closeableMessageObject?.show("Invalid menu option");
@@ -188,6 +189,17 @@ export class MainMenuScreen extends BaseGameScreen {
     this.screenManagerService
       ?.getTransitionService()
       .crossfade(scoreboardScreen, 0.2);
+  }
+
+  private transitionToSettingsScreen(): void {
+    this.disableMenuButtons();
+
+    const settingsScreen = new SettingsScreen(this.gameController);
+    settingsScreen.loadObjects();
+
+    this.screenManagerService
+      ?.getTransitionService()
+      .crossfade(settingsScreen, 0.2);
   }
 
   private enableMenuButtons(): void {
