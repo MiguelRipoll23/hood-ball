@@ -158,7 +158,6 @@ export class CredentialService {
 
     const verifyRegistrationRequest: VerifyRegistrationRequest = {
       requestId: this.requestId,
-      displayName: name,
       registrationResponse: WebAuthnUtils.serializeCredential(
         credential as PublicKeyCredential
       ),
