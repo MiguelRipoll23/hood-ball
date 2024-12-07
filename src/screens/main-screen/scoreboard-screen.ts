@@ -55,7 +55,7 @@ export class ScoreboardScreen extends BaseGameScreen {
   }
 
   private fetchRanking(): void {
-    const apiService = this.gameController.getApiService();
+    const apiService = this.gameController.getAPIService();
     apiService
       .getRanking()
       .then((ranking) => {

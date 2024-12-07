@@ -21,7 +21,7 @@ export class CredentialService {
 
   constructor(gameController: GameController) {
     this.gameState = gameController.getGameState();
-    this.apiService = gameController.getApiService();
+    this.apiService = gameController.getAPIService();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.requestId = crypto.randomUUID();
   }

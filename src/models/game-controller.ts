@@ -108,7 +108,7 @@ export class GameController {
     return this.transitionService;
   }
 
-  public getApiService(): APIService {
+  public getAPIService(): APIService {
     return this.apiService;
   }
 

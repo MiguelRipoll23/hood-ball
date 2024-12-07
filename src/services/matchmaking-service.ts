@@ -28,7 +28,7 @@ export class MatchmakingService {
   private findMatchesTimerService: TimerService | null = null;
 
   constructor(private gameController: GameController) {
-    this.apiService = gameController.getApiService();
+    this.apiService = gameController.getAPIService();
     this.webrtcService = gameController.getWebRTCService();
     this.gameState = gameController.getGameState();
   }

@@ -1,9 +1,7 @@
 import { GameController } from "../models/game-controller.js";
 import { GameFrame } from "../models/game-frame.js";
-import { GamePointer } from "../models/game-pointer.js";
 import { NotificationObject } from "../objects/common/notification-object.js";
 import { MainScreen } from "../screens/main-screen.js";
-import { GameKeyboard } from "../models/game-keyboard.js";
 import { LoginScreen } from "../screens/main-screen/login-screen.js";
 import { MainMenuScreen } from "../screens/main-screen/main-menu-screen.js";
 import { EventType } from "../enums/event-type.js";
@@ -17,8 +15,6 @@ export class GameLoopService {
 
   private gameController: GameController;
   private gameFrame: GameFrame;
-  private gamePointer: GamePointer;
-  private gameKeyboard: GameKeyboard;
 
   private isRunning: boolean = false;
   private previousTimeStamp: DOMHighResTimeStamp | null = null;
@@ -29,8 +25,6 @@ export class GameLoopService {
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();
-    this.gamePointer = this.gameController.getGamePointer();
-    this.gameKeyboard = this.gameController.getGameKeyboard();
 
     this.setCanvasSize();
     this.loadNotificationObject();

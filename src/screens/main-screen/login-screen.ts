@@ -30,7 +30,7 @@ export class LoginScreen extends BaseGameScreen {
     super(gameController);
 
     this.gameState = gameController.getGameState();
-    this.apiService = gameController.getApiService();
+    this.apiService = gameController.getAPIService();
     this.cryptoService = gameController.getCryptoService();
     this.webSocketService = gameController.getWebSocketService();
     this.eventProcessorService = gameController.getEventProcessorService();
