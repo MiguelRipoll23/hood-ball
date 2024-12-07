@@ -21,7 +21,7 @@ export class GameLoopService {
   private gameKeyboard: GameKeyboard;
 
   private isRunning: boolean = false;
-  private previousTimeStamp: DOMHighResTimeStamp = 0;
+  private previousTimeStamp: DOMHighResTimeStamp | null = null;
   private deltaTimeStamp: DOMHighResTimeStamp = 0;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -46,10 +46,9 @@ export class GameLoopService {
 
   public start(): void {
     this.isRunning = true;
-    this.previousTimeStamp = performance.now();
-    this.setInitialScreen();
-
     requestAnimationFrame(this.loop.bind(this));
+
+    this.setInitialScreen();
   }
 
   public stop(): void {
@@ -119,7 +118,12 @@ export class GameLoopService {
   }
 
   private loop(timeStamp: DOMHighResTimeStamp): void {
-    this.deltaTimeStamp = Math.min(timeStamp - this.previousTimeStamp, 100);
+    if (this.previousTimeStamp === null) {
+      this.deltaTimeStamp = 0;
+    } else {
+      this.deltaTimeStamp = Math.min(timeStamp - this.previousTimeStamp, 100);
+    }
+
     this.previousTimeStamp = timeStamp;
 
     this.update(this.deltaTimeStamp);
