@@ -47,6 +47,25 @@ export class WebRTCService {
     }
   }
 
+  public sendIceCandidate(
+    token: string,
+    iceCandidate: RTCIceCandidateInit
+  ): void {
+    console.log("Sending ICE candidate...", token, iceCandidate);
+
+    const candidateBytes = new TextEncoder().encode(
+      JSON.stringify(iceCandidate)
+    );
+
+    const payload = new Uint8Array([
+      ...Uint8Array.from(atob(token), (c) => c.charCodeAt(0)),
+      TunnelType.IceCandidate,
+      ...candidateBytes,
+    ]);
+
+    this.gameController.getWebSocketService().sendTunnelMessage(payload);
+  }
+
   public handleNewIceCandidate(
     originToken: string,
     iceCandidate: RTCIceCandidateInit
@@ -105,33 +124,10 @@ export class WebRTCService {
       return console.warn("WebRTC peer with token not found", token);
     }
 
-    peer.getQueuedIceCandidates().forEach((iceCandidate) => {
-      this.sendIceCandidate(token, iceCandidate);
-    });
-
     await peer.connect(rtcSessionDescription);
   }
 
   private getPeer(token: string): WebRTCPeer | null {
     return this.peers.get(token) ?? null;
-  }
-
-  private sendIceCandidate(
-    token: string,
-    iceCandidate: RTCIceCandidateInit
-  ): void {
-    console.log("Sending ICE candidate...", token, iceCandidate);
-
-    const candidateBytes = new TextEncoder().encode(
-      JSON.stringify(iceCandidate)
-    );
-
-    const payload = new Uint8Array([
-      ...Uint8Array.from(atob(token), (c) => c.charCodeAt(0)),
-      TunnelType.IceCandidate,
-      ...candidateBytes,
-    ]);
-
-    this.gameController.getWebSocketService().sendTunnelMessage(payload);
   }
 }

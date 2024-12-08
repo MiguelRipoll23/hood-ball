@@ -6,15 +6,18 @@ import { MatchmakingService } from "./matchmaking-service.js";
 import { ObjectOrchestrator } from "./object-orchestrator-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
+import { WebRTCService } from "./webrtc-service.js";
 
 export class WebRTCPeerService {
   private logger: LoggerUtils;
+
   private matchmakingService: MatchmakingService;
+  private webRTCService: WebRTCService;
   private objectOrchestrator: ObjectOrchestrator;
   private eventProcessorService: EventProcessorService;
 
   private peerConnection: RTCPeerConnection;
-  private iceCandidateQueue: RTCIceCandidateInit[] = [];
+  private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
 
   private connectionState: ConnectionStateType =
@@ -33,6 +36,7 @@ export class WebRTCPeerService {
     this.logger = new LoggerUtils(`WebRTC(${this.token})`);
 
     this.matchmakingService = this.gameController.getMatchmakingService();
+    this.webRTCService = this.gameController.getWebRTCService();
     this.objectOrchestrator = this.gameController.getObjectOrchestrator();
     this.eventProcessorService = this.gameController.getEventProcessorService();
 
@@ -85,10 +89,6 @@ export class WebRTCPeerService {
     }
   }
 
-  public getQueuedIceCandidates(): RTCIceCandidateInit[] {
-    return this.iceCandidateQueue;
-  }
-
   public addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void {
     this.processIceCandidate(iceCandidate, false);
   }
@@ -115,11 +115,11 @@ export class WebRTCPeerService {
       new RTCSessionDescription(answer)
     );
 
-    this.iceCandidateQueue.forEach((candidate) =>
+    this.iceCandidatesQueue.forEach((candidate) =>
       this.processIceCandidate(candidate, true)
     );
 
-    this.iceCandidateQueue = [];
+    this.iceCandidatesQueue = [];
   }
 
   public disconnectGracefully(): void {
@@ -299,9 +299,11 @@ export class WebRTCPeerService {
     if (this.peerConnection.remoteDescription) {
       this.processIceCandidate(iceCandidate, true);
     } else {
-      this.iceCandidateQueue.push(iceCandidate);
+      this.iceCandidatesQueue.push(iceCandidate);
       this.logger.info("Queued ICE candidate", iceCandidate);
     }
+
+    this.webRTCService.sendIceCandidate(this.token, iceCandidate);
   }
 
   private async processIceCandidate(
@@ -309,6 +311,7 @@ export class WebRTCPeerService {
     local: boolean
   ): Promise<void> {
     const type = local ? "local" : "remote";
+
     try {
       await this.peerConnection.addIceCandidate(iceCandidate);
       this.logger.info(`Added ${type} ICE candidate`, iceCandidate);

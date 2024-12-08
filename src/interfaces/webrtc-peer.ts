@@ -16,7 +16,6 @@ export interface WebRTCPeer {
     offer: RTCSessionDescriptionInit
   ): Promise<RTCSessionDescriptionInit>;
   connect(answer: RTCSessionDescriptionInit): Promise<void>;
-  getQueuedIceCandidates(): RTCIceCandidateInit[];
   addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void;
   sendReliableOrderedMessage(
     arrayBuffer: ArrayBuffer,
