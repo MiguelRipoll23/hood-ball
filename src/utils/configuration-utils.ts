@@ -15,6 +15,8 @@ export function getConfigurationKey<T>(
   }
 
   if (key in configuration === false) {
+    console.warn(`Configuration key not found: ${key}`);
+
     return defaultValue;
   }
 

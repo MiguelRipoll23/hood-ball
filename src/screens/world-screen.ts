@@ -137,9 +137,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private createScoreboardObject() {
-    const durationSeconds: number | null = getConfigurationKey<number>(
+    const durationSeconds: number = getConfigurationKey<number>(
       SCOREBOARD_SECONDS_DURATION,
-      60 * 5,
+      60,
       this.gameState
     );
 
