@@ -104,14 +104,11 @@ export class SettingsScreen extends BaseGameScreen {
 
   private handleDebugSettingPress(settingObject: SettingObject): void {
     const state = settingObject.getSettingState();
-
-    this.uiObjects.forEach((object) => {
-      object.setDebug(state);
-    });
-
     this.gameController.setDebug(state);
 
-    const localEvent = new LocalEvent(EventType.DebugChanged, state);
+    this.updateDebugStateForObjects();
+
+    const localEvent = new LocalEvent(EventType.DebugChanged, null);
     this.gameController.getEventProcessorService().addLocalEvent(localEvent);
   }
 }

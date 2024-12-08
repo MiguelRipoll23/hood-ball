@@ -97,16 +97,10 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   private listenForLocalEvents(): void {
-    this.eventProcessorService.listenLocalEvent<boolean>(
+    this.eventProcessorService.listenLocalEvent(
       EventType.DebugChanged,
-      this.handleDebugChanged.bind(this)
+      this.updateDebugStateForObjects.bind(this)
     );
-  }
-
-  private handleDebugChanged(debug: boolean): void {
-    this.uiObjects.forEach((uiObject) => {
-      uiObject.setDebug(debug);
-    });
   }
 
   private downloadServerMessages(): void {

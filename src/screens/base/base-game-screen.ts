@@ -35,7 +35,7 @@ export class BaseGameScreen implements GameScreen {
   }
 
   public loadObjects(): void {
-    this.setDebugToChildObjects();
+    this.updateDebugStateForObjects();
 
     this.sceneObjects.forEach((object) => object.load());
     this.uiObjects.forEach((object) => object.load());
@@ -132,7 +132,7 @@ export class BaseGameScreen implements GameScreen {
     context.globalAlpha = 1;
   }
 
-  private setDebugToChildObjects(): void {
+  protected updateDebugStateForObjects(): void {
     const debug = this.gameController.isDebugging();
 
     this.sceneObjects.forEach((object) => object.setDebug(debug));
