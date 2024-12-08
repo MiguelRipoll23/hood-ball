@@ -18,6 +18,8 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
 import { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
 import { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
+import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
+import { getConfigurationKey } from "../utils/configuration-utils.js";
 
 export class MatchmakingService {
   private apiService: APIService;
@@ -335,10 +337,16 @@ export class MatchmakingService {
 
   private async createAndAdvertiseMatch(): Promise<void> {
     // Create game match
+    const totalSlots: number = getConfigurationKey<number>(
+      MATCH_TOTAL_SLOTS,
+      4,
+      this.gameState
+    );
+
     const match = new Match(
       true,
       MatchStateType.WaitingPlayers,
-      4,
+      totalSlots,
       MATCH_ATTRIBUTES
     );
 
