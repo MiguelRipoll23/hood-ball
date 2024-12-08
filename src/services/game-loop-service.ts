@@ -27,6 +27,7 @@ export class GameLoopService {
     this.gameFrame = this.gameController.getGameFrame();
 
     this.setCanvasSize();
+    this.listenForWindowEvents();
     this.loadNotificationObject();
   }
 
@@ -57,7 +58,6 @@ export class GameLoopService {
       "color: #b6ff35; font-size: 20px; font-weight: bold"
     );
   }
-
   private setCanvasSize(): void {
     const viewportWidth = document.body.clientWidth;
     const viewportHeight = document.body.clientHeight;
@@ -74,6 +74,10 @@ export class GameLoopService {
 
     this.canvas.width = newWidth;
     this.canvas.height = newHeight;
+  }
+
+  private listenForWindowEvents(): void {
+    window.addEventListener("resize", this.setCanvasSize.bind(this));
   }
 
   private handleServerDisconnectedEvent(
