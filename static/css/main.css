@@ -29,7 +29,7 @@ dialog {
   padding: 20px;
   border-radius: 6px;
   text-align: center;
-  top: -160px;
+  top: -170px;
 }
 
 dialog h1 {
@@ -40,10 +40,10 @@ input[type="text"] {
   width: 100%;
   font-size: 16px;
   box-sizing: border-box;
-  border: 1px solid rgba(0, 0, 0, 0.4);
+  border: 2px solid #000;
   border-radius: 8px;
   text-indent: 2px;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
   padding: 6px 8px;
 }
 
