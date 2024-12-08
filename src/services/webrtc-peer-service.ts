@@ -44,7 +44,7 @@ export class WebRTCPeerService {
         ?.getGameState()
         ?.getGameServer()
         ?.getServerRegistration()
-        ?.getIceServers(),
+        ?.getRTCIceServers(),
     });
 
     if (this.host === false) {
