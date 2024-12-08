@@ -47,8 +47,9 @@ export class ScreenTransitionService {
       this.resetTransitionState();
     }
 
-    this.screenManager.setNextScreen(nextScreen);
+    nextScreen.setOpacity(0);
 
+    this.screenManager.setNextScreen(nextScreen);
     this.fadeOutDurationMilliseconds = fadeOutDurationSeconds * 1000;
     this.fadeInDurationMilliseconds = fadeInDurationSeconds * 1000;
     this.isFadingOutAndIn = true;
@@ -70,8 +71,9 @@ export class ScreenTransitionService {
       this.resetTransitionState();
     }
 
-    this.screenManager.setNextScreen(nextScreen);
+    nextScreen.setOpacity(0);
 
+    this.screenManager.setNextScreen(nextScreen);
     this.crossfadeDurationMilliseconds = crossfadeDurationSeconds * 1000;
     this.isCrossfading = true;
   }
