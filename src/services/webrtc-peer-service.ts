@@ -120,6 +120,10 @@ export class WebRTCPeerService {
     );
 
     this.iceCandidatesQueue = [];
+
+    this.iceCandidatesQueue.forEach((candidate) => {
+      this.webRTCService.sendIceCandidate(this.token, candidate);
+    });
   }
 
   public disconnectGracefully(): void {
