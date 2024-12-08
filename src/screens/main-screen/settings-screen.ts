@@ -49,7 +49,7 @@ export class SettingsScreen extends BaseGameScreen {
       this.gameController.isDebugging()
     );
 
-    settingObject.setY(100);
+    settingObject.setY(75);
     settingObject.load();
 
     this.uiObjects.push(settingObject);
@@ -89,15 +89,24 @@ export class SettingsScreen extends BaseGameScreen {
 
   private handleSettingObjectPress(settingObject: SettingObject): void {
     const id = settingObject.getSettingId();
-    const state = settingObject.getSettingState();
 
     switch (id) {
       case "debug":
-        return this.gameController.setDebug(state);
+        return this.handleDebugSettingPress(settingObject);
 
       default:
         console.log("Unknown setting pressed");
         break;
     }
+  }
+
+  private handleDebugSettingPress(settingObject: SettingObject): void {
+    const state = settingObject.getSettingState();
+
+    this.uiObjects.forEach((object) => {
+      object.setDebug(state);
+    });
+
+    this.gameController.setDebug(state);
   }
 }
