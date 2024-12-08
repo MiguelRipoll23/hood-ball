@@ -1,4 +1,5 @@
 export enum EventType {
+  DebugChanged,
   ServerAuthenticated,
   ServerConnected,
   ServerNotification,
