@@ -62,7 +62,7 @@ export class SettingObject extends BasePressableGameObject {
     context.fillText(this.settingText, this.x + 30, this.y + this.height / 2);
 
     // Set the position of the toggleObject (right side of the canvas)
-    const toggleX = canvasWidth - 90; // Adjust this value for your toggle object's width
+    const toggleX = canvasWidth - 80; // Adjust this value for your toggle object's width
     const toggleY = this.y + 5;
 
     // Set the position of the toggle object
