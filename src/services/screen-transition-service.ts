@@ -127,6 +127,7 @@ export class ScreenTransitionService {
   }
 
   private handleCrossfading(deltaTimeStamp: DOMHighResTimeStamp): void {
+    const currentScreen = this.screenManager.getCurrentScreen();
     const nextScreen = this.screenManager.getNextScreen();
 
     if (!nextScreen || !nextScreen.hasLoaded()) return;
@@ -137,6 +138,10 @@ export class ScreenTransitionService {
       1,
       this.elapsedTransitionMilliseconds / this.crossfadeDurationMilliseconds
     );
+
+    if (currentScreen !== null) {
+      currentScreen.setOpacity(1 - crossfadeOpacity);
+    }
 
     nextScreen.setOpacity(crossfadeOpacity);
 
