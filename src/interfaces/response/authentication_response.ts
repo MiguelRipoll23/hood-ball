@@ -4,5 +4,5 @@ export interface AuthenticationResponse {
   user_id: string;
   display_name: string;
   public_ip: string;
-  ice_servers: RTCIceServer[];
+  rtc_ice_servers: RTCIceServer[];
 }
