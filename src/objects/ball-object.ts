@@ -94,11 +94,6 @@ export class BallObject
     // Restore the context state
     context.restore();
 
-    // Render debug information if enabled
-    if (this.debug) {
-      this.renderDebugInformation(context);
-    }
-
     // Hitbox render (from superclass)
     super.render(context);
   }
@@ -214,21 +209,6 @@ export class BallObject
         this.lastPlayer = object.getPlayer();
       }
     });
-  }
-
-  private renderDebugInformation(context: CanvasRenderingContext2D) {
-    this.renderLastPlayerTouched(context);
-  }
-
-  private renderLastPlayerTouched(context: CanvasRenderingContext2D) {
-    const playerName = this.lastPlayer?.getName() ?? "none";
-
-    context.fillStyle = "rgba(255, 255, 255, 0.6)";
-    context.fillRect(24, 96, 160, 20);
-    context.fillStyle = "blue";
-    context.font = "12px system-ui";
-    context.textAlign = "left";
-    context.fillText(`Last Touch: ${playerName}`, 30, 110);
   }
 
   public override mustSync(): boolean {
