@@ -49,6 +49,7 @@ export class WebRTCPeerService {
         ?.getGameServer()
         ?.getServerRegistration()
         ?.getRTCIceServers(),
+      iceTransportPolicy: "relay"
     });
 
     if (this.host === false) {
