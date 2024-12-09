@@ -173,6 +173,10 @@ export class GameLoopService {
     this.gameFrame.getCurrentScreen()?.render(this.context);
     this.gameFrame.getNextScreen()?.render(this.context);
     this.gameFrame.getNotificationObject()?.render(this.context);
+
+    if (this.gameController.isDebugging()) {
+      this.drawGamePointer();
+    }
   }
 
   private listenForEvents(): void {
@@ -196,5 +200,21 @@ export class GameLoopService {
         EventType.ServerNotification,
         this.handleServerNotificationEvent.bind(this)
       );
+  }
+
+  private drawGamePointer(): void {
+    const gamePointer = this.gameController.getGamePointer();
+
+    this.context.fillStyle = "rgba(148, 0, 211, 0.5)";
+    this.context.beginPath();
+    this.context.arc(
+      gamePointer.getX(),
+      gamePointer.getY(),
+      15,
+      0,
+      Math.PI * 2
+    );
+    this.context.closePath();
+    this.context.fill();
   }
 }
