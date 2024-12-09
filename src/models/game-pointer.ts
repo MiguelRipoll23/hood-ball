@@ -90,6 +90,17 @@ export class GamePointer {
     this.pressed = false;
   }
 
+  private adjustCoordinates(event: PointerEvent): { x: number; y: number } {
+    const rect = this.canvas.getBoundingClientRect();
+    const scaleX = this.canvas.width / rect.width;
+    const scaleY = this.canvas.height / rect.height;
+
+    const trueX = (event.clientX - rect.left) * scaleX;
+    const trueY = (event.clientY - rect.top) * scaleY;
+
+    return { x: trueX, y: trueY };
+  }
+
   public addEventListeners(): void {
     this.canvas.addEventListener(
       "touchstart",
@@ -118,8 +129,10 @@ export class GamePointer {
           event.preventDefault();
         }
 
-        this.setX(event.offsetX);
-        this.setY(event.offsetY);
+        const { x, y } = this.adjustCoordinates(event);
+
+        this.setX(x);
+        this.setY(y);
       },
       { passive: false }
     );
@@ -131,11 +144,13 @@ export class GamePointer {
           event.preventDefault();
         }
 
+        const { x, y } = this.adjustCoordinates(event);
+
         this.setType(event.pointerType as PointerType);
-        this.setX(event.offsetX);
-        this.setY(event.offsetY);
-        this.setInitialX(event.offsetX);
-        this.setInitialY(event.offsetY);
+        this.setX(x);
+        this.setY(y);
+        this.setInitialX(x);
+        this.setInitialY(y);
         this.setPressing(true);
       },
       { passive: false }
@@ -148,8 +163,10 @@ export class GamePointer {
           event.preventDefault();
         }
 
-        this.setX(event.offsetX);
-        this.setY(event.offsetY);
+        const { x, y } = this.adjustCoordinates(event);
+
+        this.setX(x);
+        this.setY(y);
         this.setPressing(false);
         this.setPressed(true);
       },
