@@ -41,6 +41,12 @@ export class GearStickObject extends BaseGameObject {
     return this.currentGear;
   }
 
+  public reset(): void {
+    if (this.currentGear === "R") {
+      this.currentGear = "F";
+    }
+  }
+
   public switchGear(): void {
     this.currentGear = this.currentGear === "F" ? "R" : "F";
   }
@@ -73,9 +79,8 @@ export class GearStickObject extends BaseGameObject {
   }
 
   private handleTouchEvents(): void {
-    const rect = this.canvas.getBoundingClientRect();
-    const touchX = this.gamePointer.getX() - rect.left;
-    const touchY = this.gamePointer.getY() - rect.top;
+    const touchX = this.gamePointer.getX();
+    const touchY = this.gamePointer.getY();
 
     if (this.isWithinGearStick(touchX, touchY)) {
       this.active = true;
