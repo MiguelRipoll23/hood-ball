@@ -98,6 +98,8 @@ export class LocalCarObject extends CarObject {
       } else if (currentGear === "R" && this.speed > -this.TOP_SPEED) {
         this.speed -= this.ACCELERATION;
       }
+    } else {
+      this.gearStickObject.reset();
     }
 
     this.angle +=
