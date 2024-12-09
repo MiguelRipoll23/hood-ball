@@ -41,7 +41,7 @@ export class GearStickObject extends BaseGameObject {
     return this.currentGear;
   }
 
-  private switchGear(): void {
+  public switchGear(): void {
     this.currentGear = this.currentGear === "F" ? "R" : "F";
   }
 
