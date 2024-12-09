@@ -72,8 +72,3 @@ button:disabled {
 hr {
   margin: 16px 0;
 }
-
-canvas {
-  border: 2px solid red;
-  box-sizing: border-box;
-}
