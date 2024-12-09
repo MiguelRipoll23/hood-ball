@@ -87,12 +87,10 @@ export class GameLoopService {
     payload: ServerDisconnectedPayload
   ): void {
     if (payload.connectionLost) {
-      alert("Connection to server was lost");
+      console.warn("Connection to server lost");
     } else {
-      alert("Failed to connect to server");
+      console.warn("Failed to connect to server");
     }
-
-    window.location.reload();
   }
 
   private handleServerNotificationEvent(
