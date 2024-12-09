@@ -56,6 +56,8 @@ export class LocalCarObject extends CarObject {
       this.handleControls();
     }
 
+    this.fixPositionIfOutOfBounds();
+
     super.update(deltaTimeStamp);
   }
 
@@ -106,6 +108,20 @@ export class LocalCarObject extends CarObject {
       this.HANDLING *
       (this.speed / this.TOP_SPEED) *
       this.joystickObject.getControlX();
+  }
+
+  private fixPositionIfOutOfBounds(): void {
+    if (this.x > this.canvas.width - 60) {
+      this.x = this.canvas.width - 80;
+    } else if (this.x < 10) {
+      this.x = 80;
+    }
+
+    if (this.y > this.canvas.height - 60) {
+      this.y = this.canvas.height - 80;
+    } else if (this.y < 10) {
+      this.y = 80;
+    }
   }
 
   private renderDebugInformation(context: CanvasRenderingContext2D) {
