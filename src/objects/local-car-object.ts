@@ -4,6 +4,7 @@ import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { GearStickObject } from "./gear-stick-object.js";
 import { JoystickObject } from "./joystick-object.js";
+import { WorldBackgroundObject } from "./backgrounds/world-background-object.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -48,6 +49,10 @@ export class LocalCarObject extends CarObject {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
+      if (this.isCollidingWithBounds()) {
+        this.gearStickObject.switchGear();
+      }
+
       this.handleControls();
     }
 
@@ -64,6 +69,18 @@ export class LocalCarObject extends CarObject {
   private setSyncableValues() {
     this.setId(crypto.randomUUID());
     this.setTypeId(ObjectType.RemoteCar);
+  }
+
+  private isCollidingWithBounds(): boolean {
+    const collidingObjects = this.getCollidingObjects();
+
+    for (const object of collidingObjects) {
+      if (object instanceof WorldBackgroundObject) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private handleControls(): void {
