@@ -100,7 +100,7 @@ export class LoginScreen extends BaseGameScreen {
       })
       .catch((error) => {
         console.error(error);
-        this.showError("An error occurred while checking for updates");
+        this.showError("Failed to check for updates");
       });
   }
 
@@ -161,7 +161,7 @@ export class LoginScreen extends BaseGameScreen {
       })
       .catch((error) => {
         console.error(error);
-        this.showError("An error occurred while downloading configuration");
+        this.showError("Failed to fetch configuration");
       });
   }
 
