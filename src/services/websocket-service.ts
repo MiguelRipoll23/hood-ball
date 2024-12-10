@@ -81,7 +81,6 @@ export class WebSocketService {
 
   private handleDisconnection(event: CloseEvent): void {
     console.log("Connection closed", event);
-    this.gameState.getGameServer().setConnected(false);
 
     const payload = {
       connectionLost: this.gameState.getGameServer().isConnected(),
@@ -93,6 +92,7 @@ export class WebSocketService {
     );
 
     this.eventProcessorService.addLocalEvent(localEvent);
+    this.gameState.getGameServer().setConnected(false);
   }
 
   private handleMessage(data: ArrayBuffer) {
