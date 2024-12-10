@@ -203,6 +203,10 @@ export class GameLoopService {
   private drawGamePointer(): void {
     const gamePointer = this.gameController.getGamePointer();
 
+    if (gamePointer.isTouch() && gamePointer.isPressing() == false) {
+      return;
+    }
+
     this.context.fillStyle = "rgba(148, 0, 211, 0.5)";
     this.context.beginPath();
     this.context.arc(
