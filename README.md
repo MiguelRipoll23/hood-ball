@@ -3,9 +3,6 @@
 Accelerate and smash your way to victory in a car-based multiplayer soccer
 battle.
 
-> [!IMPORTANT]
-> For now, please use local area network to connect to other players.
-
 ## Technology stack
 
 - Passkey for registration and login
