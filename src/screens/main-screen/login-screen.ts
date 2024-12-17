@@ -124,6 +124,7 @@ export class LoginScreen extends BaseGameScreen {
 
   private handleRegisterClick(username: string): void {
     if (username.trim() === "") {
+      alert("Display name is required");
       return;
     }
 
