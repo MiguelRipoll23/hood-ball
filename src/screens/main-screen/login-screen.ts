@@ -23,8 +23,9 @@ export class LoginScreen extends BaseGameScreen {
   private errorCloseableMessageObject: CloseableMessageObject | null = null;
 
   private dialogElement: HTMLDialogElement | null = null;
-  private registerButton: HTMLElement | null = null;
-  private signInButton: HTMLElement | null = null;
+  private displayNameInputElement: HTMLInputElement | null = null;
+  private registerButtonElement: HTMLElement | null = null;
+  private signInButtonElement: HTMLElement | null = null;
 
   constructor(gameController: GameController) {
     super(gameController);
@@ -37,8 +38,11 @@ export class LoginScreen extends BaseGameScreen {
     this.credentialService = new CredentialService(gameController);
 
     this.dialogElement = document.querySelector("dialog");
-    this.registerButton = document.querySelector("#register-button");
-    this.signInButton = document.querySelector("#sign-in-button");
+    this.displayNameInputElement = document.querySelector(
+      "#display-name-input"
+    );
+    this.registerButtonElement = document.querySelector("#register-button");
+    this.signInButtonElement = document.querySelector("#sign-in-button");
   }
 
   public override loadObjects(): void {
@@ -107,45 +111,58 @@ export class LoginScreen extends BaseGameScreen {
   private showDialog(): void {
     this.gameController.getGamePointer().setPreventDefault(false);
 
-    const usernameElement: HTMLInputElement | null =
-      document.querySelector("#username-input");
+    this.displayNameInputElement?.addEventListener(
+      "input",
+      this.handleDisplayNameInputEvent.bind(this)
+    );
 
-    this.registerButton?.addEventListener("pointerup", () => {
-      const username = usernameElement?.value ?? "";
+    this.registerButtonElement?.addEventListener("pointerup", () => {
+      const username = this.displayNameInputElement?.value ?? "";
       this.handleRegisterClick(username);
     });
 
-    this.signInButton?.addEventListener("pointerup", () => {
+    this.signInButtonElement?.addEventListener("pointerup", () => {
       this.handleSignInClick();
     });
 
     this.dialogElement?.showModal();
   }
 
+  private handleDisplayNameInputEvent(): void {
+    if (this.displayNameInputElement?.value.trim() === "") {
+      this.registerButtonElement?.setAttribute("disabled", "true");
+    } else {
+      this.registerButtonElement?.removeAttribute("disabled");
+    }
+  }
+
   private handleRegisterClick(username: string): void {
-    if (username.trim() === "") {
-      alert("Display name is required");
+    if (this.registerButtonElement?.hasAttribute("disabled")) {
       return;
     }
 
-    this.registerButton?.setAttribute("disabled", "true");
+    this.registerButtonElement?.setAttribute("disabled", "true");
 
     this.credentialService
       .createCredential(username, username)
       .catch((error) => {
         console.error(error);
         alert(error.message);
-        this.registerButton?.removeAttribute("disabled");
+        this.registerButtonElement?.removeAttribute("disabled");
       });
   }
 
   private async handleSignInClick(): Promise<void> {
-    this.signInButton?.setAttribute("disabled", "true");
+    if (this.signInButtonElement?.hasAttribute("disabled")) {
+      return;
+    }
+
+    this.signInButtonElement?.setAttribute("disabled", "true");
 
     this.credentialService.getCredential().catch((error) => {
       console.error(error);
       alert(error.message);
-      this.signInButton?.removeAttribute("disabled");
+      this.signInButtonElement?.removeAttribute("disabled");
     });
   }
 
