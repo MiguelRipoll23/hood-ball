@@ -13,7 +13,7 @@ export class ScoreboardObject
 {
   private readonly SQUARE_SIZE: number = 50;
   private readonly SPACE_BETWEEN: number = 10;
-  private readonly TIME_BOX_WIDTH: number = 150; // Increased width from 120 to 150
+  private readonly TIME_BOX_WIDTH: number = 130;
   private readonly TIME_BOX_HEIGHT: number = 50;
   private readonly CORNER_RADIUS: number = 10;
 
