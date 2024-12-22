@@ -179,7 +179,7 @@ export class ScoreboardObject
       context,
       score.toString(),
       x + this.SQUARE_SIZE / 2,
-      this.y + 10 + this.SQUARE_SIZE / 2
+      this.y + 11 + this.SQUARE_SIZE / 2
     );
   }
 
@@ -194,7 +194,7 @@ export class ScoreboardObject
     context.fillStyle = this.TIME_BOX_FILL_COLOR;
     this.roundedRect(context, x, y, width, height, this.CORNER_RADIUS);
     context.fill();
-    this.renderText(context, text, x + width / 2, y + 10 + height / 2);
+    this.renderText(context, text, x + width / 2, y + 11 + height / 2);
   }
 
   private roundedRect(
