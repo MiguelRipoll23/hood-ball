@@ -8,7 +8,7 @@
   "lang": "en",
   "name": "Wheel Ball",
   "orientation": "portrait",
-  "scope": "/",
+  "scope": "/wheel-ball/",
   "short_name": "Wheel Ball",
   "start_url": "/",
   "theme_color": "#000000"
