@@ -111,16 +111,16 @@ export class LocalCarObject extends CarObject {
   }
 
   private fixPositionIfOutOfBounds(): void {
-    if (this.x > this.canvas.width - 60) {
-      this.x = this.canvas.width - 80;
-    } else if (this.x < 10) {
-      this.x = 80;
+    if (this.x > this.canvas.width - 58) {
+      this.x = this.canvas.width - 60;
+    } else if (this.x < 3) {
+      this.x = 20;
     }
 
-    if (this.y > this.canvas.height - 60) {
-      this.y = this.canvas.height - 80;
-    } else if (this.y < 10) {
-      this.y = 80;
+    if (this.y > this.canvas.height - 58) {
+      this.y = this.canvas.height - 60;
+    } else if (this.y < 3) {
+      this.y = 20;
     }
   }
 
