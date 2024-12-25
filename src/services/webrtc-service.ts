@@ -6,7 +6,9 @@ import { WebRTCPeerService } from "./webrtc-peer-service.js";
 export class WebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
 
-  constructor(private gameController: GameController) {}
+  constructor(private gameController: GameController) {
+    this.startPingCalculation();
+  }
 
   public async sendOffer(token: string): Promise<void> {
     const peer = this.addPeer(token);
@@ -129,5 +131,13 @@ export class WebRTCService {
 
   private getPeer(token: string): WebRTCPeer | null {
     return this.peers.get(token) ?? null;
+  }
+
+  private startPingCalculation(): void {
+    setInterval(() => {
+      this.peers.forEach((peer) => {
+        peer.calculatePing();
+      });
+    }, 5000);
   }
 }

@@ -27,4 +27,6 @@ export interface WebRTCPeer {
   ): void;
   sendUnreliableOrderedMessage(arrayBuffer: ArrayBuffer): void;
   sendUnreliableUnorderedMessage(arrayBuffer: ArrayBuffer): void;
+  calculatePing(): void;
+  getPing(): number;
 }

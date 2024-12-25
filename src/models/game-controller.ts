@@ -151,4 +151,8 @@ export class GameController {
   public getEventProcessorService(): EventProcessorService {
     return this.eventsProcessorService;
   }
+
+  public getPing(): number {
+    return this.webRTCService.getPeers().reduce((acc, peer) => acc + peer.getPing(), 0) / this.webRTCService.getPeers().length;
+  }
 }
