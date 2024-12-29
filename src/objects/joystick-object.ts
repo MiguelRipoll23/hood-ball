@@ -138,8 +138,6 @@ export class JoystickObject extends BaseGameObject {
 
     // Save the current state
     context.save();
-
-    // Apply shadow settings only to the joystick
     context.shadowColor = "rgba(0, 0, 0, 0.3)";
     context.shadowBlur = 10;
 
