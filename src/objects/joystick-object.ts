@@ -10,6 +10,7 @@ export class JoystickObject extends BaseGameObject {
 
   private active: boolean = false;
   private angle: number = 0;
+  private magnitude: number = 1;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -18,20 +19,32 @@ export class JoystickObject extends BaseGameObject {
     super();
   }
 
-  public override update() {
+  public isActive(): boolean {
+    return this.active;
+  }
+
+  public getAngle(): number {
+    return this.angle;
+  }
+
+  public getMagnitude(): number {
+    return this.magnitude;
+  }
+
+  public override update(): void {
     if (this.gamePointer.isTouch()) {
       this.handleGamePointerEvents();
       this.updateJoystickPosition();
     }
   }
 
-  public render(context: CanvasRenderingContext2D) {
+  public render(context: CanvasRenderingContext2D): void {
     if (this.gamePointer.isTouch() && this.gamePointer.isPressing()) {
       this.drawJoystick(context);
     }
   }
 
-  private handleGamePointerEvents() {
+  private handleGamePointerEvents(): void {
     if (this.gamePointer.isPressing()) {
       this.active = true;
     } else {
@@ -39,7 +52,7 @@ export class JoystickObject extends BaseGameObject {
     }
   }
 
-  private updateJoystickPosition() {
+  private updateJoystickPosition(): void {
     const distance = this.calculateDistance();
 
     if (distance <= this.MAX_DISTANCE) {
@@ -50,6 +63,7 @@ export class JoystickObject extends BaseGameObject {
     }
 
     this.calculateAngle();
+    this.magnitude = Math.min(1, distance / this.MAX_DISTANCE);
   }
 
   private calculateDistance(): number {
@@ -59,7 +73,7 @@ export class JoystickObject extends BaseGameObject {
     );
   }
 
-  private adjustPosition() {
+  private adjustPosition(): void {
     const drawAngle = Math.atan2(
       this.gamePointer.getY() - this.gamePointer.getInitialY(),
       this.gamePointer.getX() - this.gamePointer.getInitialX()
@@ -72,7 +86,7 @@ export class JoystickObject extends BaseGameObject {
       this.gamePointer.getInitialY() + this.MAX_DISTANCE * Math.sin(drawAngle);
   }
 
-  private calculateAngle() {
+  private calculateAngle(): void {
     const relativeX = this.x - this.gamePointer.getInitialX();
     const relativeY = this.y - this.gamePointer.getInitialY();
 
@@ -82,20 +96,14 @@ export class JoystickObject extends BaseGameObject {
     this.angle = Math.atan2(-controlY, -controlX);
   }
 
-  public isActive() {
-    return this.active;
-  }
-
-  public getAngle(): number {
-    return this.angle; // The angle is now always in radians
-  }
-
-  private drawJoystick(context: CanvasRenderingContext2D) {
+  private drawJoystick(context: CanvasRenderingContext2D): void {
     this.drawInitialTouchCircleBorder(context);
     this.drawJoystickCircle(context);
   }
 
-  private drawInitialTouchCircleBorder(context: CanvasRenderingContext2D) {
+  private drawInitialTouchCircleBorder(
+    context: CanvasRenderingContext2D
+  ): void {
     context.beginPath();
     context.arc(
       this.gamePointer.getInitialX(),
@@ -110,7 +118,7 @@ export class JoystickObject extends BaseGameObject {
     context.closePath();
   }
 
-  private drawJoystickCircle(context: CanvasRenderingContext2D) {
+  private drawJoystickCircle(context: CanvasRenderingContext2D): void {
     context.beginPath();
     context.arc(this.x, this.y, this.RADIUS, 0, Math.PI * 2);
     const gradient = context.createRadialGradient(
@@ -140,7 +148,7 @@ export class JoystickObject extends BaseGameObject {
     context.closePath();
   }
 
-  private reset() {
+  private reset(): void {
     this.active = false;
   }
 }
