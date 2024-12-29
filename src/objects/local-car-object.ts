@@ -64,12 +64,16 @@ export class LocalCarObject extends CarObject {
   private handleTouchControls(): void {
     if (!this.joystickObject) return;
 
-    // Handle speed based on joystick activity
-    if (this.joystickObject.isActive()) {
-      this.accelerate();
+    const active = this.joystickObject.isActive();
+    const magnitude = this.joystickObject.getMagnitude();
 
-      const targetAngle = this.joystickObject.getAngle();
-      this.angle = this.smoothAngleTransition(this.angle, targetAngle);
+    if (active) {
+      this.accelerate(magnitude);
+
+      if (this.speed > 0) {
+        const targetAngle = this.joystickObject.getAngle();
+        this.angle = this.smoothAngleTransition(this.angle, targetAngle);
+      }
     }
   }
 
@@ -109,9 +113,9 @@ export class LocalCarObject extends CarObject {
     }
   }
 
-  private accelerate(): void {
+  private accelerate(magnitude = 1): void {
     if (this.speed < this.TOP_SPEED) {
-      this.speed += this.ACCELERATION;
+      this.speed += this.ACCELERATION * magnitude;
     }
   }
 
