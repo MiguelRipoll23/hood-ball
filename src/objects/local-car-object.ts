@@ -2,10 +2,10 @@ import { GamePointer } from "../models/game-pointer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
+import { GameKeyboard } from "../models/game-keyboard.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
-
   private active: boolean = true;
 
   constructor(
@@ -13,11 +13,13 @@ export class LocalCarObject extends CarObject {
     y: number,
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
-    gamePointer: GamePointer
+    protected gamePointer: GamePointer,
+    protected gameKeyboard: GameKeyboard
   ) {
     super(x, y, angle);
     this.setSyncableValues();
     this.joystickObject = new JoystickObject(canvas, gamePointer);
+    this.gameKeyboard = gameKeyboard;
   }
 
   public setActive(active: boolean): void {
@@ -35,7 +37,14 @@ export class LocalCarObject extends CarObject {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      this.handleControls();
+      if (this.debug) {
+        this.handleTouchControls();
+        this.handleKeyboardControls();
+      } else if (this.gamePointer.isTouch()) {
+        this.handleTouchControls();
+      } else {
+        this.handleKeyboardControls();
+      }
     }
 
     this.fixPositionIfOutOfBounds();
@@ -55,21 +64,63 @@ export class LocalCarObject extends CarObject {
     this.setTypeId(ObjectType.RemoteCar);
   }
 
-  private handleControls(): void {
+  private handleTouchControls(): void {
     if (!this.joystickObject) return;
 
     // Handle speed based on joystick activity
     if (this.joystickObject.isActive()) {
-      // Accelerate the car when joystick is in use
-      if (this.speed < this.TOP_SPEED) {
-        this.speed += this.ACCELERATION;
-      }
+      this.accelerate();
 
-      // Get the target angle from the joystick (inverted X and Y for correct control)
       const targetAngle = this.joystickObject.getAngle();
-
-      // Smoothly transition to the target angle
       this.angle = this.smoothAngleTransition(this.angle, targetAngle);
+    }
+  }
+
+  private handleKeyboardControls(): void {
+    const pressedKeys = this.gameKeyboard.getPressedKeys();
+
+    const isArrowUpPressed = pressedKeys.has("ArrowUp") || pressedKeys.has("w");
+    const isArrowDownPressed =
+      pressedKeys.has("ArrowDown") || pressedKeys.has("s");
+    const isArrowLeftPressed =
+      pressedKeys.has("ArrowLeft") || pressedKeys.has("a");
+    const isArrowRightPressed =
+      pressedKeys.has("ArrowRight") || pressedKeys.has("d");
+
+    if (isArrowUpPressed && !isArrowDownPressed) {
+      this.accelerate();
+    } else if (!isArrowUpPressed && isArrowDownPressed) {
+      this.decelerate();
+    }
+
+    if (this.speed === 0) {
+      return;
+    }
+
+    if (isArrowLeftPressed && !isArrowRightPressed) {
+      if (this.speed > 0) {
+        this.angle -= this.HANDLING;
+      } else {
+        this.angle += this.HANDLING;
+      }
+    } else if (!isArrowLeftPressed && isArrowRightPressed) {
+      if (this.speed > 0) {
+        this.angle += this.HANDLING;
+      } else {
+        this.angle -= this.HANDLING;
+      }
+    }
+  }
+
+  private accelerate(): void {
+    if (this.speed < this.TOP_SPEED) {
+      this.speed += this.ACCELERATION;
+    }
+  }
+
+  private decelerate(): void {
+    if (this.speed > -this.TOP_SPEED) {
+      this.speed -= this.ACCELERATION;
     }
   }
 
