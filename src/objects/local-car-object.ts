@@ -1,4 +1,3 @@
-import { GameKeyboard } from "../models/game-keyboard.js";
 import { GamePointer } from "../models/game-pointer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
@@ -14,12 +13,11 @@ export class LocalCarObject extends CarObject {
     y: number,
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
-    gamePointer: GamePointer,
-    gameKeyboard: GameKeyboard
+    gamePointer: GamePointer
   ) {
     super(x, y, angle);
     this.setSyncableValues();
-    this.joystickObject = new JoystickObject(canvas, gamePointer, gameKeyboard);
+    this.joystickObject = new JoystickObject(canvas, gamePointer);
   }
 
   public setActive(active: boolean): void {
