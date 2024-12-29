@@ -10,7 +10,7 @@ import {
 export class CarObject extends BaseDynamicCollidableGameObject {
   protected readonly TOP_SPEED: number = 4;
   protected readonly ACCELERATION: number = 0.4;
-  protected readonly HANDLING: number = 4;
+  protected readonly HANDLING: number = 0.0698132;
   protected readonly WIDTH: number = 50;
   protected readonly HEIGHT: number = 50;
 
@@ -26,7 +26,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
   private PLAYER_NAME_PADDING = 10;
   private PLAYER_NAME_RECT_HEIGHT = 24;
-  private PLAYER_NAME_BORDER_RADIUS = 10;
 
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
@@ -77,7 +76,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.wrapAngle();
     this.applyFriction();
     this.calculateMovement();
     this.updateHitbox();
@@ -89,7 +87,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     context.save();
 
     context.translate(this.x + this.WIDTH / 2, this.y + this.HEIGHT / 2);
-    context.rotate((this.angle * Math.PI) / 180);
+    context.rotate(this.angle);
     context.drawImage(
       this.carImage!,
       -this.WIDTH / 2,
@@ -147,10 +145,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     this.carImage.src = this.imagePath;
   }
 
-  private wrapAngle(): void {
-    this.angle = (this.angle + 360) % 360;
-  }
-
   private applyFriction(): void {
     if (this.isColliding()) {
       // We don't want the car to stop if is colliding
@@ -172,9 +166,8 @@ export class CarObject extends BaseDynamicCollidableGameObject {
       this.speed *= -1;
     }
 
-    const angleInRadians = (this.angle * Math.PI) / 180;
-    this.vx = Math.cos(angleInRadians) * this.speed;
-    this.vy = Math.sin(angleInRadians) * this.speed;
+    this.vx = Math.cos(this.angle) * this.speed;
+    this.vy = Math.sin(this.angle) * this.speed;
 
     this.x -= this.vx;
     this.y -= this.vy;
