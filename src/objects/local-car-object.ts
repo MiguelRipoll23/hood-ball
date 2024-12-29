@@ -37,10 +37,7 @@ export class LocalCarObject extends CarObject {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      if (this.debug) {
-        this.handleTouchControls();
-        this.handleKeyboardControls();
-      } else if (this.gamePointer.isTouch()) {
+      if (this.gamePointer.isTouch()) {
         this.handleTouchControls();
       } else {
         this.handleKeyboardControls();
@@ -128,22 +125,22 @@ export class LocalCarObject extends CarObject {
     currentAngle: number,
     targetAngle: number
   ): number {
-    // Normalize the angle to the range [0, 360)
-    currentAngle = (currentAngle + 360) % 360;
-    targetAngle = (targetAngle + 360) % 360;
+    // Normalize the angle to the range [0, 2π)
+    currentAngle = (currentAngle + Math.PI * 2) % (Math.PI * 2);
+    targetAngle = (targetAngle + Math.PI * 2) % (Math.PI * 2);
 
     // Calculate the difference
     let angleDifference = targetAngle - currentAngle;
 
-    // Ensure the shortest path (between -180 and 180 degrees)
-    if (angleDifference > 180) {
-      angleDifference -= 360;
-    } else if (angleDifference < -180) {
-      angleDifference += 360;
+    // Ensure the shortest path (between -π and π)
+    if (angleDifference > Math.PI) {
+      angleDifference -= Math.PI * 2;
+    } else if (angleDifference < -Math.PI) {
+      angleDifference += Math.PI * 2;
     }
 
     // Smooth the transition (you can adjust the speed factor for smoother/slower transitions)
-    const transitionSpeed = 5; // Increase for faster transition, decrease for slower
+    const transitionSpeed = 0.1; // Increase for faster transition, decrease for slower
     const smoothedAngle =
       currentAngle +
       Math.sign(angleDifference) *
@@ -190,7 +187,8 @@ export class LocalCarObject extends CarObject {
   }
 
   private renderDebugAngleInformation(context: CanvasRenderingContext2D) {
-    const displayAngle = Math.round(this.angle);
+    const degrees = (this.angle * 180) / Math.PI;
+    const displayAngle = degrees.toFixed(0);
 
     const text = `Angle: ${displayAngle}°`;
 

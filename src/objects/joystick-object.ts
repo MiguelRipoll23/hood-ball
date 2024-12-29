@@ -60,16 +60,16 @@ export class JoystickObject extends BaseGameObject {
   }
 
   private adjustPosition() {
-    const angle = Math.atan2(
+    const drawAngle = Math.atan2(
       this.gamePointer.getY() - this.gamePointer.getInitialY(),
       this.gamePointer.getX() - this.gamePointer.getInitialX()
     );
 
     this.x =
-      this.gamePointer.getInitialX() + this.MAX_DISTANCE * Math.cos(angle);
+      this.gamePointer.getInitialX() + this.MAX_DISTANCE * Math.cos(drawAngle);
 
     this.y =
-      this.gamePointer.getInitialY() + this.MAX_DISTANCE * Math.sin(angle);
+      this.gamePointer.getInitialY() + this.MAX_DISTANCE * Math.sin(drawAngle);
   }
 
   private calculateAngle() {
@@ -79,7 +79,7 @@ export class JoystickObject extends BaseGameObject {
     const controlX = relativeX / this.MAX_DISTANCE;
     const controlY = relativeY / this.MAX_DISTANCE;
 
-    this.angle = Math.atan2(-controlY, -controlX) * (180 / Math.PI);
+    this.angle = Math.atan2(-controlY, -controlX);
   }
 
   public isActive() {
@@ -87,7 +87,7 @@ export class JoystickObject extends BaseGameObject {
   }
 
   public getAngle(): number {
-    return this.angle;
+    return this.angle; // The angle is now always in radians
   }
 
   private drawJoystick(context: CanvasRenderingContext2D) {

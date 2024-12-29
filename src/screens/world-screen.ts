@@ -167,7 +167,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.localCarObject = new LocalCarObject(
       0,
       0,
-      90,
+      1.5708,
       this.canvas,
       gamePointer,
       gameKeyboard
