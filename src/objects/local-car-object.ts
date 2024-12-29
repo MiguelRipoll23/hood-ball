@@ -2,13 +2,10 @@ import { GameKeyboard } from "../models/game-keyboard.js";
 import { GamePointer } from "../models/game-pointer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
-import { GearStickObject } from "./gear-stick-object.js";
 import { JoystickObject } from "./joystick-object.js";
-import { WorldBackgroundObject } from "./backgrounds/world-background-object.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
-  private readonly gearStickObject: GearStickObject;
 
   private active: boolean = true;
 
@@ -23,11 +20,6 @@ export class LocalCarObject extends CarObject {
     super(x, y, angle);
     this.setSyncableValues();
     this.joystickObject = new JoystickObject(canvas, gamePointer, gameKeyboard);
-    this.gearStickObject = new GearStickObject(
-      canvas,
-      gamePointer,
-      gameKeyboard
-    );
   }
 
   public setActive(active: boolean): void {
@@ -43,16 +35,8 @@ export class LocalCarObject extends CarObject {
     return this.joystickObject;
   }
 
-  public getGearStickObject(): GearStickObject {
-    return this.gearStickObject;
-  }
-
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      if (this.isCollidingWithBounds()) {
-        this.gearStickObject.switchGear();
-      }
-
       this.handleControls();
     }
 
@@ -73,41 +57,50 @@ export class LocalCarObject extends CarObject {
     this.setTypeId(ObjectType.RemoteCar);
   }
 
-  private isCollidingWithBounds(): boolean {
-    const collidingObjects = this.getCollidingObjects();
+  private handleControls(): void {
+    if (!this.joystickObject) return;
 
-    for (const object of collidingObjects) {
-      if (object instanceof WorldBackgroundObject) {
-        return true;
+    // Handle speed based on joystick activity
+    if (this.joystickObject.isActive()) {
+      // Accelerate the car when joystick is in use
+      if (this.speed < this.TOP_SPEED) {
+        this.speed += this.ACCELERATION;
       }
-    }
 
-    return false;
+      // Get the target angle from the joystick (inverted X and Y for correct control)
+      const targetAngle = this.joystickObject.getAngle();
+
+      // Smoothly transition to the target angle
+      this.angle = this.smoothAngleTransition(this.angle, targetAngle);
+    }
   }
 
-  private handleControls(): void {
-    if (!this.joystickObject || !this.gearStickObject) return;
+  private smoothAngleTransition(
+    currentAngle: number,
+    targetAngle: number
+  ): number {
+    // Normalize the angle to the range [0, 360)
+    currentAngle = (currentAngle + 360) % 360;
+    targetAngle = (targetAngle + 360) % 360;
 
-    if (this.gearStickObject.isActive()) {
-      return;
+    // Calculate the difference
+    let angleDifference = targetAngle - currentAngle;
+
+    // Ensure the shortest path (between -180 and 180 degrees)
+    if (angleDifference > 180) {
+      angleDifference -= 360;
+    } else if (angleDifference < -180) {
+      angleDifference += 360;
     }
 
-    const currentGear = this.gearStickObject.getCurrentGear();
+    // Smooth the transition (you can adjust the speed factor for smoother/slower transitions)
+    const transitionSpeed = 5; // Increase for faster transition, decrease for slower
+    const smoothedAngle =
+      currentAngle +
+      Math.sign(angleDifference) *
+        Math.min(Math.abs(angleDifference), transitionSpeed);
 
-    if (this.joystickObject.isActive()) {
-      if (currentGear === "F" && this.speed < this.TOP_SPEED) {
-        this.speed += this.ACCELERATION;
-      } else if (currentGear === "R" && this.speed > -this.TOP_SPEED) {
-        this.speed -= this.ACCELERATION;
-      }
-    } else {
-      this.gearStickObject.reset();
-    }
-
-    this.angle +=
-      this.HANDLING *
-      (this.speed / this.TOP_SPEED) *
-      this.joystickObject.getControlX();
+    return smoothedAngle;
   }
 
   private fixPositionIfOutOfBounds(): void {

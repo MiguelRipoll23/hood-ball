@@ -181,7 +181,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.sceneObjects.push(this.localCarObject);
 
     // UI
-    this.uiObjects.push(this.localCarObject.getGearStickObject());
     this.uiObjects.push(this.localCarObject.getJoystickObject());
   }
 

@@ -1,6 +1,6 @@
-import { BaseGameObject } from "./base/base-game-object.js";
-import { GamePointer } from "../models/game-pointer.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
+import { GamePointer } from "../models/game-pointer.js";
+import { BaseGameObject } from "./base/base-game-object.js";
 
 export class JoystickObject extends BaseGameObject {
   private readonly RADIUS: number = 40;
@@ -44,7 +44,7 @@ export class JoystickObject extends BaseGameObject {
     if (this.gamePointer.isPressing()) {
       this.active = true;
     } else {
-      this.resetJoystick();
+      this.reset();
     }
   }
 
@@ -101,6 +101,10 @@ export class JoystickObject extends BaseGameObject {
     return this.controlY;
   }
 
+  public getAngle(): number {
+    return Math.atan2(-this.controlY, -this.controlX) * (180 / Math.PI);
+  }
+
   private drawJoystick(context: CanvasRenderingContext2D) {
     this.drawInitialTouchCircleBorder(context);
     this.drawJoystickCircle(context);
@@ -116,7 +120,7 @@ export class JoystickObject extends BaseGameObject {
       Math.PI * 2
     );
     context.strokeStyle = "rgba(0, 0, 0, 0.2)";
-    context.lineWidth = 2; // Adjust line width as needed
+    context.lineWidth = 2;
     context.stroke();
     context.closePath();
   }
@@ -138,6 +142,8 @@ export class JoystickObject extends BaseGameObject {
 
     // Save the current state
     context.save();
+
+    // Apply shadow settings only to the joystick
     context.shadowColor = "rgba(0, 0, 0, 0.3)";
     context.shadowBlur = 10;
 
@@ -179,9 +185,7 @@ export class JoystickObject extends BaseGameObject {
     }
   }
 
-  private resetJoystick() {
+  private reset() {
     this.active = false;
-    this.controlX = 0;
-    this.controlY = 0;
   }
 }
