@@ -32,6 +32,8 @@ export class WebRTCPeerService {
   private player: GamePlayer | null = null;
   private joined: boolean = false;
 
+  private pingStartTime: number | null = null;
+
   constructor(private gameController: GameController, private token: string) {
     this.logger = new LoggerUtils(`WebRTC(${this.token})`);
 
@@ -163,6 +165,35 @@ export class WebRTCPeerService {
     }
 
     this.sendMessage("unreliable-unordered", arrayBuffer, true);
+  }
+
+  public sendPingRequest(): void {
+    const arrayBuffer = new ArrayBuffer(1);
+    const dataView = new DataView(arrayBuffer);
+    dataView.setInt8(0, WebRTCType.PingRequest);
+
+    this.pingStartTime = performance.now();
+    this.sendReliableOrderedMessage(arrayBuffer);
+  }
+
+  public handlePingRequest(): void {
+    const arrayBuffer = new ArrayBuffer(1);
+    const dataView = new DataView(arrayBuffer);
+    dataView.setInt8(0, WebRTCType.PingResponse);
+
+    this.sendReliableOrderedMessage(arrayBuffer);
+  }
+
+  public handlePingResponse(): void {
+    if (this.pingStartTime === null) {
+      return;
+    }
+
+    const pingEndTime = performance.now();
+    const rtt = pingEndTime - this.pingStartTime;
+    this.logger.info(`Round-trip time (RTT): ${rtt} ms`);
+
+    this.pingStartTime = null;
   }
 
   private initializeDataChannels(): void {
@@ -400,6 +431,12 @@ export class WebRTCPeerService {
 
       case WebRTCType.GracefulDisconnect:
         return this.handleGracefulDisconnect();
+
+      case WebRTCType.PingRequest:
+        return this.handlePingRequest();
+
+      case WebRTCType.PingResponse:
+        return this.handlePingResponse();
 
       default: {
         this.logger.warn("Unknown message identifier", id);

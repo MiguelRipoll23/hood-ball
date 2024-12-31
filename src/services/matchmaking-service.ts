@@ -28,11 +28,19 @@ export class MatchmakingService {
   private gameState: GameState;
 
   private findMatchesTimerService: TimerService | null = null;
+  private pingTimerService: TimerService | null = null;
 
   constructor(private gameController: GameController) {
     this.apiService = gameController.getAPIService();
     this.webrtcService = gameController.getWebRTCService();
     this.gameState = gameController.getGameState();
+
+    if (this.gameState.getMatch()?.isHost()) {
+      this.pingTimerService = this.gameController.addTimer(
+        1,
+        this.sendPingToAllPeers.bind(this)
+      );
+    }
   }
 
   public async findOrAdvertiseMatch(): Promise<void> {
@@ -491,5 +499,11 @@ export class MatchmakingService {
     console.log("Sending snapshot ACK to", peer.getName());
     const payload = new Uint8Array([WebRTCType.SnapshotACK]);
     peer.sendReliableOrderedMessage(payload, true);
+  }
+
+  private sendPingToAllPeers(): void {
+    this.webrtcService.getPeers().forEach((peer) => {
+      peer.sendPingRequest();
+    });
   }
 }
