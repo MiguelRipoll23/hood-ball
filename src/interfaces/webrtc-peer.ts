@@ -4,6 +4,7 @@ import { ConnectionStateType } from "../enums/connection-state-type.js";
 export interface WebRTCPeer {
   getConnectionState(): ConnectionStateType;
   getToken(): string;
+  getPingTime(): number;
   getName(): string;
   getPlayer(): GamePlayer | null;
   setPlayer(player: GamePlayer): void;
@@ -17,6 +18,8 @@ export interface WebRTCPeer {
   ): Promise<RTCSessionDescriptionInit>;
   connect(answer: RTCSessionDescriptionInit): Promise<void>;
   addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void;
+  mustPing(): boolean;
+  sendPingRequest(): void;
   sendReliableOrderedMessage(
     arrayBuffer: ArrayBuffer,
     skipQueue?: boolean

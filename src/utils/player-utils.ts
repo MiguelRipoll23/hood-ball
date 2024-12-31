@@ -29,4 +29,16 @@ export class PlayerUtils {
 
     return animal;
   }
+
+  public static getColorByPingTime(ping: number): string {
+    if (ping > 100) {
+      return "orange";
+    }
+
+    if (ping > 50) {
+      return "yellow";
+    }
+
+    return "white";
+  }
 }

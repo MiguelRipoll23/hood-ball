@@ -155,6 +155,10 @@ export class GameLoopService {
       .getTimers()
       .forEach((timer) => timer.update(deltaTimeStamp));
 
+    this.gameController
+      .getIntervals()
+      .forEach((interval) => interval.update(deltaTimeStamp));
+
     this.gameController.getTransitionService().update(deltaTimeStamp);
 
     this.gameFrame.getCurrentScreen()?.update(deltaTimeStamp);

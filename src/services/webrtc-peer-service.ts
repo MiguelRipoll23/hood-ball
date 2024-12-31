@@ -33,6 +33,7 @@ export class WebRTCPeerService {
   private joined: boolean = false;
 
   private pingStartTime: number | null = null;
+  private pingRoundTripTime: number = 0;
 
   constructor(private gameController: GameController, private token: string) {
     this.logger = new LoggerUtils(`WebRTC(${this.token})`);
@@ -128,6 +129,20 @@ export class WebRTCPeerService {
     });
   }
 
+  public mustPing(): boolean {
+    return this.pingStartTime === null;
+  }
+
+  public getPingTime(): number {
+    // Calculate ping round trip time
+    if (this.pingStartTime === null) {
+      return this.pingRoundTripTime;
+    }
+
+    // Current ping round trip time
+    return performance.now() - this.pingStartTime;
+  }
+
   public disconnectGracefully(): void {
     this.connectionState = ConnectionStateType.Disconnected;
     this.sendDisconnectMessage();
@@ -174,26 +189,6 @@ export class WebRTCPeerService {
 
     this.pingStartTime = performance.now();
     this.sendReliableOrderedMessage(arrayBuffer);
-  }
-
-  public handlePingRequest(): void {
-    const arrayBuffer = new ArrayBuffer(1);
-    const dataView = new DataView(arrayBuffer);
-    dataView.setInt8(0, WebRTCType.PingResponse);
-
-    this.sendReliableOrderedMessage(arrayBuffer);
-  }
-
-  public handlePingResponse(): void {
-    if (this.pingStartTime === null) {
-      return;
-    }
-
-    const pingEndTime = performance.now();
-    const rtt = pingEndTime - this.pingStartTime;
-    this.logger.info(`Round-trip time (RTT): ${rtt} ms`);
-
-    this.pingStartTime = null;
   }
 
   private initializeDataChannels(): void {
@@ -466,5 +461,22 @@ export class WebRTCPeerService {
     console.log("Received graceful disconnect message");
     this.connectionState = ConnectionStateType.Disconnected;
     this.disconnect();
+  }
+
+  private handlePingRequest(): void {
+    const arrayBuffer = new ArrayBuffer(1);
+    const dataView = new DataView(arrayBuffer);
+    dataView.setInt8(0, WebRTCType.PingResponse);
+
+    this.sendReliableOrderedMessage(arrayBuffer);
+  }
+
+  private handlePingResponse(): void {
+    if (this.pingStartTime === null) {
+      return;
+    }
+
+    this.pingRoundTripTime = performance.now() - this.pingStartTime;
+    this.pingStartTime = null;
   }
 }

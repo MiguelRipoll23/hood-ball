@@ -3,6 +3,7 @@ import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -135,35 +136,23 @@ export class LocalCarObject extends CarObject {
     this.y = Math.max(3, Math.min(this.y, this.canvas.height - 60));
   }
 
-  private renderDebugInformation(context: CanvasRenderingContext2D): void {
-    this.renderDebugText(
+  protected renderDebugInformation(context: CanvasRenderingContext2D): void {
+    DebugUtils.renderDebugText(
       context,
       `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`,
       24,
       24,
       160
     );
-    this.renderDebugText(
+
+    DebugUtils.renderDebugText(
       context,
       `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`,
       24,
       48,
       80
     );
-  }
 
-  private renderDebugText(
-    context: CanvasRenderingContext2D,
-    text: string,
-    x: number,
-    y: number,
-    width: number
-  ): void {
-    context.fillStyle = "rgba(0, 0, 0, 0.6)";
-    context.fillRect(x, y, width, 20);
-    context.fillStyle = "#FFFF00";
-    context.font = "12px system-ui";
-    context.textAlign = "left";
-    context.fillText(text, x + 6, y + 14);
+    super.renderDebugInformation(context);
   }
 }

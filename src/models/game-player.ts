@@ -1,6 +1,7 @@
 export class GamePlayer {
   private id: string;
   private host: boolean;
+  private pingTime: number = 0;
   private name: string;
   private score: number;
 
@@ -26,6 +27,14 @@ export class GamePlayer {
 
   public setHost(host: boolean): void {
     this.host = host;
+  }
+
+  public getPingTime(): number {
+    return this.pingTime;
+  }
+
+  public setPingTime(pingTime: number): void {
+    this.pingTime = pingTime;
   }
 
   public getName(): string {
