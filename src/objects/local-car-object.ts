@@ -136,23 +136,26 @@ export class LocalCarObject extends CarObject {
     this.y = Math.max(3, Math.min(this.y, this.canvas.height - 60));
   }
 
-  protected renderDebugInformation(context: CanvasRenderingContext2D): void {
+  private renderDebugInformation(context: CanvasRenderingContext2D): void {
     DebugUtils.renderDebugText(
       context,
-      `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`,
       24,
       24,
-      160
+      `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
 
     DebugUtils.renderDebugText(
       context,
-      `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`,
       24,
       48,
-      80
+      `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`
     );
 
-    super.renderDebugInformation(context);
+    if (this.getPlayer()?.isHost()) {
+      DebugUtils.renderDebugText(context, 24, 72, "Host");
+    } else {
+      const pingTime = this.getPlayer()?.getPingTime() || 0;
+      DebugUtils.renderDebugText(context, 24, 72, `Ping: ${pingTime} ms`);
+    }
   }
 }

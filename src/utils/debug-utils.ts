@@ -1,15 +1,21 @@
 export class DebugUtils {
   public static renderDebugText(
     context: CanvasRenderingContext2D,
-    text: string,
     x: number,
     y: number,
-    width: number
+    text: string
   ): void {
-    context.fillStyle = "rgba(0, 0, 0, 0.6)";
-    context.fillRect(x, y, width, 20);
-    context.fillStyle = "#FFFF00";
     context.font = "12px system-ui";
+
+    const textWidth = context.measureText(text).width;
+    const boxWidth = textWidth + 12; // Add margin to the calculated text width
+
+    // Render background box
+    context.fillStyle = "rgba(0, 0, 0, 0.6)";
+    context.fillRect(x, y, boxWidth, 20);
+
+    // Render text
+    context.fillStyle = "#FFFF00";
     context.textAlign = "left";
     context.fillText(text, x + 6, y + 14);
   }

@@ -30,15 +30,8 @@ export class PlayerUtils {
     return animal;
   }
 
-  public static getColorByPingTime(ping: number): string {
-    if (ping > 100) {
-      return "orange";
-    }
-
-    if (ping > 50) {
-      return "yellow";
-    }
-
+  public static getColorByPingTime(_ping: number): string {
+    // TODO: implement logic to return color based on ping time
     return "white";
   }
 }

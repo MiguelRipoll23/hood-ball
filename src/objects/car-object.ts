@@ -6,8 +6,6 @@ import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
   RED_TEAM_TRANSPARENCY_COLOR,
 } from "../constants/colors-constants.js";
-import { PlayerUtils } from "../utils/player-utils.js";
-import { DebugUtils } from "../utils/debug-utils.js";
 
 export class CarObject extends BaseDynamicCollidableGameObject {
   protected readonly TOP_SPEED: number = 4;
@@ -102,10 +100,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
     this.renderPlayerName(context);
 
-    if (this.debug) {
-      this.renderDebugInformation(context);
-    }
-
     // Hitbox debug
     super.render(context);
   }
@@ -188,8 +182,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
     // Retrieve the player's name or a default value
     const playerName = this.owner?.getName() ?? "Unknown";
-    const playerPing = this.owner?.getPingTime() ?? 0;
-    const playerPingColor = PlayerUtils.getColorByPingTime(playerPing);
 
     // Set font for measurement and rendering
     context.font = "16px system-ui";
@@ -256,7 +248,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     context.fill();
 
     // Set fill style for the text
-    context.fillStyle = playerPingColor;
+    context.fillStyle = "white";
     context.textAlign = "center";
     context.textBaseline = "middle";
 
@@ -268,14 +260,5 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     );
 
     context.restore();
-  }
-
-  protected renderDebugInformation(context: CanvasRenderingContext2D): void {
-    this.renderDebugPingInformation(context);
-  }
-
-  private renderDebugPingInformation(context: CanvasRenderingContext2D): void {
-    const pingTime = this.owner?.getPingTime().toFixed(0) ?? 0;
-    DebugUtils.renderDebugText(context, `Ping: ${pingTime} ms`, 24, 72, 100);
   }
 }
