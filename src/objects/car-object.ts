@@ -27,9 +27,9 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
 
-  private readonly PING_CIRCLE_RADIUS = 4;
+  private readonly PING_CIRCLE_RADIUS = 3;
   private readonly PING_CIRCLE_SPACING = 4;
-  private readonly PING_ACTIVE_COLOR = "#00FF00";
+  private readonly PING_ACTIVE_COLOR = "#C6FF00";
   private readonly PING_INACTIVE_COLOR = "#FF0000";
 
   private carImage: HTMLImageElement | null = null;
@@ -184,24 +184,30 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   private renderPingLevel(context: CanvasRenderingContext2D): void {
+    // Only render ping level for remote players
+    if (this.owner?.isHost()) {
+      return;
+    }
+
     const pingTime = this.owner?.getPingTime() ?? 0;
 
     // Determine the number of active circles based on ping
     let activeCircles = 3; // Default to all green circles
 
-    if (pingTime > 400) {
-      activeCircles = 1;
-    } else if (pingTime > 200) {
+    if (pingTime > 800) {
+      activeCircles = 0;
+    } else if (pingTime > 400) {
       activeCircles = 2;
+    } else if (pingTime > 200) {
+      activeCircles = 1;
     }
 
-    // Calculate starting position for circles
     const totalWidth =
       3 * (2 * this.PING_CIRCLE_RADIUS) + 2 * this.PING_CIRCLE_SPACING;
-    const startX = this.x + this.WIDTH / 2 - totalWidth / 2 + 4;
+
+    const startX = this.x + this.WIDTH / 2 - totalWidth / 2 + 3;
     const startY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 15;
 
-    // Draw the circles
     context.save();
 
     for (let i = 0; i < 3; i++) {
