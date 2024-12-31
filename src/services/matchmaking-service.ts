@@ -138,8 +138,6 @@ export class MatchmakingService {
 
     // Add local player
     const localGamePlayer = this.gameState.getGamePlayer();
-    localGamePlayer.reset();
-
     match.addPlayer(localGamePlayer);
   }
 
@@ -184,6 +182,9 @@ export class MatchmakingService {
     if (player === null) {
       return console.warn("Player is null");
     }
+
+    // Display ping level placeholder during ping check
+    this.gameState.getGamePlayer().setPingTime(0);
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
       EventType.PlayerConnected,
@@ -378,7 +379,6 @@ export class MatchmakingService {
 
     // Update local player
     const localGamePlayer = this.gameState.getGamePlayer();
-    localGamePlayer.reset();
     localGamePlayer.setHost(true);
 
     match.addPlayer(localGamePlayer);
@@ -562,6 +562,10 @@ export class MatchmakingService {
   private sendPlayerPingToPlayer(player: GamePlayer, peer: WebRTCPeer): void {
     const id = player.getId();
     const pingTime = player.getPingTime();
+
+    if (pingTime === null) {
+      return;
+    }
 
     const idBytes = new TextEncoder().encode(id);
     const arrayBuffer = new ArrayBuffer(1 + idBytes.length + 2);

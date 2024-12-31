@@ -1,7 +1,7 @@
 export class GamePlayer {
   private id: string;
   private host: boolean;
-  private pingTime: number = 0;
+  private pingTime: number | null = null;
   private name: string;
   private score: number;
 
@@ -29,7 +29,7 @@ export class GamePlayer {
     this.host = host;
   }
 
-  public getPingTime(): number {
+  public getPingTime(): number | null {
     return this.pingTime;
   }
 
@@ -58,6 +58,10 @@ export class GamePlayer {
   }
 
   public reset(): void {
+    this.host = false;
+    this.pingTime = null;
     this.score = 0;
+
+    console.log("Player with name", this.name + " has been reset");
   }
 }

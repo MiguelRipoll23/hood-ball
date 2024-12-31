@@ -41,6 +41,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     super(gameController);
     this.gameState = gameController.getGameState();
     this.eventProcessorService = gameController.getEventProcessorService();
+    this.gameState.getGamePlayer().reset();
     this.addSyncableObjects();
   }
 
