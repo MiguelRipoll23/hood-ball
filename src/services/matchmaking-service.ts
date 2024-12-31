@@ -234,17 +234,12 @@ export class MatchmakingService {
       return console.warn("Invalid player ping payload", payload);
     }
 
-    console.log(new TextDecoder().decode(payload));
-
     const idBytes = payload.slice(0, 36);
     const id = new TextDecoder().decode(idBytes);
 
     const dataView = new DataView(payload);
-    const pingTime = dataView.getFloat32(36);
+    const pingTime = dataView.getUint16(36);
 
-    console.log("Received ping from", id, pingTime);
-    console.log(this.gameState.getMatch()?.getPlayer(id));
-    console.log(this.gameState.getMatch()?.getPlayers());
     this.gameState.getMatch()?.getPlayer(id)?.setPingTime(pingTime);
   }
 
@@ -566,27 +561,24 @@ export class MatchmakingService {
 
   private sendPlayerPingToPlayer(player: GamePlayer, peer: WebRTCPeer): void {
     const id = player.getId();
-    const pingTime = player.getPingTime(); // This is assumed to be a number
+    const pingTime = player.getPingTime();
 
     const idBytes = new TextEncoder().encode(id);
-
-    // Create an ArrayBuffer large enough for PlayerPing (1 byte) + idBytes + pingTime (4 bytes for Float32)
-    const bufferLength = 1 + idBytes.length + 4; // 1 for PlayerPing + idBytes.length + 4 for Float32
-    const buffer = new ArrayBuffer(bufferLength);
-    const view = new DataView(buffer);
+    const arrayBuffer = new ArrayBuffer(1 + idBytes.length + 2);
+    const dataView = new DataView(arrayBuffer);
 
     // Set the WebRTCType.PlayerPing value (assumed to be an integer)
-    view.setUint8(0, WebRTCType.PlayerPing);
+    dataView.setUint8(0, WebRTCType.PlayerPing);
 
     // Write the player ID bytes into the buffer starting at byte 1
     for (let i = 0; i < idBytes.length; i++) {
-      view.setUint8(1 + i, idBytes[i]);
+      dataView.setUint8(1 + i, idBytes[i]);
     }
 
     // Write the ping time as Float32 at the end of the buffer
-    view.setFloat32(1 + idBytes.length, pingTime);
+    dataView.setUint16(1 + idBytes.length, pingTime);
 
     // Send the reliable ordered message
-    peer.sendReliableOrderedMessage(buffer, true);
+    peer.sendReliableOrderedMessage(arrayBuffer, true);
   }
 }
