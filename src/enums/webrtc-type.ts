@@ -7,4 +7,6 @@ export enum WebRTCType {
   ObjectData,
   EventData,
   GracefulDisconnect,
+  PingRequest,
+  PingResponse,
 }

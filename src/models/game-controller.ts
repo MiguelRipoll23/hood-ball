@@ -2,6 +2,7 @@ import { GAME_VERSION } from "../constants/game-constants.js";
 import { APIService } from "../services/api-service.js";
 import { CryptoService } from "../services/crypto-service.js";
 import { EventProcessorService } from "../services/event-processor-service.js";
+import { IntervalService } from "../services/interval-service.js";
 import { MatchmakingService } from "../services/matchmaking-service.js";
 import { ObjectOrchestrator } from "../services/object-orchestrator-service.js";
 import { ScreenTransitionService } from "../services/screen-transition-service.js";
@@ -20,6 +21,7 @@ export class GameController {
   private gameKeyboard: GameKeyboard;
 
   private timers: TimerService[] = [];
+  private intervals: IntervalService[] = [];
 
   private readonly transitionService: ScreenTransitionService;
   private readonly apiService: APIService;
@@ -118,6 +120,39 @@ export class GameController {
     }
 
     console.log("Removed timer, updated timers count", this.timers.length);
+  }
+
+  public getIntervals(): IntervalService[] {
+    return this.intervals;
+  }
+
+  public addInterval(
+    seconds: number,
+    callback: () => void,
+    start = true
+  ): IntervalService {
+    const intervalService = new IntervalService(seconds, callback, start);
+    this.intervals.push(intervalService);
+
+    console.log(
+      "Added interval, updated intervals count",
+      this.intervals.length
+    );
+
+    return intervalService;
+  }
+
+  public removeInterval(interval: IntervalService): void {
+    const index = this.intervals.indexOf(interval);
+
+    if (index !== -1) {
+      this.intervals.splice(index, 1);
+    }
+
+    console.log(
+      "Removed interval, updated intervals count",
+      this.intervals.length
+    );
   }
 
   public getTransitionService(): ScreenTransitionService {

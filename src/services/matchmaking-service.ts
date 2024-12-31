@@ -20,6 +20,7 @@ import { FindMatchesRequest } from "../interfaces/request/find-matches-request.j
 import { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
 import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
+import { IntervalService } from "./interval-service.js";
 
 export class MatchmakingService {
   private apiService: APIService;
@@ -28,6 +29,7 @@ export class MatchmakingService {
   private gameState: GameState;
 
   private findMatchesTimerService: TimerService | null = null;
+  private pingCheckInterval: IntervalService | null = null;
 
   constructor(private gameController: GameController) {
     this.apiService = gameController.getAPIService();
@@ -241,10 +243,18 @@ export class MatchmakingService {
         .getPeers()
         .forEach((peer) => peer.disconnectGracefully());
 
+      this.removePingCheckInterval();
+
       await this.apiService.removeMatch();
     }
 
     this.gameController.getGameState().setMatch(null);
+  }
+
+  private removePingCheckInterval(): void {
+    if (this.pingCheckInterval !== null) {
+      this.gameController.removeInterval(this.pingCheckInterval);
+    }
   }
 
   private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
@@ -361,6 +371,12 @@ export class MatchmakingService {
 
     // Advertise match
     await this.advertiseMatch();
+
+    // Add ping check
+    this.pingCheckInterval = this.gameController.addInterval(
+      1,
+      this.updateAndSendPingToPlayers.bind(this)
+    );
   }
 
   private async advertiseMatch(): Promise<void> {
@@ -407,7 +423,7 @@ export class MatchmakingService {
       ...playerNameBytes,
     ]);
 
-    peer.sendReliableOrderedMessage(payload, true);
+    peer.sendReliableOrderedMessage(payload.buffer, true);
   }
 
   private handleUnavailableSlots(peer: WebRTCPeer): void {
@@ -425,7 +441,7 @@ export class MatchmakingService {
     ]);
 
     console.log("Sending join response to", peer.getName());
-    peer.sendReliableOrderedMessage(payload, true);
+    peer.sendReliableOrderedMessage(payload.buffer, true);
 
     this.sendPlayerList(peer);
     this.sendSnapshotEnd(peer);
@@ -477,19 +493,32 @@ export class MatchmakingService {
       ...nameBytes,
     ]);
 
-    peer.sendReliableOrderedMessage(payload, skipQueue);
+    peer.sendReliableOrderedMessage(payload.buffer, skipQueue);
   }
 
   private sendSnapshotEnd(peer: WebRTCPeer): void {
     console.log("Sending snapshot end to", peer.getName());
 
     const payload = new Uint8Array([WebRTCType.SnapshotEnd]);
-    peer.sendReliableOrderedMessage(payload, true);
+    peer.sendReliableOrderedMessage(payload.buffer, true);
   }
 
   private sentSnapshotACK(peer: WebRTCPeer): void {
     console.log("Sending snapshot ACK to", peer.getName());
     const payload = new Uint8Array([WebRTCType.SnapshotACK]);
-    peer.sendReliableOrderedMessage(payload, true);
+    peer.sendReliableOrderedMessage(payload.buffer, true);
+  }
+
+  private updateAndSendPingToPlayers(): void {
+    this.webrtcService
+      .getPeers()
+      .filter((peer) => peer.hasJoined())
+      .forEach((peer) => {
+        peer.getPlayer()?.setPingTime(peer.getPingTime());
+
+        if (peer.mustPing()) {
+          peer.sendPingRequest();
+        }
+      });
   }
 }

@@ -24,8 +24,13 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   private readonly DISTANCE_CENTER: number = 220;
   private readonly FRICTION: number = 0.2;
 
-  private PLAYER_NAME_PADDING = 10;
-  private PLAYER_NAME_RECT_HEIGHT = 24;
+  private readonly PLAYER_NAME_PADDING = 10;
+  private readonly PLAYER_NAME_RECT_HEIGHT = 24;
+
+  private readonly PING_CIRCLE_RADIUS = 4;
+  private readonly PING_CIRCLE_SPACING = 4;
+  private readonly PING_ACTIVE_COLOR = "#00FF00";
+  private readonly PING_INACTIVE_COLOR = "#FF0000";
 
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
@@ -98,6 +103,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
     context.restore();
 
+    this.renderPingLevel(context);
     this.renderPlayerName(context);
 
     // Hitbox debug
@@ -175,6 +181,43 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
   public override mustSync(): boolean {
     return this.speed !== 0;
+  }
+
+  private renderPingLevel(context: CanvasRenderingContext2D): void {
+    const pingTime = this.owner?.getPingTime() ?? 0;
+
+    // Determine the number of active circles based on ping
+    let activeCircles = 3; // Default to all green circles
+
+    if (pingTime > 400) {
+      activeCircles = 1;
+    } else if (pingTime > 200) {
+      activeCircles = 2;
+    }
+
+    // Calculate starting position for circles
+    const totalWidth =
+      3 * (2 * this.PING_CIRCLE_RADIUS) + 2 * this.PING_CIRCLE_SPACING;
+    const startX = this.x + this.WIDTH / 2 - totalWidth / 2 + 4;
+    const startY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 15;
+
+    // Draw the circles
+    context.save();
+
+    for (let i = 0; i < 3; i++) {
+      const x =
+        startX + i * (2 * this.PING_CIRCLE_RADIUS + this.PING_CIRCLE_SPACING);
+      const color =
+        i < activeCircles ? this.PING_ACTIVE_COLOR : this.PING_INACTIVE_COLOR;
+
+      context.beginPath();
+      context.arc(x, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
+      context.fillStyle = color;
+      context.fill();
+      context.closePath();
+    }
+
+    context.restore();
   }
 
   private renderPlayerName(context: CanvasRenderingContext2D): void {

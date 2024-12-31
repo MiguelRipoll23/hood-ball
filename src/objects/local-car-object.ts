@@ -3,6 +3,7 @@ import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -136,34 +137,25 @@ export class LocalCarObject extends CarObject {
   }
 
   private renderDebugInformation(context: CanvasRenderingContext2D): void {
-    this.renderDebugText(
+    DebugUtils.renderDebugText(
       context,
-      `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`,
       24,
       24,
-      160
+      `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
-    this.renderDebugText(
+
+    DebugUtils.renderDebugText(
       context,
-      `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`,
       24,
       48,
-      80
+      `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`
     );
-  }
 
-  private renderDebugText(
-    context: CanvasRenderingContext2D,
-    text: string,
-    x: number,
-    y: number,
-    width: number
-  ): void {
-    context.fillStyle = "rgba(0, 0, 0, 0.6)";
-    context.fillRect(x, y, width, 20);
-    context.fillStyle = "#FFFF00";
-    context.font = "12px system-ui";
-    context.textAlign = "left";
-    context.fillText(text, x + 6, y + 14);
+    if (this.getPlayer()?.isHost()) {
+      DebugUtils.renderDebugText(context, 24, 72, "Host");
+    } else {
+      const pingTime = this.getPlayer()?.getPingTime() || 0;
+      DebugUtils.renderDebugText(context, 24, 72, `Ping: ${pingTime} ms`);
+    }
   }
 }
