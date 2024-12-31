@@ -91,7 +91,7 @@ export class EventProcessorService {
     const arrayBuffer = new ArrayBuffer(2 + dataBytesLength);
 
     const dataView = new DataView(arrayBuffer);
-    dataView.setInt8(0, WebRTCType.EventData);
+    dataView.setUint8(0, WebRTCType.EventData);
     dataView.setUint8(1, id);
 
     if (data) {

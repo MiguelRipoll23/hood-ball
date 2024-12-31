@@ -394,7 +394,7 @@ export class WebRTCPeerService {
     //this.logger.info(new TextDecoder().decode(arrayBuffer));
 
     const dataView = new DataView(arrayBuffer);
-    const id = dataView.getInt8(0);
+    const id = dataView.getUint8(0);
     const payload =
       dataView.buffer.byteLength > 1 ? arrayBuffer.slice(1) : null;
 
@@ -433,6 +433,9 @@ export class WebRTCPeerService {
       case WebRTCType.PingResponse:
         return this.handlePingResponse();
 
+      case WebRTCType.PlayerPing:
+        return this.matchmakingService.handlePlayerPing(payload);
+
       default: {
         this.logger.warn("Unknown message identifier", id);
       }
@@ -451,7 +454,7 @@ export class WebRTCPeerService {
     const arrayBuffer = new ArrayBuffer(1);
 
     const dataView = new DataView(arrayBuffer);
-    dataView.setInt8(0, WebRTCType.GracefulDisconnect);
+    dataView.setUint8(0, WebRTCType.GracefulDisconnect);
 
     this.sendReliableOrderedMessage(arrayBuffer);
     console.log("Disconnect message sent");
@@ -466,7 +469,7 @@ export class WebRTCPeerService {
   private handlePingRequest(): void {
     const arrayBuffer = new ArrayBuffer(1);
     const dataView = new DataView(arrayBuffer);
-    dataView.setInt8(0, WebRTCType.PingResponse);
+    dataView.setUint8(0, WebRTCType.PingResponse);
 
     this.sendReliableOrderedMessage(arrayBuffer);
   }

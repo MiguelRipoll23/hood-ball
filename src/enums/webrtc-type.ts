@@ -9,4 +9,5 @@ export enum WebRTCType {
   GracefulDisconnect,
   PingRequest,
   PingResponse,
+  PlayerPing,
 }
