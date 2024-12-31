@@ -1,33 +1,24 @@
-import { GameKeyboard } from "../models/game-keyboard.js";
 import { GamePointer } from "../models/game-pointer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
-import { GearStickObject } from "./gear-stick-object.js";
 import { JoystickObject } from "./joystick-object.js";
-import { WorldBackgroundObject } from "./backgrounds/world-background-object.js";
+import { GameKeyboard } from "../models/game-keyboard.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
-  private readonly gearStickObject: GearStickObject;
-
-  private active: boolean = true;
+  private active = true;
 
   constructor(
     x: number,
     y: number,
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
-    gamePointer: GamePointer,
-    gameKeyboard: GameKeyboard
+    protected gamePointer: GamePointer,
+    protected gameKeyboard: GameKeyboard
   ) {
     super(x, y, angle);
     this.setSyncableValues();
-    this.joystickObject = new JoystickObject(canvas, gamePointer, gameKeyboard);
-    this.gearStickObject = new GearStickObject(
-      canvas,
-      gamePointer,
-      gameKeyboard
-    );
+    this.joystickObject = new JoystickObject(canvas, gamePointer);
   }
 
   public setActive(active: boolean): void {
@@ -43,120 +34,136 @@ export class LocalCarObject extends CarObject {
     return this.joystickObject;
   }
 
-  public getGearStickObject(): GearStickObject {
-    return this.gearStickObject;
-  }
-
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      if (this.isCollidingWithBounds()) {
-        this.gearStickObject.switchGear();
+      if (this.gamePointer.isTouch()) {
+        this.handleTouchControls();
+      } else {
+        this.handleKeyboardControls();
       }
-
-      this.handleControls();
     }
-
     this.fixPositionIfOutOfBounds();
-
     super.update(deltaTimeStamp);
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    // Debug
-    this.renderDebugInformation(context);
-
+    if (this.debug) this.renderDebugInformation(context);
     super.render(context);
   }
 
-  private setSyncableValues() {
+  private setSyncableValues(): void {
     this.setId(crypto.randomUUID());
     this.setTypeId(ObjectType.RemoteCar);
   }
 
-  private isCollidingWithBounds(): boolean {
-    const collidingObjects = this.getCollidingObjects();
+  private handleTouchControls(): void {
+    if (!this.joystickObject.isActive()) return;
 
-    for (const object of collidingObjects) {
-      if (object instanceof WorldBackgroundObject) {
-        return true;
-      }
+    const magnitude = this.joystickObject.getMagnitude();
+    this.accelerate(magnitude);
+
+    if (this.speed != 0) {
+      this.angle = this.smoothAngleTransition(
+        this.angle,
+        this.joystickObject.getAngle()
+      );
     }
-
-    return false;
   }
 
-  private handleControls(): void {
-    if (!this.joystickObject || !this.gearStickObject) return;
+  private handleKeyboardControls(): void {
+    const pressedKeys = this.gameKeyboard.getPressedKeys();
 
-    if (this.gearStickObject.isActive()) {
-      return;
+    const isAccelerating = pressedKeys.has("ArrowUp") || pressedKeys.has("w");
+    const isDecelerating = pressedKeys.has("ArrowDown") || pressedKeys.has("s");
+    const isTurningLeft = pressedKeys.has("ArrowLeft") || pressedKeys.has("a");
+    const isTurningRight =
+      pressedKeys.has("ArrowRight") || pressedKeys.has("d");
+
+    if (isAccelerating && !isDecelerating) {
+      this.accelerate();
+    } else if (!isAccelerating && isDecelerating) {
+      this.decelerate();
     }
 
-    const currentGear = this.gearStickObject.getCurrentGear();
-
-    if (this.joystickObject.isActive()) {
-      if (currentGear === "F" && this.speed < this.TOP_SPEED) {
-        this.speed += this.ACCELERATION;
-      } else if (currentGear === "R" && this.speed > -this.TOP_SPEED) {
-        this.speed -= this.ACCELERATION;
-      }
-    } else {
-      this.gearStickObject.reset();
+    if (this.speed !== 0) {
+      this.adjustAngle(isTurningLeft, isTurningRight);
     }
+  }
 
-    this.angle +=
-      this.HANDLING *
-      (this.speed / this.TOP_SPEED) *
-      this.joystickObject.getControlX();
+  private adjustAngle(isTurningLeft: boolean, isTurningRight: boolean): void {
+    const direction = this.speed > 0 ? 1 : -1;
+
+    if (isTurningLeft && !isTurningRight) {
+      this.angle -= this.HANDLING * direction;
+    } else if (!isTurningLeft && isTurningRight) {
+      this.angle += this.HANDLING * direction;
+    }
+  }
+
+  private accelerate(magnitude = 1): void {
+    if (this.speed < this.TOP_SPEED) {
+      this.speed += this.ACCELERATION * magnitude;
+    }
+  }
+
+  private decelerate(): void {
+    if (this.speed > -this.TOP_SPEED) {
+      this.speed -= this.ACCELERATION;
+    }
+  }
+
+  private smoothAngleTransition(
+    currentAngle: number,
+    targetAngle: number
+  ): number {
+    currentAngle = (currentAngle + Math.PI * 2) % (Math.PI * 2);
+    targetAngle = (targetAngle + Math.PI * 2) % (Math.PI * 2);
+
+    let angleDifference = targetAngle - currentAngle;
+
+    if (angleDifference > Math.PI) angleDifference -= Math.PI * 2;
+    if (angleDifference < -Math.PI) angleDifference += Math.PI * 2;
+
+    return (
+      currentAngle +
+      Math.sign(angleDifference) * Math.min(Math.abs(angleDifference), 0.1)
+    );
   }
 
   private fixPositionIfOutOfBounds(): void {
-    if (this.x > this.canvas.width - 58) {
-      this.x = this.canvas.width - 60;
-    } else if (this.x < 3) {
-      this.x = 20;
-    }
-
-    if (this.y > this.canvas.height - 58) {
-      this.y = this.canvas.height - 60;
-    } else if (this.y < 3) {
-      this.y = 20;
-    }
+    this.x = Math.max(3, Math.min(this.x, this.canvas.width - 60));
+    this.y = Math.max(3, Math.min(this.y, this.canvas.height - 60));
   }
 
-  private renderDebugInformation(context: CanvasRenderingContext2D) {
-    if (this.debug === false) {
-      return;
-    }
-
-    this.renderDebugPositionInformation(context);
-    this.renderDebugAngleInformation(context);
+  private renderDebugInformation(context: CanvasRenderingContext2D): void {
+    this.renderDebugText(
+      context,
+      `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`,
+      24,
+      24,
+      160
+    );
+    this.renderDebugText(
+      context,
+      `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`,
+      24,
+      48,
+      80
+    );
   }
 
-  private renderDebugPositionInformation(context: CanvasRenderingContext2D) {
-    const displayX = Math.round(this.x);
-    const displayY = Math.round(this.y);
-
-    const text = `Position: X(${displayX}) Y(${displayY})`;
-
+  private renderDebugText(
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    width: number
+  ): void {
     context.fillStyle = "rgba(0, 0, 0, 0.6)";
-    context.fillRect(24, 24, 160, 20);
+    context.fillRect(x, y, width, 20);
     context.fillStyle = "#FFFF00";
     context.font = "12px system-ui";
     context.textAlign = "left";
-    context.fillText(text, 30, 38);
-  }
-
-  private renderDebugAngleInformation(context: CanvasRenderingContext2D) {
-    const displayAngle = Math.round(this.angle);
-
-    const text = `Angle: ${displayAngle}°`;
-
-    context.fillStyle = "rgba(0, 0, 0, 0.6)";
-    context.fillRect(24, 48, 80, 20);
-    context.fillStyle = "#FFFF00";
-    context.font = "12px system-ui";
-    context.textAlign = "left";
-    context.fillText(text, 30, 62);
+    context.fillText(text, x + 6, y + 14);
   }
 }
