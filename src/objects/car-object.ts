@@ -189,7 +189,11 @@ export class CarObject extends BaseDynamicCollidableGameObject {
       return;
     }
 
-    const pingTime = this.owner?.getPingTime() ?? 0;
+    const pingTime = this.owner?.getPingTime() ?? null;
+
+    if (pingTime === null) {
+      return;
+    }
 
     // Determine the number of active circles based on ping
     let activeCircles = 3; // Default to all green circles

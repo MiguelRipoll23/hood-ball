@@ -154,8 +154,9 @@ export class LocalCarObject extends CarObject {
     if (this.getPlayer()?.isHost()) {
       DebugUtils.renderDebugText(context, 24, 72, "Host");
     } else {
-      const pingTime = this.getPlayer()?.getPingTime() || 0;
-      DebugUtils.renderDebugText(context, 24, 72, `Ping: ${pingTime} ms`);
+      const pingTime = this.getPlayer()?.getPingTime();
+      const displayPingTime = pingTime === null ? "n/a" : `${pingTime} ms`;
+      DebugUtils.renderDebugText(context, 24, 72, `Ping: ${displayPingTime}`);
     }
   }
 }
