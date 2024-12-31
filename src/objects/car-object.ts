@@ -55,7 +55,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   public override reset(): void {
-    this.angle = 90;
+    this.angle = 1.5708;
     this.speed = 0;
     this.setCenterPosition();
     super.reset();
