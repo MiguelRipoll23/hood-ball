@@ -40,11 +40,8 @@ export class BallObject
     super.load();
   }
 
-  public override reset() {
-    this.vx = 0;
-    this.vy = 0;
-    this.radius = this.RADIUS;
-    this.setCenterPosition();
+  public override reset(): void {
+    this.resetVelocityAndPosition();
     this.inactive = false;
     super.reset();
   }
@@ -136,6 +133,13 @@ export class BallObject
     this.setSyncableByHost(true);
   }
 
+  private resetVelocityAndPosition(): void {
+    this.vx = 0;
+    this.vy = 0;
+    this.setCenterPosition();
+    super.reset();
+  }
+
   // Function to create and draw the gradient ball
   private drawBallWithGradient(context: CanvasRenderingContext2D): void {
     const gradient = this.createGradient(context);
@@ -225,7 +229,7 @@ export class BallObject
       this.y > this.canvas.height ||
       this.y < 0
     ) {
-      return this.setCenterPosition();
+      return this.resetVelocityAndPosition();
     }
   }
 
