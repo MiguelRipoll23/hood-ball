@@ -35,7 +35,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private eventProcessorService: EventProcessorService;
 
-  private countdownNumber = 4;
+  private countdownCurrentNumber = 3;
 
   constructor(protected gameController: GameController) {
     super(gameController);
@@ -236,40 +236,34 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private showCountdown() {
     this.gameState.getMatch()?.setState(MatchStateType.Countdown);
-    console.log("Countdown number", this.countdownNumber);
+    console.log("Countdown number", this.countdownCurrentNumber);
 
-    if (this.countdownNumber === -1) {
-      this.countdownNumber = 4;
+    // Reset local objects
+    if (this.countdownCurrentNumber === 3) {
+      this.resetForCountdown();
     }
 
     if (this.gameState.getMatch()?.isHost()) {
       this.sendCountdownEvent();
     }
 
-    // Decrement countdown number
-    this.countdownNumber -= 1;
-
-    // Reset local objects
-    if (this.countdownNumber === 3) {
-      this.resetForCountdown();
-    }
-
     // Countdown text
-    let text = this.countdownNumber.toString();
+    let text = this.countdownCurrentNumber.toString();
 
-    if (this.countdownNumber < 1) {
+    if (this.countdownCurrentNumber < 1) {
       text = "GO!";
     }
 
     // Only show for 3, 2, 1 and GO!
-    if (this.countdownNumber > -1) {
+    if (this.countdownCurrentNumber >= 0) {
       this.alertObject?.show([text], "#FFFF00");
-    }
-
-    // If 2 seconds since GO! start the game
-    if (this.countdownNumber === -1) {
+    } else {
+      // 1 second delay before starting the game
       return this.handleCountdownEnd();
     }
+
+    // Decrement countdown number
+    this.countdownCurrentNumber -= 1;
 
     // Add timer for next countdown if host
     if (this.gameState.getMatch()?.isHost()) {
@@ -278,10 +272,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private resetForCountdown() {
-    if (this.gameState.getMatch()?.isHost()) {
-      this.ballObject?.reset();
-    }
-
+    this.ballObject?.reset();
     this.localCarObject?.reset();
     this.localCarObject?.setActive(false);
     this.ballObject?.setInactive(false);
@@ -294,7 +285,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
     const countdownNumber = new DataView(arrayBuffer).getInt32(0);
 
-    this.countdownNumber = countdownNumber;
+    this.countdownCurrentNumber = countdownNumber;
     this.showCountdown();
   }
 
@@ -310,7 +301,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private sendCountdownEvent() {
     const arrayBuffer = new ArrayBuffer(4);
-    new DataView(arrayBuffer).setInt32(0, this.countdownNumber);
+    new DataView(arrayBuffer).setInt32(0, this.countdownCurrentNumber);
 
     const countdownStartEvent = new RemoteEvent(EventType.Countdown);
     countdownStartEvent.setBuffer(arrayBuffer);
@@ -478,6 +469,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return;
     }
 
+    this.countdownCurrentNumber = 3;
     this.showCountdown();
   }
 
