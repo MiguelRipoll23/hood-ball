@@ -54,15 +54,15 @@ export class ScoreboardObject
     return this.active;
   }
 
-  public setCountdownDuration(durationSeconds: number): void {
+  public setTimerDuration(durationSeconds: number): void {
     this.durationMilliseconds = durationSeconds * 1000;
   }
 
-  public startCountdown(): void {
+  public startTimer(): void {
     this.active = true;
   }
 
-  public stopCountdown(): void {
+  public stopTimer(): void {
     this.active = false;
   }
 
@@ -117,7 +117,7 @@ export class ScoreboardObject
       this.elapsedMilliseconds += deltaTimeStamp;
 
       if (this.elapsedMilliseconds >= this.durationMilliseconds) {
-        this.stopCountdown();
+        this.stopTimer();
       }
     }
 
