@@ -434,7 +434,7 @@ export class WebRTCPeerService {
         return this.handlePingResponse();
 
       case WebRTCType.PlayerPing:
-        return this.matchmakingService.handlePlayerPing(payload);
+        return this.matchmakingService.handlePlayerPing(this.host, payload);
 
       default: {
         this.logger.warn("Unknown message identifier", id);
