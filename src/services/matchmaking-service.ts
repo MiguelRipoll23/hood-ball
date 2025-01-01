@@ -230,7 +230,11 @@ export class MatchmakingService {
     this.advertiseMatch();
   }
 
-  public handlePlayerPing(payload: ArrayBuffer | null): void {
+  public handlePlayerPing(hosting: boolean, payload: ArrayBuffer | null): void {
+    if (hosting) {
+      return console.warn("Unexpected player ping information from a player");
+    }
+
     if (payload === null) {
       return console.warn("Invalid player ping payload", payload);
     }
