@@ -13,6 +13,7 @@ export class BallObject
   private readonly MASS: number = 1;
   private readonly RADIUS: number = 20;
   private readonly FRICTION: number = 0.01;
+  private readonly MAX_VELOCITY: number = 10;
   private radius: number = this.RADIUS;
 
   private inactive: boolean = false;
@@ -190,6 +191,7 @@ export class BallObject
   private applyFriction(): void {
     this.vx *= 1 - this.FRICTION;
     this.vy *= 1 - this.FRICTION;
+    this.limitVelocity(); // Apply the velocity limit after friction
   }
 
   private calculateMovement(): void {
@@ -224,6 +226,16 @@ export class BallObject
       this.y < 0
     ) {
       return this.setCenterPosition();
+    }
+  }
+
+  // Function to limit velocity to the maximum speed
+  private limitVelocity(): void {
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (speed > this.MAX_VELOCITY) {
+      const scale = this.MAX_VELOCITY / speed;
+      this.vx *= scale;
+      this.vy *= scale;
     }
   }
 }
