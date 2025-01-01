@@ -192,6 +192,11 @@ export class ObjectOrchestrator {
       return webrtcPeer.sendReliableUnorderedMessage(dataBuffer);
     }
 
+    // Send reliable message if object must sync
+    if (multiplayerObject.mustSync()) {
+      return webrtcPeer.sendReliableOrderedMessage(dataBuffer);
+    }
+
     webrtcPeer.sendUnreliableOrderedMessage(dataBuffer);
   }
 
