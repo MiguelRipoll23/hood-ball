@@ -145,7 +145,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     );
 
     this.scoreboardObject = new ScoreboardObject(this.canvas);
-    this.scoreboardObject.setCountdownDuration(durationSeconds);
+    this.scoreboardObject.setTimerDuration(durationSeconds);
     this.sceneObjects.push(this.scoreboardObject);
   }
 
@@ -296,7 +296,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.alertObject?.hide();
     this.localCarObject?.reset();
     this.ballObject?.reset();
-    this.scoreboardObject?.startCountdown();
+    this.scoreboardObject?.startTimer();
   }
 
   private sendCountdownEvent() {
@@ -311,7 +311,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private handleWaitingForPlayers(): void {
     this.gameState.getMatch()?.setState(MatchStateType.WaitingPlayers);
-    this.scoreboardObject?.stopCountdown();
+    this.scoreboardObject?.stopTimer();
   }
 
   private detectScoresIfHost(): void {
@@ -351,9 +351,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return console.warn("Player is null");
     }
 
-    // Pause ball and countdown
+    // Pause timer
+    this.scoreboardObject?.stopTimer();
+
+    // Mark ball as inactive
     this.ballObject?.handleGoalScored();
-    this.scoreboardObject?.stopCountdown();
 
     // Update match state
     this.gameState.getMatch()?.setState(MatchStateType.GoalTime);
@@ -437,9 +439,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return console.warn("Array buffer is null");
     }
 
-    // Pause ball and countdown
+    // Pause timer
+    this.scoreboardObject?.stopTimer();
+
+    // Mark ball as inactive
     this.ballObject?.handleGoalScored();
-    this.scoreboardObject?.stopCountdown();
 
     // Update match state
     this.gameState.getMatch()?.setState(MatchStateType.GoalTime);
@@ -535,7 +539,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private handleGameOverStart(winner: GamePlayer | null) {
-    // Pause ball and countdown
     this.gameState.getMatch()?.setState(MatchStateType.GameOver);
     this.ballObject?.setInactive(true);
 
