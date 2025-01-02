@@ -8,6 +8,7 @@ import { EventType } from "../enums/event-type.js";
 import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
 import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -19,6 +20,8 @@ export class GameLoopService {
   private isRunning: boolean = false;
   private previousTimeStamp: DOMHighResTimeStamp | null = null;
   private deltaTimeStamp: DOMHighResTimeStamp = 0;
+
+  private currentFPS: number = 0;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
@@ -134,8 +137,10 @@ export class GameLoopService {
   private loop(timeStamp: DOMHighResTimeStamp): void {
     if (this.previousTimeStamp === null) {
       this.deltaTimeStamp = 0;
+      this.currentFPS = 0;
     } else {
       this.deltaTimeStamp = Math.min(timeStamp - this.previousTimeStamp, 100);
+      this.currentFPS = 1000 / this.deltaTimeStamp;
     }
 
     this.previousTimeStamp = timeStamp;
@@ -179,7 +184,7 @@ export class GameLoopService {
     this.gameFrame.getNotificationObject()?.render(this.context);
 
     if (this.gameController.isDebugging()) {
-      this.drawGamePointer();
+      this.renderDebugInformation(this.context);
     }
   }
 
@@ -206,7 +211,19 @@ export class GameLoopService {
       );
   }
 
-  private drawGamePointer(): void {
+  private renderDebugInformation(context: CanvasRenderingContext2D): void {
+    DebugUtils.renderDebugText(
+      context,
+      this.canvas.width - 24,
+      24,
+      `FPS: ${this.currentFPS.toFixed(1)}`,
+      true
+    );
+
+    this.renderDebugGamePointer();
+  }
+
+  private renderDebugGamePointer(): void {
     const gamePointer = this.gameController.getGamePointer();
 
     if (gamePointer.isTouch() && gamePointer.isPressing() == false) {
