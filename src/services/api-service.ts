@@ -255,14 +255,14 @@ export class APIService {
     });
 
     if (response.ok === false) {
-      throw new Error("Failed to remove match");
+      throw new Error("Failed to delete match");
     }
 
     if (response.status !== 204) {
-      throw new Error("Failed to remove match");
+      throw new Error("Failed to delete match");
     }
 
-    console.log("Match removed");
+    console.log("Match deleted");
   }
 
   public async saveScore(saveScoreRequest: SaveScoreRequest): Promise<void> {
