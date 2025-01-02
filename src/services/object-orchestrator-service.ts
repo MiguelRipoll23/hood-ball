@@ -66,7 +66,7 @@ export class ObjectOrchestrator {
     const stateId = dataView.getInt8(1);
     const ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 36));
 
-    if (ObjectUtils.isInvalidOwner(webrtcPeer, ownerId)) {
+    if (ObjectUtils.hasInvalidOwner(webrtcPeer, ownerId)) {
       return console.warn(
         "Received object data from unauthorized player",
         ownerId
@@ -99,16 +99,13 @@ export class ObjectOrchestrator {
     multiplayerScreen: MultiplayerScreen,
     multiplayerObject: MultiplayerGameObject
   ): void {
-    ObjectUtils.updateOwnerToHostForSharedObjects(
-      this.gameState,
-      multiplayerObject
-    );
+    this.updateOwnerToSharedObjects(multiplayerObject);
 
-    if (this.skipObject(multiplayerObject)) {
+    if (this.skipUnownedObject(multiplayerObject)) {
       return;
     }
 
-    ObjectUtils.handleInactiveObject(multiplayerObject);
+    this.markAsRemovedIfObjectInactive(multiplayerObject);
 
     const arrayBuffer = this.getObjectDataArrayBuffer(
       multiplayerScreen,
@@ -129,11 +126,35 @@ export class ObjectOrchestrator {
     multiplayerObject.setSyncReliably(false);
   }
 
-  private skipObject(multiplayerObject: MultiplayerGameObject): boolean {
+  private updateOwnerToSharedObjects(multiplayerObject: MultiplayerGameObject) {
+    const syncableByHost = multiplayerObject.isSyncableByHost();
+    const unowned = multiplayerObject.getOwner() === null;
+
+    if (syncableByHost && unowned) {
+      const hostPlayer = this.gameState.getMatch()?.getHost() ?? null;
+      multiplayerObject.setOwner(hostPlayer);
+    }
+  }
+
+  private skipUnownedObject(multiplayerObject: MultiplayerGameObject): boolean {
+    // If host, don't skip objects from other players
+    if (this.gameState.getMatch()?.isHost()) {
+      return false;
+    }
+
+    // Is object not owned by the player?
     const playerId = this.gameState.getGamePlayer().getId();
     const ownerId = multiplayerObject.getOwner()?.getId();
 
     return ownerId !== playerId;
+  }
+
+  private markAsRemovedIfObjectInactive(
+    multiplayerObject: MultiplayerGameObject
+  ): void {
+    if (multiplayerObject.getState() === ObjectStateType.Inactive) {
+      multiplayerObject.setRemoved(true);
+    }
   }
 
   private getObjectDataArrayBuffer(
