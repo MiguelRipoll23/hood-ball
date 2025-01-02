@@ -28,6 +28,10 @@ export class BaseGameScreen implements GameScreen {
     return this.opacity > 0;
   }
 
+  public getScreenManagerService(): ScreenManagerService | null {
+    return this.screenManagerService;
+  }
+
   public setScreenManagerService(
     screenManagerService: ScreenManagerService
   ): void {

@@ -5,6 +5,7 @@ import { ScreenManagerService } from "../../services/screen-manager-service.js";
 export interface GameScreen {
   isActive(): boolean;
 
+  getScreenManagerService(): ScreenManagerService | null;
   setScreenManagerService(screenManagerService: ScreenManagerService): void;
 
   loadObjects(): void;

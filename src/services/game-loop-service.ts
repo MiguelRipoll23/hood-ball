@@ -10,6 +10,7 @@ import { ServerNotificationPayload } from "../interfaces/event/server-notificati
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { MatchStateType } from "../enums/match-state-type.js";
+import { GameScreen } from "../interfaces/screen/game-screen.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -243,9 +244,45 @@ export class GameLoopService {
       true
     );
 
-    this.renderDebugMatchInformation();
-    this.renderDebugNetworkInformation();
+    this.renderDebugScreenInformation();
     this.renderDebugGamePointer();
+    this.renderDebugNetworkInformation();
+    this.renderDebugMatchInformation();
+  }
+
+  private renderDebugScreenInformation(): void {
+    const currentScreen = this.gameFrame.getCurrentScreen();
+    const currentScreenName = currentScreen?.constructor.name ?? "No screen";
+
+    DebugUtils.renderDebugText(
+      this.context,
+      this.canvas.width - 24,
+      48,
+      currentScreenName,
+      true
+    );
+
+    this.renderDebugSubScreenInformation(currentScreen);
+  }
+
+  private renderDebugSubScreenInformation(
+    currentScreen: GameScreen | null
+  ): void {
+    const screenManagerService = currentScreen?.getScreenManagerService();
+    const currentSubScreen = screenManagerService?.getCurrentScreen() ?? null;
+    const currentSubScreenName = currentSubScreen?.constructor.name ?? null;
+
+    if (currentSubScreenName === null) {
+      return;
+    }
+
+    DebugUtils.renderDebugText(
+      this.context,
+      this.canvas.width - 24,
+      72,
+      currentSubScreenName,
+      true
+    );
   }
 
   private renderDebugMatchInformation(): void {
