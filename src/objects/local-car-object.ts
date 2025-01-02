@@ -138,13 +138,6 @@ export class LocalCarObject extends CarObject {
   }
 
   private renderDebugInformation(context: CanvasRenderingContext2D): void {
-    DebugUtils.renderDebugText(
-      context,
-      24,
-      24,
-      `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
-    );
-
     if (this.getPlayer()?.isHost()) {
       DebugUtils.renderDebugText(context, 24, 48, "Host");
     } else {

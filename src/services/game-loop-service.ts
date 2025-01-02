@@ -9,6 +9,7 @@ import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnect
 import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
+import { MatchStateType } from "../enums/match-state-type.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -242,8 +243,16 @@ export class GameLoopService {
       true
     );
 
+    this.renderDebugMatchInformation();
     this.renderDebugNetworkInformation();
     this.renderDebugGamePointer();
+  }
+
+  private renderDebugMatchInformation(): void {
+    const match = this.gameController.getGameState().getMatch();
+    const state = match ? MatchStateType[match.getState()] : "n/a";
+
+    DebugUtils.renderDebugText(this.context, 24, 24, `State: ${state}`);
   }
 
   private renderDebugNetworkInformation(): void {
