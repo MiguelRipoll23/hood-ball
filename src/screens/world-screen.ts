@@ -358,7 +358,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.ballObject?.handleGoalScored();
 
     // Update match state
-    this.gameState.getMatch()?.setState(MatchStateType.GoalTime);
+    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
 
     // Score
     player.sumScore(1);
@@ -446,7 +446,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.ballObject?.handleGoalScored();
 
     // Update match state
-    this.gameState.getMatch()?.setState(MatchStateType.GoalTime);
+    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
 
     // Score
     const playerId = new TextDecoder().decode(arrayBuffer.slice(0, 36));
