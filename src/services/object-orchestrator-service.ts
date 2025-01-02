@@ -96,12 +96,12 @@ export class ObjectOrchestrator {
     multiplayerScreen: MultiplayerScreen,
     multiplayerObject: MultiplayerGameObject
   ): void {
-    if (ObjectUtils.skipLocalObject(multiplayerObject)) {
+    if (this.skipLocalObject(multiplayerObject)) {
       return;
     }
 
     ObjectUtils.handleInactiveObject(multiplayerObject);
-    ObjectUtils.updateOwnerIfHost(this.gameState, multiplayerObject);
+    ObjectUtils.updateOwnerForSharedObjects(this.gameState, multiplayerObject);
 
     const arrayBuffer = this.getObjectDataArrayBuffer(
       multiplayerScreen,
@@ -119,6 +119,17 @@ export class ObjectOrchestrator {
     });
 
     multiplayerObject.setSync(false);
+  }
+
+  private skipLocalObject(multiplayerObject: MultiplayerGameObject): boolean {
+    if (multiplayerObject.getId() === null) {
+      return true;
+    }
+
+    const playerId = this.gameState.getGamePlayer().getId();
+    const ownerId = multiplayerObject.getOwner()?.getId();
+
+    return ownerId !== playerId;
   }
 
   private getObjectDataArrayBuffer(
