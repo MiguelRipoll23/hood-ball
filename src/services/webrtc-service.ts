@@ -79,6 +79,24 @@ export class WebRTCService {
     peer.addRemoteIceCandidate(iceCandidate);
   }
 
+  public getDownloadBytes(): number {
+    return this.getPeers().reduce(
+      (total, peer) => total + peer.getDownloadBytes(),
+      0
+    );
+  }
+
+  public getUploadBytes(): number {
+    return this.getPeers().reduce(
+      (total, peer) => total + peer.getUploadBytes(),
+      0
+    );
+  }
+
+  public resetStats(): void {
+    this.getPeers().forEach((peer) => peer.resetStats());
+  }
+
   private addPeer(token: string): WebRTCPeer {
     const peer = new WebRTCPeerService(this.gameController, token);
     this.peers.set(token, peer);
