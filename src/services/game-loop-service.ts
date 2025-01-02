@@ -236,6 +236,22 @@ export class GameLoopService {
   }
 
   private renderDebugInformation(): void {
+    this.context.save();
+
+    this.renderDebugScreenInformation();
+    this.renderDebugGamePointer();
+
+    const match = this.gameController.getGameState().getMatch();
+
+    if (match !== null) {
+      this.renderDebugNetworkInformation();
+      this.renderDebugMatchInformation();
+    }
+
+    this.context.restore();
+  }
+
+  private renderDebugScreenInformation(): void {
     DebugUtils.renderDebugText(
       this.context,
       this.canvas.width - 24,
@@ -244,13 +260,6 @@ export class GameLoopService {
       true
     );
 
-    this.renderDebugScreenInformation();
-    this.renderDebugGamePointer();
-    this.renderDebugNetworkInformation();
-    this.renderDebugMatchInformation();
-  }
-
-  private renderDebugScreenInformation(): void {
     const currentScreen = this.gameFrame.getCurrentScreen();
     const currentScreenName = currentScreen?.constructor.name ?? "No screen";
 
