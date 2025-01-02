@@ -72,11 +72,31 @@ export class WorldScreen extends BaseCollidingGameScreen {
     super.update(deltaTimeStamp);
 
     this.listenForEvents();
+    this.handleMatchState();
     this.detectScoresIfHost();
 
     this.gameController
       .getObjectOrchestrator()
       .sendLocalData(this, deltaTimeStamp);
+  }
+
+  private handleMatchState(): void {
+    const matchState = this.gameState.getMatch()?.getState();
+
+    if (matchState === MatchStateType.InProgress) {
+      this.localCarObject?.setActive(true);
+      this.scoreboardObject?.setActive(true);
+      this.ballObject?.setInactive(false);
+    } else {
+      // Pause timer if not in progress
+      this.scoreboardObject?.setActive(false);
+    }
+
+    // Block local car and ball if countdown
+    if (matchState === MatchStateType.Countdown) {
+      this.ballObject?.setInactive(true);
+      this.localCarObject?.setActive(false);
+    }
   }
 
   private addSyncableObjects(): void {
@@ -274,8 +294,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private resetForCountdown() {
     this.ballObject?.reset();
     this.localCarObject?.reset();
-    this.localCarObject?.setActive(false);
-    this.ballObject?.setInactive(false);
   }
 
   private handleRemoteCountdown(arrayBuffer: ArrayBuffer | null) {
@@ -540,7 +558,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private handleGameOverStart(winner: GamePlayer | null) {
     this.gameState.getMatch()?.setState(MatchStateType.GameOver);
-    this.ballObject?.setInactive(true);
 
     // Determine winner details and show alert
     const playerName = winner?.getName().toUpperCase() ?? "UNKNOWN";
