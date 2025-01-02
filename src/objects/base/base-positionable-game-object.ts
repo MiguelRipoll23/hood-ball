@@ -3,6 +3,8 @@ import { BaseMultiplayerGameObject } from "./base-multiplayer-object.js";
 export class BasePositionableGameObject extends BaseMultiplayerGameObject {
   protected x: number = 0;
   protected y: number = 0;
+  protected width: number = 0;
+  protected height: number = 0;
   protected angle: number = 0;
 
   constructor() {
@@ -23,6 +25,22 @@ export class BasePositionableGameObject extends BaseMultiplayerGameObject {
 
   public setY(y: number): void {
     this.y = y;
+  }
+
+  public getWidth(): number {
+    return this.width;
+  }
+
+  public setWidth(width: number): void {
+    this.width = width;
+  }
+
+  public getHeight(): number {
+    return this.height;
+  }
+
+  public setHeight(height: number): void {
+    this.height = height;
   }
 
   public getAngle(): number {

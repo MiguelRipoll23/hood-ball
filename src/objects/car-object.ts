@@ -26,6 +26,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
+  private readonly PLAYER_NAME_RADIUS = 10;
 
   private readonly PING_CIRCLE_RADIUS = 3;
   private readonly PING_CIRCLE_SPACING = 4;
@@ -241,9 +242,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     // Calculate the width of the rounded rectangle
     const rectWidth = textWidth + this.PLAYER_NAME_PADDING * 1.8;
 
-    // Set the border radius for corners
-    const borderRadius = 10;
-
     // Set the rectangle's top-left corner position
     const rectX = this.x + this.WIDTH / 2 - rectWidth / 2;
     const rectY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 5;
@@ -257,41 +255,44 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
     // Draw the rounded rectangle
     context.beginPath();
-    context.moveTo(rectX + borderRadius, rectY); // Move to the top-left arc start
-    context.lineTo(rectX + rectWidth - borderRadius, rectY); // Top side
+    context.moveTo(rectX + this.PLAYER_NAME_RADIUS, rectY); // Move to the top-left arc start
+    context.lineTo(rectX + rectWidth - this.PLAYER_NAME_RADIUS, rectY); // Top side
     context.arcTo(
       rectX + rectWidth,
       rectY, // Top-right corner
       rectX + rectWidth,
-      rectY + borderRadius,
-      borderRadius
+      rectY + this.PLAYER_NAME_RADIUS,
+      this.PLAYER_NAME_RADIUS
     );
     context.lineTo(
       rectX + rectWidth,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT - borderRadius
+      rectY + this.PLAYER_NAME_RECT_HEIGHT - this.PLAYER_NAME_RADIUS
     ); // Right side
     context.arcTo(
       rectX + rectWidth,
       rectY + this.PLAYER_NAME_RECT_HEIGHT, // Bottom-right corner
-      rectX + rectWidth - borderRadius,
+      rectX + rectWidth - this.PLAYER_NAME_RADIUS,
       rectY + this.PLAYER_NAME_RECT_HEIGHT,
-      borderRadius
+      this.PLAYER_NAME_RADIUS
     );
-    context.lineTo(rectX + borderRadius, rectY + this.PLAYER_NAME_RECT_HEIGHT); // Bottom side
+    context.lineTo(
+      rectX + this.PLAYER_NAME_RADIUS,
+      rectY + this.PLAYER_NAME_RECT_HEIGHT
+    ); // Bottom side
     context.arcTo(
       rectX,
       rectY + this.PLAYER_NAME_RECT_HEIGHT, // Bottom-left corner
       rectX,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT - borderRadius,
-      borderRadius
+      rectY + this.PLAYER_NAME_RECT_HEIGHT - this.PLAYER_NAME_RADIUS,
+      this.PLAYER_NAME_RADIUS
     );
-    context.lineTo(rectX, rectY + borderRadius); // Left side
+    context.lineTo(rectX, rectY + this.PLAYER_NAME_RADIUS); // Left side
     context.arcTo(
       rectX,
       rectY, // Top-left corner
-      rectX + borderRadius,
+      rectX + this.PLAYER_NAME_RADIUS,
       rectY,
-      borderRadius
+      this.PLAYER_NAME_RADIUS
     );
     context.closePath();
     context.fill();

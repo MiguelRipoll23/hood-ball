@@ -5,6 +5,7 @@ import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-obj
 import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
+import { ObjectUtils } from "../utils/object-utils.js";
 
 export class BallObject
   extends BaseDynamicCollidableGameObject
@@ -75,7 +76,8 @@ export class BallObject
     this.calculateMovement();
     this.updateHitbox();
     this.handlePlayerCollision();
-    this.setToCenterPositionIfOutOfBounds();
+
+    ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
   }
 
   public override render(context: CanvasRenderingContext2D): void {
@@ -220,17 +222,6 @@ export class BallObject
 
   public override mustSync(): boolean {
     return this.vx !== 0 || this.vy !== 0;
-  }
-
-  private setToCenterPositionIfOutOfBounds(): void {
-    if (
-      this.x > this.canvas.width ||
-      this.x < 0 ||
-      this.y > this.canvas.height ||
-      this.y < 0
-    ) {
-      return this.resetVelocityAndPosition();
-    }
   }
 
   // Function to limit velocity to the maximum speed
