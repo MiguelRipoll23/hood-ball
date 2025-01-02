@@ -121,6 +121,12 @@ export class CredentialService {
     name: string,
     displayName: string
   ): Promise<void> {
+    if (window.PublicKeyCredential === undefined) {
+      throw new Error(
+        "It looks like your browser or device doesn't support passkeys, which are required to play the game. Please try using a different browser or device."
+      );
+    }
+
     const registrationOptionsRequest: RegistrationOptionsRequest = {
       requestId: this.requestId,
       displayName: displayName,
