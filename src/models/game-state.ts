@@ -28,13 +28,13 @@ export class GameState {
     this.match = match;
 
     if (match === null) {
-      return console.log("Match deleted");
+      return console.log("Match removed from game state");
     }
 
     if (match.isHost()) {
-      console.log("Match created", match);
+      console.log("Match created in game state", match);
     } else {
-      console.log("Match set", match);
+      console.log("Match set in game state", match);
     }
   }
 }
