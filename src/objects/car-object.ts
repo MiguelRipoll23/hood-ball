@@ -179,10 +179,6 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     this.y -= this.vy;
   }
 
-  public override mustSync(): boolean {
-    return this.speed !== 0;
-  }
-
   private renderPingLevel(context: CanvasRenderingContext2D): void {
     // Only render ping level for remote players
     if (this.owner?.isHost()) {
