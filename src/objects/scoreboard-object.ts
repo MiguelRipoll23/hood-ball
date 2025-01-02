@@ -54,6 +54,10 @@ export class ScoreboardObject
     return this.active;
   }
 
+  public setActive(active: boolean): void {
+    this.active = active;
+  }
+
   public setTimerDuration(durationSeconds: number): void {
     this.durationMilliseconds = durationSeconds * 1000;
   }
