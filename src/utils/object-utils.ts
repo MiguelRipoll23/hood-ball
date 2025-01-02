@@ -4,12 +4,6 @@ import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-obj
 import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 
 export class ObjectUtils {
-  public static skipLocalObject(
-    multiplayerObject: MultiplayerGameObject
-  ): boolean {
-    return multiplayerObject.getId() === null;
-  }
-
   public static handleInactiveObject(
     multiplayerObject: MultiplayerGameObject
   ): void {
@@ -29,7 +23,7 @@ export class ObjectUtils {
     return webrtcPeer.getPlayer()?.getId() !== ownerId;
   }
 
-  public static updateOwnerIfHost(
+  public static updateOwnerForSharedObjects(
     gameState: GameState,
     multiplayerObject: MultiplayerGameObject
   ) {
