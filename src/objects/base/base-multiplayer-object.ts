@@ -65,6 +65,10 @@ export class BaseMultiplayerGameObject
 
   public setSync(sync: boolean): void {
     this.sync = sync;
+
+    if (sync) {
+      console.log("Forced ordered unreliable sync for object", this);
+    }
   }
 
   public mustSyncReliably(): boolean {
@@ -73,11 +77,14 @@ export class BaseMultiplayerGameObject
 
   public setSyncReliably(syncReliably: boolean): void {
     this.syncReliably = syncReliably;
+
+    if (syncReliably) {
+      console.log("Forced ordered reliable sync for object", this);
+    }
   }
 
   public reset(): void {
-    this.syncReliably = true;
-    console.log("Forced reliable sync for object", this);
+    this.setSyncReliably(true);
   }
 
   public serialize(): ArrayBuffer {
