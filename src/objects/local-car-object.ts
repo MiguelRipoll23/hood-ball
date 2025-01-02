@@ -134,6 +134,7 @@ export class LocalCarObject extends CarObject {
   private fixPositionIfOutOfBounds(): void {
     this.x = Math.max(3, Math.min(this.x, this.canvas.width - 60));
     this.y = Math.max(3, Math.min(this.y, this.canvas.height - 60));
+    this.setSync(true);
   }
 
   private renderDebugInformation(context: CanvasRenderingContext2D): void {
