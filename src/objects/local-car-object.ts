@@ -145,19 +145,12 @@ export class LocalCarObject extends CarObject {
       `Position: X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
 
-    DebugUtils.renderDebugText(
-      context,
-      24,
-      48,
-      `Angle: ${((this.angle * 180) / Math.PI).toFixed(0)}°`
-    );
-
     if (this.getPlayer()?.isHost()) {
-      DebugUtils.renderDebugText(context, 24, 72, "Host");
+      DebugUtils.renderDebugText(context, 24, 48, "Host");
     } else {
       const pingTime = this.getPlayer()?.getPingTime();
       const displayPingTime = pingTime === null ? "n/a" : `${pingTime} ms`;
-      DebugUtils.renderDebugText(context, 24, 72, `Ping: ${displayPingTime}`);
+      DebugUtils.renderDebugText(context, 24, 48, `Ping: ${displayPingTime}`);
     }
   }
 }

@@ -7,8 +7,9 @@ import { ObjectOrchestrator } from "./object-orchestrator-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { WebRTCService } from "./webrtc-service.js";
+import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 
-export class WebRTCPeerService {
+export class WebRTCPeerService implements WebRTCPeer {
   private logger: LoggerUtils;
 
   private matchmakingService: MatchmakingService;
@@ -34,6 +35,9 @@ export class WebRTCPeerService {
 
   private pingStartTime: number | null = null;
   private pingRoundTripTime: number = 0;
+
+  private downloadBytesPerSecond: number = 0;
+  private uploadBytesPerSecond: number = 0;
 
   constructor(private gameController: GameController, private token: string) {
     this.logger = new LoggerUtils(`WebRTC(${this.token})`);
@@ -90,6 +94,19 @@ export class WebRTCPeerService {
     if (joined) {
       this.sendQueuedMessages();
     }
+  }
+
+  public getDownloadBytes(): number {
+    return this.downloadBytesPerSecond;
+  }
+
+  public getUploadBytes(): number {
+    return this.uploadBytesPerSecond;
+  }
+
+  public resetStats(): void {
+    this.downloadBytesPerSecond = 0;
+    this.uploadBytesPerSecond = 0;
   }
 
   public addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void {
@@ -374,6 +391,9 @@ export class WebRTCPeerService {
     try {
       channel.send(arrayBuffer);
 
+      // Update download bytes per second
+      this.uploadBytesPerSecond += arrayBuffer.byteLength;
+
       if (channel.label.startsWith("reliable")) {
         this.logger.info("Sent message", new Uint8Array(arrayBuffer));
       }
@@ -392,6 +412,9 @@ export class WebRTCPeerService {
   private handleMessage(arrayBuffer: ArrayBuffer): void {
     //this.logger.info("Received message from peer", new Uint8Array(arrayBuffer));
     //this.logger.info(new TextDecoder().decode(arrayBuffer));
+
+    // Update upload bytes per second
+    this.downloadBytesPerSecond += arrayBuffer.byteLength;
 
     const dataView = new DataView(arrayBuffer);
     const id = dataView.getUint8(0);

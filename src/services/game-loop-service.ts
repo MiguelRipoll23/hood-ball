@@ -20,8 +20,14 @@ export class GameLoopService {
   private isRunning: boolean = false;
   private previousTimeStamp: DOMHighResTimeStamp | null = null;
   private deltaTimeStamp: DOMHighResTimeStamp = 0;
+  private elapsedMilliseconds: number = 0;
 
+  // Game stats
   private currentFPS: number = 0;
+
+  // Network stats
+  private downloadKilobytesPerSecond: number = 0;
+  private uploadKilobytesPerSecond: number = 0;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
@@ -144,6 +150,12 @@ export class GameLoopService {
     }
 
     this.previousTimeStamp = timeStamp;
+    this.elapsedMilliseconds += this.deltaTimeStamp;
+
+    if (this.elapsedMilliseconds >= 1_000) {
+      this.elapsedMilliseconds = 0;
+      this.updateNetworkStats();
+    }
 
     this.update(this.deltaTimeStamp);
     this.render();
@@ -151,6 +163,16 @@ export class GameLoopService {
     if (this.isRunning) {
       requestAnimationFrame(this.loop.bind(this));
     }
+  }
+
+  private updateNetworkStats(): void {
+    this.downloadKilobytesPerSecond =
+      this.gameController.getWebRTCService().getDownloadBytes() / 1024;
+
+    this.uploadKilobytesPerSecond =
+      this.gameController.getWebRTCService().getUploadBytes() / 1024;
+
+    this.gameController.getWebRTCService().resetStats();
   }
 
   private update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -184,7 +206,7 @@ export class GameLoopService {
     this.gameFrame.getNotificationObject()?.render(this.context);
 
     if (this.gameController.isDebugging()) {
-      this.renderDebugInformation(this.context);
+      this.renderDebugInformation();
     }
   }
 
@@ -211,16 +233,33 @@ export class GameLoopService {
       );
   }
 
-  private renderDebugInformation(context: CanvasRenderingContext2D): void {
+  private renderDebugInformation(): void {
     DebugUtils.renderDebugText(
-      context,
+      this.context,
       this.canvas.width - 24,
       24,
       `FPS: ${this.currentFPS.toFixed(1)}`,
       true
     );
 
+    this.renderDebugNetworkInformation();
     this.renderDebugGamePointer();
+  }
+
+  private renderDebugNetworkInformation(): void {
+    DebugUtils.renderDebugText(
+      this.context,
+      24,
+      72,
+      `Download: ${this.downloadKilobytesPerSecond.toFixed(1)} KB/s`
+    );
+
+    DebugUtils.renderDebugText(
+      this.context,
+      24,
+      96,
+      `Upload: ${this.uploadKilobytesPerSecond.toFixed(1)} KB/s`
+    );
   }
 
   private renderDebugGamePointer(): void {
