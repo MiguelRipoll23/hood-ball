@@ -21,13 +21,17 @@ export class LocalCarObject extends CarObject {
     this.joystickObject = new JoystickObject(canvas, gamePointer);
   }
 
-  public setActive(active: boolean): void {
-    this.active = active;
+  public override mustSync(): boolean {
+    return this.speed !== 0;
   }
 
   public override reset(): void {
     super.reset();
     this.active = true;
+  }
+
+  public setActive(active: boolean): void {
+    this.active = active;
   }
 
   public getJoystickObject(): JoystickObject {
@@ -42,7 +46,9 @@ export class LocalCarObject extends CarObject {
         this.handleKeyboardControls();
       }
     }
+
     this.fixPositionIfOutOfBounds();
+
     super.update(deltaTimeStamp);
   }
 
@@ -126,8 +132,28 @@ export class LocalCarObject extends CarObject {
   }
 
   private fixPositionIfOutOfBounds(): void {
-    this.x = Math.max(3, Math.min(this.x, this.canvas.width - 60));
-    this.y = Math.max(3, Math.min(this.y, this.canvas.height - 60));
-    this.setSync(true);
+    let positionFixed = false;
+
+    // Check and fix x-coordinate if it's out of bounds
+    if (this.x < 3) {
+      this.x = 3;
+      positionFixed = true;
+    } else if (this.x > this.canvas.width - 60) {
+      this.x = this.canvas.width - 60;
+      positionFixed = true;
+    }
+
+    // Check and fix y-coordinate if it's out of bounds
+    if (this.y < 3) {
+      this.y = 3;
+      positionFixed = true;
+    } else if (this.y > this.canvas.height - 60) {
+      this.y = this.canvas.height - 60;
+      positionFixed = true;
+    }
+
+    if (positionFixed) {
+      this.setSync(true);
+    }
   }
 }
