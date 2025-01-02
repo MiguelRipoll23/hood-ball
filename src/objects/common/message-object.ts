@@ -5,11 +5,11 @@ export class MessageObject extends BaseAnimatedGameObject {
   private readonly DEFAULT_HEIGHT = 100;
   private readonly DEFAULT_WIDTH = 340;
 
+  protected width = this.DEFAULT_WIDTH;
+  protected height = this.DEFAULT_HEIGHT;
+
   private textX = 0;
   private textY = 0;
-
-  private width = this.DEFAULT_WIDTH;
-  private height = this.DEFAULT_HEIGHT;
   private content = "Unknown";
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -50,14 +50,14 @@ export class MessageObject extends BaseAnimatedGameObject {
       this.y,
       this.x + this.width,
       this.y + this.height,
-      6,
+      6
     );
     context.arcTo(
       this.x + this.width,
       this.y + this.height,
       this.x,
       this.y + this.height,
-      6,
+      6
     );
     context.arcTo(this.x, this.y + this.height, this.x, this.y, 6);
     context.arcTo(this.x, this.y, this.x + this.width, this.y, 6);
@@ -78,8 +78,8 @@ export class MessageObject extends BaseAnimatedGameObject {
   }
 
   private setPosition(): void {
-    this.x = this.canvas.width / 2 - (this.width / 2);
-    this.y = this.canvas.height / 2 - (this.height / 2);
+    this.x = this.canvas.width / 2 - this.width / 2;
+    this.y = this.canvas.height / 2 - this.height / 2;
     this.textX = this.x + this.width / 2;
     this.textY = this.y + this.height / 2 + 5;
   }

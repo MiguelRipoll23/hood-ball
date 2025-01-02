@@ -1,8 +1,8 @@
 import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
 
 export class ToggleObject extends BaseAnimatedGameObject {
-  private width: number = 55; // Incremented width to 55
-  private height: number = 30;
+  protected width: number = 55; // Incremented width to 55
+  protected height: number = 30;
   private radius: number = 15; // Adjusted radius for rounded corners based on height
 
   constructor(private toggleState = false) {

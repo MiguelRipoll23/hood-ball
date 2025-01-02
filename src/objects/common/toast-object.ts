@@ -2,9 +2,10 @@ import { TimerService } from "../../services/timer-service.js";
 import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
 
 export class ToastObject extends BaseAnimatedGameObject {
+  protected width: number = 0;
+  protected height: number = 0;
+
   private text: string = "Unknown";
-  private width: number = 0;
-  private height: number = 0;
   private readonly padding: number = 10;
   private readonly topMargin: number = 160; // Top margin
   private readonly cornerRadius: number = 10; // Corner radius for rounded corners
