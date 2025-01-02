@@ -256,6 +256,22 @@ export class GameLoopService {
   }
 
   private renderDebugNetworkInformation(): void {
+    const player = this.gameController.getGameState().getGamePlayer();
+
+    if (player.isHost()) {
+      DebugUtils.renderDebugText(this.context, 24, 48, "Host");
+    } else {
+      const pingTime = player.getPingTime();
+      const displayPingTime = pingTime === null ? "n/a" : `${pingTime} ms`;
+
+      DebugUtils.renderDebugText(
+        this.context,
+        24,
+        48,
+        `Ping: ${displayPingTime}`
+      );
+    }
+
     DebugUtils.renderDebugText(
       this.context,
       24,
