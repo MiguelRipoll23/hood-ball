@@ -12,7 +12,9 @@ export class BaseMultiplayerGameObject
   protected typeId: ObjectType | null = null;
   protected syncableByHost: boolean = false;
   protected owner: GamePlayer | null = null;
+
   protected sync: boolean = false;
+  protected syncReliably: boolean = false;
 
   public static getTypeId(): ObjectType {
     throw new Error("Method not implemented.");
@@ -65,9 +67,17 @@ export class BaseMultiplayerGameObject
     this.sync = sync;
   }
 
+  public mustSyncReliably(): boolean {
+    return this.syncReliably;
+  }
+
+  public setSyncReliably(syncReliably: boolean): void {
+    this.syncReliably = syncReliably;
+  }
+
   public reset(): void {
-    this.sync = true;
-    console.log("Forced sync for object", this);
+    this.syncReliably = true;
+    console.log("Forced reliable sync for object", this);
   }
 
   public serialize(): ArrayBuffer {

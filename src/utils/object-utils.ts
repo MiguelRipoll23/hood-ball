@@ -23,13 +23,17 @@ export class ObjectUtils {
     return webrtcPeer.getPlayer()?.getId() !== ownerId;
   }
 
-  public static updateOwnerForSharedObjects(
+  public static updateOwnerToHostForSharedObjects(
     gameState: GameState,
     multiplayerObject: MultiplayerGameObject
   ) {
-    if (multiplayerObject.getOwner() === null) {
-      const host = gameState.getMatch()?.getHost() ?? null;
-      multiplayerObject.setOwner(host);
+    const owner = multiplayerObject.getOwner();
+
+    if (owner !== null) {
+      return;
     }
+
+    const host = gameState.getMatch()?.getHost() ?? null;
+    multiplayerObject.setOwner(host);
   }
 }

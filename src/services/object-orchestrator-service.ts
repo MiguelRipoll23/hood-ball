@@ -40,7 +40,10 @@ export class ObjectOrchestrator {
       this.elapsedMilliseconds >= this.PERIODIC_MILLISECONDS;
 
     multiplayerScreen.getSyncableObjects().forEach((multiplayerObject) => {
-      if (multiplayerObject.mustSync() || this.periodicUpdate) {
+      const mustSync = multiplayerObject.mustSync();
+      const mustSyncReliably = multiplayerObject.mustSyncReliably();
+
+      if (mustSync || mustSyncReliably || this.periodicUpdate) {
         this.sendLocalObjectData(multiplayerScreen, multiplayerObject);
       }
     });
@@ -96,12 +99,16 @@ export class ObjectOrchestrator {
     multiplayerScreen: MultiplayerScreen,
     multiplayerObject: MultiplayerGameObject
   ): void {
-    if (this.skipLocalObject(multiplayerObject)) {
+    ObjectUtils.updateOwnerToHostForSharedObjects(
+      this.gameState,
+      multiplayerObject
+    );
+
+    if (this.skipObject(multiplayerObject)) {
       return;
     }
 
     ObjectUtils.handleInactiveObject(multiplayerObject);
-    ObjectUtils.updateOwnerForSharedObjects(this.gameState, multiplayerObject);
 
     const arrayBuffer = this.getObjectDataArrayBuffer(
       multiplayerScreen,
@@ -119,13 +126,10 @@ export class ObjectOrchestrator {
     });
 
     multiplayerObject.setSync(false);
+    multiplayerObject.setSyncReliably(false);
   }
 
-  private skipLocalObject(multiplayerObject: MultiplayerGameObject): boolean {
-    if (multiplayerObject.getId() === null) {
-      return true;
-    }
-
+  private skipObject(multiplayerObject: MultiplayerGameObject): boolean {
     const playerId = this.gameState.getGamePlayer().getId();
     const ownerId = multiplayerObject.getOwner()?.getId();
 
@@ -204,7 +208,7 @@ export class ObjectOrchestrator {
     }
 
     // Send reliable message if object must sync
-    if (multiplayerObject.mustSync()) {
+    if (multiplayerObject.mustSyncReliably()) {
       return webrtcPeer.sendReliableOrderedMessage(dataBuffer);
     }
 

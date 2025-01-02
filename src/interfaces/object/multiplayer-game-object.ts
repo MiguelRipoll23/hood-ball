@@ -11,6 +11,8 @@ export interface MultiplayerGameObject extends GameObject {
   isSyncableByHost(): boolean;
   mustSync(): boolean;
   setSync(sync: boolean): void;
+  mustSyncReliably(): boolean;
+  setSyncReliably(syncReliably: boolean): void;
   serialize(): ArrayBuffer;
   sendSyncableData(
     webrtcPeer: WebRTCPeer,
