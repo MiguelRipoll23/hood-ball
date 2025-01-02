@@ -219,7 +219,7 @@ export class BallObject
   }
 
   public override mustSync(): boolean {
-    return this.vx !== 0 || this.vy !== 0 || super.mustSync();
+    return this.vx !== 0 || this.vy !== 0;
   }
 
   private setToCenterPositionIfOutOfBounds(): void {

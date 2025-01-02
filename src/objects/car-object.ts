@@ -180,7 +180,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   public override mustSync(): boolean {
-    return this.speed !== 0 || super.mustSync();
+    return this.speed !== 0;
   }
 
   private renderPingLevel(context: CanvasRenderingContext2D): void {
