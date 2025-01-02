@@ -3,6 +3,7 @@ import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
+import { ObjectUtils } from "../utils/object-utils.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -46,6 +47,8 @@ export class LocalCarObject extends CarObject {
         this.handleKeyboardControls();
       }
     }
+
+    ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
 
     this.fixPositionIfOutOfBounds();
 
