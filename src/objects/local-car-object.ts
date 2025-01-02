@@ -3,7 +3,6 @@ import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
-import { DebugUtils } from "../utils/debug-utils.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -45,11 +44,6 @@ export class LocalCarObject extends CarObject {
     }
     this.fixPositionIfOutOfBounds();
     super.update(deltaTimeStamp);
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    if (this.debug) this.renderDebugInformation(context);
-    super.render(context);
   }
 
   private setSyncableValues(): void {
@@ -135,15 +129,5 @@ export class LocalCarObject extends CarObject {
     this.x = Math.max(3, Math.min(this.x, this.canvas.width - 60));
     this.y = Math.max(3, Math.min(this.y, this.canvas.height - 60));
     this.setSync(true);
-  }
-
-  private renderDebugInformation(context: CanvasRenderingContext2D): void {
-    if (this.getPlayer()?.isHost()) {
-      DebugUtils.renderDebugText(context, 24, 48, "Host");
-    } else {
-      const pingTime = this.getPlayer()?.getPingTime();
-      const displayPingTime = pingTime === null ? "n/a" : `${pingTime} ms`;
-      DebugUtils.renderDebugText(context, 24, 48, `Ping: ${displayPingTime}`);
-    }
   }
 }
