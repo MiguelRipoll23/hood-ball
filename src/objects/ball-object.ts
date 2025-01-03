@@ -14,6 +14,7 @@ export class BallObject
   private readonly MASS: number = 1;
   private readonly RADIUS: number = 20;
   private readonly FRICTION: number = 0.01;
+  private readonly MIN_VELOCITY: number = 0.1;
   private readonly MAX_VELOCITY: number = 10;
   private radius: number = this.RADIUS;
 
@@ -107,13 +108,13 @@ export class BallObject
   }
 
   public override serialize(): ArrayBuffer {
-    const arrayBuffer = new ArrayBuffer(10);
+    const arrayBuffer = new ArrayBuffer(8);
     const dataView = new DataView(arrayBuffer);
 
-    dataView.setFloat32(0, this.x);
-    dataView.setFloat32(2, this.y);
-    dataView.setFloat32(4, this.vx);
-    dataView.setFloat32(6, this.vy);
+    dataView.setUint16(0, this.x);
+    dataView.setUint16(2, this.y);
+    dataView.setInt16(4, this.vx);
+    dataView.setInt16(6, this.vy);
 
     return arrayBuffer;
   }
@@ -121,10 +122,10 @@ export class BallObject
   public override synchronize(data: ArrayBuffer): void {
     const dataView = new DataView(data);
 
-    this.x = dataView.getFloat32(0);
-    this.y = dataView.getFloat32(2);
-    this.vx = dataView.getFloat32(4);
-    this.vy = dataView.getFloat32(6);
+    this.x = dataView.getUint16(0);
+    this.y = dataView.getUint16(2);
+    this.vx = dataView.getInt16(4);
+    this.vy = dataView.getInt16(6);
 
     this.updateHitbox();
   }
@@ -195,8 +196,14 @@ export class BallObject
   }
 
   private applyFriction(): void {
+    // Define a small threshold for near-zero velocity
     this.vx *= 1 - this.FRICTION;
     this.vy *= 1 - this.FRICTION;
+
+    // If velocity is below the threshold, set it to zero
+    if (Math.abs(this.vx) < this.MIN_VELOCITY) this.vx = 0;
+    if (Math.abs(this.vy) < this.MIN_VELOCITY) this.vy = 0;
+
     this.limitVelocity(); // Apply the velocity limit after friction
   }
 
