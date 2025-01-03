@@ -9,6 +9,7 @@ import { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
 import { ScreenUtils } from "../utils/screen-utils.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
+import { WebRTCUtils } from "../utils/webrtc-utils.js";
 
 export class ObjectOrchestrator {
   private readonly PERIODIC_MILLISECONDS = 500;
@@ -64,8 +65,11 @@ export class ObjectOrchestrator {
     const dataView = new DataView(data);
     const screenId = dataView.getInt8(0);
     const stateId = dataView.getInt8(1);
-    const ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 36));
 
+    let ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 32));
+    ownerId = WebRTCUtils.addHyphensToUUID(ownerId);
+
+    // Check for owner
     if (ObjectUtils.hasInvalidOwner(webrtcPeer, ownerId)) {
       return console.warn(
         "Received object data from unauthorized player",
@@ -73,6 +77,7 @@ export class ObjectOrchestrator {
       );
     }
 
+    // Check for screen
     const multiplayerScreen = ScreenUtils.getScreenById(
       this.gameFrame,
       screenId
@@ -84,7 +89,7 @@ export class ObjectOrchestrator {
 
     switch (stateId) {
       case ObjectStateType.Active:
-        return this.createOrSynchronizeObject(multiplayerScreen, data);
+        return this.createOrSynchronizeObject(multiplayerScreen, ownerId, data);
 
       case ObjectStateType.Inactive:
         return this.removeObject(multiplayerScreen, data);
@@ -165,13 +170,17 @@ export class ObjectOrchestrator {
     const stateId = multiplayerObject.getState();
     const layerId = multiplayerScreen?.getObjectLayer(multiplayerObject);
     const typeId = multiplayerObject.getTypeId();
-    const ownerId = multiplayerObject.getOwner()?.getId();
-    const objectId = multiplayerObject.getId();
     const serializedData = multiplayerObject.serialize();
 
-    if (objectId === null || typeId === null || ownerId === null) {
+    let ownerId = multiplayerObject.getOwner()?.getId() ?? null;
+    let objectId = multiplayerObject.getId();
+
+    if (typeId === null || objectId === null || ownerId === null) {
       throw new Error("Invalid object data for object id " + objectId);
     }
+
+    ownerId = WebRTCUtils.removeHyphensFromUUID(ownerId);
+    objectId = WebRTCUtils.removeHyphensFromUUID(objectId);
 
     const ownerIdBytes = new TextEncoder().encode(ownerId);
     const objectIdBytes = new TextEncoder().encode(objectId);
@@ -199,7 +208,7 @@ export class ObjectOrchestrator {
     new Uint8Array(arrayBuffer, offset, ownerIdBytes.length).set(ownerIdBytes);
     offset += ownerIdBytes.length;
 
-    // Write id
+    // Write object id
     new Uint8Array(arrayBuffer, offset, objectIdBytes.length).set(
       objectIdBytes
     );
@@ -239,15 +248,19 @@ export class ObjectOrchestrator {
   // Remote
   private createOrSynchronizeObject(
     multiplayerScreen: MultiplayerScreen,
+    ownerId: string,
     data: ArrayBuffer
   ) {
-    const objectid = new TextDecoder().decode(new Uint8Array(data, 40, 36));
-    const serializedData = data.slice(76);
+    let objectId = new TextDecoder().decode(new Uint8Array(data, 36, 32));
+    objectId = WebRTCUtils.addHyphensToUUID(objectId);
 
-    const object = multiplayerScreen.getSyncableObject(objectid);
+    const serializedData = data.slice(68);
+
+    // Try to find object
+    const object = multiplayerScreen.getSyncableObject(objectId);
 
     if (object === null) {
-      return this.createObject(multiplayerScreen, data);
+      return this.createObject(multiplayerScreen, ownerId, objectId, data);
     }
 
     object.synchronize(serializedData);
@@ -255,33 +268,34 @@ export class ObjectOrchestrator {
 
   private createObject(
     multiplayerScreen: MultiplayerScreen,
+    ownerId: string,
+    objectId: string,
     data: ArrayBuffer
   ) {
     const dataView = new DataView(data);
     const layerId = dataView.getInt8(2);
     const typeId = dataView.getInt8(3);
-    const ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 36));
-    const objectid = new TextDecoder().decode(new Uint8Array(data, 40, 36));
-    const serializedData = data.slice(76);
-
+    const serializedData = data.slice(68);
     const objectClass = multiplayerScreen.getSyncableObjectClass(typeId);
 
     if (objectClass === null) {
       return console.warn(`Object class not found for type ${typeId}`);
     }
 
-    let objectInstance: MultiplayerGameObject;
-
-    try {
-      objectInstance = objectClass.deserialize(objectid, serializedData);
-    } catch (error) {
-      return console.warn("Cannot deserialize object with id", objectid, error);
-    }
-
+    // Try to find owner
     const player = this.gameState.getMatch()?.getPlayer(ownerId) ?? null;
 
     if (player === null) {
       return console.warn("Cannot find player with id", ownerId);
+    }
+
+    // Try to create object instance
+    let objectInstance: MultiplayerGameObject;
+
+    try {
+      objectInstance = objectClass.deserialize(objectId, serializedData);
+    } catch (error) {
+      return console.warn("Cannot deserialize object with id", objectId, error);
     }
 
     objectInstance.setOwner(player);
