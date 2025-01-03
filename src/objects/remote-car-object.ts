@@ -1,7 +1,10 @@
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
-import { SCALE_FACTOR_FOR_ANGLES } from "../constants/webrtc-constants.js";
+import {
+  SCALE_FACTOR_FOR_ANGLES,
+  SCALE_FACTOR_FOR_SPEED,
+} from "../constants/webrtc-constants.js";
 
 export class RemoteCarObject extends CarObject {
   constructor(
@@ -28,7 +31,7 @@ export class RemoteCarObject extends CarObject {
     const x = dataView.getUint16(0);
     const y = dataView.getUint16(2);
     const angle = dataView.getInt16(4) / SCALE_FACTOR_FOR_ANGLES;
-    const speed = dataView.getFloat32(6);
+    const speed = dataView.getInt16(6) / SCALE_FACTOR_FOR_SPEED;
 
     return new RemoteCarObject(syncableId, x, y, angle, speed);
   }
@@ -39,7 +42,7 @@ export class RemoteCarObject extends CarObject {
     this.x = dataView.getUint16(0);
     this.y = dataView.getUint16(2);
     this.angle = dataView.getInt16(4) / SCALE_FACTOR_FOR_ANGLES;
-    this.speed = dataView.getFloat32(6);
+    this.speed = dataView.getInt16(6) / SCALE_FACTOR_FOR_SPEED;
 
     this.updateHitbox();
   }
