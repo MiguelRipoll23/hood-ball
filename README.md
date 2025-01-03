@@ -1,4 +1,4 @@
-# Wheel Ball
+# Hood Ball
 
 Accelerate and smash your way to victory in a car-based multiplayer soccer
 battle.
