@@ -6,6 +6,7 @@ import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
   RED_TEAM_TRANSPARENCY_COLOR,
 } from "../constants/colors-constants.js";
+import { SCALE_FACTOR_FOR_ANGLES } from "../constants/webrtc-constants.js";
 
 export class CarObject extends BaseDynamicCollidableGameObject {
   protected readonly TOP_SPEED: number = 4;
@@ -66,9 +67,9 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     const buffer = new ArrayBuffer(10);
     const dataView = new DataView(buffer);
 
-    dataView.setFloat32(0, this.x);
-    dataView.setFloat32(2, this.y);
-    dataView.setFloat32(4, this.angle);
+    dataView.setUint16(0, this.x);
+    dataView.setUint16(2, this.y);
+    dataView.setInt16(4, Math.round(this.angle * SCALE_FACTOR_FOR_ANGLES));
     dataView.setFloat32(6, this.speed);
 
     return buffer;
