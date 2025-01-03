@@ -63,9 +63,12 @@ export class WorldScreen extends BaseCollidingGameScreen {
   public override hasTransitionFinished(): void {
     super.hasTransitionFinished();
 
+    this.scoreboardObject?.reset();
     this.toastObject?.show("Finding sessions...");
-    this.gameController.getMatchmakingService().findOrAdvertiseMatch();
-    this.scoreboardObject?.reset(); // P58a2
+    this.gameController
+      .getMatchmakingService()
+      .findOrAdvertiseMatch()
+      .catch(this.handleMatchmakingError.bind(this));
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -78,6 +81,16 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.gameController
       .getObjectOrchestrator()
       .sendLocalData(this, deltaTimeStamp);
+  }
+
+  private handleMatchmakingError(error: Error) {
+    console.error("Matchmaking error", error);
+
+    alert(
+      "Could not find or advertise match, returning to main screen menu..."
+    );
+
+    this.returnToMainMenuScreen();
   }
 
   private handleMatchState(): void {
@@ -577,7 +590,10 @@ export class WorldScreen extends BaseCollidingGameScreen {
     console.log("Game over end");
 
     this.gameController.getMatchmakingService().handleGameOver();
+    this.returnToMainMenuScreen();
+  }
 
+  private returnToMainMenuScreen(): void {
     const mainScreen = new MainScreen(this.gameController);
     const mainMenuScreen = new MainMenuScreen(this.gameController, false);
 
