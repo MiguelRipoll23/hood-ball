@@ -12,7 +12,7 @@ export interface GameScreen {
   hasLoaded(): boolean;
 
   getObjectLayer(object: GameObject): LayerType;
-  addObjectToLayer(layerId: LayerType, object: GameObject): void;
+  addObjectToSceneLayer(object: GameObject): void;
 
   update(deltaTimeStamp: number): void;
   render(context: CanvasRenderingContext2D): void;

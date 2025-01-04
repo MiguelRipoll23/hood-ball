@@ -61,10 +61,14 @@ export class ObjectOrchestrator {
       return console.warn("Received null data from peer");
     }
 
+    // Packet structure
+    // 1 byte, 1 byte, 1 byte, 32 bytes, 32 bytes, n bytes
+    // screenId, stateId, typeId, ownerId, objectId, serializedData
+
     const dataView = new DataView(data);
     const screenId = dataView.getInt8(0);
     const stateId = dataView.getInt8(1);
-    const ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 32));
+    const ownerId = new TextDecoder().decode(new Uint8Array(data, 3, 32));
 
     // Check for owner
     if (ObjectUtils.hasInvalidOwner(webrtcPeer, ownerId)) {
@@ -165,7 +169,6 @@ export class ObjectOrchestrator {
   ): ArrayBuffer {
     const screenId = multiplayerScreen.getTypeId();
     const stateId = multiplayerObject.getState();
-    const layerId = multiplayerScreen?.getObjectLayer(multiplayerObject);
     const typeId = multiplayerObject.getTypeId();
     const ownerId = multiplayerObject.getOwner()?.getId() ?? null;
     const objectId = multiplayerObject.getId();
@@ -180,9 +183,13 @@ export class ObjectOrchestrator {
     const objectIdBytes = new TextEncoder().encode(objectId);
     const serializedBytes = new Uint8Array(serializedData);
 
+    // Packet structure
+    // 1 byte, 1 byte, 1 byte, 1 byte, 32 bytes, 32 bytes, n bytes
+    // objectDataId, screenId, stateId, typeId, ownerId, objectId, serializedData
+
     // Calculate total buffer size
     const bufferSize =
-      5 + // Fixed-length fields (screenId, stateId, layerId, typeId, OBJECT_DATA_ID)
+      4 +
       ownerIdBytes.length +
       objectIdBytes.length +
       serializedBytes.byteLength;
@@ -195,7 +202,6 @@ export class ObjectOrchestrator {
     dataView.setInt8(offset++, WebRTCType.ObjectData);
     dataView.setInt8(offset++, screenId);
     dataView.setInt8(offset++, stateId);
-    dataView.setInt8(offset++, layerId);
     dataView.setInt8(offset++, typeId);
 
     // Write ownerId
@@ -245,8 +251,8 @@ export class ObjectOrchestrator {
     ownerId: string,
     data: ArrayBuffer
   ) {
-    const objectId = new TextDecoder().decode(new Uint8Array(data, 36, 32));
-    const serializedData = data.slice(68);
+    const objectId = new TextDecoder().decode(new Uint8Array(data, 35, 32));
+    const serializedData = data.slice(67);
 
     // Try to find object
     const object = multiplayerScreen.getSyncableObject(objectId);
@@ -265,9 +271,8 @@ export class ObjectOrchestrator {
     data: ArrayBuffer
   ) {
     const dataView = new DataView(data);
-    const layerId = dataView.getInt8(2);
-    const typeId = dataView.getInt8(3);
-    const serializedData = data.slice(68);
+    const typeId = dataView.getInt8(2);
+    const serializedData = data.slice(67);
     const objectClass = multiplayerScreen.getSyncableObjectClass(typeId);
 
     if (objectClass === null) {
@@ -291,8 +296,8 @@ export class ObjectOrchestrator {
     }
 
     objectInstance.setOwner(player);
-    multiplayerScreen?.addObjectToLayer(layerId, objectInstance);
-    console.log(`Created object for layer id ${layerId}`, objectInstance);
+    multiplayerScreen?.addObjectToSceneLayer(objectInstance);
+    console.log("Added object to scene layer", objectInstance);
   }
 
   private removeObject(
