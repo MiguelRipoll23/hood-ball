@@ -1,5 +1,6 @@
 export class GamePlayer {
   private id: string;
+  private displayId: string;
   private host: boolean;
   private pingTime: number | null = null;
   private name: string;
@@ -11,7 +12,8 @@ export class GamePlayer {
     name = "Unknown",
     score = 0
   ) {
-    this.id = id;
+    this.id = id.replace(/-/g, "");
+    this.displayId = id;
     this.host = host;
     this.name = name;
     this.score = score;
@@ -19,6 +21,10 @@ export class GamePlayer {
 
   public getId(): string {
     return this.id;
+  }
+
+  public getDisplayId(): string {
+    return this.displayId;
   }
 
   public isHost(): boolean {
