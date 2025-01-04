@@ -84,10 +84,10 @@ export class EventProcessorService {
 
     DebugUtils.renderDebugText(
       context,
-      24,
-      context.canvas.height - 24,
+      context.canvas.width - 24,
+      context.canvas.height - 48,
       `Last Event: ${eventName}`,
-      false,
+      true,
       true
     );
   }
