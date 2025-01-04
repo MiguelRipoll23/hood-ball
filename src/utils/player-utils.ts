@@ -29,9 +29,4 @@ export class PlayerUtils {
 
     return animal;
   }
-
-  public static getColorByPingTime(_ping: number): string {
-    // TODO: implement logic to return color based on ping time
-    return "white";
-  }
 }

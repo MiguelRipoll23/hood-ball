@@ -60,6 +60,9 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
+    context.globalAlpha = this.opacity;
+    this.showWelcomePlayerName(context);
+    context.globalAlpha = 1;
     super.render(context);
   }
 
@@ -228,5 +231,31 @@ export class MainMenuScreen extends BaseGameScreen {
         uiObject.setActive(false);
       }
     });
+  }
+
+  private showWelcomePlayerName(context: CanvasRenderingContext2D): void {
+    const playerName = this.gameController
+      .getGameState()
+      .getGamePlayer()
+      .getName();
+
+    // Draw text that says Hello
+    context.font = "bold 28px system-ui";
+    context.fillStyle = "white";
+    context.textAlign = "center";
+
+    context.fillText(
+      "HEY, YOU!",
+      this.canvas.width / 2,
+      this.canvas.height - 140
+    );
+
+    context.fillStyle = "#7ed321";
+
+    context.fillText(
+      `${playerName}`,
+      this.canvas.width / 2,
+      this.canvas.height - 100
+    );
   }
 }
