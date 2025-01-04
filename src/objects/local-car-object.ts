@@ -42,9 +42,9 @@ export class LocalCarObject extends CarObject {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
       if (this.gamePointer.isTouch()) {
-        this.handleTouchControls();
+        this.handleTouchControls(deltaTimeStamp);
       } else {
-        this.handleKeyboardControls();
+        this.handleKeyboardControls(deltaTimeStamp);
       }
     }
 
@@ -58,21 +58,22 @@ export class LocalCarObject extends CarObject {
     this.setTypeId(ObjectType.RemoteCar);
   }
 
-  private handleTouchControls(): void {
+  private handleTouchControls(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (!this.joystickObject.isActive()) return;
 
     const magnitude = this.joystickObject.getMagnitude();
-    this.accelerate(magnitude);
+    this.accelerate(magnitude, deltaTimeStamp);
 
     if (this.speed != 0) {
       this.angle = this.smoothAngleTransition(
         this.angle,
-        this.joystickObject.getAngle()
+        this.joystickObject.getAngle(),
+        deltaTimeStamp
       );
     }
   }
 
-  private handleKeyboardControls(): void {
+  private handleKeyboardControls(deltaTimeStamp: DOMHighResTimeStamp): void {
     const pressedKeys = this.gameKeyboard.getPressedKeys();
 
     const isAccelerating = pressedKeys.has("ArrowUp") || pressedKeys.has("w");
@@ -82,41 +83,53 @@ export class LocalCarObject extends CarObject {
       pressedKeys.has("ArrowRight") || pressedKeys.has("d");
 
     if (isAccelerating && !isDecelerating) {
-      this.accelerate();
+      this.accelerate(1, deltaTimeStamp);
     } else if (!isAccelerating && isDecelerating) {
-      this.decelerate();
+      this.decelerate(deltaTimeStamp);
     }
 
     if (this.speed !== 0) {
-      this.adjustAngle(isTurningLeft, isTurningRight);
+      this.adjustAngleUsingDirection(
+        isTurningLeft,
+        isTurningRight,
+        deltaTimeStamp
+      ); // Pass deltaTimeStamp to adjust angle
     }
   }
 
-  private adjustAngle(isTurningLeft: boolean, isTurningRight: boolean): void {
+  private accelerate(
+    magnitude: number = 1,
+    deltaTimeStamp: DOMHighResTimeStamp
+  ): void {
+    if (this.speed < this.TOP_SPEED) {
+      this.speed += this.ACCELERATION * magnitude * deltaTimeStamp;
+    }
+  }
+
+  private decelerate(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.speed > -this.TOP_SPEED) {
+      this.speed -= this.ACCELERATION * deltaTimeStamp;
+    }
+  }
+
+  private adjustAngleUsingDirection(
+    isTurningLeft: boolean,
+    isTurningRight: boolean,
+    deltaTimeStamp: DOMHighResTimeStamp
+  ): void {
     const direction = this.speed > 0 ? 1 : -1;
 
     if (isTurningLeft && !isTurningRight) {
-      this.angle -= this.HANDLING * direction;
+      this.angle -= this.HANDLING * direction * deltaTimeStamp;
     } else if (!isTurningLeft && isTurningRight) {
-      this.angle += this.HANDLING * direction;
-    }
-  }
-
-  private accelerate(magnitude = 1): void {
-    if (this.speed < this.TOP_SPEED) {
-      this.speed += this.ACCELERATION * magnitude;
-    }
-  }
-
-  private decelerate(): void {
-    if (this.speed > -this.TOP_SPEED) {
-      this.speed -= this.ACCELERATION;
+      this.angle += this.HANDLING * direction * deltaTimeStamp;
     }
   }
 
   private smoothAngleTransition(
     currentAngle: number,
-    targetAngle: number
+    targetAngle: number,
+    deltaTimeStamp: DOMHighResTimeStamp
   ): number {
     currentAngle = (currentAngle + Math.PI * 2) % (Math.PI * 2);
     targetAngle = (targetAngle + Math.PI * 2) % (Math.PI * 2);
@@ -128,7 +141,8 @@ export class LocalCarObject extends CarObject {
 
     return (
       currentAngle +
-      Math.sign(angleDifference) * Math.min(Math.abs(angleDifference), 0.1)
+      Math.sign(angleDifference) *
+        Math.min(Math.abs(angleDifference), 0.1 * deltaTimeStamp)
     );
   }
 }
