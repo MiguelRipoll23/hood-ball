@@ -15,7 +15,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 export class CarObject extends BaseDynamicCollidableGameObject {
   protected readonly TOP_SPEED: number = 0.3;
   protected readonly ACCELERATION: number = 0.002;
-  protected readonly HANDLING: number = 0.008;
+  protected readonly HANDLING: number = 0.007;
 
   private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
   private readonly IMAGE_RED_PATH = "./images/car-red.png";
