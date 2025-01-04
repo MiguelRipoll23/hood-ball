@@ -6,12 +6,15 @@ import { WebRTCService } from "./webrtc-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { GameEvent } from "../interfaces/event/game-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class EventProcessorService {
   private webrtcService: WebRTCService;
 
   private localEvents: LocalEvent[] = [];
   private remoteEvents: RemoteEvent[] = [];
+
+  private lastConsumedEvent: string | null = null;
 
   constructor(gameController: GameController) {
     this.webrtcService = gameController.getWebRTCService();
@@ -26,6 +29,7 @@ export class EventProcessorService {
     this.localEvents.forEach((event) => {
       if (event.getId() === eventId) {
         console.log(`Local event ${EventType[eventId]} consumed`, event);
+        this.lastConsumedEvent = EventType[eventId];
         callback(event.getPayload() as T);
         this.removeEvent(this.localEvents, event);
       }
@@ -59,6 +63,7 @@ export class EventProcessorService {
     this.remoteEvents.forEach((event) => {
       if (event.getId() === eventId) {
         console.log(`Remote event ${EventType[eventId]} consumed`, event);
+        this.lastConsumedEvent = EventType[eventId];
         callback(event.getBuffer());
         this.removeEvent(this.remoteEvents, event);
       }
@@ -72,6 +77,19 @@ export class EventProcessorService {
         this.sendEventToPeer(webrtcPeer, event);
       }
     });
+  }
+
+  public renderDebugInformation(context: CanvasRenderingContext2D) {
+    const eventName = this.lastConsumedEvent ?? "none";
+
+    DebugUtils.renderDebugText(
+      context,
+      24,
+      context.canvas.height - 24,
+      `Event: ${eventName}`,
+      false,
+      true
+    );
   }
 
   private removeEvent(list: GameEvent[], event: GameEvent) {
