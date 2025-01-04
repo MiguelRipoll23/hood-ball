@@ -9,7 +9,6 @@ import { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
 import { ScreenUtils } from "../utils/screen-utils.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
-import { WebRTCUtils } from "../utils/webrtc-utils.js";
 
 export class ObjectOrchestrator {
   private readonly PERIODIC_MILLISECONDS = 500;
@@ -65,9 +64,7 @@ export class ObjectOrchestrator {
     const dataView = new DataView(data);
     const screenId = dataView.getInt8(0);
     const stateId = dataView.getInt8(1);
-
-    let ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 32));
-    ownerId = WebRTCUtils.addHyphensToUUID(ownerId);
+    const ownerId = new TextDecoder().decode(new Uint8Array(data, 4, 32));
 
     // Check for owner
     if (ObjectUtils.hasInvalidOwner(webrtcPeer, ownerId)) {
@@ -170,17 +167,14 @@ export class ObjectOrchestrator {
     const stateId = multiplayerObject.getState();
     const layerId = multiplayerScreen?.getObjectLayer(multiplayerObject);
     const typeId = multiplayerObject.getTypeId();
-    const serializedData = multiplayerObject.serialize();
-
-    let ownerId = multiplayerObject.getOwner()?.getId() ?? null;
-    let objectId = multiplayerObject.getId();
+    const ownerId = multiplayerObject.getOwner()?.getId() ?? null;
+    const objectId = multiplayerObject.getId();
 
     if (typeId === null || objectId === null || ownerId === null) {
       throw new Error("Invalid object data for object id " + objectId);
     }
 
-    ownerId = WebRTCUtils.removeHyphensFromUUID(ownerId);
-    objectId = WebRTCUtils.removeHyphensFromUUID(objectId);
+    const serializedData = multiplayerObject.serialize();
 
     const ownerIdBytes = new TextEncoder().encode(ownerId);
     const objectIdBytes = new TextEncoder().encode(objectId);
@@ -251,9 +245,7 @@ export class ObjectOrchestrator {
     ownerId: string,
     data: ArrayBuffer
   ) {
-    let objectId = new TextDecoder().decode(new Uint8Array(data, 36, 32));
-    objectId = WebRTCUtils.addHyphensToUUID(objectId);
-
+    const objectId = new TextDecoder().decode(new Uint8Array(data, 36, 32));
     const serializedData = data.slice(68);
 
     // Try to find object

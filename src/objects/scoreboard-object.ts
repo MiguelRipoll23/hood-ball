@@ -95,17 +95,17 @@ export class ScoreboardObject
   }
 
   public serialize(): ArrayBuffer {
-    const arrayBuffer = new ArrayBuffer(4);
+    const arrayBuffer = new ArrayBuffer(2);
     const dataView = new DataView(arrayBuffer);
 
-    dataView.setInt32(0, this.elapsedMilliseconds);
+    dataView.setUint16(0, this.elapsedMilliseconds);
 
     return arrayBuffer;
   }
 
   public synchronize(data: ArrayBuffer): void {
     const dataView = new DataView(data);
-    this.elapsedMilliseconds = dataView.getInt32(0);
+    this.elapsedMilliseconds = dataView.getUint16(0);
   }
 
   public sendSyncableData(webrtcPeer: WebRTCPeer, data: ArrayBuffer): void {

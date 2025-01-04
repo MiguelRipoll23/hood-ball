@@ -99,8 +99,8 @@ export class MatchmakingService {
       return this.handleUnavailableSlots(peer);
     }
 
-    const playerId = new TextDecoder().decode(payload.slice(0, 36));
-    const playerName = new TextDecoder().decode(payload.slice(36));
+    const playerId = new TextDecoder().decode(payload.slice(0, 32));
+    const playerName = new TextDecoder().decode(payload.slice(32));
 
     console.log("Received join request from", playerName);
 
@@ -152,10 +152,10 @@ export class MatchmakingService {
     const dataView = new DataView(payload);
 
     const state = dataView.getUint8(0);
-    const id = new TextDecoder().decode(payload.slice(1, 37));
-    const host = dataView.getUint8(37) === 1;
-    const score = dataView.getUint8(38);
-    const nameBytes = payload.slice(39);
+    const id = new TextDecoder().decode(payload.slice(1, 33));
+    const host = dataView.getUint8(33) === 1;
+    const score = dataView.getUint8(34);
+    const nameBytes = payload.slice(35);
 
     const name = new TextDecoder().decode(nameBytes);
 
@@ -239,11 +239,11 @@ export class MatchmakingService {
       return console.warn("Invalid player ping payload", payload);
     }
 
-    const idBytes = payload.slice(0, 36);
+    const idBytes = payload.slice(0, 32);
     const id = new TextDecoder().decode(idBytes);
 
     const dataView = new DataView(payload);
-    const pingTime = dataView.getUint16(36);
+    const pingTime = dataView.getUint16(32);
 
     this.gameState.getMatch()?.getPlayer(id)?.setPingTime(pingTime);
   }

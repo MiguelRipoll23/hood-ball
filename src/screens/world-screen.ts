@@ -314,7 +314,12 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return console.warn("Array buffer is null");
     }
 
-    const countdownNumber = new DataView(arrayBuffer).getInt32(0);
+    // Check if we are receiving a countdown event as host
+    if (this.gameState.getMatch()?.isHost()) {
+      return console.warn("Host should not receive countdown event");
+    }
+
+    const countdownNumber = new DataView(arrayBuffer).getInt8(0);
 
     this.countdownCurrentNumber = countdownNumber;
     this.showCountdown();
@@ -331,8 +336,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private sendCountdownEvent() {
-    const arrayBuffer = new ArrayBuffer(4);
-    new DataView(arrayBuffer).setInt32(0, this.countdownCurrentNumber);
+    const arrayBuffer = new ArrayBuffer(1);
+    new DataView(arrayBuffer).setInt8(0, this.countdownCurrentNumber);
 
     const countdownStartEvent = new RemoteEvent(EventType.Countdown);
     countdownStartEvent.setBuffer(arrayBuffer);
@@ -420,10 +425,10 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const playerId: string = player.getId();
     const playerScore: number = player.getScore();
 
-    const arrayBuffer = new ArrayBuffer(36 + 4);
+    const arrayBuffer = new ArrayBuffer(32 + 1);
 
     new Uint8Array(arrayBuffer).set(new TextEncoder().encode(playerId), 0);
-    new DataView(arrayBuffer).setInt32(36, playerScore);
+    new DataView(arrayBuffer).setUint8(32, playerScore);
 
     const goalEvent = new RemoteEvent(EventType.GoalStart);
     goalEvent.setBuffer(arrayBuffer);
@@ -470,6 +475,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return console.warn("Array buffer is null");
     }
 
+    // Check if we are receiving a goal event as host
+    if (this.gameState.getMatch()?.isHost()) {
+      return console.warn("Host should not receive goal event");
+    }
+
     // Pause timer
     this.scoreboardObject?.stopTimer();
 
@@ -480,8 +490,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
 
     // Score
-    const playerId = new TextDecoder().decode(arrayBuffer.slice(0, 36));
-    const playerScore = new DataView(arrayBuffer).getInt32(36);
+    const playerId = new TextDecoder().decode(arrayBuffer.slice(0, 32));
+    const playerScore = new DataView(arrayBuffer).getUint8(32);
 
     const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
     player?.setScore(playerScore);
@@ -547,7 +557,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private sendGameOverStartEvent(winner: GamePlayer): void {
     const playerId: string = winner.getId();
 
-    const arrayBuffer = new ArrayBuffer(36);
+    const arrayBuffer = new ArrayBuffer(32);
     new Uint8Array(arrayBuffer).set(new TextEncoder().encode(playerId), 0);
 
     const gameOverStartEvent = new RemoteEvent(EventType.GameOverStart);
@@ -561,6 +571,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
   ): void {
     if (arrayBuffer === null) {
       return console.warn("Array buffer is null");
+    }
+
+    // Check if we are receiving a game over event as host
+    if (this.gameState.getMatch()?.isHost()) {
+      return console.warn("Host should not receive game over event");
     }
 
     const playerId = new TextDecoder().decode(arrayBuffer);
