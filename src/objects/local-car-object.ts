@@ -142,7 +142,7 @@ export class LocalCarObject extends CarObject {
     return (
       currentAngle +
       Math.sign(angleDifference) *
-        Math.min(Math.abs(angleDifference), 0.1 * deltaTimeStamp)
+        Math.min(Math.abs(angleDifference), this.HANDLING * deltaTimeStamp)
     );
   }
 }
