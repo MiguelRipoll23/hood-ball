@@ -25,29 +25,29 @@ export class ObjectUtils {
     const objectWidth = positionableObject.getWidth();
     const objectHeight = positionableObject.getHeight();
 
+    const objectLeft = objectX - objectWidth / 2;
+    const objectRight = objectX + objectWidth / 2;
+    const objectTop = objectY - objectHeight / 2;
+    const objectBottom = objectY + objectHeight / 2;
+
     // Get the canvas dimensions
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    // Adjust X position if out of bounds
-    if (objectX < CANVAS_MARGIN) {
-      positionableObject.setX(objectWidth + CANVAS_MARGIN); // Prevent going out of the left boundary
+    if (objectLeft < CANVAS_MARGIN) {
+      positionableObject.setX(objectX + CANVAS_MARGIN); // Prevent going out of the left boundary
       hasChanged = true;
-    } else if (objectX + objectWidth > canvasWidth - CANVAS_MARGIN) {
-      positionableObject.setX(
-        canvasWidth - objectWidth - CANVAS_MARGIN - objectWidth
-      ); // Prevent going out of the right boundary
+    } else if (objectRight > canvasWidth - CANVAS_MARGIN) {
+      positionableObject.setX(objectX - CANVAS_MARGIN); // Prevent going out of the right boundary
       hasChanged = true;
     }
 
     // Adjust Y position if out of bounds
-    if (objectY < CANVAS_MARGIN) {
-      positionableObject.setY(objectHeight + CANVAS_MARGIN); // Prevent going out of the top boundary
+    if (objectTop < CANVAS_MARGIN) {
+      positionableObject.setY(objectY + CANVAS_MARGIN); // Prevent going out of the top boundary
       hasChanged = true;
-    } else if (objectY + objectHeight > canvasHeight - CANVAS_MARGIN) {
-      positionableObject.setY(
-        canvasHeight - objectHeight - CANVAS_MARGIN - objectHeight
-      ); // Prevent going out of the bottom boundary
+    } else if (objectBottom > canvasHeight - CANVAS_MARGIN) {
+      positionableObject.setY(objectY - CANVAS_MARGIN); // Prevent going out of the bottom boundary
       hasChanged = true;
     }
 

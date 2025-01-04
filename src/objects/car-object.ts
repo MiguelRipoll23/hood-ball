@@ -99,7 +99,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
 
-    context.translate(this.x + this.width / 2, this.y + this.height / 2);
+    context.translate(this.x, this.y); // Centered position
     context.rotate(this.angle);
     context.drawImage(
       this.carImage!,
@@ -140,22 +140,25 @@ export class CarObject extends BaseDynamicCollidableGameObject {
       throw new Error("Canvas is not set");
     }
 
-    this.x = this.canvas.width / 2 - this.width / 2;
-    this.y = this.canvas.height / 2 - this.height / 2;
-
-    this.y += this.DISTANCE_CENTER;
+    this.x = this.canvas.width / 2;
+    this.y = this.canvas.height / 2 + this.DISTANCE_CENTER;
   }
 
   private createHitbox(): void {
     this.setHitboxObjects([
-      new HitboxObject(this.x, this.y, this.width, this.width),
+      new HitboxObject(
+        this.x - this.width / 2,
+        this.y - this.height / 2,
+        this.width,
+        this.height
+      ),
     ]);
   }
 
   protected updateHitbox(): void {
     this.getHitboxObjects().forEach((object) => {
-      object.setX(this.x);
-      object.setY(this.y);
+      object.setX(this.x - this.width / 2);
+      object.setY(this.y - this.height / 2);
     });
   }
 
@@ -170,14 +173,12 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
   private applyFriction(): void {
     if (this.isColliding()) {
-      // We don't want the car to stop if is colliding
-      // otherwise it would became stuck
       return;
     }
 
     if (this.speed !== 0) {
       if (Math.abs(this.speed) <= this.FRICTION) {
-        this.speed = 0; // If friction would stop the car, set speed to 0
+        this.speed = 0;
       } else {
         this.speed += -Math.sign(this.speed) * this.FRICTION;
       }
@@ -197,12 +198,10 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   private renderHostIndicator(context: CanvasRenderingContext2D): void {
-    const totalWidth = 2 * this.PING_CIRCLE_RADIUS;
-    const startX = this.x + this.width / 2 - totalWidth / 2 + 3;
-    const startY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 15;
+    const startY = this.y - this.height / 2 - this.PLAYER_NAME_RECT_HEIGHT - 15;
 
     context.beginPath();
-    context.arc(startX, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
+    context.arc(this.x, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
     context.fillStyle = "#FF80AB";
     context.fill();
     context.closePath();
@@ -215,8 +214,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
       return;
     }
 
-    // Determine the number of active circles based on ping
-    let activeCircles = 3; // Default to all green circles
+    let activeCircles = 3;
 
     if (pingTime > 800) {
       activeCircles = 0;
@@ -229,8 +227,8 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     const totalWidth =
       3 * (2 * this.PING_CIRCLE_RADIUS) + 2 * this.PING_CIRCLE_SPACING;
 
-    const startX = this.x + this.width / 2 - totalWidth / 2 + 3;
-    const startY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 15;
+    const startX = this.x - totalWidth / 2 + 3;
+    const startY = this.y - this.height / 2 - this.PLAYER_NAME_RECT_HEIGHT - 15;
 
     context.save();
 
@@ -253,36 +251,27 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   private renderPlayerName(context: CanvasRenderingContext2D): void {
     context.save();
 
-    // Retrieve the player's name or a default value
     const playerName = this.owner?.getName() ?? "Unknown";
-
-    // Set font for measurement and rendering
     context.font = "16px system-ui";
 
-    // Measure the text width
     const textWidth = context.measureText(playerName).width;
-
-    // Calculate the width of the rounded rectangle
     const rectWidth = textWidth + this.PLAYER_NAME_PADDING * 1.8;
 
-    // Set the rectangle's top-left corner position
-    const rectX = this.x + this.width / 2 - rectWidth / 2;
-    const rectY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 5;
+    const rectX = this.x - rectWidth / 2;
+    const rectY = this.y - this.height / 2 - this.PLAYER_NAME_RECT_HEIGHT - 5;
 
-    // Set fill style for the rectangle
     if (this.remote) {
       context.fillStyle = RED_TEAM_TRANSPARENCY_COLOR;
     } else {
       context.fillStyle = BLUE_TEAM_TRANSPARENCY_COLOR;
     }
 
-    // Draw the rounded rectangle
     context.beginPath();
-    context.moveTo(rectX + this.PLAYER_NAME_RADIUS, rectY); // Move to the top-left arc start
-    context.lineTo(rectX + rectWidth - this.PLAYER_NAME_RADIUS, rectY); // Top side
+    context.moveTo(rectX + this.PLAYER_NAME_RADIUS, rectY);
+    context.lineTo(rectX + rectWidth - this.PLAYER_NAME_RADIUS, rectY);
     context.arcTo(
       rectX + rectWidth,
-      rectY, // Top-right corner
+      rectY,
       rectX + rectWidth,
       rectY + this.PLAYER_NAME_RADIUS,
       this.PLAYER_NAME_RADIUS
@@ -290,10 +279,10 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     context.lineTo(
       rectX + rectWidth,
       rectY + this.PLAYER_NAME_RECT_HEIGHT - this.PLAYER_NAME_RADIUS
-    ); // Right side
+    );
     context.arcTo(
       rectX + rectWidth,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT, // Bottom-right corner
+      rectY + this.PLAYER_NAME_RECT_HEIGHT,
       rectX + rectWidth - this.PLAYER_NAME_RADIUS,
       rectY + this.PLAYER_NAME_RECT_HEIGHT,
       this.PLAYER_NAME_RADIUS
@@ -301,18 +290,18 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     context.lineTo(
       rectX + this.PLAYER_NAME_RADIUS,
       rectY + this.PLAYER_NAME_RECT_HEIGHT
-    ); // Bottom side
+    );
     context.arcTo(
       rectX,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT, // Bottom-left corner
+      rectY + this.PLAYER_NAME_RECT_HEIGHT,
       rectX,
       rectY + this.PLAYER_NAME_RECT_HEIGHT - this.PLAYER_NAME_RADIUS,
       this.PLAYER_NAME_RADIUS
     );
-    context.lineTo(rectX, rectY + this.PLAYER_NAME_RADIUS); // Left side
+    context.lineTo(rectX, rectY + this.PLAYER_NAME_RADIUS);
     context.arcTo(
       rectX,
-      rectY, // Top-left corner
+      rectY,
       rectX + this.PLAYER_NAME_RADIUS,
       rectY,
       this.PLAYER_NAME_RADIUS
@@ -320,12 +309,10 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     context.closePath();
     context.fill();
 
-    // Set fill style for the text
     context.fillStyle = "white";
     context.textAlign = "center";
     context.textBaseline = "middle";
 
-    // Draw the text inside the rectangle
     context.fillText(
       playerName,
       rectX + rectWidth / 2,
@@ -342,8 +329,8 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   private renderDebugPosition(context: CanvasRenderingContext2D): void {
     DebugUtils.renderDebugText(
       context,
-      this.x,
-      this.y + this.height + 5,
+      this.x - this.width / 2,
+      this.y + this.height / 2 + 5,
       `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
   }
