@@ -13,16 +13,16 @@ import {
 import { DebugUtils } from "../utils/debug-utils.js";
 
 export class CarObject extends BaseDynamicCollidableGameObject {
-  protected readonly TOP_SPEED: number = 4;
-  protected readonly ACCELERATION: number = 0.4;
-  protected readonly HANDLING: number = 0.0698132;
+  protected readonly TOP_SPEED: number = 0.3;
+  protected readonly ACCELERATION: number = 0.002;
+  protected readonly HANDLING: number = 0.005;
 
   private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
   private readonly IMAGE_RED_PATH = "./images/car-red.png";
 
   private readonly MASS: number = 500;
   private readonly DISTANCE_CENTER: number = 220;
-  private readonly FRICTION: number = 0.2;
+  private readonly FRICTION: number = 0.001;
 
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
@@ -89,8 +89,8 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.applyFriction();
-    this.calculateMovement();
+    this.applyFriction(deltaTimeStamp);
+    this.calculateMovement(deltaTimeStamp);
     this.updateHitbox();
 
     super.update(deltaTimeStamp);
@@ -171,27 +171,29 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     this.carImage.src = this.imagePath;
   }
 
-  private applyFriction(): void {
+  private applyFriction(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.isColliding()) {
       return;
     }
 
     if (this.speed !== 0) {
-      if (Math.abs(this.speed) <= this.FRICTION) {
+      const friction = this.FRICTION * deltaTimeStamp; // Scale friction by deltaTime
+      if (Math.abs(this.speed) <= friction) {
         this.speed = 0;
       } else {
-        this.speed += -Math.sign(this.speed) * this.FRICTION;
+        this.speed += -Math.sign(this.speed) * friction;
       }
     }
   }
 
-  private calculateMovement(): void {
+  private calculateMovement(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.isColliding()) {
       this.speed *= -1;
     }
 
-    this.vx = Math.cos(this.angle) * this.speed;
-    this.vy = Math.sin(this.angle) * this.speed;
+    // Scale velocity by deltaTime to make movement frame-rate independent
+    this.vx = Math.cos(this.angle) * this.speed * deltaTimeStamp;
+    this.vy = Math.sin(this.angle) * this.speed * deltaTimeStamp;
 
     this.x -= this.vx;
     this.y -= this.vy;
