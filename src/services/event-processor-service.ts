@@ -86,7 +86,7 @@ export class EventProcessorService {
       context,
       24,
       context.canvas.height - 24,
-      `Event: ${eventName}`,
+      `Last Event: ${eventName}`,
       false,
       true
     );
