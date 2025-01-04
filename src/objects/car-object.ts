@@ -188,12 +188,12 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
   private calculateMovement(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.isColliding()) {
-      this.speed *= -1;
+      // Let the collision resolution handle the velocity
+    } else {
+      // Scale velocity by deltaTime to make movement frame-rate independent
+      this.vx = Math.cos(this.angle) * this.speed * deltaTimeStamp;
+      this.vy = Math.sin(this.angle) * this.speed * deltaTimeStamp;
     }
-
-    // Scale velocity by deltaTime to make movement frame-rate independent
-    this.vx = Math.cos(this.angle) * this.speed * deltaTimeStamp;
-    this.vy = Math.sin(this.angle) * this.speed * deltaTimeStamp;
 
     this.x -= this.vx;
     this.y -= this.vy;
