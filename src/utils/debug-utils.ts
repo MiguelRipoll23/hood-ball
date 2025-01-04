@@ -4,7 +4,8 @@ export class DebugUtils {
     x: number,
     y: number,
     text: string,
-    subtractWidth = false
+    subtractWidth = false,
+    subtractHeight = false
   ): void {
     context.font = "12px system-ui";
 
@@ -13,14 +14,15 @@ export class DebugUtils {
 
     // Adjust the x-coordinate if subtractWidthWidth is true
     const adjustedX = subtractWidth ? x - boxWidth : x;
+    const adjustedY = subtractHeight ? y - 20 : y;
 
     // Render background box
     context.fillStyle = "rgba(0, 0, 0, 0.6)";
-    context.fillRect(adjustedX, y, boxWidth, 20);
+    context.fillRect(adjustedX, adjustedY, boxWidth, 20);
 
     // Render text
     context.fillStyle = "#FFFF00";
     context.textAlign = "left";
-    context.fillText(text, adjustedX + 6, y + 14);
+    context.fillText(text, adjustedX + 6, adjustedY + 14);
   }
 }

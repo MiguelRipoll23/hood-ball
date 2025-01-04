@@ -11,6 +11,7 @@ import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GameScreen } from "../interfaces/screen/game-screen.js";
+import { GAME_VERSION } from "../constants/game-constants.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -238,6 +239,7 @@ export class GameLoopService {
   private renderDebugInformation(): void {
     this.context.save();
 
+    this.renderDebugGameInformation();
     this.renderDebugScreenInformation();
     this.renderDebugGamePointer();
 
@@ -248,7 +250,22 @@ export class GameLoopService {
       this.renderDebugMatchInformation();
     }
 
+    this.getGameController()
+      .getEventProcessorService()
+      .renderDebugInformation(this.context);
+
     this.context.restore();
+  }
+
+  private renderDebugGameInformation(): void {
+    DebugUtils.renderDebugText(
+      this.context,
+      this.canvas.width - 24,
+      this.canvas.height - 24,
+      `v${GAME_VERSION}`,
+      true,
+      true
+    );
   }
 
   private renderDebugScreenInformation(): void {
@@ -340,15 +357,12 @@ export class GameLoopService {
       return;
     }
 
+    const x = gamePointer.getX();
+    const y = gamePointer.getY();
+
     this.context.fillStyle = "rgba(148, 0, 211, 0.5)";
     this.context.beginPath();
-    this.context.arc(
-      gamePointer.getX(),
-      gamePointer.getY(),
-      15,
-      0,
-      Math.PI * 2
-    );
+    this.context.arc(x, y, 15, 0, Math.PI * 2);
     this.context.closePath();
     this.context.fill();
   }
