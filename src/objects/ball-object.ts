@@ -6,6 +6,7 @@ import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { ObjectUtils } from "../utils/object-utils.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class BallObject
   extends BaseDynamicCollidableGameObject
@@ -95,6 +96,10 @@ export class BallObject
 
     // Restore the context state
     context.restore();
+
+    if (this.debug) {
+      this.renderDebugInformation(context);
+    }
 
     // Hitbox render (from superclass)
     super.render(context);
@@ -239,5 +244,18 @@ export class BallObject
       this.vx *= scale;
       this.vy *= scale;
     }
+  }
+
+  private renderDebugInformation(context: CanvasRenderingContext2D): void {
+    this.renderDebugPosition(context);
+  }
+
+  private renderDebugPosition(context: CanvasRenderingContext2D): void {
+    DebugUtils.renderDebugText(
+      context,
+      this.x - this.radius,
+      this.y + this.radius + 5,
+      `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
+    );
   }
 }

@@ -1,3 +1,4 @@
+import { CANVAS_MARGIN } from "../constants/canvas-constants.js";
 import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { BasePositionableGameObject } from "../objects/base/base-positionable-game-object.js";
 
@@ -29,20 +30,24 @@ export class ObjectUtils {
     const canvasHeight = canvas.height;
 
     // Adjust X position if out of bounds
-    if (objectX < 0) {
-      positionableObject.setX(0); // Prevent going out of the left boundary
+    if (objectX < CANVAS_MARGIN) {
+      positionableObject.setX(objectWidth + CANVAS_MARGIN); // Prevent going out of the left boundary
       hasChanged = true;
-    } else if (objectX + objectWidth > canvasWidth) {
-      positionableObject.setX(canvasWidth - objectWidth); // Prevent going out of the right boundary
+    } else if (objectX + objectWidth > canvasWidth - CANVAS_MARGIN) {
+      positionableObject.setX(
+        canvasWidth - objectWidth - CANVAS_MARGIN - objectWidth
+      ); // Prevent going out of the right boundary
       hasChanged = true;
     }
 
     // Adjust Y position if out of bounds
-    if (objectY < 0) {
-      positionableObject.setY(0); // Prevent going out of the top boundary
+    if (objectY < CANVAS_MARGIN) {
+      positionableObject.setY(objectHeight + CANVAS_MARGIN); // Prevent going out of the top boundary
       hasChanged = true;
-    } else if (objectY + objectHeight > canvasHeight) {
-      positionableObject.setY(canvasHeight - objectHeight); // Prevent going out of the bottom boundary
+    } else if (objectY + objectHeight > canvasHeight - CANVAS_MARGIN) {
+      positionableObject.setY(
+        canvasHeight - objectHeight - CANVAS_MARGIN - objectHeight
+      ); // Prevent going out of the bottom boundary
       hasChanged = true;
     }
 

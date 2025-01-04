@@ -70,12 +70,6 @@ export class BaseMultiplayerGameObject
   }
 
   public setSync(sync: boolean): void {
-    if (this.sync && !sync) {
-      console.log("sync state changed for object from true to false", this);
-    } else if (!this.sync && sync) {
-      console.log("sync state changed for object from false to true", this);
-    }
-
     this.sync = sync;
 
     if (sync) {
