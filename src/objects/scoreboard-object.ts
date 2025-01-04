@@ -21,12 +21,8 @@ export class ScoreboardObject
   private readonly FONT_SIZE: string = "36px";
   private readonly FONT_FAMILY: string = "monospace";
 
-  private readonly TIME_TEXT_COLOR: string = "white";
-  private readonly TIME_FONT_SIZE: string = "32px";
-
   private readonly BLUE_SHAPE_COLOR: string = BLUE_TEAM_COLOR;
   private readonly RED_SHAPE_COLOR: string = RED_TEAM_COLOR;
-  private readonly SHAPE_FILL_COLOR: string = "white";
   private readonly TIME_BOX_FILL_COLOR: string = "#4caf50"; // Added property for time box fill color
 
   private x: number;
@@ -86,11 +82,11 @@ export class ScoreboardObject
     this.redScore++;
   }
 
-  public setBlueTeamScore(score: number): void {
+  public setBlueScore(score: number): void {
     this.blueScore = score;
   }
 
-  public setRedTeamScore(score: number): void {
+  public setRedScore(score: number): void {
     this.redScore = score;
   }
 
@@ -118,10 +114,8 @@ export class ScoreboardObject
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      this.elapsedMilliseconds += deltaTimeStamp;
-
-      if (this.elapsedMilliseconds >= this.durationMilliseconds) {
-        this.stopTimer();
+      if (this.elapsedMilliseconds < this.durationMilliseconds) {
+        this.elapsedMilliseconds += deltaTimeStamp;
       }
     }
 

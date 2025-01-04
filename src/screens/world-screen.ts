@@ -439,13 +439,13 @@ export class WorldScreen extends BaseCollidingGameScreen {
     players.forEach((player) => {
       const score = player.getScore();
       if (player === this.gameState.getGamePlayer()) {
-        return this.scoreboardObject?.setBlueTeamScore(score);
+        return this.scoreboardObject?.setBlueScore(score);
       }
 
       totalScore += score;
     });
 
-    this.scoreboardObject?.setRedTeamScore(totalScore);
+    this.scoreboardObject?.setRedScore(totalScore);
   }
 
   private showGoalAlert(
