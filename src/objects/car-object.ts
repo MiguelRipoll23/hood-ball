@@ -111,7 +111,12 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
     context.restore();
 
-    this.renderPingLevel(context);
+    if (this.owner?.isHost()) {
+      this.renderHostIndicator(context);
+    } else {
+      this.renderPingLevel(context);
+    }
+
     this.renderPlayerName(context);
 
     if (this.debug) {
@@ -191,12 +196,19 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     this.y -= this.vy;
   }
 
-  private renderPingLevel(context: CanvasRenderingContext2D): void {
-    // Only render ping level for remote players
-    if (this.owner?.isHost()) {
-      return;
-    }
+  private renderHostIndicator(context: CanvasRenderingContext2D): void {
+    const totalWidth = 2 * this.PING_CIRCLE_RADIUS;
+    const startX = this.x + this.width / 2 - totalWidth / 2 + 3;
+    const startY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 15;
 
+    context.beginPath();
+    context.arc(startX, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
+    context.fillStyle = "#FF80AB";
+    context.fill();
+    context.closePath();
+  }
+
+  private renderPingLevel(context: CanvasRenderingContext2D): void {
     const pingTime = this.owner?.getPingTime() ?? null;
 
     if (pingTime === null) {
