@@ -257,12 +257,12 @@ export class WorldScreen extends BaseCollidingGameScreen {
     );
 
     this.eventProcessorService.listenRemoteEvent(
-      EventType.GoalStart,
+      EventType.GoalScored,
       this.handleRemoteGoal.bind(this)
     );
 
     this.eventProcessorService.listenRemoteEvent(
-      EventType.GameOverStart,
+      EventType.GameOver,
       this.handleRemoteGameOverStartEvent.bind(this)
     );
   }
@@ -430,7 +430,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     new Uint8Array(arrayBuffer).set(new TextEncoder().encode(playerId), 0);
     new DataView(arrayBuffer).setUint8(32, playerScore);
 
-    const goalEvent = new RemoteEvent(EventType.GoalStart);
+    const goalEvent = new RemoteEvent(EventType.GoalScored);
     goalEvent.setBuffer(arrayBuffer);
 
     this.gameController.getEventProcessorService().sendEvent(goalEvent);
@@ -560,7 +560,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const arrayBuffer = new ArrayBuffer(32);
     new Uint8Array(arrayBuffer).set(new TextEncoder().encode(playerId), 0);
 
-    const gameOverStartEvent = new RemoteEvent(EventType.GameOverStart);
+    const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
     gameOverStartEvent.setBuffer(arrayBuffer);
 
     this.eventProcessorService.sendEvent(gameOverStartEvent);

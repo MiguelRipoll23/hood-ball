@@ -9,8 +9,6 @@ export enum EventType {
   HostDisconnected,
   PlayerDisconnected,
   Countdown,
-  GoalStart,
-  GoalEnd,
-  GameOverStart,
-  GameOverEnd,
+  GoalScored,
+  GameOver,
 }
