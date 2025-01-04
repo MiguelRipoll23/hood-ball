@@ -50,8 +50,6 @@ export class LocalCarObject extends CarObject {
 
     ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
 
-    this.fixPositionIfOutOfBounds();
-
     super.update(deltaTimeStamp);
   }
 
@@ -132,31 +130,5 @@ export class LocalCarObject extends CarObject {
       currentAngle +
       Math.sign(angleDifference) * Math.min(Math.abs(angleDifference), 0.1)
     );
-  }
-
-  private fixPositionIfOutOfBounds(): void {
-    let positionFixed = false;
-
-    // Check and fix x-coordinate if it's out of bounds
-    if (this.x < 3) {
-      this.x = 3;
-      positionFixed = true;
-    } else if (this.x > this.canvas.width - 60) {
-      this.x = this.canvas.width - 60;
-      positionFixed = true;
-    }
-
-    // Check and fix y-coordinate if it's out of bounds
-    if (this.y < 3) {
-      this.y = 3;
-      positionFixed = true;
-    } else if (this.y > this.canvas.height - 60) {
-      this.y = this.canvas.height - 60;
-      positionFixed = true;
-    }
-
-    if (positionFixed) {
-      this.setSync(true);
-    }
   }
 }

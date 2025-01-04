@@ -10,16 +10,12 @@ import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
 } from "../constants/webrtc-constants.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class CarObject extends BaseDynamicCollidableGameObject {
   protected readonly TOP_SPEED: number = 4;
   protected readonly ACCELERATION: number = 0.4;
   protected readonly HANDLING: number = 0.0698132;
-  protected readonly WIDTH: number = 50;
-  protected readonly HEIGHT: number = 50;
-
-  protected canvas: HTMLCanvasElement | null = null;
-  protected speed: number = 0;
 
   private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
   private readonly IMAGE_RED_PATH = "./images/car-red.png";
@@ -36,6 +32,11 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   private readonly PING_CIRCLE_SPACING = 4;
   private readonly PING_ACTIVE_COLOR = "#C6FF00";
   private readonly PING_INACTIVE_COLOR = "#FF0000";
+
+  protected width: number = 50;
+  protected height: number = 50;
+  protected canvas: HTMLCanvasElement | null = null;
+  protected speed: number = 0;
 
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
@@ -98,20 +99,24 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
 
-    context.translate(this.x + this.WIDTH / 2, this.y + this.HEIGHT / 2);
+    context.translate(this.x + this.width / 2, this.y + this.height / 2);
     context.rotate(this.angle);
     context.drawImage(
       this.carImage!,
-      -this.WIDTH / 2,
-      -this.HEIGHT / 2,
-      this.WIDTH,
-      this.HEIGHT
+      -this.width / 2,
+      -this.height / 2,
+      this.width,
+      this.height
     );
 
     context.restore();
 
     this.renderPingLevel(context);
     this.renderPlayerName(context);
+
+    if (this.debug) {
+      this.renderDebugInformation(context);
+    }
 
     // Hitbox debug
     super.render(context);
@@ -130,15 +135,15 @@ export class CarObject extends BaseDynamicCollidableGameObject {
       throw new Error("Canvas is not set");
     }
 
-    this.x = this.canvas.width / 2 - this.WIDTH / 2;
-    this.y = this.canvas.height / 2 - this.HEIGHT / 2;
+    this.x = this.canvas.width / 2 - this.width / 2;
+    this.y = this.canvas.height / 2 - this.height / 2;
 
     this.y += this.DISTANCE_CENTER;
   }
 
   private createHitbox(): void {
     this.setHitboxObjects([
-      new HitboxObject(this.x, this.y, this.WIDTH, this.WIDTH),
+      new HitboxObject(this.x, this.y, this.width, this.width),
     ]);
   }
 
@@ -212,7 +217,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     const totalWidth =
       3 * (2 * this.PING_CIRCLE_RADIUS) + 2 * this.PING_CIRCLE_SPACING;
 
-    const startX = this.x + this.WIDTH / 2 - totalWidth / 2 + 3;
+    const startX = this.x + this.width / 2 - totalWidth / 2 + 3;
     const startY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 15;
 
     context.save();
@@ -249,7 +254,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     const rectWidth = textWidth + this.PLAYER_NAME_PADDING * 1.8;
 
     // Set the rectangle's top-left corner position
-    const rectX = this.x + this.WIDTH / 2 - rectWidth / 2;
+    const rectX = this.x + this.width / 2 - rectWidth / 2;
     const rectY = this.y - this.PLAYER_NAME_RECT_HEIGHT - 5;
 
     // Set fill style for the rectangle
@@ -316,5 +321,18 @@ export class CarObject extends BaseDynamicCollidableGameObject {
     );
 
     context.restore();
+  }
+
+  private renderDebugInformation(context: CanvasRenderingContext2D): void {
+    this.renderDebugPosition(context);
+  }
+
+  private renderDebugPosition(context: CanvasRenderingContext2D): void {
+    DebugUtils.renderDebugText(
+      context,
+      this.x,
+      this.y + this.height + 5,
+      `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
+    );
   }
 }
