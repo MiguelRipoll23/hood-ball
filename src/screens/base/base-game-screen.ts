@@ -94,22 +94,11 @@ export class BaseGameScreen implements GameScreen {
     throw new Error("Object not found in any layer");
   }
 
-  public addObjectToLayer(layerId: LayerType, object: GameObject): void {
+  public addObjectToSceneLayer(object: GameObject): void {
     object.setDebug(this.gameController.isDebugging());
     object.load();
 
-    switch (layerId) {
-      case LayerType.UI:
-        this.uiObjects.push(object);
-        break;
-
-      case LayerType.Scene:
-        this.sceneObjects.push(object);
-        break;
-
-      default:
-        console.warn(`Unknown layer id ${layerId} for object`, object);
-    }
+    this.sceneObjects.push(object);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
