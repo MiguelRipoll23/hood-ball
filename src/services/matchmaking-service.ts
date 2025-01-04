@@ -183,9 +183,6 @@ export class MatchmakingService {
       return console.warn("Player is null");
     }
 
-    // Display ping level placeholder during ping check
-    this.gameState.getGamePlayer().setPingTime(0);
-
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
       EventType.PlayerConnected,
       { player, matchmaking: true }
