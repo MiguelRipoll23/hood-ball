@@ -308,7 +308,7 @@ export class GameLoopService {
       DebugUtils.renderDebugText(this.context, 24, 48, "Host");
     } else {
       const pingTime = player.getPingTime();
-      const displayPingTime = pingTime === null ? "n/a" : `${pingTime} ms`;
+      const displayPingTime = pingTime === null ? "- ms" : `${pingTime} ms`;
 
       DebugUtils.renderDebugText(
         this.context,
