@@ -1,5 +1,6 @@
 import { HitboxObject } from "../common/hitbox-object.js";
 import { BaseAnimatedGameObject } from "./base-animated-object.js";
+import { BaseDynamicCollidableGameObject } from "./base-collidable-dynamic-game-object.js";
 
 type CollidableGameObjectConstructor = new (
   ...args: never[]
@@ -23,13 +24,23 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
   }
 
   public isColliding(): boolean {
-    return this.collidingObjects
-      .filter((object) =>
+    return this.collidingObjects.some(
+      (object) =>
         this.isCollisionClassIncluded(
           object.constructor as CollidableGameObjectConstructor
-        )
-      )
-      .some((object) => object.hasRigidBody());
+        ) && object.hasRigidBody()
+    );
+  }
+
+  public isCollidingWithStatic(): boolean {
+    return this.collidingObjects.some(
+      (object) =>
+        this.isCollisionClassIncluded(
+          object.constructor as CollidableGameObjectConstructor
+        ) &&
+        !(object instanceof BaseDynamicCollidableGameObject) &&
+        object.hasRigidBody()
+    );
   }
 
   public getHitboxObjects(): HitboxObject[] {

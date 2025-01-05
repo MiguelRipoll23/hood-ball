@@ -19,6 +19,9 @@ export class BallObject
   private readonly MAX_VELOCITY: number = 10;
   private radius: number = this.RADIUS;
 
+  protected width = this.RADIUS * 2;
+  protected height = this.RADIUS * 2;
+
   private inactive: boolean = false;
   private lastPlayer: GamePlayer | null = null;
 
