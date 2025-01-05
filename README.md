@@ -12,22 +12,9 @@ battle.
 - WebRTC for real-time communication between host and players
 - Web Crypto API for server configuration and player scores handling
 
-## Inspirations
+- ## Demo
 
-### Gameplay
-
-- Rocket League for level design
-
-### User interface
-
-- Rocket League for scoreboard and gameplay alerts
-- LittleBigPlanet for general UI and buttons, tooltips... etc.
-- Metal Gear Online 2 for server notifications and menu UX
-
-### Matchmaking
-
-- GTA Online (V) for matchmaking, online configuration and player scores
-  handling
+https://github.com/user-attachments/assets/1987068a-42d7-4791-bc99-c3c6e412812c
 
 ## Contributions
 
