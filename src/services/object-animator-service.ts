@@ -10,7 +10,7 @@ export class ObjectAnimationService {
   private endValue: number;
 
   private durationMilliseconds: number;
-  private currentTime: number = 0;
+  private elapsedMilliseconds: number = 0;
 
   private animationType: AnimationType;
 
@@ -33,9 +33,13 @@ export class ObjectAnimationService {
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp) {
-    this.currentTime += deltaTimeStamp;
+    this.elapsedMilliseconds += deltaTimeStamp;
 
-    const progress = Math.min(this.currentTime / this.durationMilliseconds, 1);
+    const progress = Math.min(
+      this.elapsedMilliseconds / this.durationMilliseconds,
+      1
+    );
+
     const newValue =
       this.startValue + (this.endValue - this.startValue) * progress;
 
