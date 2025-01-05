@@ -20,7 +20,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
   private readonly IMAGE_RED_PATH = "./images/car-red.png";
 
-  private readonly MASS: number = 500;
+  private readonly MASS: number = 1000;
   private readonly DISTANCE_CENTER: number = 220;
   private readonly FRICTION: number = 0.001;
 
@@ -89,7 +89,12 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.applyFriction(deltaTimeStamp);
+    if (this.isCollidingWithStatic()) {
+      this.speed = 0;
+    } else {
+      this.applyFriction(deltaTimeStamp);
+    }
+
     this.calculateMovement(deltaTimeStamp);
     this.updateHitbox();
 
@@ -172,12 +177,9 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   private applyFriction(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.isColliding()) {
-      return;
-    }
-
     if (this.speed !== 0) {
-      const friction = this.FRICTION * deltaTimeStamp; // Scale friction by deltaTime
+      const friction = this.FRICTION * deltaTimeStamp;
+
       if (Math.abs(this.speed) <= friction) {
         this.speed = 0;
       } else {
