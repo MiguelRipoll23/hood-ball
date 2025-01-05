@@ -3,7 +3,7 @@
 Accelerate and smash your way to victory in a car-based multiplayer soccer
 battle.
 
-## Technology stack
+## Features
 
 - Passkey for registration and login
 - JSON Web Tokens for game server authentication
@@ -12,7 +12,7 @@ battle.
 - WebRTC for real-time communication between host and players
 - Web Crypto API for server configuration and player scores handling
 
-- ## Demo
+## Demo
 
 https://github.com/user-attachments/assets/1987068a-42d7-4791-bc99-c3c6e412812c
 
