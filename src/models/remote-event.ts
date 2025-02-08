@@ -2,18 +2,18 @@ import { GameEvent } from "../interfaces/event/game-event.js";
 import { EventType } from "../enums/event-type.js";
 
 export class RemoteEvent implements GameEvent {
-  private id: EventType;
+  private type: EventType;
   private buffer: ArrayBuffer | null = null;
 
   constructor(id: EventType) {
-    this.id = id;
+    this.type = id;
   }
 
-  public getId(): EventType {
-    return this.id;
+  public getType(): EventType {
+    return this.type;
   }
 
-  public getBuffer(): ArrayBuffer | null {
+  public getData(): ArrayBuffer | null {
     return this.buffer;
   }
 

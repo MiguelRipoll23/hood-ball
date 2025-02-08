@@ -1,5 +1,6 @@
 import { EventType } from "../../enums/event-type.js";
 
 export interface GameEvent {
-  getId(): EventType;
+  getType(): EventType;
+  getData(): unknown;
 }

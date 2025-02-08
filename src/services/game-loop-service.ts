@@ -12,6 +12,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
+import { EventsConsumer } from "./events-consumer-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -32,11 +33,17 @@ export class GameLoopService {
   private downloadKilobytesPerSecond: number = 0;
   private uploadKilobytesPerSecond: number = 0;
 
+  // Events
+  private eventConsumer: EventsConsumer;
+
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();
+    this.eventConsumer = this.gameController
+      .getEventProcessorService()
+      .createConsumer();
 
     this.setCanvasSize();
     this.listenForWindowEvents();
@@ -213,7 +220,18 @@ export class GameLoopService {
     }
   }
 
+  private subscribeToEvents(): void {
+    this.eventConsumer.subscribeToEvent(
+      EventType.ServerDisconnected,
+      this.handleServerDisconnectedEvent.bind(this)
+    );
+  }
+
   private listenForEvents(): void {
+    this.gameController
+      .getEventProcessorService()
+      .consumeEvents(this.eventConsumer);
+
     this.gameController
       .getEventProcessorService()
       .listenLocalEvent(

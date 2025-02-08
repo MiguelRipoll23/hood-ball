@@ -2,19 +2,19 @@ import { GameEvent } from "../interfaces/event/game-event.js";
 import { EventType } from "../enums/event-type.js";
 
 export class LocalEvent<T = unknown> implements GameEvent {
-  private id: EventType;
+  private type: EventType;
   private data: T;
 
   constructor(id: EventType, data: T) {
-    this.id = id;
+    this.type = id;
     this.data = data;
   }
 
-  public getId(): EventType {
-    return this.id;
+  public getType(): EventType {
+    return this.type;
   }
 
-  public getPayload(): T {
+  public getData(): T {
     return this.data;
   }
 }
