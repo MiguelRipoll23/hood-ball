@@ -1,6 +1,6 @@
 import { GameEvent } from "../interfaces/event/game-event.js";
 
-export class EventsQueue<T extends GameEvent> {
+export class EventQueue<T extends GameEvent> {
   protected events: T[] = [];
 
   public getEvents(): T[] {

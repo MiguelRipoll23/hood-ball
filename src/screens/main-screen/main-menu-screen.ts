@@ -12,7 +12,6 @@ import { ScoreboardScreen } from "./scoreboard-screen.js";
 import { SettingsScreen } from "./settings-screen.js";
 import { EventType } from "../../enums/event-type.js";
 import { EventProcessorService } from "../../services/event-processor-service.js";
-import { EventsConsumer } from "../../services/events-consumer-service.js";
 
 export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -26,20 +25,12 @@ export class MainMenuScreen extends BaseGameScreen {
   private serverMessageWindowObject: ServerMessageWindowObject | null = null;
   private closeableMessageObject: CloseableMessageObject | null = null;
 
-  // Events
-  private eventConsumer: EventsConsumer;
-
   constructor(gameController: GameController, private showNews: boolean) {
     super(gameController);
     this.apiService = gameController.getAPIService();
     this.transitionService = gameController.getTransitionService();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.showNews = showNews;
-
-    this.eventConsumer = this.gameController
-      .getEventProcessorService()
-      .createConsumer();
-
     this.subscribeToEvents();
   }
 
@@ -62,8 +53,6 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.eventProcessorService.consumeEvents(this.eventConsumer);
-
     this.handleMenuOptionObjects();
     this.handleServerMessageWindowObject();
 
@@ -75,6 +64,17 @@ export class MainMenuScreen extends BaseGameScreen {
     this.showWelcomePlayerName(context);
     context.globalAlpha = 1;
     super.render(context);
+  }
+
+  private subscribeToEvents(): void {
+    this.subscribeToLocalEvents();
+  }
+
+  private subscribeToLocalEvents(): void {
+    this.subscribeToLocalEvent(
+      EventType.DebugChanged,
+      this.updateDebugStateForObjects.bind(this)
+    );
   }
 
   private loadTitleObject(): void {
@@ -108,13 +108,6 @@ export class MainMenuScreen extends BaseGameScreen {
     this.serverMessageWindowObject.load();
 
     this.uiObjects.push(this.serverMessageWindowObject);
-  }
-
-  private subscribeToEvents(): void {
-    this.eventConsumer.subscribeToEvent(
-      EventType.DebugChanged,
-      this.updateDebugStateForObjects.bind(this)
-    );
   }
 
   private downloadServerMessages(): void {

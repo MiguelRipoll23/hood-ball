@@ -12,7 +12,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
-import { EventsConsumer } from "./events-consumer-service.js";
+import { EventConsumer } from "./event-consumer-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -34,19 +34,16 @@ export class GameLoopService {
   private uploadKilobytesPerSecond: number = 0;
 
   // Events
-  private eventConsumer: EventsConsumer;
+  private eventConsumer: EventConsumer;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();
-    this.eventConsumer = this.gameController
-      .getEventProcessorService()
-      .createConsumer();
-
+    this.eventConsumer = new EventConsumer(this.gameController);
     this.setCanvasSize();
-    this.listenForWindowEvents();
+    this.addWindowAndGameListeners();
     this.loadNotificationObject();
   }
 
@@ -77,6 +74,7 @@ export class GameLoopService {
       "color: #b6ff35; font-size: 20px; font-weight: bold"
     );
   }
+
   private setCanvasSize(): void {
     this.canvas.width = CANVAS_WIDTH;
     this.canvas.height = CANVAS_HEIGHT;
@@ -98,8 +96,37 @@ export class GameLoopService {
     this.canvas.style.height = newHeight + "px";
   }
 
+  private addWindowAndGameListeners(): void {
+    this.listenForWindowEvents();
+    this.subscribeToEvents();
+  }
+
   private listenForWindowEvents(): void {
     window.addEventListener("resize", this.setCanvasSize.bind(this));
+  }
+
+  private subscribeToEvents(): void {
+    this.subscribeToLocalEvents();
+  }
+
+  private subscribeToLocalEvents(): void {
+    this.eventConsumer.subscribeToLocalEvent(
+      EventType.ServerDisconnected,
+      this.handleServerDisconnectedEvent.bind(this),
+      true
+    );
+
+    this.eventConsumer.subscribeToLocalEvent(
+      EventType.HostDisconnected,
+      this.handleHostDisconnectedEvent.bind(this),
+      true
+    );
+
+    this.eventConsumer.subscribeToLocalEvent(
+      EventType.ServerNotification,
+      this.handleServerNotificationEvent.bind(this),
+      true
+    );
   }
 
   private handleServerDisconnectedEvent(
@@ -186,7 +213,7 @@ export class GameLoopService {
   }
 
   private update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.listenForEvents();
+    this.eventConsumer.consumeEvents();
 
     this.gameController
       .getTimers()
@@ -218,40 +245,6 @@ export class GameLoopService {
     if (this.gameController.isDebugging()) {
       this.renderDebugInformation();
     }
-  }
-
-  private subscribeToEvents(): void {
-    this.eventConsumer.subscribeToEvent(
-      EventType.ServerDisconnected,
-      this.handleServerDisconnectedEvent.bind(this)
-    );
-  }
-
-  private listenForEvents(): void {
-    this.gameController
-      .getEventProcessorService()
-      .consumeEvents(this.eventConsumer);
-
-    this.gameController
-      .getEventProcessorService()
-      .listenLocalEvent(
-        EventType.ServerDisconnected,
-        this.handleServerDisconnectedEvent.bind(this)
-      );
-
-    this.gameController
-      .getEventProcessorService()
-      .listenLocalEvent(
-        EventType.HostDisconnected,
-        this.handleHostDisconnectedEvent.bind(this)
-      );
-
-    this.gameController
-      .getEventProcessorService()
-      .listenLocalEvent(
-        EventType.ServerNotification,
-        this.handleServerNotificationEvent.bind(this)
-      );
   }
 
   private renderDebugInformation(): void {

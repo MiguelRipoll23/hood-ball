@@ -43,6 +43,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.eventProcessorService = gameController.getEventProcessorService();
     this.gameState.getGamePlayer().reset();
     this.addSyncableObjects();
+    this.subscribeToEvents();
   }
 
   public override loadObjects(): void {
@@ -74,7 +75,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
 
-    this.listenForEvents();
     this.handleMatchState();
     this.detectScoresIfHost();
 
@@ -228,40 +228,40 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.sceneObjects.push(this.toastObject);
   }
 
-  private listenForEvents(): void {
-    this.listenForLocalEvents();
-    this.listenForRemoteEvents();
+  private subscribeToEvents(): void {
+    this.subscribeToLocalEvents();
+    this.subscribeToRemoteEvents();
   }
 
-  private listenForLocalEvents(): void {
-    this.eventProcessorService.listenLocalEvent(
+  private subscribeToLocalEvents(): void {
+    this.subscribeToLocalEvent(
       EventType.MatchAdvertised,
       this.handleMatchAdvertised.bind(this)
     );
 
-    this.eventProcessorService.listenLocalEvent<PlayerConnectedPayload>(
+    this.subscribeToLocalEvent<PlayerConnectedPayload>(
       EventType.PlayerConnected,
       this.handlePlayerConnection.bind(this)
     );
 
-    this.eventProcessorService.listenLocalEvent<PlayerDisconnectedPayload>(
+    this.subscribeToLocalEvent<PlayerDisconnectedPayload>(
       EventType.PlayerDisconnected,
       this.handlePlayerDisconnection.bind(this)
     );
   }
 
-  private listenForRemoteEvents(): void {
-    this.eventProcessorService.listenRemoteEvent(
+  private subscribeToRemoteEvents(): void {
+    this.subscribeToRemoteEvent(
       EventType.Countdown,
       this.handleRemoteCountdown.bind(this)
     );
 
-    this.eventProcessorService.listenRemoteEvent(
+    this.subscribeToRemoteEvent(
       EventType.GoalScored,
       this.handleRemoteGoal.bind(this)
     );
 
-    this.eventProcessorService.listenRemoteEvent(
+    this.subscribeToRemoteEvent(
       EventType.GameOver,
       this.handleRemoteGameOverStartEvent.bind(this)
     );
