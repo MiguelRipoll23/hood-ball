@@ -206,7 +206,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
     context.beginPath();
     context.arc(this.x, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
-    context.fillStyle = "#FF80AB";
+    context.fillStyle = this.PING_ACTIVE_COLOR;
     context.fill();
     context.closePath();
   }
