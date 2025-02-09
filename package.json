@@ -11,7 +11,7 @@
     "bundle-dev": "esbuild src/main.ts --bundle --outfile=static/js/bundle.js --watch",
     "bundle": "esbuild src/main.ts --bundle --outfile=static/js/bundle.js"
   },
-  "author": "",
+  "author": "MiguelRipoll23",
   "license": "ISC",
   "devDependencies": {
     "@eslint/js": "^9.19.0",
