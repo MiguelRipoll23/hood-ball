@@ -31,6 +31,7 @@ export class MainMenuScreen extends BaseGameScreen {
     this.transitionService = gameController.getTransitionService();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.showNews = showNews;
+    this.subscribeToEvents();
   }
 
   public override loadObjects(): void {
@@ -52,7 +53,6 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.listenForLocalEvents();
     this.handleMenuOptionObjects();
     this.handleServerMessageWindowObject();
 
@@ -64,6 +64,17 @@ export class MainMenuScreen extends BaseGameScreen {
     this.showWelcomePlayerName(context);
     context.globalAlpha = 1;
     super.render(context);
+  }
+
+  private subscribeToEvents(): void {
+    this.subscribeToLocalEvents();
+  }
+
+  private subscribeToLocalEvents(): void {
+    this.subscribeToLocalEvent(
+      EventType.DebugChanged,
+      this.updateDebugStateForObjects.bind(this)
+    );
   }
 
   private loadTitleObject(): void {
@@ -97,13 +108,6 @@ export class MainMenuScreen extends BaseGameScreen {
     this.serverMessageWindowObject.load();
 
     this.uiObjects.push(this.serverMessageWindowObject);
-  }
-
-  private listenForLocalEvents(): void {
-    this.eventProcessorService.listenLocalEvent(
-      EventType.DebugChanged,
-      this.updateDebugStateForObjects.bind(this)
-    );
   }
 
   private downloadServerMessages(): void {

@@ -8,7 +8,6 @@ import { GameController } from "../../models/game-controller.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
-import { EventProcessorService } from "../../services/event-processor-service.js";
 import { CredentialService } from "../../services/credential-service.js";
 
 export class LoginScreen extends BaseGameScreen {
@@ -16,7 +15,6 @@ export class LoginScreen extends BaseGameScreen {
   private apiService: APIService;
   private cryptoService: CryptoService;
   private webSocketService: WebSocketService;
-  private eventProcessorService: EventProcessorService;
   private credentialService: CredentialService;
 
   private messageObject: MessageObject | null = null;
@@ -29,20 +27,18 @@ export class LoginScreen extends BaseGameScreen {
 
   constructor(gameController: GameController) {
     super(gameController);
-
     this.gameState = gameController.getGameState();
     this.apiService = gameController.getAPIService();
     this.cryptoService = gameController.getCryptoService();
     this.webSocketService = gameController.getWebSocketService();
-    this.eventProcessorService = gameController.getEventProcessorService();
     this.credentialService = new CredentialService(gameController);
-
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"
     );
     this.registerButtonElement = document.querySelector("#register-button");
     this.signInButtonElement = document.querySelector("#sign-in-button");
+    this.subscribeToEvents();
   }
 
   public override loadObjects(): void {
@@ -58,9 +54,24 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.listenForEvents();
     this.handleErrorCloseableMessageObject();
     super.update(deltaTimeStamp);
+  }
+
+  private subscribeToEvents(): void {
+    this.subscribeToLocalEvents();
+  }
+
+  private subscribeToLocalEvents(): void {
+    this.subscribeToLocalEvent(
+      EventType.ServerAuthenticated,
+      this.downloadConfiguration.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.ServerConnected,
+      this.handleServerConnectedEvent.bind(this)
+    );
   }
 
   private handleServerConnectedEvent(): void {
@@ -210,17 +221,5 @@ export class LoginScreen extends BaseGameScreen {
     this.screenManagerService
       ?.getTransitionService()
       .crossfade(mainMenuScreen, 0.2);
-  }
-
-  private listenForEvents(): void {
-    this.eventProcessorService.listenLocalEvent(
-      EventType.ServerAuthenticated,
-      this.downloadConfiguration.bind(this)
-    );
-
-    this.eventProcessorService.listenLocalEvent(
-      EventType.ServerConnected,
-      this.handleServerConnectedEvent.bind(this)
-    );
   }
 }

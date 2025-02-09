@@ -4,36 +4,40 @@ import { RemoteEvent } from "../models/remote-event.js";
 import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { LocalEvent } from "../models/local-event.js";
-import { GameEvent } from "../interfaces/event/game-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { DebugUtils } from "../utils/debug-utils.js";
+import { EventQueue } from "../models/event-queue.js";
+
+export type EventSubscription = {
+  eventType: EventType;
+  eventCallback: (data: unknown) => void;
+};
 
 export class EventProcessorService {
   private webrtcService: WebRTCService;
 
-  private localEvents: LocalEvent[] = [];
-  private remoteEvents: RemoteEvent[] = [];
+  private localQueue: EventQueue<LocalEvent>;
+  private remoteQueue: EventQueue<RemoteEvent>;
 
   private lastConsumedEvent: string | null = null;
 
   constructor(gameController: GameController) {
     this.webrtcService = gameController.getWebRTCService();
+    this.localQueue = new EventQueue<LocalEvent>();
+    this.remoteQueue = new EventQueue<RemoteEvent>();
+  }
+
+  public getLocalQueue(): EventQueue<LocalEvent> {
+    return this.localQueue;
+  }
+
+  public getRemoteQueue(): EventQueue<RemoteEvent> {
+    return this.remoteQueue;
   }
 
   public addLocalEvent(event: LocalEvent) {
-    console.log(`Added local event ${EventType[event.getId()]}`, event);
-    this.localEvents.push(event);
-  }
-
-  public listenLocalEvent<T>(eventId: EventType, callback: (data: T) => void) {
-    this.localEvents.forEach((event) => {
-      if (event.getId() === eventId) {
-        console.log(`Local event ${EventType[eventId]} consumed`, event);
-        this.lastConsumedEvent = EventType[eventId];
-        callback(event.getPayload() as T);
-        this.removeEvent(this.localEvents, event);
-      }
-    });
+    console.log(`Added local event ${EventType[event.getType()]}`, event);
+    this.localQueue.addEvent(event);
   }
 
   public handleEventData(webrtcPeer: WebRTCPeer, data: ArrayBuffer | null) {
@@ -53,30 +57,20 @@ export class EventProcessorService {
     const event = new RemoteEvent(id);
     event.setBuffer(payload);
 
-    this.remoteEvents.push(event);
-  }
-
-  public listenRemoteEvent(
-    eventId: EventType,
-    callback: (data: ArrayBuffer | null) => void
-  ) {
-    this.remoteEvents.forEach((event) => {
-      if (event.getId() === eventId) {
-        console.log(`Remote event ${EventType[eventId]} consumed`, event);
-        this.lastConsumedEvent = EventType[eventId];
-        callback(event.getBuffer());
-        this.removeEvent(this.remoteEvents, event);
-      }
-    });
+    this.remoteQueue.addEvent(event);
   }
 
   public sendEvent(event: RemoteEvent) {
-    console.log(`Sending remote event ${EventType[event.getId()]}`, event);
+    console.log(`Sending remote event ${EventType[event.getType()]}`, event);
     this.webrtcService.getPeers().forEach((webrtcPeer) => {
       if (webrtcPeer.hasJoined()) {
         this.sendEventToPeer(webrtcPeer, event);
       }
     });
+  }
+
+  public setLastConsumedEvent(eventType: EventType) {
+    this.lastConsumedEvent = EventType[eventType];
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D) {
@@ -92,17 +86,9 @@ export class EventProcessorService {
     );
   }
 
-  private removeEvent(list: GameEvent[], event: GameEvent) {
-    const index = list.indexOf(event);
-
-    if (index > -1) {
-      list.splice(index, 1);
-    }
-  }
-
   private sendEventToPeer(webrtcPeer: WebRTCPeer, event: RemoteEvent) {
-    const id = event.getId();
-    const data = event.getBuffer();
+    const id = event.getType();
+    const data = event.getData();
 
     const dataBytesLength = data?.byteLength ?? 0;
 

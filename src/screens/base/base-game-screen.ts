@@ -5,6 +5,8 @@ import { BasePressableGameObject } from "../../objects/base/base-pressable-game-
 import { GameObject } from "../../interfaces/object/game-object.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { GameScreen } from "../../interfaces/screen/game-screen.js";
+import { EventConsumer } from "../../services/event-consumer-service.js";
+import { EventType } from "../../enums/event-type.js";
 
 export class BaseGameScreen implements GameScreen {
   protected canvas: HTMLCanvasElement;
@@ -16,12 +18,15 @@ export class BaseGameScreen implements GameScreen {
   protected sceneObjects: GameObject[] = [];
   protected uiObjects: GameObject[] = [];
 
+  protected eventConsumer: EventConsumer;
+
   private gamePointer: GamePointer;
 
   constructor(protected gameController: GameController) {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameController.getCanvas();
     this.gamePointer = gameController.getGamePointer();
+    this.eventConsumer = new EventConsumer(gameController);
   }
 
   public isActive(): boolean {
@@ -102,6 +107,8 @@ export class BaseGameScreen implements GameScreen {
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    this.eventConsumer.consumeEvents();
+
     this.updateObjects(this.sceneObjects, deltaTimeStamp);
     this.updateObjects(this.uiObjects, deltaTimeStamp);
 
@@ -130,6 +137,28 @@ export class BaseGameScreen implements GameScreen {
 
     this.sceneObjects.forEach((object) => object.setDebug(debug));
     this.uiObjects.forEach((object) => object.setDebug(debug));
+  }
+
+  protected subscribeToLocalEvent<T>(
+    eventType: EventType,
+    eventCallback: (data: T) => void
+  ) {
+    this.eventConsumer.subscribeToLocalEvent(eventType, eventCallback);
+
+    console.log(
+      `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
+    );
+  }
+
+  protected subscribeToRemoteEvent<T>(
+    eventType: EventType,
+    eventCallback: (data: T) => void
+  ) {
+    this.eventConsumer.subscribeToRemoteEvent(eventType, eventCallback);
+
+    console.log(
+      `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`
+    );
   }
 
   private deleteObjectIfRemoved(layer: GameObject[], object: GameObject): void {
