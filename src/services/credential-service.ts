@@ -17,71 +17,16 @@ export class CredentialService {
   private apiService: APIService;
   private eventProcessorService: EventProcessorService;
 
-  private requestId: string;
-
   constructor(gameController: GameController) {
     this.gameState = gameController.getGameState();
     this.apiService = gameController.getAPIService();
     this.eventProcessorService = gameController.getEventProcessorService();
-    this.requestId = crypto.randomUUID();
-  }
-
-  public async showAutofillUI(): Promise<void> {
-    if (
-      typeof window.PublicKeyCredential === "undefined" ||
-      typeof window.PublicKeyCredential.isConditionalMediationAvailable !==
-        "function"
-    ) {
-      return;
-    }
-
-    const available =
-      await PublicKeyCredential.isConditionalMediationAvailable();
-
-    if (available) {
-      const authenticationOptionsRequest: AuthenticationOptionsRequest = {
-        requestId: this.requestId,
-      };
-
-      const authenticationOptions =
-        await this.apiService.getAuthenticationOptions(
-          authenticationOptionsRequest
-        );
-
-      const publicKey = {
-        challenge: WebAuthnUtils.challengeToUint8Array(
-          authenticationOptions.challenge
-        ),
-      };
-
-      const credential = await navigator.credentials.get({
-        mediation: "optional",
-        publicKey,
-      });
-
-      if (credential === null) {
-        console.log("User closed the autofill UI");
-        return;
-      }
-
-      const verifyAuthenticationRequest: VerifyAuthenticationRequest = {
-        requestId: this.requestId,
-        authenticationResponse: WebAuthnUtils.serializeCredential(
-          credential as PublicKeyCredential
-        ),
-      };
-
-      const response = await this.apiService.verifyAuthenticationResponse(
-        verifyAuthenticationRequest
-      );
-
-      this.handleAuthenticationResponse(response);
-    }
   }
 
   public async getCredential(): Promise<void> {
+    const transactionId = crypto.randomUUID();
     const authenticationOptionsRequest: AuthenticationOptionsRequest = {
-      requestId: this.requestId,
+      transaction_id: transactionId,
     };
 
     const authenticationOptions =
@@ -104,8 +49,8 @@ export class CredentialService {
     }
 
     const verifyAuthenticationRequest: VerifyAuthenticationRequest = {
-      requestId: this.requestId,
-      authenticationResponse: WebAuthnUtils.serializeCredential(
+      transaction_id: transactionId,
+      authentication_response: WebAuthnUtils.serializeCredential(
         credential as PublicKeyCredential
       ),
     };
@@ -127,9 +72,10 @@ export class CredentialService {
       );
     }
 
+    const transactionId = crypto.randomUUID();
     const registrationOptionsRequest: RegistrationOptionsRequest = {
-      requestId: this.requestId,
-      displayName: displayName,
+      transaction_id: transactionId,
+      display_name: displayName,
     };
 
     const registrationOptions = await this.apiService.getRegistrationOptions(
@@ -163,8 +109,8 @@ export class CredentialService {
     }
 
     const verifyRegistrationRequest: VerifyRegistrationRequest = {
-      requestId: this.requestId,
-      registrationResponse: WebAuthnUtils.serializeCredential(
+      transaction_id: transactionId,
+      registration_response: WebAuthnUtils.serializeCredential(
         credential as PublicKeyCredential
       ),
     };

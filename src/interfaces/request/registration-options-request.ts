@@ -1,4 +1,4 @@
 export interface RegistrationOptionsRequest {
-  requestId: string;
-  displayName: string;
+  transaction_id: string;
+  display_name: string;
 }

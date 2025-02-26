@@ -1,13 +1,11 @@
 import {
-  API_BASE_URL,
-  CONFIGURATION_ENDPOINT,
+  CONFIGURATION_BLOB_ENDPOINT,
   MATCHES_ADVERTISE_ENDPOINT,
   MATCHES_FIND_ENDPOINT,
   MATCHES_REMOVE_ENDPOINT,
   MESSAGES_ENDPOINT,
   VERSION_ENDPOINT,
-  SCOREBOARD_SAVE_SCORE_PATH,
-  SCOREBOARD_GET_RANKING_PATH,
+  PLAYER_SCORES_PATH,
   REGISTRATION_OPTIONS_ENDPOINT,
   VERIFY_REGISTRATION_RESPONSE_ENDPOINT,
   VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
@@ -28,13 +26,15 @@ import { VerifyRegistrationRequest } from "../interfaces/request/verify-registra
 import { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
 import { AuthenticationOptionsRequest } from "../interfaces/request/authentication-options.js";
 import { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
-import { APIUtils } from "../utils/api-utilts.js";
+import { APIUtils } from "../utils/api-utils.js";
 
 export class APIService {
+  private baseURL: string;
   private authenticationToken: string | null = null;
   private cryptoService: CryptoService;
 
   constructor(gameController: GameController) {
+    this.baseURL = APIUtils.getBaseURL(window.location);
     this.cryptoService = gameController.getCryptoService();
   }
 
@@ -43,7 +43,7 @@ export class APIService {
   }
 
   public async checkForUpdates(): Promise<boolean> {
-    const response = await fetch(API_BASE_URL + VERSION_ENDPOINT);
+    const response = await fetch(this.baseURL + VERSION_ENDPOINT);
 
     if (response.ok === false) {
       throw new Error("Failed to fetch version");
@@ -58,7 +58,7 @@ export class APIService {
   public async getRegistrationOptions(
     registrationOptionsRequest: RegistrationOptionsRequest
   ): Promise<AuthenticationOptionsResponse> {
-    const response = await fetch(API_BASE_URL + REGISTRATION_OPTIONS_ENDPOINT, {
+    const response = await fetch(this.baseURL + REGISTRATION_OPTIONS_ENDPOINT, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -80,7 +80,7 @@ export class APIService {
     verifyRegistrationRequest: VerifyRegistrationRequest
   ): Promise<AuthenticationResponse> {
     const response = await fetch(
-      API_BASE_URL + VERIFY_REGISTRATION_RESPONSE_ENDPOINT,
+      this.baseURL + VERIFY_REGISTRATION_RESPONSE_ENDPOINT,
       {
         method: "POST",
         headers: {
@@ -104,7 +104,7 @@ export class APIService {
     authenticationOptionsRequest: AuthenticationOptionsRequest
   ): Promise<AuthenticationOptionsResponse> {
     const response = await fetch(
-      API_BASE_URL + AUTHENTICATION_OPTIONS_ENDPOINT,
+      this.baseURL + AUTHENTICATION_OPTIONS_ENDPOINT,
       {
         method: "POST",
         headers: {
@@ -128,7 +128,7 @@ export class APIService {
     verifyAuthenticationRequest: VerifyAuthenticationRequest
   ): Promise<AuthenticationResponse> {
     const response = await fetch(
-      API_BASE_URL + VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
+      this.baseURL + VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
       {
         method: "POST",
         headers: {
@@ -155,7 +155,7 @@ export class APIService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(API_BASE_URL + CONFIGURATION_ENDPOINT, {
+    const response = await fetch(this.baseURL + CONFIGURATION_BLOB_ENDPOINT, {
       headers: {
         Authorization: this.authenticationToken,
       },
@@ -173,7 +173,7 @@ export class APIService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(API_BASE_URL + MESSAGES_ENDPOINT, {
+    const response = await fetch(this.baseURL + MESSAGES_ENDPOINT, {
       headers: {
         Authorization: this.authenticationToken,
       },
@@ -196,7 +196,7 @@ export class APIService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(API_BASE_URL + MATCHES_FIND_ENDPOINT, {
+    const response = await fetch(this.baseURL + MATCHES_FIND_ENDPOINT, {
       method: "POST",
       headers: {
         Authorization: this.authenticationToken,
@@ -222,7 +222,7 @@ export class APIService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(API_BASE_URL + MATCHES_ADVERTISE_ENDPOINT, {
+    const response = await fetch(this.baseURL + MATCHES_ADVERTISE_ENDPOINT, {
       method: "POST",
       headers: {
         Authorization: this.authenticationToken,
@@ -247,7 +247,7 @@ export class APIService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(API_BASE_URL + MATCHES_REMOVE_ENDPOINT, {
+    const response = await fetch(this.baseURL + MATCHES_REMOVE_ENDPOINT, {
       method: "DELETE",
       headers: {
         Authorization: this.authenticationToken,
@@ -274,7 +274,7 @@ export class APIService {
       JSON.stringify(saveScoreRequest)
     );
 
-    const response = await fetch(API_BASE_URL + SCOREBOARD_SAVE_SCORE_PATH, {
+    const response = await fetch(this.baseURL + PLAYER_SCORES_PATH, {
       method: "POST",
       headers: {
         Authorization: this.authenticationToken,
@@ -299,7 +299,7 @@ export class APIService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(API_BASE_URL + SCOREBOARD_GET_RANKING_PATH, {
+    const response = await fetch(this.baseURL + PLAYER_SCORES_PATH, {
       headers: {
         Authorization: this.authenticationToken,
       },
