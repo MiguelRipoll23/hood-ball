@@ -1,7 +1,4 @@
-import {
-  WEBSOCKET_BASE_URL,
-  WEBSOCKET_ENDPOINT,
-} from "../constants/api-constants.js";
+import { WEBSOCKET_ENDPOINT } from "../constants/api-constants.js";
 import { GameState } from "../models/game-state.js";
 import { GameController } from "../models/game-controller.js";
 import { WebRTCService } from "./webrtc-service.js";
@@ -12,18 +9,21 @@ import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnect
 import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { TunnelType } from "../enums/tunnel-type.js";
+import { APIUtils } from "../utils/api-utils.js";
 
 export class WebSocketService {
   private gameState: GameState;
   private eventProcessorService: EventProcessorService;
   private webrtcService: WebRTCService;
 
+  private baseURL: string;
   private webSocket: WebSocket | null = null;
 
   constructor(gameController: GameController) {
     this.gameState = gameController.getGameState();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.webrtcService = gameController.getWebRTCService();
+    this.baseURL = APIUtils.getWSBaseURL(window.location);
   }
 
   public connectToServer(): void {
@@ -37,9 +37,7 @@ export class WebSocketService {
     const authenticationToken = serverRegistration.getAuthenticationToken();
 
     this.webSocket = new WebSocket(
-      WEBSOCKET_BASE_URL +
-        WEBSOCKET_ENDPOINT +
-        `?access_token=${authenticationToken}`
+      this.baseURL + WEBSOCKET_ENDPOINT + `?access_token=${authenticationToken}`
     );
 
     this.webSocket.binaryType = "arraybuffer";
