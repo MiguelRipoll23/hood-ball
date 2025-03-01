@@ -1,3 +1,5 @@
+import { GamepadMapping } from "../constants/gamepad-mapping-constants.js";
+
 export class GameGamepad {
   private gamepadIndex: number | null = null;
 
@@ -25,8 +27,9 @@ export class GameGamepad {
     return null;
   }
 
-  public isButtonPressed(buttonIndex: number): boolean {
+  public isButtonPressed(buttonName: string): boolean {
     const gamepad = this.getGamepad();
+    const buttonIndex = GamepadMapping[buttonName.toUpperCase()];
     return gamepad ? gamepad.buttons[buttonIndex].pressed : false;
   }
 

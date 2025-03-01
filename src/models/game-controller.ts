@@ -13,14 +13,12 @@ import { GameFrame } from "./game-frame.js";
 import { GameKeyboard } from "./game-keyboard.js";
 import { GamePointer } from "./game-pointer.js";
 import { GameState } from "./game-state.js";
-import { GameGamepad } from "./game-gamepad.js";
 
 export class GameController {
   private gameState: GameState;
   private gameFrame: GameFrame;
   private gamePointer: GamePointer;
   private gameKeyboard: GameKeyboard;
-  private gameGamepad: GameGamepad;
 
   private timers: TimerService[] = [];
   private intervals: IntervalService[] = [];
@@ -42,7 +40,6 @@ export class GameController {
     this.gameFrame = new GameFrame();
     this.gamePointer = new GamePointer(this.canvas);
     this.gameKeyboard = new GameKeyboard();
-    this.gameGamepad = new GameGamepad();
 
     this.transitionService = new ScreenTransitionService(this.gameFrame);
     this.cryptoService = new CryptoService(this.gameState.getGameServer());
@@ -96,10 +93,6 @@ export class GameController {
 
   public getGameKeyboard(): GameKeyboard {
     return this.gameKeyboard;
-  }
-
-  public getGameGamepad(): GameGamepad {
-    return this.gameGamepad;
   }
 
   public getTimers(): TimerService[] {
