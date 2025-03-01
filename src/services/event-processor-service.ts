@@ -76,7 +76,7 @@ export class EventProcessorService {
   public renderDebugInformation(context: CanvasRenderingContext2D) {
     const eventName = this.lastConsumedEvent ?? "none";
 
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       context,
       context.canvas.width - 24,
       context.canvas.height - 48,

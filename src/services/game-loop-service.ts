@@ -270,7 +270,7 @@ export class GameLoopService {
   }
 
   private renderDebugGameInformation(): void {
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       this.context,
       this.canvas.width - 24,
       this.canvas.height - 24,
@@ -281,7 +281,7 @@ export class GameLoopService {
   }
 
   private renderDebugScreenInformation(): void {
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       this.context,
       this.canvas.width - 24,
       24,
@@ -292,7 +292,7 @@ export class GameLoopService {
     const currentScreen = this.gameFrame.getCurrentScreen();
     const currentScreenName = currentScreen?.constructor.name ?? "No screen";
 
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       this.context,
       this.canvas.width - 24,
       48,
@@ -314,7 +314,7 @@ export class GameLoopService {
       return;
     }
 
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       this.context,
       this.canvas.width - 24,
       72,
@@ -327,34 +327,29 @@ export class GameLoopService {
     const match = this.gameController.getGameState().getMatch();
     const state = match ? MatchStateType[match.getState()] : "n/a";
 
-    DebugUtils.renderDebugText(this.context, 24, 24, `State: ${state}`);
+    DebugUtils.renderText(this.context, 24, 24, `State: ${state}`);
   }
 
   private renderDebugNetworkInformation(): void {
     const player = this.gameController.getGameState().getGamePlayer();
 
     if (player.isHost()) {
-      DebugUtils.renderDebugText(this.context, 24, 48, "Host");
+      DebugUtils.renderText(this.context, 24, 48, "Host");
     } else {
       const pingTime = player.getPingTime();
       const displayPingTime = pingTime === null ? "- ms" : `${pingTime} ms`;
 
-      DebugUtils.renderDebugText(
-        this.context,
-        24,
-        48,
-        `Ping: ${displayPingTime}`
-      );
+      DebugUtils.renderText(this.context, 24, 48, `Ping: ${displayPingTime}`);
     }
 
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       this.context,
       24,
       72,
       `Download: ${this.downloadKilobytesPerSecond.toFixed(1)} KB/s`
     );
 
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       this.context,
       24,
       96,

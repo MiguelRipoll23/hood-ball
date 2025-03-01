@@ -254,7 +254,7 @@ export class BallObject
   }
 
   private renderDebugPosition(context: CanvasRenderingContext2D): void {
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       context,
       this.x - this.radius,
       this.y + this.radius + 5,
