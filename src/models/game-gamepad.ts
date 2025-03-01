@@ -1,4 +1,5 @@
-import { GamepadMapping } from "../constants/gamepad-mapping-constants.js";
+import { GamepadMappingConstants } from "../constants/gamepad-mapping-constants.js";
+import { GamepadMappingEnum } from "../enums/gamepad-mapping-enum.js";
 
 export class GameGamepad {
   private gamepadIndex: number | null = null;
@@ -27,10 +28,9 @@ export class GameGamepad {
     return null;
   }
 
-  public isButtonPressed(buttonName: string): boolean {
+  public isButtonPressed(button: GamepadMappingEnum): boolean {
     const gamepad = this.getGamepad();
-    const buttonIndex = GamepadMapping[buttonName.toUpperCase()];
-    return gamepad ? gamepad.buttons[buttonIndex].pressed : false;
+    return gamepad ? gamepad.buttons[button].pressed : false;
   }
 
   public getAxisValue(axisIndex: number): number {

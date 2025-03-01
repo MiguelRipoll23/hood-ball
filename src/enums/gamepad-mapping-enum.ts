@@ -1,4 +1,4 @@
-export enum GamepadMappingConstants {
+export enum GamepadMappingEnum {
   CROSS = 0,
   CIRCLE = 1,
   SQUARE = 2,
