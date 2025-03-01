@@ -5,7 +5,7 @@ import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
 import { ObjectUtils } from "../utils/object-utils.js";
 import { GameGamepad } from "../models/game-gamepad.js";
-import { GamepadMappingEnum } from "../enums/gamepad-mapping-enum.js";
+import { GamepadButton } from "../enums/gamepad-button.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -107,11 +107,11 @@ export class LocalCarObject extends CarObject {
     if (!gamepad) return;
 
     const isAccelerating = this.gameGamepad.isButtonPressed(
-      GamepadMappingEnum.R2
+      GamepadButton.R2
     );
 
     const isDecelerating = this.gameGamepad.isButtonPressed(
-      GamepadMappingEnum.L2
+      GamepadButton.L2
     );
 
     const turnAxis = this.gameGamepad.getAxisValue(0);
