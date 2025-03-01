@@ -13,6 +13,7 @@ import { MatchStateType } from "../enums/match-state-type.js";
 import { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumer } from "./event-consumer-service.js";
+import { GamepadMappingEnum } from "../enums/gamepad-mapping-enum.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -244,6 +245,7 @@ export class GameLoopService {
 
     if (this.gameController.isDebugging()) {
       this.renderDebugInformation();
+      this.drawGamepadDebugInfo(this.context);
     }
   }
 
@@ -376,5 +378,25 @@ export class GameLoopService {
     this.context.arc(x, y, 15, 0, Math.PI * 2);
     this.context.closePath();
     this.context.fill();
+  }
+
+  private drawGamepadDebugInfo(context: CanvasRenderingContext2D): void {
+    const gameGamepad = this.gameController.getGameGamepad();
+    const gamepad = gameGamepad.getGamepad();
+
+    if (!gamepad) {
+      context.fillStyle = "red";
+      context.fillText("Gamepad not connected", 10, this.canvas.height / 2);
+      return;
+    }
+
+    context.fillStyle = "green";
+    context.fillText("Gamepad connected", 10, this.canvas.height / 2);
+
+    Object.keys(GamepadMappingEnum).forEach((buttonName, index) => {
+      if (gameGamepad.isButtonPressed(GamepadMappingEnum[buttonName])) {
+        context.fillText(`Gamepad button ${buttonName} pressed`, 10, this.canvas.height / 2 + 20 * (index + 1));
+      }
+    });
   }
 }
