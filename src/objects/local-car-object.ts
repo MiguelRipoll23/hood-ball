@@ -4,6 +4,7 @@ import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
 import { ObjectUtils } from "../utils/object-utils.js";
+import { GameGamepad } from "../models/game-gamepad.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -15,7 +16,8 @@ export class LocalCarObject extends CarObject {
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
     protected gamePointer: GamePointer,
-    protected gameKeyboard: GameKeyboard
+    protected gameKeyboard: GameKeyboard,
+    protected gameGamepad: GameGamepad
   ) {
     super(x, y, angle);
     this.setSyncableValues();
@@ -41,7 +43,9 @@ export class LocalCarObject extends CarObject {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      if (this.gamePointer.isTouch()) {
+      if (this.gameGamepad.getGamepad()) {
+        this.handleGamepadControls(deltaTimeStamp);
+      } else if (this.gamePointer.isTouch()) {
         this.handleTouchControls(deltaTimeStamp);
       } else {
         this.handleKeyboardControls(deltaTimeStamp);
@@ -94,6 +98,25 @@ export class LocalCarObject extends CarObject {
         isTurningRight,
         deltaTimeStamp
       ); // Pass deltaTimeStamp to adjust angle
+    }
+  }
+
+  private handleGamepadControls(deltaTimeStamp: DOMHighResTimeStamp): void {
+    const gamepad = this.gameGamepad.getGamepad();
+    if (!gamepad) return;
+
+    const isAccelerating = this.gameGamepad.isButtonPressed(0); // Assuming button 0 is for acceleration
+    const isDecelerating = this.gameGamepad.isButtonPressed(1); // Assuming button 1 is for deceleration
+    const turnAxis = this.gameGamepad.getAxisValue(0); // Assuming axis 0 is for turning
+
+    if (isAccelerating && !isDecelerating) {
+      this.accelerate(1, deltaTimeStamp);
+    } else if (!isAccelerating && isDecelerating) {
+      this.decelerate(deltaTimeStamp);
+    }
+
+    if (this.speed !== 0) {
+      this.angle += turnAxis * this.HANDLING * deltaTimeStamp;
     }
   }
 
