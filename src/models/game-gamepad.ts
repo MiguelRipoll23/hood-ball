@@ -1,4 +1,4 @@
-import { GamepadMappingEnum } from "../enums/gamepad-mapping-enum.js";
+import { GamepadButton } from "../enums/gamepad-button.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 
 export class GameGamepad {
@@ -16,7 +16,7 @@ export class GameGamepad {
     return null;
   }
 
-  public isButtonPressed(button: GamepadMappingEnum): boolean {
+  public isButtonPressed(button: GamepadButton): boolean {
     return this.get()?.buttons[button]?.pressed ?? false;
   }
 
@@ -38,7 +38,7 @@ export class GameGamepad {
 
     const buttonNames = gamepad.buttons
       .map((button, index) =>
-        button.pressed ? GamepadMappingEnum[index] : null
+        button.pressed ? GamepadButton[index] : null
       )
       .filter(Boolean)
       .join(", ");
