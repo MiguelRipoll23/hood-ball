@@ -14,7 +14,7 @@ battle.
 
 ## Demo
 
-https://github.com/user-attachments/assets/1987068a-42d7-4791-bc99-c3c6e412812c
+https://github.com/user-attachments/assets/8634a9e5-b85c-43ca-a130-4412aed5753c
 
 ## Contributions
 
