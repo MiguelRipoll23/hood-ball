@@ -4,6 +4,8 @@ import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
 import { GameKeyboard } from "../models/game-keyboard.js";
 import { ObjectUtils } from "../utils/object-utils.js";
+import { GameGamepad } from "../models/game-gamepad.js";
+import { GamepadMappingEnum } from "../enums/gamepad-mapping-enum.js";
 
 export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
@@ -15,7 +17,8 @@ export class LocalCarObject extends CarObject {
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
     protected gamePointer: GamePointer,
-    protected gameKeyboard: GameKeyboard
+    protected gameKeyboard: GameKeyboard,
+    protected gameGamepad: GameGamepad
   ) {
     super(x, y, angle);
     this.setSyncableValues();
@@ -41,7 +44,9 @@ export class LocalCarObject extends CarObject {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      if (this.gamePointer.isTouch()) {
+      if (this.gameGamepad.get()) {
+        this.handleGamepadControls(deltaTimeStamp);
+      } else if (this.gamePointer.isTouch()) {
         this.handleTouchControls(deltaTimeStamp);
       } else {
         this.handleKeyboardControls(deltaTimeStamp);
@@ -94,6 +99,35 @@ export class LocalCarObject extends CarObject {
         isTurningRight,
         deltaTimeStamp
       ); // Pass deltaTimeStamp to adjust angle
+    }
+  }
+
+  private handleGamepadControls(deltaTimeStamp: DOMHighResTimeStamp): void {
+    const gamepad = this.gameGamepad.get();
+    if (!gamepad) return;
+
+    const isAccelerating = this.gameGamepad.isButtonPressed(
+      GamepadMappingEnum.R2
+    );
+
+    const isDecelerating = this.gameGamepad.isButtonPressed(
+      GamepadMappingEnum.L2
+    );
+
+    const turnAxis = this.gameGamepad.getAxisValue(0);
+
+    if (isAccelerating && !isDecelerating) {
+      this.accelerate(1, deltaTimeStamp);
+    } else if (!isAccelerating && isDecelerating) {
+      this.decelerate(deltaTimeStamp);
+    }
+
+    if (this.speed !== 0) {
+      this.angle += turnAxis * this.HANDLING * deltaTimeStamp;
+    }
+
+    if (this.isColliding()) {
+      this.gameGamepad.vibrate(100);
     }
   }
 

@@ -252,6 +252,7 @@ export class GameLoopService {
 
     this.renderDebugGameInformation();
     this.renderDebugScreenInformation();
+    this.gameController.getGameGamepad().renderDebugInformation(this.context);
     this.renderDebugGamePointer();
 
     const match = this.gameController.getGameState().getMatch();
