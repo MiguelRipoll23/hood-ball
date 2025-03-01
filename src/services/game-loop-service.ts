@@ -17,7 +17,7 @@ import { GamepadMappingEnum } from "../enums/gamepad-mapping-enum.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
-  private debug: boolean = false;
+  private debug: boolean = true;
 
   private gameController: GameController;
   private gameFrame: GameFrame;
@@ -386,16 +386,21 @@ export class GameLoopService {
 
     if (!gamepad) {
       context.fillStyle = "red";
-      context.fillText("Gamepad not connected", 10, this.canvas.height / 2);
+      DebugUtils.renderDebugText(context, 0, 0, "Gamepad not connected");
       return;
     }
 
     context.fillStyle = "green";
-    context.fillText("Gamepad connected", 10, this.canvas.height / 2);
+    DebugUtils.renderDebugText(context, 0, 0, "Gamepad connected");
 
     Object.keys(GamepadMappingEnum).forEach((buttonName, index) => {
-      if (gameGamepad.isButtonPressed(GamepadMappingEnum[buttonName])) {
-        context.fillText(`Gamepad button ${buttonName} pressed`, 10, this.canvas.height / 2 + 20 * (index + 1));
+      try {
+        const buttonIndex = GamepadMappingEnum[buttonName as keyof typeof GamepadMappingEnum];
+        if (gameGamepad.isButtonPressed(buttonIndex)) {
+          DebugUtils.renderDebugText(context, 0, 20 * (index + 1), `Gamepad button ${buttonName} pressed`);
+        }
+      } catch (error) {
+        console.error(`Error checking button ${buttonName}:`, error);
       }
     });
   }
