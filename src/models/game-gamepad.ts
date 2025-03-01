@@ -45,10 +45,10 @@ export class GameGamepad {
 
     if (buttonNames.length === 0) return;
 
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       context,
       24,
-      context.canvas.height / 2,
+      context.canvas.height - 24,
       `Gamepad: ${buttonNames}`,
       false,
       true

@@ -34,7 +34,7 @@ export class APIService {
   private cryptoService: CryptoService;
 
   constructor(gameController: GameController) {
-    this.baseURL = APIUtils.getBaseURL(window.location);
+    this.baseURL = APIUtils.getBaseURL();
     this.cryptoService = gameController.getCryptoService();
   }
 

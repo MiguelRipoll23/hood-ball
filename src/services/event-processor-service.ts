@@ -74,13 +74,17 @@ export class EventProcessorService {
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D) {
-    const eventName = this.lastConsumedEvent ?? "none";
+    let text = "No event";
 
-    DebugUtils.renderDebugText(
+    if (this.lastConsumedEvent) {
+      text = `Event: ${this.lastConsumedEvent}`;
+    }
+
+    DebugUtils.renderText(
       context,
       context.canvas.width - 24,
       context.canvas.height - 48,
-      `Last Event: ${eventName}`,
+      text,
       true,
       true
     );

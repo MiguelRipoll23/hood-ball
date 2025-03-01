@@ -1,5 +1,5 @@
 export class DebugUtils {
-  public static renderDebugText(
+  public static renderText(
     context: CanvasRenderingContext2D,
     x: number,
     y: number,

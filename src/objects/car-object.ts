@@ -331,7 +331,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
   }
 
   private renderDebugPosition(context: CanvasRenderingContext2D): void {
-    DebugUtils.renderDebugText(
+    DebugUtils.renderText(
       context,
       this.x - this.width / 2,
       this.y + this.height / 2 + 5,
