@@ -104,7 +104,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     return this.uploadBytesPerSecond;
   }
 
-  public resetStats(): void {
+  public resetNetworkStats(): void {
     this.downloadBytesPerSecond = 0;
     this.uploadBytesPerSecond = 0;
   }

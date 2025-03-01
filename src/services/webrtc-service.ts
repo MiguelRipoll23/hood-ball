@@ -2,9 +2,14 @@ import { GameController } from "../models/game-controller.js";
 import { TunnelType } from "../enums/tunnel-type.js";
 import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class WebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
+
+  // Network stats
+  private downloadKilobytesPerSecond: number = 0;
+  private uploadKilobytesPerSecond: number = 0;
 
   constructor(private gameController: GameController) {}
 
@@ -79,22 +84,40 @@ export class WebRTCService {
     peer.addRemoteIceCandidate(iceCandidate);
   }
 
-  public getDownloadBytes(): number {
-    return this.getPeers().reduce(
-      (total, peer) => total + peer.getDownloadBytes(),
-      0
-    );
+  public resetNetworkStats(): void {
+    this.downloadKilobytesPerSecond = this.getDownloadBytes() / 1024;
+    this.uploadKilobytesPerSecond = this.getUploadBytes() / 1024;
+    this.getPeers().forEach((peer) => peer.resetNetworkStats());
   }
 
-  public getUploadBytes(): number {
-    return this.getPeers().reduce(
-      (total, peer) => total + peer.getUploadBytes(),
-      0
-    );
-  }
+  public renderDebugInformation(context: CanvasRenderingContext2D): void {
+    const match = this.gameController.getGameState().getMatch();
+    if (match === null) return;
 
-  public resetStats(): void {
-    this.getPeers().forEach((peer) => peer.resetStats());
+    const player = this.gameController.getGameState().getGamePlayer();
+
+    if (player.isHost()) {
+      DebugUtils.renderText(context, 24, 48, "Host");
+    } else {
+      const pingTime = player.getPingTime();
+      const displayPingTime = pingTime === null ? "--- ms" : `${pingTime} ms`;
+
+      DebugUtils.renderText(context, 24, 48, `Ping: ${displayPingTime}`);
+    }
+
+    DebugUtils.renderText(
+      context,
+      24,
+      72,
+      `Download: ${this.downloadKilobytesPerSecond.toFixed(1)} KB/s`
+    );
+
+    DebugUtils.renderText(
+      context,
+      24,
+      96,
+      `Upload: ${this.uploadKilobytesPerSecond.toFixed(1)} KB/s`
+    );
   }
 
   private addPeer(token: string): WebRTCPeer {
@@ -147,5 +170,19 @@ export class WebRTCService {
 
   private getPeer(token: string): WebRTCPeer | null {
     return this.peers.get(token) ?? null;
+  }
+
+  private getDownloadBytes(): number {
+    return this.getPeers().reduce(
+      (total, peer) => total + peer.getDownloadBytes(),
+      0
+    );
+  }
+
+  private getUploadBytes(): number {
+    return this.getPeers().reduce(
+      (total, peer) => total + peer.getUploadBytes(),
+      0
+    );
   }
 }

@@ -21,6 +21,7 @@ import { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
 import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";
+import { DebugUtils } from "../utils/debug-utils.js";
 
 export class MatchmakingService {
   private apiService: APIService;
@@ -265,6 +266,17 @@ export class MatchmakingService {
     }
 
     this.gameController.getGameState().setMatch(null);
+  }
+
+  public renderDebugInformation(context: CanvasRenderingContext2D): void {
+    const match = this.gameController.getGameState().getMatch();
+
+    if (match === null) {
+      return;
+    }
+
+    const state = MatchStateType[match.getState()];
+    DebugUtils.renderText(context, 24, 24, `State: ${state}`);
   }
 
   private removePingCheckInterval(): void {

@@ -48,7 +48,7 @@ export class GameGamepad {
     DebugUtils.renderText(
       context,
       24,
-      context.canvas.height / 2,
+      context.canvas.height - 24,
       `Gamepad: ${buttonNames}`,
       false,
       true

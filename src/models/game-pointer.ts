@@ -90,6 +90,21 @@ export class GamePointer {
     this.pressed = false;
   }
 
+  public renderDebugInformation(context: CanvasRenderingContext2D): void {
+    if (this.isTouch() && this.isPressing() == false) {
+      return;
+    }
+
+    const x = this.getX();
+    const y = this.getY();
+
+    context.fillStyle = "rgba(148, 0, 211, 0.5)";
+    context.beginPath();
+    context.arc(x, y, 15, 0, Math.PI * 2);
+    context.closePath();
+    context.fill();
+  }
+
   private adjustCoordinates(event: PointerEvent): { x: number; y: number } {
     const rect = this.canvas.getBoundingClientRect();
     const scaleX = this.canvas.width / rect.width;

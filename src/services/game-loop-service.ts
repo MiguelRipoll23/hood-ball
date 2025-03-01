@@ -9,7 +9,6 @@ import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnect
 import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
-import { MatchStateType } from "../enums/match-state-type.js";
 import { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumer } from "./event-consumer-service.js";
@@ -28,10 +27,6 @@ export class GameLoopService {
 
   // Game stats
   private currentFPS: number = 0;
-
-  // Network stats
-  private downloadKilobytesPerSecond: number = 0;
-  private uploadKilobytesPerSecond: number = 0;
 
   // Events
   private eventConsumer: EventConsumer;
@@ -191,7 +186,7 @@ export class GameLoopService {
 
     if (this.elapsedMilliseconds >= 1_000) {
       this.elapsedMilliseconds = 0;
-      this.updateNetworkStats();
+      this.updateStats();
     }
 
     this.update(this.deltaTimeStamp);
@@ -202,14 +197,8 @@ export class GameLoopService {
     }
   }
 
-  private updateNetworkStats(): void {
-    this.downloadKilobytesPerSecond =
-      this.gameController.getWebRTCService().getDownloadBytes() / 1024;
-
-    this.uploadKilobytesPerSecond =
-      this.gameController.getWebRTCService().getUploadBytes() / 1024;
-
-    this.gameController.getWebRTCService().resetStats();
+  private updateStats(): void {
+    this.gameController.getWebRTCService().resetNetworkStats();
   }
 
   private update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -252,15 +241,15 @@ export class GameLoopService {
 
     this.renderDebugGameInformation();
     this.renderDebugScreenInformation();
+
     this.gameController.getGameGamepad().renderDebugInformation(this.context);
-    this.renderDebugGamePointer();
+    this.gameController.getGamePointer().renderDebugInformation(this.context);
 
-    const match = this.gameController.getGameState().getMatch();
+    this.gameController
+      .getMatchmakingService()
+      .renderDebugInformation(this.context);
 
-    if (match !== null) {
-      this.renderDebugNetworkInformation();
-      this.renderDebugMatchInformation();
-    }
+    this.gameController.getWebRTCService().renderDebugInformation(this.context);
 
     this.getGameController()
       .getEventProcessorService()
@@ -321,56 +310,5 @@ export class GameLoopService {
       currentSubScreenName,
       true
     );
-  }
-
-  private renderDebugMatchInformation(): void {
-    const match = this.gameController.getGameState().getMatch();
-    const state = match ? MatchStateType[match.getState()] : "n/a";
-
-    DebugUtils.renderText(this.context, 24, 24, `State: ${state}`);
-  }
-
-  private renderDebugNetworkInformation(): void {
-    const player = this.gameController.getGameState().getGamePlayer();
-
-    if (player.isHost()) {
-      DebugUtils.renderText(this.context, 24, 48, "Host");
-    } else {
-      const pingTime = player.getPingTime();
-      const displayPingTime = pingTime === null ? "- ms" : `${pingTime} ms`;
-
-      DebugUtils.renderText(this.context, 24, 48, `Ping: ${displayPingTime}`);
-    }
-
-    DebugUtils.renderText(
-      this.context,
-      24,
-      72,
-      `Download: ${this.downloadKilobytesPerSecond.toFixed(1)} KB/s`
-    );
-
-    DebugUtils.renderText(
-      this.context,
-      24,
-      96,
-      `Upload: ${this.uploadKilobytesPerSecond.toFixed(1)} KB/s`
-    );
-  }
-
-  private renderDebugGamePointer(): void {
-    const gamePointer = this.gameController.getGamePointer();
-
-    if (gamePointer.isTouch() && gamePointer.isPressing() == false) {
-      return;
-    }
-
-    const x = gamePointer.getX();
-    const y = gamePointer.getY();
-
-    this.context.fillStyle = "rgba(148, 0, 211, 0.5)";
-    this.context.beginPath();
-    this.context.arc(x, y, 15, 0, Math.PI * 2);
-    this.context.closePath();
-    this.context.fill();
   }
 }
