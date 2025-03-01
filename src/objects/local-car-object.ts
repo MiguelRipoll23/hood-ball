@@ -44,7 +44,7 @@ export class LocalCarObject extends CarObject {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
-      if (this.gameGamepad.getGamepad()) {
+      if (this.gameGamepad.get()) {
         this.handleGamepadControls(deltaTimeStamp);
       } else if (this.gamePointer.isTouch()) {
         this.handleTouchControls(deltaTimeStamp);
@@ -103,12 +103,18 @@ export class LocalCarObject extends CarObject {
   }
 
   private handleGamepadControls(deltaTimeStamp: DOMHighResTimeStamp): void {
-    const gamepad = this.gameGamepad.getGamepad();
+    const gamepad = this.gameGamepad.get();
     if (!gamepad) return;
 
-    const isAccelerating = this.gameGamepad.isButtonPressed(GamepadMappingEnum.R2); // R2 button for acceleration
-    const isDecelerating = this.gameGamepad.isButtonPressed(GamepadMappingEnum.L2); // L2 button for deceleration
-    const turnAxis = this.gameGamepad.getAxisValue(0); // Assuming axis 0 is for turning
+    const isAccelerating = this.gameGamepad.isButtonPressed(
+      GamepadMappingEnum.R2
+    );
+
+    const isDecelerating = this.gameGamepad.isButtonPressed(
+      GamepadMappingEnum.L2
+    );
+
+    const turnAxis = this.gameGamepad.getAxisValue(0);
 
     if (isAccelerating && !isDecelerating) {
       this.accelerate(1, deltaTimeStamp);
@@ -118,6 +124,10 @@ export class LocalCarObject extends CarObject {
 
     if (this.speed !== 0) {
       this.angle += turnAxis * this.HANDLING * deltaTimeStamp;
+    }
+
+    if (this.isColliding()) {
+      this.gameGamepad.vibrate(100);
     }
   }
 

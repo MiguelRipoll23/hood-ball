@@ -197,6 +197,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private createPlayerAndLocalCarObjects() {
     const gamePointer = this.gameController.getGamePointer();
     const gameKeyboard = this.gameController.getGameKeyboard();
+    const gameGamepad = this.gameController.getGameGamepad();
 
     this.localCarObject = new LocalCarObject(
       0,
@@ -204,7 +205,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
       1.5708,
       this.canvas,
       gamePointer,
-      gameKeyboard
+      gameKeyboard,
+      gameGamepad
     );
 
     this.localCarObject.setOwner(this.gameState.getGamePlayer());
