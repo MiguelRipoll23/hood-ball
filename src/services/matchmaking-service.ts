@@ -262,7 +262,9 @@ export class MatchmakingService {
 
       this.removePingCheckInterval();
 
-      await this.apiService.removeMatch();
+      await this.apiService
+        .removeMatch()
+        .catch((error) => console.error(error));
     }
 
     this.gameController.getGameState().setMatch(null);
