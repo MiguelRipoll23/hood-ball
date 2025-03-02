@@ -8,7 +8,7 @@ export interface GameScreen {
   getScreenManagerService(): ScreenManagerService | null;
   setScreenManagerService(screenManagerService: ScreenManagerService): void;
 
-  loadObjects(): void;
+  load(): void;
   hasLoaded(): boolean;
 
   getObjectLayer(object: GameObject): LayerType;

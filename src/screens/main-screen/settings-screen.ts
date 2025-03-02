@@ -14,11 +14,11 @@ export class SettingsScreen extends BaseGameScreen {
     super(gameController);
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.loadTitleObject();
     this.loadButtonObject();
     this.loadSettingObjects();
-    super.loadObjects();
+    super.load();
   }
 
   public override hasTransitionFinished(): void {

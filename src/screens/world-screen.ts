@@ -46,7 +46,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.subscribeToEvents();
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.createBackgroundObject();
     this.createScoreboardObject();
     this.createPlayerAndLocalCarObjects();
@@ -54,7 +54,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.createGoalObject();
     this.createAlertObject();
     this.createToastObject();
-    super.loadObjects();
+    super.load();
   }
 
   public override getTypeId(): ScreenType {
@@ -615,7 +615,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const mainMenuScreen = new MainMenuScreen(this.gameController, false);
 
     mainScreen.setScreen(mainMenuScreen);
-    mainScreen.loadObjects();
+    mainScreen.load();
 
     this.gameController.getTransitionService().fadeOutAndIn(mainScreen, 1, 1);
   }

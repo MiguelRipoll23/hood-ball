@@ -41,11 +41,11 @@ export class LoginScreen extends BaseGameScreen {
     this.subscribeToEvents();
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.loadMessageObject();
     this.loadCloseableMessageObject();
 
-    super.loadObjects();
+    super.load();
   }
 
   public override hasTransitionFinished(): void {
@@ -216,7 +216,7 @@ export class LoginScreen extends BaseGameScreen {
 
   private transitionToMainMenuScreen(): void {
     const mainMenuScreen = new MainMenuScreen(this.gameController, true);
-    mainMenuScreen.loadObjects();
+    mainMenuScreen.load();
 
     this.screenManagerService
       ?.getTransitionService()

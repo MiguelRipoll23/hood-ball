@@ -150,7 +150,7 @@ export class GameLoopService {
     const mainMenuScreen = new MainMenuScreen(this.getGameController(), false);
 
     mainScreen.setScreen(mainMenuScreen);
-    mainScreen.loadObjects();
+    mainScreen.load();
 
     this.getGameController()
       .getTransitionService()
@@ -177,7 +177,7 @@ export class GameLoopService {
     const loginScreen = new LoginScreen(this.gameController);
 
     mainScreen.setScreen(loginScreen);
-    mainScreen.loadObjects();
+    mainScreen.load();
 
     this.gameController.getTransitionService().crossfade(mainScreen, 1);
   }

@@ -15,18 +15,18 @@ export class LoadingScreen extends BaseGameScreen {
     this.transitionService = gameController.getTransitionService();
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.createBackgroundObject();
     this.loadProgressBarObject();
 
-    super.loadObjects();
+    super.load();
   }
 
   public override hasTransitionFinished(): void {
     super.hasTransitionFinished();
 
     this.worldScreen = new WorldScreen(this.gameController);
-    this.worldScreen.loadObjects();
+    this.worldScreen.load();
 
     this.transitionService.fadeOutAndIn(this.worldScreen, 1, 1);
   }

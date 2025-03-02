@@ -34,13 +34,13 @@ export class MainMenuScreen extends BaseGameScreen {
     this.subscribeToEvents();
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.loadTitleObject();
     this.loadMenuOptionObjects();
     this.loadServerMessageWindow();
     this.loadCloseableMessageObject();
 
-    super.loadObjects();
+    super.load();
   }
 
   public override hasTransitionFinished(): void {
@@ -194,7 +194,7 @@ export class MainMenuScreen extends BaseGameScreen {
     this.disableMenuButtons();
 
     const loadingScreen = new LoadingScreen(this.gameController);
-    loadingScreen.loadObjects();
+    loadingScreen.load();
 
     this.transitionService.crossfade(loadingScreen, 0.2);
   }
@@ -203,7 +203,7 @@ export class MainMenuScreen extends BaseGameScreen {
     this.disableMenuButtons();
 
     const scoreboardScreen = new ScoreboardScreen(this.gameController);
-    scoreboardScreen.loadObjects();
+    scoreboardScreen.load();
 
     this.screenManagerService
       ?.getTransitionService()
@@ -214,7 +214,7 @@ export class MainMenuScreen extends BaseGameScreen {
     this.disableMenuButtons();
 
     const settingsScreen = new SettingsScreen(this.gameController);
-    settingsScreen.loadObjects();
+    settingsScreen.load();
 
     this.screenManagerService
       ?.getTransitionService()
