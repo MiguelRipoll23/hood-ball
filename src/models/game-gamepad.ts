@@ -45,8 +45,8 @@ export class GameGamepad {
   }
 
   private handleConnected(event: GamepadEvent): void {
-    console.log(`Gamepad connected at index ${this.gamepadIndex}`);
     this.gamepadIndex = event.gamepad.index;
+    console.log(`Gamepad connected at index ${this.gamepadIndex}`);
     this.gameFrame.getDebugObject()?.show("Gamepad connected", 1);
   }
 
