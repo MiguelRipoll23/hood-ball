@@ -15,7 +15,7 @@ import { EventConsumer } from "./event-consumer-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
-  private debug: boolean = false;
+  private debug: boolean = window.location.search.includes("debug");
 
   private gameController: GameController;
   private gameFrame: GameFrame;
