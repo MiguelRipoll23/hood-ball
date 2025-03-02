@@ -239,21 +239,20 @@ export class GameLoopService {
   private renderDebugInformation(): void {
     this.context.save();
 
-    this.renderDebugGameInformation();
-    this.renderDebugScreenInformation();
-
-    this.gameController.getGameGamepad().renderDebugInformation(this.context);
-    this.gameController.getGamePointer().renderDebugInformation(this.context);
-
     this.gameController
       .getMatchmakingService()
       .renderDebugInformation(this.context);
 
     this.gameController.getWebRTCService().renderDebugInformation(this.context);
 
+    this.renderDebugGameInformation();
+    this.renderDebugScreenInformation();
+
     this.getGameController()
       .getEventProcessorService()
       .renderDebugInformation(this.context);
+
+    this.gameController.getGamePointer().renderDebugInformation(this.context);
 
     this.context.restore();
   }

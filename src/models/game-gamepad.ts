@@ -32,29 +32,6 @@ export class GameGamepad {
     });
   }
 
-  public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    const gamepad = this.get();
-    if (!gamepad) return;
-
-    const buttonNames = gamepad.buttons
-      .map((button, index) =>
-        button.pressed ? GamepadButton[index] : null
-      )
-      .filter(Boolean)
-      .join(", ");
-
-    if (buttonNames.length === 0) return;
-
-    DebugUtils.renderText(
-      context,
-      24,
-      context.canvas.height - 24,
-      `Gamepad: ${buttonNames}`,
-      false,
-      true
-    );
-  }
-
   private addEventListeners(): void {
     window.addEventListener(
       "gamepadconnected",
