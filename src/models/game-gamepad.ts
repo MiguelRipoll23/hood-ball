@@ -1,10 +1,10 @@
 import { GamepadButton } from "../enums/gamepad-button.js";
-import { DebugUtils } from "../utils/debug-utils.js";
+import { GameFrame } from "./game-frame.js";
 
 export class GameGamepad {
   private gamepadIndex: number | null = null;
 
-  constructor() {
+  constructor(private gameFrame: GameFrame) {
     this.addEventListeners();
   }
 
@@ -45,14 +45,17 @@ export class GameGamepad {
   }
 
   private handleConnected(event: GamepadEvent): void {
-    this.gamepadIndex = event.gamepad.index;
     console.log(`Gamepad connected at index ${this.gamepadIndex}`);
+    this.gamepadIndex = event.gamepad.index;
+    this.gameFrame.getDebugObject()?.show("Gamepad connected", 1);
   }
 
   private handleDisconnected(event: GamepadEvent): void {
+    console.log(`Gamepad disconnected from index ${event.gamepad.index}`);
+
     if (this.gamepadIndex === event.gamepad.index) {
       this.gamepadIndex = null;
-      console.log(`Gamepad disconnected from index ${event.gamepad.index}`);
+      this.gameFrame.getDebugObject()?.show("Gamepad disconnected", 1);
     }
   }
 }

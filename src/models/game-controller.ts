@@ -42,7 +42,7 @@ export class GameController {
     this.gameFrame = new GameFrame();
     this.gamePointer = new GamePointer(this.canvas);
     this.gameKeyboard = new GameKeyboard();
-    this.gameGamepad = new GameGamepad();
+    this.gameGamepad = new GameGamepad(this.gameFrame);
 
     this.transitionService = new ScreenTransitionService(this.gameFrame);
     this.cryptoService = new CryptoService(this.gameState.getGameServer());
