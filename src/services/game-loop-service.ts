@@ -12,6 +12,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumer } from "./event-consumer-service.js";
+import { DebugObject } from "../objects/common/debug-object.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -39,7 +40,7 @@ export class GameLoopService {
     this.eventConsumer = new EventConsumer(this.gameController);
     this.setCanvasSize();
     this.addWindowAndGameListeners();
-    this.loadNotificationObject();
+    this.loadObjects();
   }
 
   public getCanvas(): HTMLCanvasElement {
@@ -156,10 +157,19 @@ export class GameLoopService {
       .fadeOutAndIn(mainScreen, 1, 1);
   }
 
+  private loadObjects(): void {
+    this.loadNotificationObject();
+    this.loadDebugObject();
+  }
+
   private loadNotificationObject(): void {
     const notificationObject = new NotificationObject(this.canvas);
-
     this.gameFrame.setNotificationObject(notificationObject);
+  }
+
+  private loadDebugObject(): void {
+    const debugObject = new DebugObject(this.canvas);
+    this.gameFrame.setDebugObject(debugObject);
   }
 
   private setInitialScreen() {
@@ -218,6 +228,10 @@ export class GameLoopService {
     this.gameFrame.getNextScreen()?.update(deltaTimeStamp);
     this.gameFrame.getNotificationObject()?.update(deltaTimeStamp);
 
+    if (this.gameController.isDebugging()) {
+      this.gameFrame.getDebugObject()?.update(deltaTimeStamp);
+    }
+
     this.gameController
       .getTimers()
       .filter((timer) => timer.hasCompleted())
@@ -244,6 +258,7 @@ export class GameLoopService {
       .renderDebugInformation(this.context);
 
     this.gameController.getWebRTCService().renderDebugInformation(this.context);
+    this.gameFrame.getDebugObject()?.render(this.context);
 
     this.renderDebugGameInformation();
     this.renderDebugScreenInformation();
