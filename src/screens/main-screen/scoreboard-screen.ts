@@ -16,12 +16,12 @@ export class ScoreboardScreen extends BaseGameScreen {
     super(gameController);
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.loadTitleObject();
     this.loadButtonObject();
     this.loadRankingTableObject();
     this.loadCloseableMessageObject();
-    super.loadObjects();
+    super.load();
   }
 
   public override hasTransitionFinished(): void {

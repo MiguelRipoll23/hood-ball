@@ -43,7 +43,7 @@ export class BaseGameScreen implements GameScreen {
     this.screenManagerService = screenManagerService;
   }
 
-  public loadObjects(): void {
+  public load(): void {
     this.updateDebugStateForObjects();
 
     this.sceneObjects.forEach((object) => object.load());

@@ -16,14 +16,14 @@ export class MainScreen extends BaseGameScreen {
     this.updateScreen(screen);
   }
 
-  public override loadObjects(): void {
+  public override load(): void {
     this.createMainBackgroundObject();
 
     if (this.screen === null) {
       console.warn("MainScreen: No screen has been set");
     } else {
-      this.screen?.loadObjects();
-      super.loadObjects();
+      this.screen?.load();
+      super.load();
     }
   }
 
