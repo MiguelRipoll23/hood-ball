@@ -99,6 +99,11 @@ export class GameLoopService {
 
   private listenForWindowEvents(): void {
     window.addEventListener("resize", this.setCanvasSize.bind(this));
+
+    window.addEventListener(
+      "click",
+      this.gameController.getAudioService().playLoopingAudio.bind(this)
+    );
   }
 
   private subscribeToEvents(): void {
@@ -196,7 +201,7 @@ export class GameLoopService {
 
     if (this.elapsedMilliseconds >= 1_000) {
       this.elapsedMilliseconds = 0;
-      this.updateStats();
+      this.gameController.getWebRTCService().resetNetworkStats();
     }
 
     this.update(this.deltaTimeStamp);
@@ -205,10 +210,6 @@ export class GameLoopService {
     if (this.isRunning) {
       requestAnimationFrame(this.loop.bind(this));
     }
-  }
-
-  private updateStats(): void {
-    this.gameController.getWebRTCService().resetNetworkStats();
   }
 
   private update(deltaTimeStamp: DOMHighResTimeStamp): void {
