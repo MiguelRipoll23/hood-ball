@@ -13,7 +13,7 @@ import {
 } from "../constants/api-constants.js";
 import { FindMatchesResponse as FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
 import { MessagesResponse } from "../interfaces/response/messages-response.js";
-import { AuthenticationResponse } from "../interfaces/response/authentication_response.js";
+import { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
 import { VersionResponse } from "../interfaces/response/version-response.js";
 import { RankingResponse } from "../interfaces/response/ranking-response.js";
 import { CryptoService } from "./crypto-service.js";
@@ -27,6 +27,7 @@ import { RegistrationOptionsRequest } from "../interfaces/request/registration-o
 import { AuthenticationOptionsRequest } from "../interfaces/request/authentication-options.js";
 import { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
 import { APIUtils } from "../utils/api-utils.js";
+import { RegistrationOptionsResponse } from "../interfaces/response/registration-options-response.js";
 
 export class APIService {
   private baseURL: string;
@@ -57,7 +58,7 @@ export class APIService {
 
   public async getRegistrationOptions(
     registrationOptionsRequest: RegistrationOptionsRequest
-  ): Promise<AuthenticationOptionsResponse> {
+  ): Promise<RegistrationOptionsResponse> {
     const response = await fetch(this.baseURL + REGISTRATION_OPTIONS_ENDPOINT, {
       method: "POST",
       headers: {

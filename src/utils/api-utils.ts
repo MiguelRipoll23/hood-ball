@@ -4,6 +4,7 @@ import {
   API_VERSION,
 } from "../constants/api-constants.js";
 import { ErrorResponse } from "../interfaces/response/error-response.js";
+import { ServerError } from "../models/server-error.js";
 
 export class APIUtils {
   public static getBaseURL(): string {
@@ -19,6 +20,6 @@ export class APIUtils {
   public static async throwAPIError(response: Response): Promise<void> {
     const errorResponse: ErrorResponse = await response.json();
 
-    throw new Error(errorResponse.message);
+    throw new ServerError(errorResponse.code, errorResponse.message);
   }
 }

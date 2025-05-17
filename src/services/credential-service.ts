@@ -3,10 +3,11 @@ import { AuthenticationOptionsRequest } from "../interfaces/request/authenticati
 import { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
 import { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
 import { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
-import { AuthenticationResponse } from "../interfaces/response/authentication_response.js";
+import { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
 import { GameController } from "../models/game-controller.js";
 import { GameState } from "../models/game-state.js";
 import { LocalEvent } from "../models/local-event.js";
+import { ServerError } from "../models/server-error.js";
 import { ServerRegistration } from "../models/server-registration.js";
 import { WebAuthnUtils } from "../utils/webauthn-utils.js";
 import { APIService } from "./api-service.js";
@@ -55,11 +56,19 @@ export class CredentialService {
       ),
     };
 
-    const response = await this.apiService.verifyAuthenticationResponse(
-      verifyAuthenticationRequest
-    );
+    try {
+      const response = await this.apiService.verifyAuthenticationResponse(
+        verifyAuthenticationRequest
+      );
 
-    this.handleAuthenticationResponse(response);
+      this.handleAuthenticationResponse(response);
+    } catch (error) {
+      if (this.isCredentialNotFoundError(error)) {
+        this.signalUnknownCredential(authenticationOptions.rpId, credential.id);
+      }
+
+      throw error;
+    }
   }
 
   public async createCredential(
@@ -120,6 +129,30 @@ export class CredentialService {
     );
 
     this.handleAuthenticationResponse(response);
+  }
+
+  private isCredentialNotFoundError(error: unknown): error is ServerError {
+    return (
+      error instanceof ServerError && error.code === "CREDENTIAL_NOT_FOUND"
+    );
+  }
+
+  private async signalUnknownCredential(
+    rpId: string,
+    credentialId: string
+  ): Promise<void> {
+    // @ts-expect-error property is not defined in the type definition
+    if (PublicKeyCredential.signalUnknownCredential) {
+      // @ts-expect-error property is not defined in the type definition
+      await PublicKeyCredential.signalUnknownCredential({
+        rpId,
+        credentialId,
+      });
+
+      console.log(
+        `Signaled unknown credential for credential (${credentialId})`
+      );
+    }
   }
 
   private handleAuthenticationResponse(response: AuthenticationResponse): void {
