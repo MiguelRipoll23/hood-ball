@@ -99,11 +99,6 @@ export class GameLoopService {
 
   private listenForWindowEvents(): void {
     window.addEventListener("resize", this.setCanvasSize.bind(this));
-
-    window.addEventListener(
-      "click",
-      this.gameController.getAudioService().playLoopingAudio.bind(this)
-    );
   }
 
   private subscribeToEvents(): void {

@@ -1,4 +1,4 @@
-import { AuthenticationResponse } from "../interfaces/response/authentication_response.js";
+import { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
 
 export class ServerRegistration {
   private authenticationToken: string;
