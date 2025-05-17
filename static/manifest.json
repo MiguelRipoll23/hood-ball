@@ -8,7 +8,6 @@
   "lang": "en",
   "name": "Hood Ball",
   "orientation": "portrait",
-  "scope": "/hood-ball/",
   "short_name": "Hood Ball",
   "start_url": "/",
   "theme_color": "#000000"
