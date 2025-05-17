@@ -9,6 +9,6 @@
   "name": "Hood Ball",
   "orientation": "portrait",
   "short_name": "Hood Ball",
-  "start_url": "/",
+  "start_url": "/hood-ball/",
   "theme_color": "#000000"
 }
