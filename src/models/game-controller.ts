@@ -14,7 +14,6 @@ import { GameKeyboard } from "./game-keyboard.js";
 import { GamePointer } from "./game-pointer.js";
 import { GameState } from "./game-state.js";
 import { GameGamepad } from "./game-gamepad.js";
-import { AudioService } from "../services/audio-service.js";
 
 export class GameController {
   private gameState: GameState;
@@ -27,7 +26,6 @@ export class GameController {
   private intervals: IntervalService[] = [];
 
   private readonly transitionService: ScreenTransitionService;
-  private readonly audioService: AudioService;
   private readonly apiService: APIService;
   private readonly cryptoService: CryptoService;
   private readonly webSocketService: WebSocketService;
@@ -47,7 +45,6 @@ export class GameController {
     this.gameGamepad = new GameGamepad(this.gameFrame);
 
     this.transitionService = new ScreenTransitionService(this.gameFrame);
-    this.audioService = new AudioService();
     this.cryptoService = new CryptoService(this.gameState.getGameServer());
     this.apiService = new APIService(this);
     this.webRTCService = new WebRTCService(this);
@@ -167,10 +164,6 @@ export class GameController {
 
   public getTransitionService(): ScreenTransitionService {
     return this.transitionService;
-  }
-
-  public getAudioService(): AudioService {
-    return this.audioService;
   }
 
   public getAPIService(): APIService {
