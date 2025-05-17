@@ -14,7 +14,6 @@ import { GameKeyboard } from "./game-keyboard.js";
 import { GamePointer } from "./game-pointer.js";
 import { GameState } from "./game-state.js";
 import { GameGamepad } from "./game-gamepad.js";
-import { AudioService } from "../services/audio-service.js";
 
 export class GameController {
   private gameState: GameState;
