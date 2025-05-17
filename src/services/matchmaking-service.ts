@@ -146,7 +146,7 @@ export class MatchmakingService {
     peer: WebRTCPeer,
     payload: ArrayBuffer | null
   ): void {
-    if (payload === null || payload.byteLength < 39) {
+    if (payload === null || payload.byteLength < 36) {
       return console.warn("Invalid player connection state payload", payload);
     }
 
@@ -157,7 +157,6 @@ export class MatchmakingService {
     const host = dataView.getUint8(33) === 1;
     const score = dataView.getUint8(34);
     const nameBytes = payload.slice(35);
-
     const name = new TextDecoder().decode(nameBytes);
 
     if (state === ConnectionStateType.Disconnected) {
