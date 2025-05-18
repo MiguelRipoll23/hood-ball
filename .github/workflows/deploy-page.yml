@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Bundle project
+      - name: Build project
         run: npm run build
         env:
           VITE_API_HOST: ${{ vars.API_HOST }}
