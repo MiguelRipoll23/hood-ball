@@ -1,4 +1,4 @@
-import { GameEvent } from "../interfaces/event/game-event.js";
+import type { GameEvent } from "../interfaces/event/game-event.js";
 import { EventType } from "../enums/event-type.js";
 
 export class RemoteEvent implements GameEvent {

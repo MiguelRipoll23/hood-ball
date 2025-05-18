@@ -1,5 +1,5 @@
 import { BaseAnimatedGameObject } from "./base/base-animated-object.js";
-import { RankingResponse } from "../interfaces/response/ranking-response.js";
+import type { RankingResponse } from "../interfaces/response/ranking-response.js";
 
 export class RankingTableObject extends BaseAnimatedGameObject {
   private ranking: RankingResponse[] = [];

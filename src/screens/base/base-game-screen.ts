@@ -2,11 +2,12 @@ import { GameController } from "../../models/game-controller.js";
 import { GamePointer } from "../../models/game-pointer.js";
 import { LayerType } from "../../enums/layer-type.js";
 import { BasePressableGameObject } from "../../objects/base/base-pressable-game-object.js";
-import { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
-import { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { EventConsumer } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
+import { getEventTypeName } from "../../utils/enum-utils.js";
 
 export class BaseGameScreen implements GameScreen {
   protected canvas: HTMLCanvasElement;
@@ -22,7 +23,11 @@ export class BaseGameScreen implements GameScreen {
 
   private gamePointer: GamePointer;
 
-  constructor(protected gameController: GameController) {
+  protected gameController: GameController;
+
+  constructor(gameController: GameController) {
+    this.gameController = gameController;
+
     console.log(`${this.constructor.name} created`);
     this.canvas = gameController.getCanvas();
     this.gamePointer = gameController.getGamePointer();
@@ -146,7 +151,9 @@ export class BaseGameScreen implements GameScreen {
     this.eventConsumer.subscribeToLocalEvent(eventType, eventCallback);
 
     console.log(
-      `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
+      `${this.constructor.name} subscribed to local event ${getEventTypeName(
+        eventType
+      )}`
     );
   }
 
@@ -157,7 +164,9 @@ export class BaseGameScreen implements GameScreen {
     this.eventConsumer.subscribeToRemoteEvent(eventType, eventCallback);
 
     console.log(
-      `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`
+      `${this.constructor.name} subscribed to remote event ${getEventTypeName(
+        eventType
+      )}`
     );
   }
 

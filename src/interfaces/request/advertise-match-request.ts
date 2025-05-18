@@ -1,4 +1,4 @@
-import { MatchAttributes } from "../match-attributes.js";
+import type { MatchAttributes } from "../match-attributes.js";
 
 export interface AdvertiseMatchRequest {
   version: string;

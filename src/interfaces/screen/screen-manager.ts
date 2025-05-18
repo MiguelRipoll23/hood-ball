@@ -1,4 +1,4 @@
-import { GameScreen } from "./game-screen.js";
+import type { GameScreen } from "./game-screen.js";
 
 export interface ScreenManager {
   getCurrentScreen(): GameScreen | null;

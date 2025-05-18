@@ -4,20 +4,23 @@ import {
 } from "../constants/colors-constants.js";
 import { TimerService } from "../services/timer-service.js";
 import { BaseAnimatedGameObject } from "./base/base-animated-object.js";
-import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
 
 export class AlertObject
   extends BaseAnimatedGameObject
   implements MultiplayerGameObject
 {
+  protected readonly canvas: HTMLCanvasElement;
+
   private textLines: string[] = ["Unknown", "message"];
   private color: string = "white";
   private fontSize: number = 44;
 
   private timer: TimerService | null = null;
 
-  constructor(protected readonly canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.setInitialValues();
   }
 

@@ -4,9 +4,11 @@ export class ToggleObject extends BaseAnimatedGameObject {
   protected width: number = 55; // Incremented width to 55
   protected height: number = 30;
   private radius: number = 15; // Adjusted radius for rounded corners based on height
+  private toggleState = false;
 
-  constructor(private toggleState = false) {
+  constructor(toggleState = false) {
     super();
+    this.toggleState = toggleState;
   }
 
   public setToggleState(toggleState: boolean): void {

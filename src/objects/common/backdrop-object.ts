@@ -3,8 +3,12 @@ import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
 export class BackdropObject extends BaseAnimatedGameObject {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  public canvas!: HTMLCanvasElement;
+
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
+    this.reset();
   }
 
   public render(context: CanvasRenderingContext2D): void {

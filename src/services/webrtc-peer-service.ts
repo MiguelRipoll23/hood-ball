@@ -7,7 +7,7 @@ import { ObjectOrchestrator } from "./object-orchestrator-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { WebRTCService } from "./webrtc-service.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
   private logger: LoggerUtils;
@@ -39,7 +39,12 @@ export class WebRTCPeerService implements WebRTCPeer {
   private downloadBytesPerSecond: number = 0;
   private uploadBytesPerSecond: number = 0;
 
-  constructor(private gameController: GameController, private token: string) {
+  private gameController: GameController;
+  private token: string;
+
+  constructor(gameController: GameController, token: string) {
+    this.gameController = gameController;
+    this.token = token;
     this.logger = new LoggerUtils(`WebRTC(${this.token})`);
 
     this.matchmakingService = this.gameController.getMatchmakingService();

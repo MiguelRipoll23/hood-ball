@@ -1,6 +1,6 @@
 import { BaseStaticCollidableGameObject } from "../base/base-static-collidable-game-object.js";
 import { HitboxObject } from "../common/hitbox-object.js";
-import { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameObject } from "../../interfaces/object/game-object.js";
 
 export class WorldBackgroundObject extends BaseStaticCollidableGameObject {
   private readonly BACKGROUND_COLOR: string = "#00a000";
@@ -16,8 +16,11 @@ export class WorldBackgroundObject extends BaseStaticCollidableGameObject {
 
   private collisionObjects: GameObject[];
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  public canvas!: HTMLCanvasElement;
+
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.collisionObjects = [];
     this.calculateFieldDimensions();
     this.calculateCenter();

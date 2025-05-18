@@ -10,8 +10,11 @@ export class BasePressableGameObject extends BaseAnimatedGameObject {
   protected hovering = false;
   protected pressed = false;
 
-  constructor(protected stealFocus = false) {
+  protected stealFocus: boolean;
+
+  constructor(stealFocus = false) {
     super();
+    this.stealFocus = stealFocus;
   }
 
   public setActive(active: boolean): void {
@@ -77,8 +80,10 @@ export class BasePressableGameObject extends BaseAnimatedGameObject {
     const pointerY = gamePointer.getY();
 
     return (
-      pointerX >= this.x && pointerX <= this.x + this.width &&
-      pointerY >= this.y && pointerY <= this.y + this.height
+      pointerX >= this.x &&
+      pointerX <= this.x + this.width &&
+      pointerY >= this.y &&
+      pointerY <= this.y + this.height
     );
   }
 

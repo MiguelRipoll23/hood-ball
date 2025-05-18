@@ -5,17 +5,17 @@ export class NotificationObject extends BaseAnimatedGameObject {
   private readonly Y_MARGIN = 20;
   private readonly TEXT_SPEED = 2;
 
+  private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
+
   private active: boolean = false;
-
   private textX = 0;
-
   private completedTimes = 0;
-
   private text = "Whoops! Something went wrong!";
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.y = this.Y_MARGIN;
     this.textX = this.canvas.width;
@@ -36,30 +36,16 @@ export class NotificationObject extends BaseAnimatedGameObject {
     // Draw red borders
     context.fillStyle = "rgba(255, 0, 0, 0.85)";
     context.fillRect(this.x, this.y, this.canvas.width, 1); // Top border
-    context.fillRect(
-      this.x,
-      this.y + this.HEIGHT - 1,
-      this.canvas.width,
-      1,
-    ); // Bottom border
+    context.fillRect(this.x, this.y + this.HEIGHT - 1, this.canvas.width, 1); // Bottom border
 
     // Draw black rectangle
     context.fillStyle = "rgba(0, 0, 0, 0.85)";
-    context.fillRect(
-      this.x,
-      this.y + 1,
-      this.canvas.width,
-      this.HEIGHT - 2,
-    ); // Main rectangle
+    context.fillRect(this.x, this.y + 1, this.canvas.width, this.HEIGHT - 2); // Main rectangle
 
     // Draw text
     context.fillStyle = "#FFF";
     context.font = "20px system-ui";
-    context.fillText(
-      this.text,
-      this.textX,
-      this.y + this.HEIGHT / 2 + 6,
-    );
+    context.fillText(this.text, this.textX, this.y + this.HEIGHT / 2 + 6);
 
     context.globalAlpha = 1;
   }

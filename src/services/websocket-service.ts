@@ -5,8 +5,8 @@ import { WebRTCService } from "./webrtc-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { EventType } from "../enums/event-type.js";
-import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
-import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
+import type { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
+import type { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { TunnelType } from "../enums/tunnel-type.js";
 import { APIUtils } from "../utils/api-utils.js";
@@ -23,7 +23,7 @@ export class WebSocketService {
     this.gameState = gameController.getGameState();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.webrtcService = gameController.getWebRTCService();
-    this.baseURL = APIUtils.getWSBaseURL(window.location);
+    this.baseURL = APIUtils.getWSBaseURL();
   }
 
   public connectToServer(): void {
@@ -147,7 +147,7 @@ export class WebSocketService {
 
     console.log("Tunnel message", originToken, webrtcType, webrtcData);
 
-    this.handleWebRTCMessage(originToken, webrtcType, webrtcData);
+    this.handleWebRTCMessage(originToken, webrtcType as TunnelType, webrtcData);
   }
 
   private handleWebRTCMessage(

@@ -12,11 +12,13 @@ export class JoystickObject extends BaseGameObject {
   private angle: number = 0;
   private magnitude: number = 1;
 
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly gamePointer: GamePointer
-  ) {
+  public canvas!: HTMLCanvasElement;
+  public gamePointer!: GamePointer;
+
+  constructor(canvas: HTMLCanvasElement, gamePointer: GamePointer) {
     super();
+    this.canvas = canvas;
+    this.gamePointer = gamePointer;
   }
 
   public isActive(): boolean {

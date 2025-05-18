@@ -1,4 +1,4 @@
-import { SerializedCredential } from "../interfaces/serialized-credential.js";
+import type { SerializedCredential } from "../interfaces/serialized-credential.js";
 
 export class WebAuthnUtils {
   public static serializeCredential(

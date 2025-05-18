@@ -2,7 +2,7 @@ import {
   CANVAS_EXTRA_MARGIN,
   CANVAS_MARGIN,
 } from "../constants/canvas-constants.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { BasePositionableGameObject } from "../objects/base/base-positionable-game-object.js";
 
 export class ObjectUtils {

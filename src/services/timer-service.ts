@@ -7,15 +7,18 @@ export class TimerService {
 
   private callback: () => void;
 
+  started: boolean;
+
   constructor(
     durationSeconds: number,
     callback: () => void,
-    private started: boolean = true
+    started: boolean = true
   ) {
     console.log(`${this.constructor.name} created`, this);
 
     this.durationMilliseconds = durationSeconds * 1000;
     this.callback = callback;
+    this.started = started;
   }
 
   public start(): void {

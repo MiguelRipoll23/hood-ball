@@ -12,8 +12,11 @@ export class MessageObject extends BaseAnimatedGameObject {
   private textY = 0;
   private content = "Unknown";
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  private readonly canvas: HTMLCanvasElement;
+
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.setInitialValues();
   }
 

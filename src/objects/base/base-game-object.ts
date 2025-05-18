@@ -1,5 +1,5 @@
 import { ObjectStateType } from "../../enums/object-state-type.js";
-import { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameObject } from "../../interfaces/object/game-object.js";
 
 export class BaseGameObject implements GameObject {
   protected loaded: boolean = false;

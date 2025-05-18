@@ -24,8 +24,11 @@ export class CloseableWindowObject extends BasePressableGameObject {
 
   private opened: boolean = false;
 
-  constructor(private canvas: HTMLCanvasElement) {
+  public canvas!: HTMLCanvasElement;
+
+  constructor(canvas: HTMLCanvasElement) {
     super(true);
+    this.canvas = canvas;
     this.backdropObject = new BackdropObject(this.canvas);
     this.setInitialState();
   }

@@ -14,9 +14,11 @@ export class ToastObject extends BaseAnimatedGameObject {
   private context: CanvasRenderingContext2D;
 
   private timer: TimerService | null = null;
+  private readonly canvas: HTMLCanvasElement;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.reset();
   }

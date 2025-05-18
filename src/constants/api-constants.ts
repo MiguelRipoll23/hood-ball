@@ -1,4 +1,4 @@
-export const API_HOSTNAME = "gameserver.deno.dev";
+export const API_HOSTNAME = "localhost:8000";
 export const API_PATH = "/api";
 export const API_VERSION = "/v1";
 

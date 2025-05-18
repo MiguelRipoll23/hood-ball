@@ -1,5 +1,5 @@
-import { GameScreen } from "../interfaces/screen/game-screen.js";
-import { ScreenManager } from "../interfaces/screen/screen-manager.js";
+import type { GameScreen } from "../interfaces/screen/game-screen.js";
+import type { ScreenManager } from "../interfaces/screen/screen-manager.js";
 
 export class ScreenTransitionService {
   private screenManager: ScreenManager;

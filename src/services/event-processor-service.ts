@@ -1,12 +1,13 @@
 import { EventType } from "../enums/event-type.js";
 import { GameController } from "../models/game-controller.js";
 import { RemoteEvent } from "../models/remote-event.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { EventQueue } from "../models/event-queue.js";
+import { getEventTypeName } from "../utils/enum-utils.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -36,7 +37,10 @@ export class EventProcessorService {
   }
 
   public addLocalEvent(event: LocalEvent) {
-    console.log(`Added local event ${EventType[event.getType()]}`, event);
+    console.log(
+      `Added local event ${getEventTypeName(event.getType())}`,
+      event
+    );
     this.localQueue.addEvent(event);
   }
 
@@ -54,14 +58,17 @@ export class EventProcessorService {
     const id = dataView.getInt8(0);
     const payload = data.byteLength > 1 ? data.slice(1) : null;
 
-    const event = new RemoteEvent(id);
+    const event = new RemoteEvent(id as EventType);
     event.setBuffer(payload);
 
     this.remoteQueue.addEvent(event);
   }
 
   public sendEvent(event: RemoteEvent) {
-    console.log(`Sending remote event ${EventType[event.getType()]}`, event);
+    console.log(
+      `Sending remote event ${getEventTypeName(event.getType())}`,
+      event
+    );
     this.webrtcService.getPeers().forEach((webrtcPeer) => {
       if (webrtcPeer.hasJoined()) {
         this.sendEventToPeer(webrtcPeer, event);
@@ -70,7 +77,7 @@ export class EventProcessorService {
   }
 
   public setLastConsumedEvent(eventType: EventType) {
-    this.lastConsumedEvent = EventType[eventType];
+    this.lastConsumedEvent = getEventTypeName(eventType as EventType);
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D) {

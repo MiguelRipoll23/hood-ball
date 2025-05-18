@@ -1,6 +1,6 @@
 import { GameController } from "../models/game-controller.js";
 import { APIService } from "./api-service.js";
-import { FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
+import type { FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
 import { TimerService } from "./timer-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { Match } from "../models/match.js";
@@ -8,31 +8,34 @@ import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
 import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
 import { ConnectionStateType } from "../enums/connection-state-type.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { EventType } from "../enums/event-type.js";
 import { LocalEvent } from "../models/local-event.js";
-import { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
-import { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
+import type { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
+import type { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
-import { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
-import { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
-import { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
+import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
+import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
+import type { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
 import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
+import { getMatchStateTypeName } from "../utils/enum-utils.js";
 
 export class MatchmakingService {
   private apiService: APIService;
   private webrtcService: WebRTCService;
 
+  private gameController: GameController;
   private gameState: GameState;
 
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
-  constructor(private gameController: GameController) {
+  constructor(gameController: GameController) {
+    this.gameController = gameController;
     this.apiService = gameController.getAPIService();
     this.webrtcService = gameController.getWebRTCService();
     this.gameState = gameController.getGameState();
@@ -134,7 +137,12 @@ export class MatchmakingService {
     const totalSlots = dataView.getUint8(1);
 
     // Create game match
-    const match = new Match(false, state, totalSlots, MATCH_ATTRIBUTES);
+    const match = new Match(
+      false,
+      state as MatchStateType,
+      totalSlots,
+      MATCH_ATTRIBUTES
+    );
     this.gameState.setMatch(match);
 
     // Add local player
@@ -276,7 +284,7 @@ export class MatchmakingService {
       return;
     }
 
-    const state = MatchStateType[match.getState()];
+    const state = getMatchStateTypeName(match.getState());
     DebugUtils.renderText(context, 24, 24, `State: ${state}`);
   }
 

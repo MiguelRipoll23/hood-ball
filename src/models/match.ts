@@ -1,6 +1,7 @@
-import { MatchAttributes } from "../interfaces/match-attributes.js";
+import type { MatchAttributes } from "../interfaces/match-attributes.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GamePlayer } from "./game-player.js";
+import { getMatchStateTypeName } from "../utils/enum-utils.js";
 
 export class Match {
   private host: boolean;
@@ -8,7 +9,7 @@ export class Match {
   private attributes: MatchAttributes;
 
   private players: Map<string, GamePlayer> = new Map();
-  private state: number = 0;
+  private state: MatchStateType = MatchStateType.Unknown;
 
   constructor(
     host: boolean,
@@ -32,7 +33,7 @@ export class Match {
 
   public setState(state: MatchStateType): void {
     this.state = state;
-    console.log("Match state changed to", MatchStateType[state]);
+    console.log("Match state changed to", getMatchStateTypeName(state));
   }
 
   public getTotalSlots(): number {

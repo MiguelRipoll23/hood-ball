@@ -11,23 +11,23 @@ import {
   VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
   AUTHENTICATION_OPTIONS_ENDPOINT,
 } from "../constants/api-constants.js";
-import { FindMatchesResponse as FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
-import { MessagesResponse } from "../interfaces/response/messages-response.js";
-import { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
-import { VersionResponse } from "../interfaces/response/version-response.js";
-import { RankingResponse } from "../interfaces/response/ranking-response.js";
+import type { FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
+import type { MessagesResponse } from "../interfaces/response/messages-response.js";
+import type { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
+import type { VersionResponse } from "../interfaces/response/version-response.js";
+import type { RankingResponse } from "../interfaces/response/ranking-response.js";
+import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
+import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
+import type { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
+import type { AuthenticationOptionsResponse } from "../interfaces/response/authentication-options-response.js";
+import type { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
+import type { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
+import type { AuthenticationOptionsRequest } from "../interfaces/request/authentication-options.js";
+import type { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
+import type { RegistrationOptionsResponse } from "../interfaces/response/registration-options-response.js";
 import { CryptoService } from "./crypto-service.js";
 import { GameController } from "../models/game-controller.js";
-import { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
-import { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
-import { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
-import { AuthenticationOptionsResponse } from "../interfaces/response/authentication-options-response.js";
-import { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
-import { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
-import { AuthenticationOptionsRequest } from "../interfaces/request/authentication-options.js";
-import { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
 import { APIUtils } from "../utils/api-utils.js";
-import { RegistrationOptionsResponse } from "../interfaces/response/registration-options-response.js";
 
 export class APIService {
   private baseURL: string;

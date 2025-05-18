@@ -1,10 +1,12 @@
 import { BaseGameObject } from "../base/base-game-object.js";
 
 export class MainBackgroundObject extends BaseGameObject {
+  private readonly canvas: HTMLCanvasElement;
   private gradientOffset = 0; // Offset for moving gradient
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
   }
 
   // Update the gradient offset to animate the background
@@ -24,7 +26,7 @@ export class MainBackgroundObject extends BaseGameObject {
       this.gradientOffset,
       0,
       this.canvas.width + this.gradientOffset,
-      this.canvas.height / 2,
+      this.canvas.height / 2
     );
     gradient.addColorStop(0, "#000428");
     gradient.addColorStop(1, "#004e92");

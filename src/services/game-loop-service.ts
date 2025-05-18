@@ -5,16 +5,17 @@ import { MainScreen } from "../screens/main-screen.js";
 import { LoginScreen } from "../screens/main-screen/login-screen.js";
 import { MainMenuScreen } from "../screens/main-screen/main-menu-screen.js";
 import { EventType } from "../enums/event-type.js";
-import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
-import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
+import type { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
+import type { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
-import { GameScreen } from "../interfaces/screen/game-screen.js";
+import type { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumer } from "./event-consumer-service.js";
 import { DebugObject } from "../objects/common/debug-object.js";
 
 export class GameLoopService {
+  private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
   private debug: boolean = window.location.search.includes("debug");
 
@@ -32,8 +33,9 @@ export class GameLoopService {
   // Events
   private eventConsumer: EventConsumer;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     this.logDebugInfo();
+    this.canvas = canvas;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();

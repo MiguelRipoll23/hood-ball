@@ -1,12 +1,12 @@
 import { GamePlayer } from "../../models/game-player.js";
 import { ObjectType } from "../../enums/object-type.js";
 import { BaseMultiplayerGameObject } from "../../objects/base/base-multiplayer-object.js";
-import {
+import type {
   MultiplayerGameObject,
   StaticMultiplayerGameObject,
 } from "../../interfaces/object/multiplayer-game-object.js";
 import { BaseGameScreen } from "../../screens/base/base-game-screen.js";
-import { MultiplayerScreen } from "../../interfaces/screen/multiplayer-screen.js";
+import type { MultiplayerScreen } from "../../interfaces/screen/multiplayer-screen.js";
 import { ScreenType } from "../../enums/screen-type.js";
 
 export class BaseMultiplayerScreen
@@ -26,7 +26,7 @@ export class BaseMultiplayerScreen
   }
 
   public getSyncableObjectClass(
-    typeId: number
+    typeId: ObjectType
   ): StaticMultiplayerGameObject | null {
     return this.syncableObjectTypes.get(typeId) ?? null;
   }

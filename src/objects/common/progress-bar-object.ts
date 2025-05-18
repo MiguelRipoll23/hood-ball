@@ -18,9 +18,11 @@ export class ProgressBarObject extends BaseGameObject {
 
   private text: string = "Loading...";
   private currentProgress: number = 0.0;
+  private readonly canvas: HTMLCanvasElement;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.setProperties(canvas);
   }
 
