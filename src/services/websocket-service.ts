@@ -136,7 +136,7 @@ export class WebSocketService {
 
     const dataView = new DataView(payload);
     const originTokenBytes = new Uint8Array(payload.slice(0, 32));
-    const webrtcType = dataView.getUint8(32);
+    const tunnelType = dataView.getUint8(32);
     const webrtcDataBytes = payload.slice(33);
 
     const originToken = btoa(String.fromCharCode(...originTokenBytes));
@@ -145,17 +145,22 @@ export class WebSocketService {
       new TextDecoder("utf-8").decode(webrtcDataBytes)
     );
 
-    console.log("Tunnel message", originToken, webrtcType, webrtcData);
+    console.log(
+      "Tunnel message",
+      originToken,
+      TunnelType[tunnelType],
+      webrtcData
+    );
 
-    this.handleWebRTCMessage(originToken, webrtcType as TunnelType, webrtcData);
+    this.handleWebRTCMessage(originToken, tunnelType, webrtcData);
   }
 
   private handleWebRTCMessage(
     originToken: string,
-    type: TunnelType,
+    tunnelType: TunnelType,
     webrtcPayload: RTCIceCandidate | RTCSessionDescriptionInit
   ) {
-    switch (type) {
+    switch (tunnelType) {
       case TunnelType.IceCandidate:
         return this.webrtcService.handleNewIceCandidate(
           originToken,
@@ -169,7 +174,7 @@ export class WebSocketService {
         );
 
       default: {
-        console.warn("Unknown tunnel message type", type);
+        console.warn("Unknown tunnel message type", tunnelType);
       }
     }
   }

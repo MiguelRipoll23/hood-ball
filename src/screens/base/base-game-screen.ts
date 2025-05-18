@@ -7,9 +7,11 @@ import type { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { EventConsumer } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
-import { getEventTypeName } from "../../utils/enum-utils.js";
 
 export class BaseGameScreen implements GameScreen {
+  protected gameController: GameController;
+  protected eventConsumer: EventConsumer;
+
   protected canvas: HTMLCanvasElement;
   protected screenManagerService: ScreenManagerService | null = null;
 
@@ -19,11 +21,7 @@ export class BaseGameScreen implements GameScreen {
   protected sceneObjects: GameObject[] = [];
   protected uiObjects: GameObject[] = [];
 
-  protected eventConsumer: EventConsumer;
-
   private gamePointer: GamePointer;
-
-  protected gameController: GameController;
 
   constructor(gameController: GameController) {
     this.gameController = gameController;
@@ -151,9 +149,7 @@ export class BaseGameScreen implements GameScreen {
     this.eventConsumer.subscribeToLocalEvent(eventType, eventCallback);
 
     console.log(
-      `${this.constructor.name} subscribed to local event ${getEventTypeName(
-        eventType
-      )}`
+      `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
     );
   }
 
@@ -164,9 +160,7 @@ export class BaseGameScreen implements GameScreen {
     this.eventConsumer.subscribeToRemoteEvent(eventType, eventCallback);
 
     console.log(
-      `${this.constructor.name} subscribed to remote event ${getEventTypeName(
-        eventType
-      )}`
+      `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`
     );
   }
 

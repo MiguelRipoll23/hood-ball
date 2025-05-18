@@ -5,7 +5,6 @@ import { GameController } from "../models/game-controller.js";
 import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { getEventTypeName } from "../utils/enum-utils.js";
 
 export class EventConsumer {
   private eventProcessorService: EventProcessorService;
@@ -35,7 +34,7 @@ export class EventConsumer {
     } as EventSubscription);
 
     if (log) {
-      console.log(`Subscribed to local event ${getEventTypeName(eventType)}`);
+      console.log(`Subscribed to local event ${EventType[eventType]}`);
     }
   }
 
@@ -50,7 +49,7 @@ export class EventConsumer {
     } as EventSubscription);
 
     if (log) {
-      console.log(`Subscribed to remote event ${getEventTypeName(eventType)}`);
+      console.log(`Subscribed to remote event ${EventType[eventType]}`);
     }
   }
 

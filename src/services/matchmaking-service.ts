@@ -22,7 +22,6 @@ import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
-import { getMatchStateTypeName } from "../utils/enum-utils.js";
 
 export class MatchmakingService {
   private apiService: APIService;
@@ -137,12 +136,7 @@ export class MatchmakingService {
     const totalSlots = dataView.getUint8(1);
 
     // Create game match
-    const match = new Match(
-      false,
-      state as MatchStateType,
-      totalSlots,
-      MATCH_ATTRIBUTES
-    );
+    const match = new Match(false, state, totalSlots, MATCH_ATTRIBUTES);
     this.gameState.setMatch(match);
 
     // Add local player
@@ -284,7 +278,7 @@ export class MatchmakingService {
       return;
     }
 
-    const state = getMatchStateTypeName(match.getState());
+    const state = match.getState();
     DebugUtils.renderText(context, 24, 24, `State: ${state}`);
   }
 

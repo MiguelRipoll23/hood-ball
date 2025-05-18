@@ -16,4 +16,11 @@ export default [
       ],
     },
   },
+  {
+    // Override for files that only contain enums
+    files: ["**/*.enums.ts"],
+    rules: {
+      erasableSyntaxOnly: "off",
+    },
+  },
 ];

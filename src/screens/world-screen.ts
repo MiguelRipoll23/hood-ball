@@ -37,11 +37,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private countdownCurrentNumber = 3;
 
-  gameController: GameController;
-
   constructor(gameController: GameController) {
     super(gameController);
-    this.gameController = gameController;
     this.gameState = gameController.getGameState();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.gameState.getGamePlayer().reset();
