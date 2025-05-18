@@ -1,5 +1,5 @@
 import {
-  API_HOSTNAME,
+  API_HOST as API_HOST,
   API_PATH,
   API_VERSION,
 } from "../constants/api-constants.js";
@@ -8,9 +8,7 @@ import { ServerError } from "../models/server-error.js";
 
 export class APIUtils {
   public static getBaseURL(): string {
-    const protocol = API_HOSTNAME.match("localhost") ? "http:" : "https:";
-
-    return protocol + "//" + API_HOSTNAME + API_PATH + API_VERSION;
+    return API_HOST + API_PATH + API_VERSION;
   }
 
   public static getWSBaseURL(): string {

@@ -21,7 +21,9 @@ jobs:
         run: npm install
 
       - name: Bundle project
-        run: npm run bundle
+        run: npm run build
+        env:
+          VITE_API_HOST: ${{ vars.API_HOST }}
 
       - name: Upload artifact
         id: deployment
