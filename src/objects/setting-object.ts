@@ -4,15 +4,13 @@ import { ToggleObject } from "./common/toggle-button.js";
 export class SettingObject extends BasePressableGameObject {
   private toggleObject: ToggleObject | null = null;
   private updated = false;
-  settingId: string;
-  settingText: string;
-  settingState: boolean;
 
-  constructor(settingId: string, settingText: string, settingState = false) {
+  constructor(
+    private settingId: string,
+    private settingText: string,
+    private settingState = false
+  ) {
     super();
-    this.settingId = settingId;
-    this.settingText = settingText;
-    this.settingState = settingState;
     this.height = 40;
   }
 

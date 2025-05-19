@@ -10,11 +10,8 @@ export class BasePressableGameObject extends BaseAnimatedGameObject {
   protected hovering = false;
   protected pressed = false;
 
-  protected stealFocus: boolean;
-
-  constructor(stealFocus = false) {
+  constructor(protected stealFocus = false) {
     super();
-    this.stealFocus = stealFocus;
   }
 
   public setActive(active: boolean): void {

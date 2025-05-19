@@ -3,10 +3,8 @@ import { GameFrame } from "./game-frame.js";
 
 export class GameGamepad {
   private gamepadIndex: number | null = null;
-  private gameFrame: GameFrame;
 
-  constructor(gameFrame: GameFrame) {
-    this.gameFrame = gameFrame;
+  constructor(private gameFrame: GameFrame) {
     this.addEventListeners();
   }
 

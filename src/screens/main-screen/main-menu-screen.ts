@@ -23,9 +23,7 @@ export class MainMenuScreen extends BaseGameScreen {
   private serverMessageWindowObject: ServerMessageWindowObject | null = null;
   private closeableMessageObject: CloseableMessageObject | null = null;
 
-  showNews: boolean;
-
-  constructor(gameController: GameController, showNews: boolean) {
+  constructor(gameController: GameController, private showNews: boolean) {
     super(gameController);
     this.showNews = showNews;
     this.apiService = gameController.getAPIService();

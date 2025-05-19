@@ -15,7 +15,6 @@ import { EventConsumer } from "./event-consumer-service.js";
 import { DebugObject } from "../objects/common/debug-object.js";
 
 export class GameLoopService {
-  private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
   private debug: boolean = window.location.search.includes("debug");
 
@@ -33,9 +32,8 @@ export class GameLoopService {
   // Events
   private eventConsumer: EventConsumer;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
-    this.canvas = canvas;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();

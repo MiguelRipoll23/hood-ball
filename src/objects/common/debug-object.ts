@@ -4,11 +4,9 @@ import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
 export class DebugObject extends BaseAnimatedGameObject {
   private text: string = "Unknown";
   private timer: TimerService | null = null;
-  public canvas!: HTMLCanvasElement;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
     this.reset();
   }
 

@@ -34,13 +34,10 @@ export class GameController {
   private objectOrchestrator: ObjectOrchestrator;
   private eventsProcessorService: EventProcessorService;
 
-  private readonly canvas: HTMLCanvasElement;
-  private debug: boolean;
-
-  constructor(canvas: HTMLCanvasElement, debug: boolean) {
-    this.canvas = canvas;
-    this.debug = debug;
-
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    private debug: boolean
+  ) {
     this.gameState = new GameState();
     this.gameFrame = new GameFrame();
     this.gamePointer = new GamePointer(this.canvas);

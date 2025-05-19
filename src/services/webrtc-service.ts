@@ -11,11 +11,7 @@ export class WebRTCService {
   private downloadKilobytesPerSecond: number = 0;
   private uploadKilobytesPerSecond: number = 0;
 
-  gameController: GameController;
-
-  constructor(gameController: GameController) {
-    this.gameController = gameController;
-  }
+  constructor(private gameController: GameController) {}
 
   public async sendOffer(token: string): Promise<void> {
     const peer = this.addPeer(token);

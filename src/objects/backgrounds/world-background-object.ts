@@ -16,11 +16,8 @@ export class WorldBackgroundObject extends BaseStaticCollidableGameObject {
 
   private collisionObjects: GameObject[];
 
-  public canvas!: HTMLCanvasElement;
-
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
     this.collisionObjects = [];
     this.calculateFieldDimensions();
     this.calculateCenter();

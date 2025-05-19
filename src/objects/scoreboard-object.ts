@@ -36,11 +36,8 @@ export class ScoreboardObject
   private durationMilliseconds: number = 0;
   private remainingSeconds: number = 0;
 
-  canvas: HTMLCanvasElement;
-
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
     this.x = this.canvas.width / 2 - this.SPACE_BETWEEN / 2;
     this.setSyncableValues();
   }

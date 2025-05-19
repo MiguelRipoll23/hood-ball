@@ -10,17 +10,14 @@ export class AlertObject
   extends BaseAnimatedGameObject
   implements MultiplayerGameObject
 {
-  protected readonly canvas: HTMLCanvasElement;
-
   private textLines: string[] = ["Unknown", "message"];
   private color: string = "white";
   private fontSize: number = 44;
 
   private timer: TimerService | null = null;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(protected readonly canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
     this.setInitialValues();
   }
 

@@ -39,12 +39,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private downloadBytesPerSecond: number = 0;
   private uploadBytesPerSecond: number = 0;
 
-  private gameController: GameController;
-  private token: string;
-
-  constructor(gameController: GameController, token: string) {
-    this.gameController = gameController;
-    this.token = token;
+  constructor(private gameController: GameController, private token: string) {
     this.logger = new LoggerUtils(`WebRTC(${this.token})`);
 
     this.matchmakingService = this.gameController.getMatchmakingService();

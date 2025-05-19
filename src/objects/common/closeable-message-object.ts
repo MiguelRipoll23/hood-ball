@@ -11,11 +11,8 @@ export class CloseableMessageObject extends BasePressableGameObject {
 
   private content = "Whoops! Something went wrong!";
 
-  public canvas!: HTMLCanvasElement;
-
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     super(true);
-    this.canvas = canvas;
     this.active = false;
     this.opacity = 0;
     this.setSize();

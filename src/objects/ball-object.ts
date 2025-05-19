@@ -17,7 +17,6 @@ export class BallObject
   private readonly FRICTION: number = 0.01;
   private readonly MIN_VELOCITY: number = 0.1;
   private readonly MAX_VELOCITY: number = 10;
-  private readonly canvas: HTMLCanvasElement;
 
   private radius: number = this.RADIUS;
   protected width = this.RADIUS * 2;
@@ -26,12 +25,15 @@ export class BallObject
   private inactive: boolean = false;
   private lastPlayer: GamePlayer | null = null;
 
-  constructor(x: number, y: number, canvas: HTMLCanvasElement) {
+  constructor(
+    x: number,
+    y: number,
+    private readonly canvas: HTMLCanvasElement
+  ) {
     super();
     this.x = x;
     this.y = y;
     this.mass = this.MASS;
-    this.canvas = canvas;
     this.setSyncableValues();
   }
 

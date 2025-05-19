@@ -9,7 +9,6 @@ import { EventConsumer } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
 
 export class BaseGameScreen implements GameScreen {
-  protected gameController: GameController;
   protected eventConsumer: EventConsumer;
 
   protected canvas: HTMLCanvasElement;
@@ -23,9 +22,7 @@ export class BaseGameScreen implements GameScreen {
 
   private gamePointer: GamePointer;
 
-  constructor(gameController: GameController) {
-    this.gameController = gameController;
-
+  constructor(protected gameController: GameController) {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameController.getCanvas();
     this.gamePointer = gameController.getGamePointer();

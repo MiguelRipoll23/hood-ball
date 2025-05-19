@@ -5,17 +5,14 @@ export class NotificationObject extends BaseAnimatedGameObject {
   private readonly Y_MARGIN = 20;
   private readonly TEXT_SPEED = 2;
 
-  private canvas: HTMLCanvasElement;
   private context: CanvasRenderingContext2D;
-
   private active: boolean = false;
   private textX = 0;
   private completedTimes = 0;
   private text = "Whoops! Something went wrong!";
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.y = this.Y_MARGIN;
     this.textX = this.canvas.width;

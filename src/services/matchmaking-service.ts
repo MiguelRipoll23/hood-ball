@@ -27,14 +27,12 @@ export class MatchmakingService {
   private apiService: APIService;
   private webrtcService: WebRTCService;
 
-  private gameController: GameController;
   private gameState: GameState;
 
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
-  constructor(gameController: GameController) {
-    this.gameController = gameController;
+  constructor(private gameController: GameController) {
     this.apiService = gameController.getAPIService();
     this.webrtcService = gameController.getWebRTCService();
     this.gameState = gameController.getGameState();

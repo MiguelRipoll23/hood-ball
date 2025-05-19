@@ -11,26 +11,21 @@ export class LocalCarObject extends CarObject {
   private readonly joystickObject: JoystickObject;
   private active = true;
 
-  protected gamePointer!: GamePointer;
-  protected gameKeyboard!: GameKeyboard;
-  protected gameGamepad!: GameGamepad;
-
   constructor(
     x: number,
     y: number,
     angle: number,
-    canvas: HTMLCanvasElement,
-    gamePointer: GamePointer,
-    gameKeyboard: GameKeyboard,
-    gameGamepad: GameGamepad
+    protected readonly canvas: HTMLCanvasElement,
+    protected gamePointer: GamePointer,
+    protected gameKeyboard: GameKeyboard,
+    protected gameGamepad: GameGamepad
   ) {
     super(x, y, angle);
-    this.canvas = canvas;
     this.gamePointer = gamePointer;
     this.gameKeyboard = gameKeyboard;
     this.gameGamepad = gameGamepad;
     this.setSyncableValues();
-    this.joystickObject = new JoystickObject(canvas, gamePointer);
+    this.joystickObject = new JoystickObject(gamePointer);
   }
 
   public override mustSync(): boolean {

@@ -9,10 +9,8 @@ export class GamePointer {
   private pressing: boolean = false;
   private pressed: boolean = false;
   private preventDefault: boolean = true;
-  private readonly canvas: HTMLCanvasElement;
 
-  constructor(canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
+  constructor(private readonly canvas: HTMLCanvasElement) {
     this.addEventListeners();
   }
 
