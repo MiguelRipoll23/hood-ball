@@ -4,21 +4,19 @@ import { MenuOptionObject } from "../../objects/common/menu-option-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { ServerMessageWindowObject } from "../../objects/server-message-window-object.js";
 import { APIService } from "../../services/api-service.js";
-import { MessagesResponse } from "../../interfaces/response/messages-response.js";
+import type { MessagesResponse } from "../../interfaces/response/messages-response.js";
 import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { LoadingScreen } from "../loading-screen.js";
 import { ScoreboardScreen } from "./scoreboard-screen.js";
 import { SettingsScreen } from "./settings-screen.js";
 import { EventType } from "../../enums/event-type.js";
-import { EventProcessorService } from "../../services/event-processor-service.js";
 
 export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
 
   private apiService: APIService;
   private transitionService: ScreenTransitionService;
-  private eventProcessorService: EventProcessorService;
 
   private messagesResponse: MessagesResponse[] | null = null;
 
@@ -27,10 +25,9 @@ export class MainMenuScreen extends BaseGameScreen {
 
   constructor(gameController: GameController, private showNews: boolean) {
     super(gameController);
+    this.showNews = showNews;
     this.apiService = gameController.getAPIService();
     this.transitionService = gameController.getTransitionService();
-    this.eventProcessorService = gameController.getEventProcessorService();
-    this.showNews = showNews;
     this.subscribeToEvents();
   }
 

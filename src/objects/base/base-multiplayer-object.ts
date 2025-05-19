@@ -1,7 +1,7 @@
 import { GamePlayer } from "../../models/game-player.js";
 import { ObjectType } from "../../enums/object-type.js";
-import { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
-import { MultiplayerGameObject } from "../../interfaces/object/multiplayer-game-object.js";
+import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
+import type { MultiplayerGameObject } from "../../interfaces/object/multiplayer-game-object.js";
 import { BaseGameObject } from "./base-game-object.js";
 
 export class BaseMultiplayerGameObject

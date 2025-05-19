@@ -5,8 +5,8 @@ import { WebRTCService } from "./webrtc-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { EventType } from "../enums/event-type.js";
-import { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
-import { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
+import type { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
+import type { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { TunnelType } from "../enums/tunnel-type.js";
 import { APIUtils } from "../utils/api-utils.js";
@@ -23,7 +23,7 @@ export class WebSocketService {
     this.gameState = gameController.getGameState();
     this.eventProcessorService = gameController.getEventProcessorService();
     this.webrtcService = gameController.getWebRTCService();
-    this.baseURL = APIUtils.getWSBaseURL(window.location);
+    this.baseURL = APIUtils.getWSBaseURL();
   }
 
   public connectToServer(): void {
@@ -136,7 +136,7 @@ export class WebSocketService {
 
     const dataView = new DataView(payload);
     const originTokenBytes = new Uint8Array(payload.slice(0, 32));
-    const webrtcType = dataView.getUint8(32);
+    const tunnelType = dataView.getUint8(32);
     const webrtcDataBytes = payload.slice(33);
 
     const originToken = btoa(String.fromCharCode(...originTokenBytes));
@@ -145,17 +145,22 @@ export class WebSocketService {
       new TextDecoder("utf-8").decode(webrtcDataBytes)
     );
 
-    console.log("Tunnel message", originToken, webrtcType, webrtcData);
+    console.log(
+      "Tunnel message",
+      originToken,
+      TunnelType[tunnelType],
+      webrtcData
+    );
 
-    this.handleWebRTCMessage(originToken, webrtcType, webrtcData);
+    this.handleWebRTCMessage(originToken, tunnelType, webrtcData);
   }
 
   private handleWebRTCMessage(
     originToken: string,
-    type: TunnelType,
+    tunnelType: TunnelType,
     webrtcPayload: RTCIceCandidate | RTCSessionDescriptionInit
   ) {
-    switch (type) {
+    switch (tunnelType) {
       case TunnelType.IceCandidate:
         return this.webrtcService.handleNewIceCandidate(
           originToken,
@@ -169,7 +174,7 @@ export class WebSocketService {
         );
 
       default: {
-        console.warn("Unknown tunnel message type", type);
+        console.warn("Unknown tunnel message type", tunnelType);
       }
     }
   }

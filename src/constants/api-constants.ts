@@ -1,4 +1,4 @@
-export const API_HOSTNAME = "gameserver.deno.dev";
+export const API_HOST = import.meta.env.VITE_API_HOST;
 export const API_PATH = "/api";
 export const API_VERSION = "/v1";
 

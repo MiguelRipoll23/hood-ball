@@ -20,8 +20,8 @@ import { ScreenType } from "../enums/screen-type.js";
 import { MainScreen } from "./main-screen.js";
 import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
 import { MatchStateType } from "../enums/match-state-type.js";
-import { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
-import { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
+import type { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
+import type { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
 import { EventProcessorService } from "../services/event-processor-service.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
@@ -37,7 +37,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private countdownCurrentNumber = 3;
 
-  constructor(protected gameController: GameController) {
+  constructor(gameController: GameController) {
     super(gameController);
     this.gameState = gameController.getGameState();
     this.eventProcessorService = gameController.getEventProcessorService();
@@ -502,7 +502,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.updateScoreboard();
 
     // Alert
-    let team = TeamType.Red;
+    let team: TeamType = TeamType.Red;
 
     if (player === this.gameController.getGameState().getGamePlayer()) {
       team = TeamType.Blue;

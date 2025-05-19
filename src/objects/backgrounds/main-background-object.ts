@@ -24,7 +24,7 @@ export class MainBackgroundObject extends BaseGameObject {
       this.gradientOffset,
       0,
       this.canvas.width + this.gradientOffset,
-      this.canvas.height / 2,
+      this.canvas.height / 2
     );
     gradient.addColorStop(0, "#000428");
     gradient.addColorStop(1, "#004e92");

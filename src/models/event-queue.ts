@@ -1,4 +1,4 @@
-import { GameEvent } from "../interfaces/event/game-event.js";
+import type { GameEvent } from "../interfaces/event/game-event.js";
 
 export class EventQueue<T extends GameEvent> {
   protected events: T[] = [];

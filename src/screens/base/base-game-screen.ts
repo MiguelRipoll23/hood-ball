@@ -2,13 +2,15 @@ import { GameController } from "../../models/game-controller.js";
 import { GamePointer } from "../../models/game-pointer.js";
 import { LayerType } from "../../enums/layer-type.js";
 import { BasePressableGameObject } from "../../objects/base/base-pressable-game-object.js";
-import { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
-import { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { EventConsumer } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
 
 export class BaseGameScreen implements GameScreen {
+  protected eventConsumer: EventConsumer;
+
   protected canvas: HTMLCanvasElement;
   protected screenManagerService: ScreenManagerService | null = null;
 
@@ -17,8 +19,6 @@ export class BaseGameScreen implements GameScreen {
 
   protected sceneObjects: GameObject[] = [];
   protected uiObjects: GameObject[] = [];
-
-  protected eventConsumer: EventConsumer;
 
   private gamePointer: GamePointer;
 

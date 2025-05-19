@@ -2,7 +2,7 @@ import { BaseGameScreen } from "./base/base-game-screen.js";
 import { ScreenManagerService } from "../services/screen-manager-service.js";
 import { MainBackgroundObject } from "../objects/backgrounds/main-background-object.js";
 import { GameController } from "../models/game-controller.js";
-import { GameScreen } from "../interfaces/screen/game-screen.js";
+import type { GameScreen } from "../interfaces/screen/game-screen.js";
 
 export class MainScreen extends BaseGameScreen {
   private screen: GameScreen | null = null;

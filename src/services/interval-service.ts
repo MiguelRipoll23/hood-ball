@@ -1,7 +1,6 @@
 export class IntervalService {
   private elapsedMilliseconds: number = 0;
   private durationMilliseconds: number = 0;
-
   private callback: () => void;
 
   constructor(

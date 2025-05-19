@@ -1,6 +1,6 @@
 import { HitboxObject } from "./common/hitbox-object.js";
 import { BaseDynamicCollidableGameObject } from "./base/base-collidable-dynamic-game-object.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { GamePlayer } from "../models/game-player.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
@@ -43,6 +43,7 @@ export class CarObject extends BaseDynamicCollidableGameObject {
 
   constructor(x: number, y: number, angle: number, private remote = false) {
     super();
+    this.remote = remote;
     this.x = x;
     this.y = y;
     this.angle = angle;

@@ -20,14 +20,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Bundle project
-        run: npm run bundle
+      - name: Build project
+        run: npm run build
+        env:
+          VITE_API_HOST: ${{ vars.API_HOST }}
 
       - name: Upload artifact
         id: deployment
         uses: actions/upload-pages-artifact@v3
         with:
-          path: static/
+          path: dist/
 
   deploy:
     name: Deploy package

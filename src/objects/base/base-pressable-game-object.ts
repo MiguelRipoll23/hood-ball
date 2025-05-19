@@ -77,8 +77,10 @@ export class BasePressableGameObject extends BaseAnimatedGameObject {
     const pointerY = gamePointer.getY();
 
     return (
-      pointerX >= this.x && pointerX <= this.x + this.width &&
-      pointerY >= this.y && pointerY <= this.y + this.height
+      pointerX >= this.x &&
+      pointerX <= this.x + this.width &&
+      pointerY >= this.y &&
+      pointerY <= this.y + this.height
     );
   }
 

@@ -7,7 +7,7 @@ import { ObjectOrchestrator } from "./object-orchestrator-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { WebRTCService } from "./webrtc-service.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
   private logger: LoggerUtils;

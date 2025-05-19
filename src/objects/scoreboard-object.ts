@@ -3,8 +3,8 @@ import {
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
 import { BaseMultiplayerGameObject } from "./base/base-multiplayer-object.js";
-import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
 
 export class ScoreboardObject

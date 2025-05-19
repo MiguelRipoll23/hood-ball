@@ -7,11 +7,8 @@ export class NotificationObject extends BaseAnimatedGameObject {
 
   private context: CanvasRenderingContext2D;
   private active: boolean = false;
-
   private textX = 0;
-
   private completedTimes = 0;
-
   private text = "Whoops! Something went wrong!";
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -36,30 +33,16 @@ export class NotificationObject extends BaseAnimatedGameObject {
     // Draw red borders
     context.fillStyle = "rgba(255, 0, 0, 0.85)";
     context.fillRect(this.x, this.y, this.canvas.width, 1); // Top border
-    context.fillRect(
-      this.x,
-      this.y + this.HEIGHT - 1,
-      this.canvas.width,
-      1,
-    ); // Bottom border
+    context.fillRect(this.x, this.y + this.HEIGHT - 1, this.canvas.width, 1); // Bottom border
 
     // Draw black rectangle
     context.fillStyle = "rgba(0, 0, 0, 0.85)";
-    context.fillRect(
-      this.x,
-      this.y + 1,
-      this.canvas.width,
-      this.HEIGHT - 2,
-    ); // Main rectangle
+    context.fillRect(this.x, this.y + 1, this.canvas.width, this.HEIGHT - 2); // Main rectangle
 
     // Draw text
     context.fillStyle = "#FFF";
     context.font = "20px system-ui";
-    context.fillText(
-      this.text,
-      this.textX,
-      this.y + this.HEIGHT / 2 + 6,
-    );
+    context.fillText(this.text, this.textX, this.y + this.HEIGHT / 2 + 6);
 
     context.globalAlpha = 1;
   }

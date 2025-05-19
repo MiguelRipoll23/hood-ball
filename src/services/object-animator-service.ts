@@ -28,7 +28,7 @@ export class ObjectAnimationService {
     this.animationType = animationType;
 
     console.log(
-      `ObjectAnimationService(${AnimationType[animationType]}) created for ${object.constructor.name}`
+      `${this.constructor.name} [${AnimationType[animationType]}] created for ${object.constructor.name}`
     );
   }
 

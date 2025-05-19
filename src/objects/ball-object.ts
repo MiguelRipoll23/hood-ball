@@ -1,8 +1,8 @@
 import { HitboxObject } from "./common/hitbox-object.js";
 import { BaseDynamicCollidableGameObject } from "./base/base-collidable-dynamic-game-object.js";
 import { CarObject } from "./car-object.js";
-import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { ObjectUtils } from "../utils/object-utils.js";
@@ -17,8 +17,8 @@ export class BallObject
   private readonly FRICTION: number = 0.01;
   private readonly MIN_VELOCITY: number = 0.1;
   private readonly MAX_VELOCITY: number = 10;
-  private radius: number = this.RADIUS;
 
+  private radius: number = this.RADIUS;
   protected width = this.RADIUS * 2;
   protected height = this.RADIUS * 2;
 

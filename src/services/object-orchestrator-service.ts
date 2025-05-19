@@ -1,11 +1,11 @@
 import { GameController } from "../models/game-controller.js";
 import { GameFrame } from "../models/game-frame.js";
-import { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { GameState } from "../models/game-state.js";
-import { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectUtils } from "../utils/object-utils.js";
-import { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
+import type { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
 import { ScreenUtils } from "../utils/screen-utils.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
@@ -20,7 +20,7 @@ export class ObjectOrchestrator {
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
-  constructor(private gameController: GameController) {
+  constructor(gameController: GameController) {
     this.webrtcService = gameController.getWebRTCService();
     this.gameFrame = gameController.getGameFrame();
     this.gameState = gameController.getGameState();
@@ -200,8 +200,8 @@ export class ObjectOrchestrator {
     // Write fixed-length fields
     let offset = 0;
     dataView.setInt8(offset++, WebRTCType.ObjectData);
-    dataView.setInt8(offset++, screenId);
-    dataView.setInt8(offset++, stateId);
+    dataView.setInt8(offset++, Number(screenId));
+    dataView.setInt8(offset++, Number(stateId));
     dataView.setInt8(offset++, typeId);
 
     // Write ownerId
@@ -273,7 +273,7 @@ export class ObjectOrchestrator {
     const dataView = new DataView(data);
     const typeId = dataView.getInt8(2);
     const serializedData = data.slice(67);
-    const objectClass = multiplayerScreen.getSyncableObjectClass(typeId);
+    const objectClass = multiplayerScreen.getSyncableObjectClass(typeId as any);
 
     if (objectClass === null) {
       return console.warn(`Object class not found for type ${typeId}`);

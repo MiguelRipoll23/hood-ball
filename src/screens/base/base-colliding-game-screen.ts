@@ -5,7 +5,7 @@ import { GameController } from "../../models/game-controller.js";
 import { BaseMultiplayerScreen } from "./base-multiplayer-screen.js";
 
 export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
-  constructor(protected gameController: GameController) {
+  constructor(gameController: GameController) {
     super(gameController);
   }
 

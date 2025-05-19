@@ -1,4 +1,4 @@
-import { ConfigurationType } from "../types/configuration-type.js";
+import type { ConfigurationType } from "../types/configuration-type.js";
 import { ServerRegistration } from "./server-registration.js";
 
 export class GameServer {

@@ -21,8 +21,11 @@ export class LocalCarObject extends CarObject {
     protected gameGamepad: GameGamepad
   ) {
     super(x, y, angle);
+    this.gamePointer = gamePointer;
+    this.gameKeyboard = gameKeyboard;
+    this.gameGamepad = gameGamepad;
     this.setSyncableValues();
-    this.joystickObject = new JoystickObject(canvas, gamePointer);
+    this.joystickObject = new JoystickObject(gamePointer);
   }
 
   public override mustSync(): boolean {
@@ -53,7 +56,9 @@ export class LocalCarObject extends CarObject {
       }
     }
 
-    ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
+    if (this.canvas) {
+      ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
+    }
 
     super.update(deltaTimeStamp);
   }
@@ -106,13 +111,9 @@ export class LocalCarObject extends CarObject {
     const gamepad = this.gameGamepad.get();
     if (!gamepad) return;
 
-    const isAccelerating = this.gameGamepad.isButtonPressed(
-      GamepadButton.R2
-    );
+    const isAccelerating = this.gameGamepad.isButtonPressed(GamepadButton.R2);
 
-    const isDecelerating = this.gameGamepad.isButtonPressed(
-      GamepadButton.L2
-    );
+    const isDecelerating = this.gameGamepad.isButtonPressed(GamepadButton.L2);
 
     const turnAxis = this.gameGamepad.getAxisValue(0);
 

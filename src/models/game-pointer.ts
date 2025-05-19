@@ -5,12 +5,9 @@ export class GamePointer {
   private y: number = 0;
   private initialX: number = 0;
   private initialY: number = 0;
-
   private type: PointerType = "mouse";
-
   private pressing: boolean = false;
   private pressed: boolean = false;
-
   private preventDefault: boolean = true;
 
   constructor(private readonly canvas: HTMLCanvasElement) {

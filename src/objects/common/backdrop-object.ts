@@ -5,6 +5,7 @@ export class BackdropObject extends BaseAnimatedGameObject {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.reset();
   }
 
   public render(context: CanvasRenderingContext2D): void {

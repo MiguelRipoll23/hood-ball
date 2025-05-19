@@ -1,5 +1,5 @@
 import { GameState } from "../models/game-state.js";
-import { ConfigurationType } from "../types/configuration-type.js";
+import type { ConfigurationType } from "../types/configuration-type.js";
 
 export function getConfigurationKey<T>(
   key: string,
