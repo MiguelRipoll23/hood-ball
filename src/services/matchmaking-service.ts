@@ -279,7 +279,7 @@ export class MatchmakingService {
     }
 
     const state = match.getState();
-    DebugUtils.renderText(context, 24, 24, `State: ${state}`);
+    DebugUtils.renderText(context, 24, 24, `State: ${MatchStateType[state]}`);
   }
 
   private removePingCheckInterval(): void {

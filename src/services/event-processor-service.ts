@@ -70,7 +70,7 @@ export class EventProcessorService {
   }
 
   public setLastConsumedEvent(eventType: EventType) {
-    this.lastConsumedEvent = eventType.toString();
+    this.lastConsumedEvent = EventType[eventType];
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D) {
