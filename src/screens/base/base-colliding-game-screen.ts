@@ -1,5 +1,5 @@
-import { BaseStaticCollidableGameObject } from "../../objects/base/base-static-collidable-game-object.js";
-import { BaseDynamicCollidableGameObject } from "../../objects/base/base-collidable-dynamic-game-object.js";
+import { BaseStaticCollidingGameObject } from "../../objects/base/base-static-colliding-game-object.js";
+import { BaseDynamicCollidingGameObject } from "../../objects/base/base-dynamic-colliding-game-object.js";
 import { HitboxObject } from "../../objects/common/hitbox-object.js";
 import { GameController } from "../../models/game-controller.js";
 import { BaseMultiplayerScreen } from "./base-multiplayer-screen.js";
@@ -15,82 +15,82 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
   }
 
   public detectCollisions(): void {
-    const collidableObjects: BaseStaticCollidableGameObject[] =
+    const collidingObjects: BaseStaticCollidingGameObject[] =
       this.sceneObjects.filter(
         (sceneObject) =>
-          sceneObject instanceof BaseStaticCollidableGameObject ||
-          sceneObject instanceof BaseDynamicCollidableGameObject
-      ) as unknown as BaseStaticCollidableGameObject[];
+          sceneObject instanceof BaseStaticCollidingGameObject ||
+          sceneObject instanceof BaseDynamicCollidingGameObject
+      ) as unknown as BaseStaticCollidingGameObject[];
 
-    collidableObjects.forEach((collidableObject) => {
+    collidingObjects.forEach((collidingObject) => {
       // Reset colliding state for hitboxes
-      collidableObject.getHitboxObjects().forEach((hitbox) => {
+      collidingObject.getHitboxObjects().forEach((hitbox) => {
         hitbox.setColliding(false);
       });
 
-      collidableObjects.forEach((otherCollidableObject) => {
-        if (collidableObject === otherCollidableObject) {
+      collidingObjects.forEach((otherCollidingObject) => {
+        if (collidingObject === otherCollidingObject) {
           return;
         }
 
         this.detectStaticAndDynamicCollisions(
-          collidableObject,
-          otherCollidableObject
+          collidingObject,
+          otherCollidingObject
         );
       });
 
-      if (collidableObject.isColliding() === false) {
-        collidableObject.setAvoidingCollision(false);
+      if (collidingObject.isColliding() === false) {
+        collidingObject.setAvoidingCollision(false);
       }
     });
   }
 
   private detectStaticAndDynamicCollisions(
-    collidableObject:
-      | BaseStaticCollidableGameObject
-      | BaseDynamicCollidableGameObject,
-    otherCollidableObject:
-      | BaseStaticCollidableGameObject
-      | BaseDynamicCollidableGameObject
+    collidingObject:
+      | BaseStaticCollidingGameObject
+      | BaseDynamicCollidingGameObject,
+    otherCollidingObject:
+      | BaseStaticCollidingGameObject
+      | BaseDynamicCollidingGameObject
   ): void {
-    const hitboxes = collidableObject.getHitboxObjects();
-    const otherHitboxes = otherCollidableObject.getHitboxObjects();
+    const hitboxes = collidingObject.getHitboxObjects();
+    const otherHitboxes = otherCollidingObject.getHitboxObjects();
 
     if (this.doesHitboxesIntersect(hitboxes, otherHitboxes) === false) {
-      collidableObject.removeCollidingObject(otherCollidableObject);
-      otherCollidableObject.removeCollidingObject(collidableObject);
+      collidingObject.removeCollidingObject(otherCollidingObject);
+      otherCollidingObject.removeCollidingObject(collidingObject);
       return;
     }
 
-    collidableObject.addCollidingObject(otherCollidableObject);
-    otherCollidableObject.addCollidingObject(collidableObject);
+    collidingObject.addCollidingObject(otherCollidingObject);
+    otherCollidingObject.addCollidingObject(collidingObject);
 
     if (
-      collidableObject.hasRigidBody() === false ||
-      otherCollidableObject.hasRigidBody() === false
+      collidingObject.hasRigidBody() === false ||
+      otherCollidingObject.hasRigidBody() === false
     ) {
       return;
     }
 
     const areDynamicObjectsColliding =
-      collidableObject instanceof BaseDynamicCollidableGameObject &&
-      otherCollidableObject instanceof BaseDynamicCollidableGameObject;
+      collidingObject instanceof BaseDynamicCollidingGameObject &&
+      otherCollidingObject instanceof BaseDynamicCollidingGameObject;
 
     const isDynamicObjectCollidingWithStatic =
-      collidableObject instanceof BaseDynamicCollidableGameObject &&
-      otherCollidableObject instanceof BaseStaticCollidableGameObject;
+      collidingObject instanceof BaseDynamicCollidingGameObject &&
+      otherCollidingObject instanceof BaseStaticCollidingGameObject;
 
     if (areDynamicObjectsColliding) {
       this.simulateCollisionBetweenDynamicObjects(
-        collidableObject,
-        otherCollidableObject
+        collidingObject,
+        otherCollidingObject
       );
     } else if (isDynamicObjectCollidingWithStatic) {
-      if (collidableObject.isAvoidingCollision()) {
+      if (collidingObject.isAvoidingCollision()) {
         return;
       }
 
-      this.simulateCollisionBetweenDynamicAndStaticObjects(collidableObject);
+      this.simulateCollisionBetweenDynamicAndStaticObjects(collidingObject);
     }
   }
 
@@ -119,10 +119,10 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
   }
 
   private simulateCollisionBetweenDynamicAndStaticObjects(
-    dynamicCollidableObject: BaseDynamicCollidableGameObject
+    dynamicCollidingObject: BaseDynamicCollidingGameObject
   ) {
-    let vx = -dynamicCollidableObject.getVX();
-    let vy = -dynamicCollidableObject.getVY();
+    let vx = -dynamicCollidingObject.getVX();
+    let vy = -dynamicCollidingObject.getVY();
 
     // Impulse to avoid becoming stuck
     if (vx > -1 && vx < 1) {
@@ -133,19 +133,19 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
       vy = vy < 0 ? -1 : 1;
     }
 
-    dynamicCollidableObject.setAvoidingCollision(true);
-    dynamicCollidableObject.setVX(vx);
-    dynamicCollidableObject.setVY(vy);
+    dynamicCollidingObject.setAvoidingCollision(true);
+    dynamicCollidingObject.setVX(vx);
+    dynamicCollidingObject.setVY(vy);
   }
 
   private simulateCollisionBetweenDynamicObjects(
-    dynamicCollidableObject: BaseDynamicCollidableGameObject,
-    otherDynamicCollidableObject: BaseDynamicCollidableGameObject
+    dynamicCollidingObject: BaseDynamicCollidingGameObject,
+    otherDynamicCollidingObject: BaseDynamicCollidingGameObject
   ) {
     // Calculate collision vector
     const vCollision = {
-      x: otherDynamicCollidableObject.getX() - dynamicCollidableObject.getX(),
-      y: otherDynamicCollidableObject.getY() - dynamicCollidableObject.getY(),
+      x: otherDynamicCollidingObject.getX() - dynamicCollidingObject.getX(),
+      y: otherDynamicCollidingObject.getY() - dynamicCollidingObject.getY(),
     };
 
     // Calculate distance between objects
@@ -161,8 +161,8 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
 
     // Calculate relative velocity
     const vRelativeVelocity = {
-      x: otherDynamicCollidableObject.getVX() - dynamicCollidableObject.getVX(),
-      y: otherDynamicCollidableObject.getVY() - dynamicCollidableObject.getVY(),
+      x: otherDynamicCollidingObject.getVX() - dynamicCollidingObject.getVX(),
+      y: otherDynamicCollidingObject.getVY() - dynamicCollidingObject.getVY(),
     };
 
     // Calculate speed along collision normal
@@ -178,23 +178,23 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
     // Calculate impulse
     const impulse =
       (2 * speed) /
-      (dynamicCollidableObject.getMass() +
-        otherDynamicCollidableObject.getMass());
+      (dynamicCollidingObject.getMass() +
+        otherDynamicCollidingObject.getMass());
 
     // Update velocities for both movable objects
     const impulseX =
-      impulse * otherDynamicCollidableObject.getMass() * vCollisionNorm.x;
+      impulse * otherDynamicCollidingObject.getMass() * vCollisionNorm.x;
     const impulseY =
-      impulse * otherDynamicCollidableObject.getMass() * vCollisionNorm.y;
+      impulse * otherDynamicCollidingObject.getMass() * vCollisionNorm.y;
 
-    dynamicCollidableObject.setVX(dynamicCollidableObject.getVX() + impulseX);
-    dynamicCollidableObject.setVY(dynamicCollidableObject.getVY() + impulseY);
+    dynamicCollidingObject.setVX(dynamicCollidingObject.getVX() + impulseX);
+    dynamicCollidingObject.setVY(dynamicCollidingObject.getVY() + impulseY);
 
-    otherDynamicCollidableObject.setVX(
-      otherDynamicCollidableObject.getVX() - impulseX
+    otherDynamicCollidingObject.setVX(
+      otherDynamicCollidingObject.getVX() - impulseX
     );
-    otherDynamicCollidableObject.setVY(
-      otherDynamicCollidableObject.getVY() - impulseY
+    otherDynamicCollidingObject.setVY(
+      otherDynamicCollidingObject.getVY() - impulseY
     );
   }
 }

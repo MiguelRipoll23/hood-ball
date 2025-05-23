@@ -3,7 +3,7 @@ import {
   CANVAS_MARGIN,
 } from "../constants/canvas-constants.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
-import { BasePositionableGameObject } from "../objects/base/base-positionable-game-object.js";
+import { BaseMoveableGameObject } from "../objects/base/base-moveable-game-object.js";
 
 export class ObjectUtils {
   public static hasInvalidOwner(
@@ -18,15 +18,15 @@ export class ObjectUtils {
   }
 
   public static fixObjectPositionIfOutOfBounds(
-    positionableObject: BasePositionableGameObject,
+    moveableObject: BaseMoveableGameObject,
     canvas: HTMLCanvasElement
   ) {
     let hasChanged = false;
 
-    const objectX = positionableObject.getX();
-    const objectY = positionableObject.getY();
-    const objectWidth = positionableObject.getWidth();
-    const objectHeight = positionableObject.getHeight();
+    const objectX = moveableObject.getX();
+    const objectY = moveableObject.getY();
+    const objectWidth = moveableObject.getWidth();
+    const objectHeight = moveableObject.getHeight();
 
     const objectLeft = objectX - objectWidth / 2;
     const objectRight = objectX + objectWidth / 2;
@@ -38,24 +38,24 @@ export class ObjectUtils {
     const canvasHeight = canvas.height;
 
     if (objectLeft < CANVAS_MARGIN) {
-      positionableObject.setX(objectX + CANVAS_EXTRA_MARGIN); // Prevent going out of the left boundary
+      moveableObject.setX(objectX + CANVAS_EXTRA_MARGIN); // Prevent going out of the left boundary
       hasChanged = true;
     } else if (objectRight > canvasWidth - CANVAS_MARGIN) {
-      positionableObject.setX(objectX - CANVAS_EXTRA_MARGIN); // Prevent going out of the right boundary
+      moveableObject.setX(objectX - CANVAS_EXTRA_MARGIN); // Prevent going out of the right boundary
       hasChanged = true;
     }
 
     // Adjust Y position if out of bounds
     if (objectTop < CANVAS_MARGIN) {
-      positionableObject.setY(objectY + CANVAS_EXTRA_MARGIN); // Prevent going out of the top boundary
+      moveableObject.setY(objectY + CANVAS_EXTRA_MARGIN); // Prevent going out of the top boundary
       hasChanged = true;
     } else if (objectBottom > canvasHeight - CANVAS_MARGIN) {
-      positionableObject.setY(objectY - CANVAS_EXTRA_MARGIN); // Prevent going out of the bottom boundary
+      moveableObject.setY(objectY - CANVAS_EXTRA_MARGIN); // Prevent going out of the bottom boundary
       hasChanged = true;
     }
 
     if (hasChanged) {
-      positionableObject.setSync(true);
+      moveableObject.setSync(true);
     }
   }
 }

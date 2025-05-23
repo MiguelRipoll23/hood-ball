@@ -1,8 +1,8 @@
 import { AnimationType } from "../../enums/animation-type.js";
 import { ObjectAnimationService } from "../../services/object-animator-service.js";
-import { BasePositionableGameObject } from "./base-positionable-game-object.js";
+import { BaseMoveableGameObject } from "./base-moveable-game-object.js";
 
-export class BaseAnimatedGameObject extends BasePositionableGameObject {
+export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   protected scale: number = 1;
 
   protected animations: ObjectAnimationService[] = [];

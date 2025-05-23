@@ -1,6 +1,6 @@
-import { BasePressableGameObject } from "../base/base-pressable-game-object.js";
+import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
 
-export class ButtonObject extends BasePressableGameObject {
+export class ButtonObject extends BaseTappableGameObject {
   private text: string = "Unknown";
   private pinchFactor = 2; // Control the pinch depth for the sides
 

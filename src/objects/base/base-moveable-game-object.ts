@@ -1,6 +1,6 @@
 import { BaseMultiplayerGameObject } from "./base-multiplayer-object.js";
 
-export class BasePositionableGameObject extends BaseMultiplayerGameObject {
+export class BaseMoveableGameObject extends BaseMultiplayerGameObject {
   protected x: number = 0;
   protected y: number = 0;
   protected width: number = 0;

@@ -1,8 +1,8 @@
-import { BaseStaticCollidableGameObject } from "../base/base-static-collidable-game-object.js";
+import { BaseStaticCollidingGameObject } from "../base/base-static-colliding-game-object.js";
 import { HitboxObject } from "../common/hitbox-object.js";
 import type { GameObject } from "../../interfaces/object/game-object.js";
 
-export class WorldBackgroundObject extends BaseStaticCollidableGameObject {
+export class WorldBackgroundObject extends BaseStaticCollidingGameObject {
   private readonly BACKGROUND_COLOR: string = "#00a000";
   private readonly BOUNDARY_COLOR: string = "#ffffff";
 

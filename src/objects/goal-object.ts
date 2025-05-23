@@ -1,7 +1,7 @@
 import { HitboxObject } from "./common/hitbox-object.js";
-import { BaseStaticCollidableGameObject } from "./base/base-static-collidable-game-object.js";
+import { BaseStaticCollidingGameObject } from "./base/base-static-colliding-game-object.js";
 
-export class GoalObject extends BaseStaticCollidableGameObject {
+export class GoalObject extends BaseStaticCollidingGameObject {
   private readonly WIDTH: number = 100; // Width of the goal
   private readonly HEIGHT: number = 40; // Height of the goal (adjusted)
   private readonly BORDER_SIZE: number = 2; // Border size

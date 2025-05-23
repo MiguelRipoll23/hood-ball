@@ -1,7 +1,7 @@
-import { BasePressableGameObject } from "./base/base-pressable-game-object.js";
+import { BaseTappableGameObject } from "./base/base-tappable-game-object.js";
 import { ToggleObject } from "./common/toggle-button.js";
 
-export class SettingObject extends BasePressableGameObject {
+export class SettingObject extends BaseTappableGameObject {
   private toggleObject: ToggleObject | null = null;
   private updated = false;
 
