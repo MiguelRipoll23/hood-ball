@@ -1,8 +1,8 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
-import { BasePressableGameObject } from "../base/base-pressable-game-object.js";
+import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
 import { BackdropObject } from "./backdrop-object.js";
 
-export class CloseableWindowObject extends BasePressableGameObject {
+export class CloseableWindowObject extends BaseTappableGameObject {
   private readonly TITLE_BAR_HEIGHT: number = 40;
   private readonly TEXT_LINE_HEIGHT: number = 20;
 

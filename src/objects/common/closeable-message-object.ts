@@ -1,6 +1,6 @@
-import { BasePressableGameObject } from "../base/base-pressable-game-object.js";
+import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
 
-export class CloseableMessageObject extends BasePressableGameObject {
+export class CloseableMessageObject extends BaseTappableGameObject {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
 
   private readonly DEFAULT_HEIGHT = 100;

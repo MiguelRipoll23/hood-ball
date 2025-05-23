@@ -1,5 +1,5 @@
 import { HitboxObject } from "./common/hitbox-object.js";
-import { BaseDynamicCollidableGameObject } from "./base/base-collidable-dynamic-game-object.js";
+import { BaseDynamicCollidingGameObject } from "./base/base-dynamic-colliding-game-object.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { GamePlayer } from "../models/game-player.js";
 import {
@@ -12,7 +12,7 @@ import {
 } from "../constants/webrtc-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 
-export class CarObject extends BaseDynamicCollidableGameObject {
+export class CarObject extends BaseDynamicCollidingGameObject {
   protected readonly TOP_SPEED: number = 0.3;
   protected readonly ACCELERATION: number = 0.002;
   protected readonly HANDLING: number = 0.007;

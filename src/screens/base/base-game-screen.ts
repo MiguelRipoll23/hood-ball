@@ -1,7 +1,7 @@
 import { GameController } from "../../models/game-controller.js";
 import { GamePointer } from "../../models/game-pointer.js";
 import { LayerType } from "../../enums/layer-type.js";
-import { BasePressableGameObject } from "../../objects/base/base-pressable-game-object.js";
+import { BaseTappableGameObject } from "../../objects/base/base-tappable-game-object.js";
 import type { GameObject } from "../../interfaces/object/game-object.js";
 import type { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
@@ -169,18 +169,18 @@ export class BaseGameScreen implements GameScreen {
   }
 
   private handlePointerEvent(): void {
-    const pressableObjects = this.uiObjects
+    const tappableObjects = this.uiObjects
       .filter(
-        (object): object is BasePressableGameObject =>
-          object instanceof BasePressableGameObject
+        (object): object is BaseTappableGameObject =>
+          object instanceof BaseTappableGameObject
       )
       .filter((object) => object.isActive())
       .reverse();
 
-    for (const pressableObject of pressableObjects) {
-      pressableObject.handlePointerEvent(this.gamePointer);
+    for (const tappableObject of tappableObjects) {
+      tappableObject.handlePointerEvent(this.gamePointer);
 
-      if (pressableObject.isHovering() || pressableObject.isPressed()) {
+      if (tappableObject.isHovering() || tappableObject.isPressed()) {
         break;
       }
     }

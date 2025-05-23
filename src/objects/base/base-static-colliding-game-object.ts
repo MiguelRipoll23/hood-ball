@@ -1,18 +1,18 @@
 import { HitboxObject } from "../common/hitbox-object.js";
 import { BaseAnimatedGameObject } from "./base-animated-object.js";
-import { BaseDynamicCollidableGameObject } from "./base-collidable-dynamic-game-object.js";
+import { BaseDynamicCollidingGameObject } from "./base-dynamic-colliding-game-object.js";
 
-type CollidableGameObjectConstructor = new (
+type CollidingGameObjectConstructor = new (
   ...args: never[]
-) => BaseStaticCollidableGameObject;
+) => BaseStaticCollidingGameObject;
 
-export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
+export class BaseStaticCollidingGameObject extends BaseAnimatedGameObject {
   protected rigidBody = true;
   protected hitboxObjects: HitboxObject[] = [];
 
-  private collidingObjects: BaseStaticCollidableGameObject[] = [];
+  private collidingObjects: BaseStaticCollidingGameObject[] = [];
   private avoidingCollision = false;
-  private excludedCollisionClasses: CollidableGameObjectConstructor[] = [];
+  private excludedCollisionClasses: CollidingGameObjectConstructor[] = [];
 
   public override load(): void {
     this.hitboxObjects.forEach((object) => object.setDebug(this.debug));
@@ -27,7 +27,7 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
     return this.collidingObjects.some(
       (object) =>
         this.isCollisionClassIncluded(
-          object.constructor as CollidableGameObjectConstructor
+          object.constructor as CollidingGameObjectConstructor
         ) && object.hasRigidBody()
     );
   }
@@ -36,9 +36,9 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
     return this.collidingObjects.some(
       (object) =>
         this.isCollisionClassIncluded(
-          object.constructor as CollidableGameObjectConstructor
+          object.constructor as CollidingGameObjectConstructor
         ) &&
-        !(object instanceof BaseDynamicCollidableGameObject) &&
+        !(object instanceof BaseDynamicCollidingGameObject) &&
         object.hasRigidBody()
     );
   }
@@ -51,12 +51,12 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
     this.hitboxObjects = hitboxObjects;
   }
 
-  public getCollidingObjects(): BaseStaticCollidableGameObject[] {
+  public getCollidingObjects(): BaseStaticCollidingGameObject[] {
     return this.collidingObjects;
   }
 
   public addCollidingObject(
-    collidingObject: BaseStaticCollidableGameObject
+    collidingObject: BaseStaticCollidingGameObject
   ): void {
     if (this.collidingObjects.includes(collidingObject) === false) {
       this.collidingObjects.push(collidingObject);
@@ -64,7 +64,7 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
   }
 
   public removeCollidingObject(
-    collidingObject: BaseStaticCollidableGameObject
+    collidingObject: BaseStaticCollidingGameObject
   ): void {
     this.collidingObjects = this.collidingObjects.filter(
       (object) => object !== collidingObject
@@ -80,7 +80,7 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
   }
 
   public addCollisionExclusion(
-    classType: CollidableGameObjectConstructor
+    classType: CollidingGameObjectConstructor
   ): void {
     if (!this.excludedCollisionClasses.includes(classType)) {
       this.excludedCollisionClasses.push(classType);
@@ -88,7 +88,7 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
   }
 
   public removeCollisionExclusion(
-    classType: CollidableGameObjectConstructor
+    classType: CollidingGameObjectConstructor
   ): void {
     this.excludedCollisionClasses = this.excludedCollisionClasses.filter(
       (type) => type !== classType
@@ -100,7 +100,7 @@ export class BaseStaticCollidableGameObject extends BaseAnimatedGameObject {
   }
 
   private isCollisionClassIncluded(
-    classType: CollidableGameObjectConstructor
+    classType: CollidingGameObjectConstructor
   ): boolean {
     return !this.excludedCollisionClasses.some(
       (excludedType) =>

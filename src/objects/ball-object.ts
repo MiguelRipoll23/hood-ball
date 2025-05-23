@@ -1,5 +1,5 @@
 import { HitboxObject } from "./common/hitbox-object.js";
-import { BaseDynamicCollidableGameObject } from "./base/base-collidable-dynamic-game-object.js";
+import { BaseDynamicCollidingGameObject } from "./base/base-dynamic-colliding-game-object.js";
 import { CarObject } from "./car-object.js";
 import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
@@ -9,7 +9,7 @@ import { ObjectUtils } from "../utils/object-utils.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 
 export class BallObject
-  extends BaseDynamicCollidableGameObject
+  extends BaseDynamicCollidingGameObject
   implements MultiplayerGameObject
 {
   private readonly MASS: number = 1;

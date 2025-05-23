@@ -1,6 +1,6 @@
-import { BasePositionableGameObject } from "../base/base-positionable-game-object.js";
+import { BaseMoveableGameObject } from "../base/base-moveable-game-object.js";
 
-export class TitleObject extends BasePositionableGameObject {
+export class TitleObject extends BaseMoveableGameObject {
   private text: string = "Unknown";
 
   constructor() {
