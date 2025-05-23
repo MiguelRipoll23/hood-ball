@@ -129,12 +129,7 @@ export class WebSocketService {
 
   private handleTunnelMessage(payload: ArrayBuffer | null) {
     if (!payload || payload.byteLength < 33) {
-      return console.warn(
-        !payload
-          ? "Received empty tunnel message"
-          : "Invalid tunnel message length",
-        payload
-      );
+      return console.warn("Invalid tunnel message length");
     }
 
     const view = new DataView(payload);
