@@ -128,54 +128,42 @@ export class WebSocketService {
   }
 
   private handleTunnelMessage(payload: ArrayBuffer | null) {
-    if (payload === null) {
-      return console.warn("Received empty tunnel message");
-    } else if (payload.byteLength < 33) {
-      return console.warn("Invalid tunnel message length", payload);
+    if (!payload || payload.byteLength < 33) {
+      return console.warn(
+        !payload
+          ? "Received empty tunnel message"
+          : "Invalid tunnel message length",
+        payload
+      );
     }
 
-    const dataView = new DataView(payload);
-    const originTokenBytes = new Uint8Array(payload.slice(0, 32));
-    const tunnelType = dataView.getUint8(32);
-    const webrtcDataBytes = payload.slice(33);
-
-    const originToken = btoa(String.fromCharCode(...originTokenBytes));
-
-    const webrtcData = JSON.parse(
-      new TextDecoder("utf-8").decode(webrtcDataBytes)
+    const view = new DataView(payload);
+    const originToken = btoa(
+      String.fromCharCode(...new Uint8Array(payload.slice(0, 32)))
     );
+    const tunnelType = view.getUint8(32);
+    const tunnelData = JSON.parse(new TextDecoder().decode(payload.slice(33)));
 
     console.log(
       "Tunnel message",
       originToken,
       TunnelType[tunnelType],
-      webrtcData
+      tunnelData
     );
 
-    this.handleWebRTCMessage(originToken, tunnelType, webrtcData);
-  }
-
-  private handleWebRTCMessage(
-    originToken: string,
-    tunnelType: TunnelType,
-    webrtcPayload: RTCIceCandidate | RTCSessionDescriptionInit
-  ) {
     switch (tunnelType) {
       case TunnelType.IceCandidate:
         return this.webrtcService.handleNewIceCandidate(
           originToken,
-          webrtcPayload as RTCIceCandidateInit
+          tunnelData
         );
-
       case TunnelType.SessionDescription:
         return this.webrtcService.handleSessionDescriptionEvent(
           originToken,
-          webrtcPayload as RTCSessionDescriptionInit
+          tunnelData
         );
-
-      default: {
+      default:
         console.warn("Unknown tunnel message type", tunnelType);
-      }
     }
   }
 }
