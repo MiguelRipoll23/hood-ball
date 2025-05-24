@@ -235,10 +235,9 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   private showWelcomePlayerName(context: CanvasRenderingContext2D): void {
-    const playerName = this.gameController
-      .getGameState()
-      .getGamePlayer()
-      .getName();
+    const playerName =
+      this.gameController.getGameState().getGamePlayer()?.getName() ||
+      "Unknown";
 
     // Draw text that says Hello
     context.font = "bold 28px system-ui";

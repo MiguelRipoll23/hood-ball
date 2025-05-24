@@ -4,23 +4,20 @@ import { GameServer } from "./game-server.js";
 
 export class GameState {
   private gameServer: GameServer;
-  private gamePlayer: GamePlayer | null = null;
+  private gamePlayer: GamePlayer;
   private match: Match | null = null;
 
   constructor() {
     this.gameServer = new GameServer();
+    this.gamePlayer = new GamePlayer();
   }
 
   public getGameServer(): GameServer {
     return this.gameServer;
   }
 
-  public getGamePlayer(): GamePlayer | null {
+  public getGamePlayer(): GamePlayer {
     return this.gamePlayer;
-  }
-
-  public setGamePlayer(gamePlayer: GamePlayer): void {
-    this.gamePlayer = gamePlayer;
   }
 
   public getMatch(): Match | null {
