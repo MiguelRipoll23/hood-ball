@@ -3,6 +3,7 @@ import { TunnelType } from "../enums/tunnel-type.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
+import { WebSocketType } from "../enums/websocket-type.js";
 
 export class WebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
@@ -28,7 +29,9 @@ export class WebRTCService {
       ...offerBytes,
     ]);
 
-    this.gameController.getWebSocketService().sendTunnelMessage(payload);
+    this.gameController
+      .getWebSocketService()
+      .sendMessage(WebSocketType.Tunnel, payload);
   }
 
   public getPeers(): WebRTCPeer[] {
@@ -68,7 +71,9 @@ export class WebRTCService {
       ...candidateBytes,
     ]);
 
-    this.gameController.getWebSocketService().sendTunnelMessage(payload);
+    this.gameController
+      .getWebSocketService()
+      .sendMessage(WebSocketType.Tunnel, payload);
   }
 
   public handleNewIceCandidate(
@@ -95,6 +100,11 @@ export class WebRTCService {
     if (match === null) return;
 
     const player = this.gameController.getGameState().getGamePlayer();
+
+    if (player === null) {
+      DebugUtils.renderText(context, 24, 24, "No player found");
+      return;
+    }
 
     if (player.isHost()) {
       DebugUtils.renderText(context, 24, 48, "Host");
@@ -150,7 +160,9 @@ export class WebRTCService {
       ...answerBytes,
     ]);
 
-    this.gameController.getWebSocketService().sendTunnelMessage(payload);
+    this.gameController
+      .getWebSocketService()
+      .sendMessage(WebSocketType.Tunnel, payload);
   }
 
   private async handlePeerAnswer(

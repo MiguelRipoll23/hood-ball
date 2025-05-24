@@ -270,7 +270,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.logger.info("Peer connection closed");
     this.connectionState = ConnectionStateType.Disconnected;
     this.gameController.getWebRTCService().removePeer(this.token);
-    this.matchmakingService.hasPeerDisconnected(this);
+    this.matchmakingService.onPeerDisconnected(this);
   }
 
   private addIceListeners(): void {
@@ -328,7 +328,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.logger.info(`Data channel ${label} opened`);
 
     if (this.host === false && this.areAllDataChannelsOpen()) {
-      this.matchmakingService.hasPeerConnected(this);
+      this.matchmakingService.onPeerConnected(this);
     }
   }
 
@@ -372,34 +372,57 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer,
     skipQueue = false
   ): void {
-    if (this.joined === false && skipQueue === false) {
-      this.messageQueue.push({ channelKey, arrayBuffer });
-      console.log("Queued message", channelKey, new Uint8Array(arrayBuffer));
+    const shouldSendImmediately = this.joined || skipQueue;
+
+    if (shouldSendImmediately === false) {
+      this.queueMessage(channelKey, arrayBuffer);
       return;
     }
 
     const channel = this.dataChannels[channelKey];
 
-    if (channel === undefined) {
-      return this.logger.warn(`Data channel not found for key: ${channelKey}`);
-    }
-
-    if (channel.readyState !== "open") {
+    if (!this.isChannelAvailable(channel, channelKey)) {
       return;
     }
 
     try {
       channel.send(arrayBuffer);
-
-      // Update download bytes per second
       this.uploadBytesPerSecond += arrayBuffer.byteLength;
 
       if (channel.label.startsWith("reliable")) {
-        this.logger.info("Sent message", new Uint8Array(arrayBuffer));
+        this.logger.debug("Sent message", new Uint8Array(arrayBuffer));
       }
     } catch (error) {
       this.logger.error(`Error sending ${channelKey} message`, error);
     }
+  }
+
+  private queueMessage(channelKey: string, arrayBuffer: ArrayBuffer): void {
+    this.messageQueue.push({ channelKey, arrayBuffer });
+
+    if (channelKey.startsWith("reliable")) {
+      this.logger.debug(
+        "Queued message",
+        channelKey,
+        new Uint8Array(arrayBuffer)
+      );
+    }
+  }
+
+  private isChannelAvailable(
+    channel: RTCDataChannel | undefined,
+    channelKey: string
+  ): channel is RTCDataChannel {
+    if (!channel) {
+      this.logger.warn(`Data channel not found for key: ${channelKey}`);
+      return false;
+    }
+
+    if (channel.readyState !== "open") {
+      return false;
+    }
+
+    return true;
   }
 
   private sendQueuedMessages(): void {
@@ -427,7 +450,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     switch (id) {
       case WebRTCType.JoinRequest:
-        return this.matchmakingService.handleJoinRequest(this, payload);
+        return this.matchmakingService.handleJoinRequest(this);
 
       case WebRTCType.JoinResponse:
         return this.matchmakingService.handleJoinResponse(this, payload);

@@ -5,6 +5,7 @@ import type { VerifyAuthenticationRequest } from "../interfaces/request/verify-a
 import type { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
 import type { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
 import { GameController } from "../models/game-controller.js";
+import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
 import { LocalEvent } from "../models/local-event.js";
 import { ServerError } from "../models/server-error.js";
@@ -156,12 +157,16 @@ export class CredentialService {
   }
 
   private handleAuthenticationResponse(response: AuthenticationResponse): void {
-    this.apiService.setAuthenticationToken(response.authentication_token);
-    this.gameState.getGamePlayer().setName(response.display_name);
-
     this.gameState
       .getGameServer()
       .setServerRegistration(new ServerRegistration(response));
+
+    const authenticationToken = response.authentication_token;
+    const userId = response.user_id.replace(/-/g, "").substring(0, 32);
+    const displayName = response.display_name;
+
+    this.apiService.setAuthenticationToken(authenticationToken);
+    this.gameState.setGamePlayer(new GamePlayer(userId, displayName));
 
     const localEvent = new LocalEvent(EventType.ServerAuthenticated, null);
     this.eventProcessorService.addLocalEvent(localEvent);
