@@ -70,9 +70,14 @@ export class MatchmakingService {
     const playerId = new TextDecoder().decode(playerIdBytes);
     const playerName = new TextDecoder().decode(userNameBytes);
 
+    console.log(
+      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
+    );
+
     this.receivedIdentities.set(token, { playerId, playerName });
 
     if (this.gameState.getMatch()?.isHost()) {
+      console.log("Sending player identity to player", token);
       this.gameController
         .getWebSocketService()
         .sendMessage(WebSocketType.PlayerIdentity, tokenBytes);
@@ -477,8 +482,8 @@ export class MatchmakingService {
     const { token } = match;
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
 
+    console.log("Sending player identity to host", token);
     this.pendingIdentities.set(token, true);
-
     this.gameController
       .getWebSocketService()
       .sendMessage(WebSocketType.PlayerIdentity, tokenBytes);
@@ -558,7 +563,7 @@ export class MatchmakingService {
     const playerName = player.getName();
 
     const playerIdBytes = new TextEncoder().encode(playerId);
-    const planerNameBytes = new TextEncoder().encode(playerName);
+    const playerNameBytes = new TextEncoder().encode(playerName);
 
     const payload = new Uint8Array([
       WebRTCType.PlayerConnection,
@@ -566,7 +571,7 @@ export class MatchmakingService {
       ...playerIdBytes,
       isHost,
       playerScore,
-      ...planerNameBytes,
+      ...playerNameBytes,
     ]);
 
     peer.sendReliableOrderedMessage(payload.buffer, skipQueue);
