@@ -92,7 +92,8 @@ export class CredentialService {
     );
 
     const challenge = registrationOptions.challenge;
-    const userId = registrationOptions.user.id;
+    const encodedUserId = registrationOptions.user.id;
+    const userId = atob(encodedUserId);
     const pubKeyCredParams = registrationOptions.pubKeyCredParams;
 
     const publicKey = {
@@ -161,7 +162,7 @@ export class CredentialService {
       .setServerRegistration(new ServerRegistration(response));
 
     const authenticationToken = response.authentication_token;
-    const userId = response.user_id.replace(/-/g, "").substring(0, 32);
+    const userId = response.user_id;
     const displayName = response.display_name;
 
     this.apiService.setAuthenticationToken(authenticationToken);

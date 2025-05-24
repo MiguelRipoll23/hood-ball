@@ -7,30 +7,30 @@ export class WebAuthnUtils {
     const { type, rawId, response } = credential;
 
     return {
-      id: this.base64UrlEncode(rawId),
+      id: this.base64URLEncode(rawId),
       type,
-      rawId: this.base64UrlEncode(rawId),
+      rawId: this.base64URLEncode(rawId),
       response: {
-        clientDataJSON: this.base64UrlEncode(response.clientDataJSON),
+        clientDataJSON: this.base64URLEncode(response.clientDataJSON),
         attestationObject: (response as AuthenticatorAttestationResponse)
           .attestationObject
-          ? this.base64UrlEncode(
+          ? this.base64URLEncode(
               (response as AuthenticatorAttestationResponse).attestationObject!
             )
           : null,
         authenticatorData: (response as AuthenticatorAssertionResponse)
           .authenticatorData
-          ? this.base64UrlEncode(
+          ? this.base64URLEncode(
               (response as AuthenticatorAssertionResponse).authenticatorData!
             )
           : null,
         signature: (response as AuthenticatorAssertionResponse).signature
-          ? this.base64UrlEncode(
+          ? this.base64URLEncode(
               (response as AuthenticatorAssertionResponse).signature!
             )
           : null,
         userHandle: (response as AuthenticatorAssertionResponse).userHandle
-          ? this.base64UrlEncode(
+          ? this.base64URLEncode(
               (response as AuthenticatorAssertionResponse).userHandle!
             )
           : null,
@@ -47,7 +47,7 @@ export class WebAuthnUtils {
     return Uint8Array.from(atob(paddedBase64), (c) => c.charCodeAt(0));
   }
 
-  private static base64UrlEncode(data: ArrayBuffer): string {
+  private static base64URLEncode(data: ArrayBuffer): string {
     return btoa(String.fromCharCode(...new Uint8Array(data)))
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
