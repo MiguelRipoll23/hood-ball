@@ -1,6 +1,5 @@
 export class GamePlayer {
   private id: string;
-  private displayId: string;
   private name: string;
   private host: boolean;
   private score: number;
@@ -8,13 +7,12 @@ export class GamePlayer {
   private pingTime: number | null = null;
 
   constructor(
-    id: string = crypto.randomUUID(),
+    id = "00000000000000000000000000000000",
     name = "Unknown",
     host = false,
     score = 0
   ) {
-    this.id = id.replace(/-/g, "");
-    this.displayId = id;
+    this.id = id;
     this.name = name;
     this.score = score;
     this.host = host;
@@ -25,12 +23,7 @@ export class GamePlayer {
   }
 
   public setId(id: string): void {
-    this.id = id.replace(/-/g, "");
-    this.displayId = id;
-  }
-
-  public getDisplayId(): string {
-    return this.displayId;
+    this.id = id;
   }
 
   public getName(): string {
