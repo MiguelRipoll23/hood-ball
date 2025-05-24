@@ -22,7 +22,6 @@ import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
-import { EventProcessorService } from "../services/event-processor-service.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
   private gameState: GameState;
@@ -33,14 +32,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private alertObject: AlertObject | null = null;
   private toastObject: ToastObject | null = null;
 
-  private eventProcessorService: EventProcessorService;
-
   private countdownCurrentNumber = 3;
 
   constructor(gameController: GameController) {
     super(gameController);
     this.gameState = gameController.getGameState();
-    this.eventProcessorService = gameController.getEventProcessorService();
     this.gameState.getGamePlayer().reset();
     this.addSyncableObjects();
     this.subscribeToEvents();
@@ -344,7 +340,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const countdownStartEvent = new RemoteEvent(EventType.Countdown);
     countdownStartEvent.setBuffer(arrayBuffer);
 
-    this.eventProcessorService.sendEvent(countdownStartEvent);
+    this.gameController
+      .getEventProcessorService()
+      .sendEvent(countdownStartEvent);
   }
 
   private handleWaitingForPlayers(): void {
@@ -565,7 +563,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
     gameOverStartEvent.setBuffer(arrayBuffer);
 
-    this.eventProcessorService.sendEvent(gameOverStartEvent);
+    this.gameController
+      .getEventProcessorService()
+      .sendEvent(gameOverStartEvent);
   }
 
   private handleRemoteGameOverStartEvent(

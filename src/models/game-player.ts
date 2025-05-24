@@ -1,22 +1,18 @@
 export class GamePlayer {
   private id: string;
   private displayId: string;
-  private host: boolean;
-  private pingTime: number | null = null;
   private name: string;
+  private host: boolean;
   private score: number;
 
-  constructor(
-    id: string = self.crypto.randomUUID(),
-    host: boolean = false,
-    name = "Unknown",
-    score = 0
-  ) {
+  private pingTime: number | null = null;
+
+  constructor(id: string, name: string, host = false, score = 0) {
     this.id = id.replace(/-/g, "");
     this.displayId = id;
-    this.host = host;
     this.name = name;
     this.score = score;
+    this.host = host;
   }
 
   public getId(): string {
@@ -27,6 +23,10 @@ export class GamePlayer {
     return this.displayId;
   }
 
+  public getName(): string {
+    return this.name;
+  }
+
   public isHost(): boolean {
     return this.host;
   }
@@ -35,24 +35,8 @@ export class GamePlayer {
     this.host = host;
   }
 
-  public getPingTime(): number | null {
-    return this.pingTime;
-  }
-
-  public setPingTime(pingTime: number): void {
-    this.pingTime = pingTime;
-  }
-
-  public getName(): string {
-    return this.name;
-  }
-
   public getScore(): number {
     return this.score;
-  }
-
-  public setName(name: string): void {
-    this.name = name;
   }
 
   public sumScore(score: number): void {
@@ -61,6 +45,14 @@ export class GamePlayer {
 
   public setScore(score: number): void {
     this.score = score;
+  }
+
+  public getPingTime(): number | null {
+    return this.pingTime;
+  }
+
+  public setPingTime(pingTime: number): void {
+    this.pingTime = pingTime;
   }
 
   public reset(): void {
