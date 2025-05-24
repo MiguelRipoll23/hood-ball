@@ -174,11 +174,6 @@ export class MatchmakingService {
 
     // Add local player
     const localGamePlayer = this.gameState.getGamePlayer();
-
-    if (localGamePlayer === null) {
-      return console.warn("Local game player is null");
-    }
-
     match.addPlayer(localGamePlayer);
   }
 
@@ -287,11 +282,6 @@ export class MatchmakingService {
 
   public async savePlayerScore(): Promise<void> {
     const gamePlayer = this.gameState.getGamePlayer();
-
-    if (gamePlayer === null) {
-      return console.warn("Game player is null, cannot save score");
-    }
-
     const score = gamePlayer.getScore();
     const saveScoreRequest: SaveScoreRequest = { score };
 
@@ -443,11 +433,6 @@ export class MatchmakingService {
 
     // Update local player
     const localGamePlayer = this.gameState.getGamePlayer();
-
-    if (localGamePlayer === null) {
-      return console.warn("Local game player is null");
-    }
-
     localGamePlayer.setHost(true);
 
     match.addPlayer(localGamePlayer);
