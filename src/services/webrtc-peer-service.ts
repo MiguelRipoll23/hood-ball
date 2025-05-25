@@ -1,16 +1,15 @@
 import { GameController } from "../models/game-controller.js";
 import { GamePlayer } from "../models/game-player.js";
-import { LoggerUtils } from "../utils/logger-utils.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { ObjectOrchestrator } from "./object-orchestrator-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
-  private logger: LoggerUtils;
-
   private matchmakingService: MatchmakingService;
   private webRTCService: WebRTCService;
   private objectOrchestrator: ObjectOrchestrator;
@@ -37,8 +36,6 @@ export class WebRTCPeerService implements WebRTCPeer {
   private uploadBytesPerSecond: number = 0;
 
   constructor(private gameController: GameController, private token: string) {
-    this.logger = new LoggerUtils(`WebRTC(${this.token})`);
-
     this.matchmakingService = this.gameController.getMatchmakingService();
     this.webRTCService = this.gameController.getWebRTCService();
     this.objectOrchestrator = this.gameController.getObjectOrchestrator();
@@ -126,7 +123,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   public async connect(answer: RTCSessionDescriptionInit): Promise<void> {
-    this.logger.info("Connecting to peer...", answer);
+    console.info("Connecting to peer...", answer);
 
     await this.peerConnection.setRemoteDescription(
       new RTCSessionDescription(answer)
@@ -238,10 +235,8 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleConnectionStateChange(): void {
-    this.logger.info(
-      "Peer connection state:",
-      this.peerConnection.connectionState
-    );
+    console.info("Peer connection state:", this.peerConnection.connectionState);
+
     switch (this.peerConnection.connectionState) {
       case "connected":
         this.handleConnection();
@@ -255,7 +250,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleConnection(): void {
-    this.logger.info("Peer connection established");
+    console.info("Peer connection established");
     this.connected = true;
   }
 
@@ -264,7 +259,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       return;
     }
 
-    this.logger.info("Peer connection closed");
+    console.info("Peer connection closed");
     this.connected = false;
     this.gameController.getWebRTCService().removePeer(this.token);
     this.matchmakingService.onPeerDisconnected(this);
@@ -278,21 +273,21 @@ export class WebRTCPeerService implements WebRTCPeer {
     };
 
     this.peerConnection.oniceconnectionstatechange = () => {
-      this.logger.info(
+      console.info(
         "ICE connection state:",
         this.peerConnection.iceConnectionState
       );
     };
 
     this.peerConnection.onicegatheringstatechange = () => {
-      this.logger.info(
+      console.info(
         "ICE gathering state:",
         this.peerConnection.iceGatheringState
       );
     };
 
     this.peerConnection.onicecandidateerror = (event) => {
-      this.logger.error("ICE candidate error", event);
+      console.error("ICE candidate error", event);
     };
   }
 
@@ -318,11 +313,12 @@ export class WebRTCPeerService implements WebRTCPeer {
     channel.onopen = () => this.handleDataChannelOpen(channel.label);
     channel.onerror = (error) =>
       this.handleDataChannelError(channel.label, error);
-    channel.onmessage = (event) => this.handleMessage(event.data);
+    channel.onmessage = (event) =>
+      this.handleMessage(channel.label, event.data);
   }
 
   private handleDataChannelOpen(label: string): void {
-    this.logger.info(`Data channel ${label} opened`);
+    console.info(`Data channel ${label} opened`);
 
     if (this.host === false && this.areAllDataChannelsOpen()) {
       this.matchmakingService.onPeerConnected(this);
@@ -336,7 +332,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleDataChannelError(label: string, error: Event): void {
-    this.logger.error(`Data channel ${label} error`, error);
+    console.error(`Data channel ${label} error`, error);
   }
 
   private queueOrProcessIceCandidate(iceCandidate: RTCIceCandidateInit): void {
@@ -344,7 +340,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       this.processIceCandidate(iceCandidate, true);
     } else {
       this.iceCandidatesQueue.push(iceCandidate);
-      this.logger.info("Queued ICE candidate", iceCandidate);
+      console.info("Queued ICE candidate", iceCandidate);
     }
 
     this.webRTCService.sendIceCandidate(this.token, iceCandidate);
@@ -358,9 +354,9 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     try {
       await this.peerConnection.addIceCandidate(iceCandidate);
-      this.logger.info(`Added ${type} ICE candidate`, iceCandidate);
+      console.info(`Added ${type} ICE candidate`, iceCandidate);
     } catch (error) {
-      this.logger.error(`Error adding ${type} ICE candidate`, error);
+      console.error(`Error adding ${type} ICE candidate`, error);
     }
   }
 
@@ -384,13 +380,22 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     try {
       channel.send(arrayBuffer);
+
+      // Update upload stats
       this.uploadBytesPerSecond += arrayBuffer.byteLength;
 
-      if (channel.label.startsWith("reliable")) {
-        this.logger.debug("Sent message", new Uint8Array(arrayBuffer));
+      // Log the message if debugging and the channel is reliable
+      const isReliableChannel = channel.label.startsWith("reliable");
+
+      if (this.gameController.isDebugging() && isReliableChannel) {
+        console.debug(
+          `%cSent message to peer ${this.getName()}:\n` +
+            BinaryWriter.preview(arrayBuffer),
+          "color: purple;"
+        );
       }
     } catch (error) {
-      this.logger.error(`Error sending ${channelKey} message`, error);
+      console.error(`Error sending ${channelKey} message to peer`, error);
     }
   }
 
@@ -398,11 +403,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.messageQueue.push({ channelKey, arrayBuffer });
 
     if (channelKey.startsWith("reliable")) {
-      this.logger.debug(
-        "Queued message",
-        channelKey,
-        new Uint8Array(arrayBuffer)
-      );
+      console.debug("Queued message", channelKey, new Uint8Array(arrayBuffer));
     }
   }
 
@@ -411,7 +412,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     channelKey: string
   ): channel is RTCDataChannel {
     if (!channel) {
-      this.logger.warn(`Data channel not found for key: ${channelKey}`);
+      console.warn(`Data channel not found for key: ${channelKey}`);
       return false;
     }
 
@@ -429,31 +430,39 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
   }
 
-  private handleMessage(arrayBuffer: ArrayBuffer): void {
-    //this.logger.info("Received message from peer", new Uint8Array(arrayBuffer));
-    //this.logger.info(new TextDecoder().decode(arrayBuffer));
-
-    // Update upload bytes per second
+  private handleMessage(channelLabel: string, arrayBuffer: ArrayBuffer): void {
+    // Update download stats
     this.downloadBytesPerSecond += arrayBuffer.byteLength;
 
-    const dataView = new DataView(arrayBuffer);
-    const id = dataView.getUint8(0);
-    const payload =
-      dataView.buffer.byteLength > 1 ? arrayBuffer.slice(1) : null;
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const isReliableChannel = channelLabel.startsWith("reliable");
 
-    if (this.isInvalidStateForId(id)) {
-      return console.warn("Invalid player state for message", id);
+    if (this.gameController.isDebugging() && isReliableChannel) {
+      console.debug(
+        `%cReceived message from peer ${this.getName()}:\n` +
+          binaryReader.preview(),
+        "color: green;"
+      );
     }
 
-    switch (id) {
+    const typeId = binaryReader.unsignedInt8();
+
+    if (this.isInvalidStateForId(typeId)) {
+      return console.warn("Invalid player state for message", typeId);
+    }
+
+    switch (typeId) {
       case WebRTCType.JoinRequest:
         return this.matchmakingService.handleJoinRequest(this);
 
       case WebRTCType.JoinResponse:
-        return this.matchmakingService.handleJoinResponse(this, payload);
+        return this.matchmakingService.handleJoinResponse(this, binaryReader);
 
       case WebRTCType.PlayerConnection:
-        return this.matchmakingService.handlePlayerConnection(this, payload);
+        return this.matchmakingService.handlePlayerConnection(
+          this,
+          binaryReader
+        );
 
       case WebRTCType.SnapshotEnd:
         return this.matchmakingService.handleSnapshotEnd(this);
@@ -462,10 +471,10 @@ export class WebRTCPeerService implements WebRTCPeer {
         return this.matchmakingService.handleSnapshotACK(this);
 
       case WebRTCType.ObjectData:
-        return this.objectOrchestrator.handleObjectData(this, payload);
+        return this.objectOrchestrator.handleObjectData(this, binaryReader);
 
       case WebRTCType.EventData:
-        return this.eventProcessorService.handleEventData(this, payload);
+        return this.eventProcessorService.handleEventData(this, binaryReader);
 
       case WebRTCType.GracefulDisconnect:
         return this.handleGracefulDisconnect();
@@ -477,10 +486,13 @@ export class WebRTCPeerService implements WebRTCPeer {
         return this.handlePingResponse();
 
       case WebRTCType.PlayerPing:
-        return this.matchmakingService.handlePlayerPing(this.host, payload);
+        return this.matchmakingService.handlePlayerPing(
+          this.host,
+          binaryReader
+        );
 
       default: {
-        this.logger.warn("Unknown message identifier", id);
+        console.warn("Unknown message type identifier", typeId);
       }
     }
   }

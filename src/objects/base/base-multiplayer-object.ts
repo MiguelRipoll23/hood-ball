@@ -22,7 +22,7 @@ export class BaseMultiplayerGameObject
 
   public static deserialize(
     _id: string,
-    _data: ArrayBuffer
+    _arrayBuffer: ArrayBuffer
   ): MultiplayerGameObject {
     throw new Error("Method not implemented.");
   }
@@ -93,13 +93,13 @@ export class BaseMultiplayerGameObject
 
   public sendSyncableData(
     _webrtcPeer: WebRTCPeer,
-    _data: ArrayBuffer,
+    _arrayBuffer: ArrayBuffer,
     _periodicUpdate: boolean
   ): void {
     throw new Error("Method not implemented.");
   }
 
-  public synchronize(_data: ArrayBuffer): void {
+  public synchronize(_arrayBuffer: ArrayBuffer): void {
     throw new Error("Method not implemented.");
   }
 }

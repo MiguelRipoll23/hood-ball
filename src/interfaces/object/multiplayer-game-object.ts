@@ -16,14 +16,14 @@ export interface MultiplayerGameObject extends GameObject {
   serialize(): ArrayBuffer;
   sendSyncableData(
     webrtcPeer: WebRTCPeer,
-    data: ArrayBuffer,
+    arrayBuffer: ArrayBuffer,
     periodicUpdate: boolean
   ): void;
-  synchronize(data: ArrayBuffer): void;
+  synchronize(arrayBuffer: ArrayBuffer): void;
 }
 
 export interface StaticMultiplayerGameObject {
   new (...args: never[]): MultiplayerGameObject;
   getTypeId(): ObjectType;
-  deserialize(id: string, data: ArrayBuffer): MultiplayerGameObject;
+  deserialize(id: string, arrayBuffer: ArrayBuffer): MultiplayerGameObject;
 }

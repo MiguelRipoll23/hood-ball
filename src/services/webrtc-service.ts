@@ -5,6 +5,7 @@ import { WebRTCPeerService } from "./webrtc-peer-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import type { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class WebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
@@ -42,6 +43,25 @@ export class WebRTCService {
     this.peers.delete(token);
 
     console.log("Removed WebRTC peer, updated peers count", this.peers.size);
+  }
+
+  public handleTunnelWebRTCData(binaryReader: BinaryReader): void {
+    const originTokenBytes = binaryReader.bytes(32);
+    const tunnelTypeId = binaryReader.unsignedInt8();
+    const tunnelData = binaryReader.bytesAsArrayBuffer();
+
+    const originToken = btoa(String.fromCharCode(...originTokenBytes));
+
+    switch (tunnelTypeId) {
+      case TunnelType.IceCandidate:
+        return this.handleNewIceCandidateMessage(originToken, tunnelData);
+
+      case TunnelType.SessionDescription:
+        return this.handleSessionDescriptionMessage(originToken, tunnelData);
+
+      default:
+        console.warn("Unknown tunnel type id", tunnelTypeId);
+    }
   }
 
   public handleSessionDescriptionEvent(
@@ -136,6 +156,38 @@ export class WebRTCService {
     console.log("Added WebRTC peer, updated peers count", this.peers.size);
 
     return peer;
+  }
+
+  private handleNewIceCandidateMessage(
+    originToken: string,
+    payload: ArrayBuffer
+  ): void {
+    let iceCandidateData;
+
+    try {
+      iceCandidateData = JSON.parse(new TextDecoder().decode(payload));
+    } catch (error) {
+      console.error("Failed to parse ICE candidate data", error);
+      return;
+    }
+
+    this.handleNewIceCandidate(originToken, iceCandidateData);
+  }
+
+  private handleSessionDescriptionMessage(
+    originToken: string,
+    payload: ArrayBuffer
+  ): void {
+    let sessionDescriptionData;
+
+    try {
+      sessionDescriptionData = JSON.parse(new TextDecoder().decode(payload));
+    } catch (error) {
+      console.error("Failed to parse session description data", error);
+      return;
+    }
+
+    this.handleSessionDescriptionEvent(originToken, sessionDescriptionData);
   }
 
   private async handlePeerOffer(

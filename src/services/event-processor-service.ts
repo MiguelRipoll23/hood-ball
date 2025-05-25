@@ -8,6 +8,7 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { EventQueue } from "../models/event-queue.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import type { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -41,22 +42,16 @@ export class EventProcessorService {
     this.localQueue.addEvent(event);
   }
 
-  public handleEventData(webrtcPeer: WebRTCPeer, data: ArrayBuffer | null) {
-    if (data === null) {
-      return console.warn("Received null data from peer");
-    }
-
+  public handleEventData(webrtcPeer: WebRTCPeer, binaryReader: BinaryReader) {
     if (webrtcPeer.getPlayer()?.isHost() === false) {
       return console.warn("Received event from non-host player");
     }
 
-    const dataView = new DataView(data);
+    const eventTypeId = binaryReader.unsignedInt8();
+    const eventData = binaryReader.bytesAsArrayBuffer();
 
-    const id = dataView.getInt8(0);
-    const payload = data.byteLength > 1 ? data.slice(1) : null;
-
-    const event = new RemoteEvent(id);
-    event.setArrayBuffer(payload);
+    const event = new RemoteEvent(eventTypeId);
+    event.setArrayBuffer(eventData);
 
     this.remoteQueue.addEvent(event);
   }

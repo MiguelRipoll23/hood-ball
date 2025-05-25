@@ -11,6 +11,7 @@ import {
   SCALE_FACTOR_FOR_SPEED,
 } from "../constants/webrtc-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class CarObject extends BaseDynamicCollidingGameObject {
   protected readonly TOP_SPEED: number = 0.3;
@@ -69,24 +70,24 @@ export class CarObject extends BaseDynamicCollidingGameObject {
   }
 
   public override serialize(): ArrayBuffer {
-    const buffer = new ArrayBuffer(8);
-    const dataView = new DataView(buffer);
     const angle = Math.round(this.angle * SCALE_FACTOR_FOR_ANGLES);
     const speed = Math.round(this.speed * SCALE_FACTOR_FOR_SPEED);
 
-    dataView.setUint16(0, this.x);
-    dataView.setUint16(2, this.y);
-    dataView.setInt16(4, angle);
-    dataView.setInt16(6, speed);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt16(this.x)
+      .unsignedInt16(this.y)
+      .signedInt16(angle)
+      .signedInt16(speed)
+      .toArrayBuffer();
 
-    return buffer;
+    return arrayBuffer;
   }
 
   public override sendSyncableData(
     webrtcPeer: WebRTCPeer,
-    data: ArrayBuffer
+    arrayBuffer: ArrayBuffer
   ): void {
-    webrtcPeer.sendUnreliableOrderedMessage(data);
+    webrtcPeer.sendUnreliableOrderedMessage(arrayBuffer);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
