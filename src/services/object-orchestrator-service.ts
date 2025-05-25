@@ -9,6 +9,9 @@ import type { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.
 import { ObjectStateType } from "../enums/object-state-type.js";
 import { ScreenUtils } from "../utils/screen-utils.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import type { ObjectType } from "../enums/object-type.js";
 
 export class ObjectOrchestrator {
   private readonly PERIODIC_MILLISECONDS = 500;
@@ -61,42 +64,47 @@ export class ObjectOrchestrator {
       return console.warn("Received null data from peer");
     }
 
-    // Packet structure
-    // 1 byte, 1 byte, 1 byte, 32 bytes, 32 bytes, n bytes
-    // screenId, stateId, typeId, ownerId, objectId, serializedData
-
-    const dataView = new DataView(data);
-    const screenId = dataView.getInt8(0);
-    const stateId = dataView.getInt8(1);
-    const ownerId = new TextDecoder().decode(new Uint8Array(data, 3, 32));
+    const binaryReader = BinaryReader.fromArrayBuffer(data);
+    const screenId = binaryReader.unsignedInt8();
+    const objectStateId = binaryReader.unsignedInt8();
+    const objectTypeId = binaryReader.unsignedInt8();
+    const objectOwnerId = binaryReader.fixedLengthString(32);
+    const objectId = binaryReader.fixedLengthString(32);
+    const objectData = binaryReader.bytesAsArrayBuffer();
 
     // Check for owner
-    if (ObjectUtils.hasInvalidOwner(webrtcPeer, ownerId)) {
+    if (ObjectUtils.hasInvalidOwner(webrtcPeer, objectOwnerId)) {
       return console.warn(
         "Received object data from unauthorized player",
-        ownerId
+        objectOwnerId
       );
     }
 
     // Check for screen
-    const multiplayerScreen = ScreenUtils.getScreenById(
+    const objectMultiplayerScreen = ScreenUtils.getScreenById(
       this.gameFrame,
       screenId
     );
 
-    if (multiplayerScreen === null) {
+    if (objectMultiplayerScreen === null) {
       return console.warn(`Screen not found with id ${screenId}`);
     }
 
-    switch (stateId) {
+    switch (objectStateId) {
       case ObjectStateType.Active:
-        return this.createOrSynchronizeObject(multiplayerScreen, ownerId, data);
+        return this.createOrSynchronizeObject(
+          objectMultiplayerScreen,
+          objectTypeId,
+          objectOwnerId,
+          objectId,
+          objectData
+        );
 
       case ObjectStateType.Inactive:
-        return this.removeObject(multiplayerScreen, data);
+        return this.removeObject(objectMultiplayerScreen, objectId);
 
       default:
-        console.warn(`Unknown object state: ${stateId}`);
+        console.warn(`Unknown object state: ${objectStateId}`);
     }
   }
 
@@ -167,59 +175,27 @@ export class ObjectOrchestrator {
     multiplayerScreen: MultiplayerScreen,
     multiplayerObject: MultiplayerGameObject
   ): ArrayBuffer {
-    const screenId = multiplayerScreen.getTypeId();
-    const stateId = multiplayerObject.getState();
-    const typeId = multiplayerObject.getTypeId();
-    const ownerId = multiplayerObject.getOwner()?.getId() ?? null;
+    const screenTypeId = multiplayerScreen.getTypeId();
+    const objectStateId = multiplayerObject.getState();
+    const objectTypeId = multiplayerObject.getTypeId();
+    const objectOwnerId = multiplayerObject.getOwner()?.getId() ?? null;
     const objectId = multiplayerObject.getId();
 
-    if (typeId === null || objectId === null || ownerId === null) {
+    if (objectTypeId === null || objectId === null || objectOwnerId === null) {
       throw new Error("Invalid object data for object id " + objectId);
     }
 
-    const serializedData = multiplayerObject.serialize();
+    const objectData = multiplayerObject.serialize();
 
-    const ownerIdBytes = new TextEncoder().encode(ownerId);
-    const objectIdBytes = new TextEncoder().encode(objectId);
-    const serializedBytes = new Uint8Array(serializedData);
-
-    // Packet structure
-    // 1 byte, 1 byte, 1 byte, 1 byte, 32 bytes, 32 bytes, n bytes
-    // objectDataId, screenId, stateId, typeId, ownerId, objectId, serializedData
-
-    // Calculate total buffer size
-    const bufferSize =
-      4 +
-      ownerIdBytes.length +
-      objectIdBytes.length +
-      serializedBytes.byteLength;
-
-    const arrayBuffer = new ArrayBuffer(bufferSize);
-    const dataView = new DataView(arrayBuffer);
-
-    // Write fixed-length fields
-    let offset = 0;
-    dataView.setInt8(offset++, WebRTCType.ObjectData);
-    dataView.setInt8(offset++, Number(screenId));
-    dataView.setInt8(offset++, Number(stateId));
-    dataView.setInt8(offset++, typeId);
-
-    // Write ownerId
-    new Uint8Array(arrayBuffer, offset, ownerIdBytes.length).set(ownerIdBytes);
-    offset += ownerIdBytes.length;
-
-    // Write object id
-    new Uint8Array(arrayBuffer, offset, objectIdBytes.length).set(
-      objectIdBytes
-    );
-    offset += objectIdBytes.length;
-
-    // Write serialized data
-    new Uint8Array(arrayBuffer, offset, serializedBytes.length).set(
-      serializedBytes
-    );
-
-    return arrayBuffer;
+    return BinaryWriter.build()
+      .byte(WebRTCType.ObjectData)
+      .unsignedInt8(screenTypeId)
+      .unsignedInt8(objectStateId)
+      .unsignedInt8(objectTypeId)
+      .fixedLengthString(objectOwnerId, 32)
+      .fixedLengthString(objectId, 32)
+      .arrayBuffer(objectData)
+      .toArrayBuffer();
   }
 
   private sendLocalObjectDataToPeer(
@@ -248,49 +224,52 @@ export class ObjectOrchestrator {
   // Remote
   private createOrSynchronizeObject(
     multiplayerScreen: MultiplayerScreen,
-    ownerId: string,
-    data: ArrayBuffer
+    objectTypeId: ObjectType,
+    objectOwnerId: string,
+    objectId: string,
+    objectData: ArrayBuffer
   ) {
-    const objectId = new TextDecoder().decode(new Uint8Array(data, 35, 32));
-    const serializedData = data.slice(67);
-
     // Try to find object
     const object = multiplayerScreen.getSyncableObject(objectId);
 
     if (object === null) {
-      return this.createObject(multiplayerScreen, ownerId, objectId, data);
+      return this.createObject(
+        multiplayerScreen,
+        objectTypeId,
+        objectOwnerId,
+        objectId,
+        objectData
+      );
     }
 
-    object.synchronize(serializedData);
+    object.synchronize(objectData);
   }
 
   private createObject(
     multiplayerScreen: MultiplayerScreen,
-    ownerId: string,
+    objectTypeId: ObjectType,
+    objectOwnerId: string,
     objectId: string,
-    data: ArrayBuffer
+    objectData: ArrayBuffer
   ) {
-    const dataView = new DataView(data);
-    const typeId = dataView.getInt8(2);
-    const serializedData = data.slice(67);
-    const objectClass = multiplayerScreen.getSyncableObjectClass(typeId as any);
+    const objectClass = multiplayerScreen.getSyncableObjectClass(objectTypeId);
 
     if (objectClass === null) {
-      return console.warn(`Object class not found for type ${typeId}`);
+      return console.warn(`Object class not found for type ${objectTypeId}`);
     }
 
     // Try to find owner
-    const player = this.gameState.getMatch()?.getPlayer(ownerId) ?? null;
+    const player = this.gameState.getMatch()?.getPlayer(objectOwnerId) ?? null;
 
     if (player === null) {
-      return console.warn("Cannot find player with id", ownerId);
+      return console.warn("Cannot find player with id", objectOwnerId);
     }
 
     // Try to create object instance
     let objectInstance: MultiplayerGameObject;
 
     try {
-      objectInstance = objectClass.deserialize(objectId, serializedData);
+      objectInstance = objectClass.deserialize(objectId, objectData);
     } catch (error) {
       return console.warn("Cannot deserialize object with id", objectId, error);
     }
@@ -302,9 +281,8 @@ export class ObjectOrchestrator {
 
   private removeObject(
     multiplayerScreen: MultiplayerScreen,
-    data: ArrayBuffer
+    objectId: string
   ): void {
-    const objectId = new TextDecoder().decode(new Uint8Array(data, 40, 36));
     const object = multiplayerScreen.getSyncableObject(objectId);
 
     if (object === null) {

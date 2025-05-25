@@ -3,7 +3,7 @@ import { EventType } from "../enums/event-type.js";
 
 export class RemoteEvent implements GameEvent {
   private type: EventType;
-  private buffer: ArrayBuffer | null = null;
+  private arrayBuffer: ArrayBuffer | null = null;
 
   constructor(id: EventType) {
     this.type = id;
@@ -13,11 +13,11 @@ export class RemoteEvent implements GameEvent {
     return this.type;
   }
 
-  public getData(): ArrayBuffer | null {
-    return this.buffer;
+  public getArrayBuffer(): ArrayBuffer | null {
+    return this.arrayBuffer;
   }
 
-  public setBuffer(buffer: ArrayBuffer | null): void {
-    this.buffer = buffer;
+  public setArrayBuffer(buffer: ArrayBuffer | null): void {
+    this.arrayBuffer = buffer;
   }
 }

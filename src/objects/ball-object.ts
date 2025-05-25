@@ -139,7 +139,7 @@ export class BallObject
   }
 
   private setSyncableValues() {
-    this.setId("94c58aa0-41c3-4b22-825a-15a3834be240");
+    this.setId("94c58aa041c34b22825a15a3834be240");
     this.setTypeId(ObjectType.Ball);
     this.setSyncableByHost(true);
   }

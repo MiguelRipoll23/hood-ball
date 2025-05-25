@@ -5,7 +5,6 @@ import { Match } from "../models/match.js";
 import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
 import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
-import { ConnectionStateType } from "../enums/connection-state-type.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { EventType } from "../enums/event-type.js";
@@ -21,6 +20,8 @@ import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class MatchmakingService {
   private gameState: GameState;
@@ -61,14 +62,12 @@ export class MatchmakingService {
       return;
     }
 
-    const payloadBytes = new Uint8Array(payload);
-    const tokenBytes = payloadBytes.slice(0, 32);
-    const playerIdBytes = payloadBytes.slice(32, 64);
-    const userNameBytes = payloadBytes.slice(64);
+    const binaryReader = BinaryReader.fromArrayBuffer(payload);
+    const tokenBytes = binaryReader.bytes(32);
+    const playerId = binaryReader.fixedLengthString(32);
+    const playerName = binaryReader.fixedLengthString(16);
 
     const token = btoa(String.fromCharCode(...tokenBytes));
-    const playerId = new TextDecoder().decode(playerIdBytes);
-    const playerName = new TextDecoder().decode(userNameBytes);
 
     console.log(
       `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
@@ -78,9 +77,11 @@ export class MatchmakingService {
 
     if (this.gameState.getMatch()?.isHost()) {
       console.log("Sending player identity to player", token);
-      this.gameController
-        .getWebSocketService()
-        .sendMessage(WebSocketType.PlayerIdentity, tokenBytes);
+      const webSocketPayload = BinaryWriter.build()
+        .unsignedInt8(WebSocketType.PlayerIdentity)
+        .bytes(tokenBytes, 32)
+        .toArrayBuffer();
+      this.gameController.getWebSocketService().sendMessage(webSocketPayload);
     } else {
       if (this.pendingIdentities.has(token) === false) {
         console.log("Ignoring unsolicited identity for token", token);
@@ -168,13 +169,18 @@ export class MatchmakingService {
 
     console.log("Received join response from", peer.getToken());
 
-    // Data
-    const dataView = new DataView(payload);
-    const state = dataView.getUint8(0);
-    const totalSlots = dataView.getUint8(1);
+    const binaryReader = BinaryReader.fromArrayBuffer(payload);
+    const matchState = binaryReader.unsignedInt8();
+    const matchTotalSlots = binaryReader.unsignedInt8();
 
     // Create game match
-    const match = new Match(false, state, totalSlots, MATCH_ATTRIBUTES);
+    const match = new Match(
+      false,
+      matchState,
+      matchTotalSlots,
+      MATCH_ATTRIBUTES
+    );
+
     this.gameState.setMatch(match);
 
     // Add local player
@@ -190,24 +196,29 @@ export class MatchmakingService {
       return console.warn("Invalid player connection state payload", payload);
     }
 
-    const dataView = new DataView(payload);
+    const binaryReader = BinaryReader.fromArrayBuffer(payload);
+    const isConnected = binaryReader.boolean();
+    const isHost = binaryReader.boolean();
+    const playerId = binaryReader.fixedLengthString(32);
+    const playerName = binaryReader.fixedLengthString(16);
+    const playerScore = binaryReader.unsignedInt8();
 
-    const state = dataView.getUint8(0);
-    const playerId = new TextDecoder().decode(payload.slice(1, 33));
-    const host = dataView.getUint8(33) === 1;
-    const score = dataView.getUint8(34);
-    const userName = new TextDecoder().decode(payload.slice(35));
-
-    if (state === ConnectionStateType.Disconnected) {
+    if (isConnected === false) {
       return this.handlePlayerDisconnectedById(playerId);
     }
 
-    const gamePlayer = new GamePlayer(playerId, userName, host, score);
-    this.gameState.getMatch()?.addPlayer(gamePlayer);
+    const gamePlayer = new GamePlayer(
+      playerId,
+      playerName,
+      isHost,
+      playerScore
+    );
 
-    if (host) {
-      peer.setPlayer(gamePlayer);
+    if (isHost) {
+      this.verifyHostIdentity(peer, gamePlayer);
     }
+
+    this.gameState.getMatch()?.addPlayer(gamePlayer);
   }
 
   public handleSnapshotEnd(peer: WebRTCPeer): void {
@@ -249,12 +260,7 @@ export class MatchmakingService {
       .filter((matchPeer) => matchPeer !== peer)
       .forEach((peer) => {
         console.log("Sending player connection to", peer.getName());
-        this.sendPlayerConnection(
-          peer,
-          player,
-          ConnectionStateType.Connected,
-          false
-        );
+        this.sendPlayerConnection(peer, player, true, false);
       });
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
@@ -276,11 +282,9 @@ export class MatchmakingService {
       return console.warn("Invalid player ping payload", payload);
     }
 
-    const playerIdBytes = payload.slice(0, 32);
-    const playerId = new TextDecoder().decode(playerIdBytes);
-
-    const dataView = new DataView(payload);
-    const playerPingTime = dataView.getUint16(32);
+    const binaryReader = BinaryReader.fromArrayBuffer(payload);
+    const playerId = binaryReader.fixedLengthString(32);
+    const playerPingTime = binaryReader.unsignedInt16();
 
     this.gameState.getMatch()?.getPlayer(playerId)?.setPingTime(playerPingTime);
   }
@@ -352,12 +356,7 @@ export class MatchmakingService {
       .getPeers()
       .filter((matchPeer) => matchPeer !== peer)
       .forEach((peer) => {
-        this.sendPlayerConnection(
-          peer,
-          player,
-          ConnectionStateType.Disconnected,
-          false
-        );
+        this.sendPlayerConnection(peer, player, false, false);
       });
 
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
@@ -482,16 +481,24 @@ export class MatchmakingService {
     const { token } = match;
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
 
-    console.log("Sending player identity to host", token);
     this.pendingIdentities.set(token, true);
-    this.gameController
-      .getWebSocketService()
-      .sendMessage(WebSocketType.PlayerIdentity, tokenBytes);
+
+    console.log("Sending player identity to host", token);
+
+    const webSocketPayload = BinaryWriter.build()
+      .unsignedInt8(WebSocketType.PlayerIdentity)
+      .bytes(tokenBytes, 32)
+      .toArrayBuffer();
+
+    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   private sendJoinRequest(peer: WebRTCPeer): void {
-    const payload = new Uint8Array([WebRTCType.JoinRequest]);
-    peer.sendReliableOrderedMessage(payload.buffer, true);
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.JoinRequest)
+      .toArrayBuffer();
+
+    peer.sendReliableOrderedMessage(payload, true);
   }
 
   private handleUnavailableSlots(peer: WebRTCPeer): void {
@@ -515,14 +522,15 @@ export class MatchmakingService {
   private sendJoinResponse(peer: WebRTCPeer, match: Match): void {
     const state = match.getState();
     const totalSlots = match.getTotalSlots();
-    const payload = new Uint8Array([
-      WebRTCType.JoinResponse,
-      state,
-      totalSlots,
-    ]);
+
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.JoinResponse)
+      .unsignedInt8(state)
+      .unsignedInt8(totalSlots)
+      .toArrayBuffer();
 
     console.log("Sending join response to", peer.getName());
-    peer.sendReliableOrderedMessage(payload.buffer, true);
+    peer.sendReliableOrderedMessage(payload, true);
 
     this.sendPlayerList(peer);
     this.sendSnapshotEnd(peer);
@@ -542,52 +550,83 @@ export class MatchmakingService {
     players
       .filter((matchPlayer) => matchPlayer !== peer.getPlayer())
       .forEach((player) => {
-        this.sendPlayerConnection(
-          peer,
-          player,
-          ConnectionStateType.Connected,
-          true
-        );
+        this.sendPlayerConnection(peer, player, true, true);
       });
   }
 
   private sendPlayerConnection(
     peer: WebRTCPeer,
     player: GamePlayer,
-    connectionState: ConnectionStateType,
+    isConnected: boolean,
     skipQueue: boolean
   ): void {
+    const isHost = player.isHost();
     const playerId = player.getId();
-    const isHost = player.isHost() ? 1 : 0;
     const playerScore = player.getScore();
     const playerName = player.getName();
 
-    const playerIdBytes = new TextEncoder().encode(playerId);
-    const playerNameBytes = new TextEncoder().encode(playerName);
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.PlayerConnection)
+      .boolean(isConnected)
+      .boolean(isHost)
+      .fixedLengthString(playerId, 32)
+      .fixedLengthString(playerName, 16)
+      .unsignedInt8(playerScore)
+      .toArrayBuffer();
 
-    const payload = new Uint8Array([
-      WebRTCType.PlayerConnection,
-      connectionState,
-      ...playerIdBytes,
-      isHost,
-      playerScore,
-      ...playerNameBytes,
-    ]);
+    peer.sendReliableOrderedMessage(payload, skipQueue);
+  }
 
-    peer.sendReliableOrderedMessage(payload.buffer, skipQueue);
+  private verifyHostIdentity(peer: WebRTCPeer, gamePlayer: GamePlayer): void {
+    const identity = this.receivedIdentities.get(peer.getToken());
+
+    if (!identity) {
+      return console.warn("Host identity not found for token", peer.getToken());
+    }
+
+    const mismatches = [
+      {
+        label: "player ID",
+        expected: identity.playerId,
+        actual: gamePlayer.getId(),
+      },
+      {
+        label: "player name",
+        expected: identity.playerName,
+        actual: gamePlayer.getName(),
+      },
+    ];
+
+    for (const { label, expected, actual } of mismatches) {
+      if (expected !== actual) {
+        console.warn(
+          `Host ${label} mismatch: expected ${expected}, got ${actual}`
+        );
+        return peer.disconnect();
+      }
+    }
+
+    peer.setPlayer(gamePlayer);
   }
 
   private sendSnapshotEnd(peer: WebRTCPeer): void {
     console.log("Sending snapshot end to", peer.getName());
 
-    const payload = new Uint8Array([WebRTCType.SnapshotEnd]);
-    peer.sendReliableOrderedMessage(payload.buffer, true);
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.SnapshotEnd)
+      .toArrayBuffer();
+
+    peer.sendReliableOrderedMessage(payload, true);
   }
 
   private sendSnapshotACK(peer: WebRTCPeer): void {
     console.log("Sending snapshot ACK to", peer.getName());
-    const payload = new Uint8Array([WebRTCType.SnapshotACK]);
-    peer.sendReliableOrderedMessage(payload.buffer, true);
+
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.SnapshotACK)
+      .toArrayBuffer();
+
+    peer.sendReliableOrderedMessage(payload, true);
   }
 
   private updateAndSendPingToPlayers(): void {
@@ -636,22 +675,13 @@ export class MatchmakingService {
       return;
     }
 
-    const playerIdBytes = new TextEncoder().encode(playerId);
-    const arrayBuffer = new ArrayBuffer(1 + playerIdBytes.length + 2);
-    const dataView = new DataView(arrayBuffer);
-
-    // Set the WebRTCType.PlayerPing value (assumed to be an integer)
-    dataView.setUint8(0, WebRTCType.PlayerPing);
-
-    // Write the player ID bytes into the buffer starting at byte 1
-    for (let i = 0; i < playerIdBytes.length; i++) {
-      dataView.setUint8(1 + i, playerIdBytes[i]);
-    }
-
-    // Write the ping time as Float32 at the end of the buffer
-    dataView.setUint16(1 + playerIdBytes.length, playerPingTime);
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.PlayerPing)
+      .fixedLengthString(playerId, 32)
+      .unsignedInt16(playerPingTime)
+      .toArrayBuffer();
 
     // Send the reliable ordered message
-    peer.sendReliableOrderedMessage(arrayBuffer, true);
+    peer.sendReliableOrderedMessage(payload, true);
   }
 }

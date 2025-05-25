@@ -67,7 +67,7 @@ export class EventConsumer {
     this.localSubscriptions
       .filter((subscription) => subscription.eventType === event.getType())
       .forEach((subscription) => {
-        subscription.eventCallback(event.getData());
+        subscription.eventCallback(event.getArrayBuffer());
         this.localQueue.removeEvent(event);
         this.eventProcessorService.setLastConsumedEvent(event.getType());
       });
@@ -77,7 +77,7 @@ export class EventConsumer {
     this.remoteSubscriptions
       .filter((subscription) => subscription.eventType === event.getType())
       .forEach((subscription) => {
-        subscription.eventCallback(event.getData());
+        subscription.eventCallback(event.getArrayBuffer());
         this.remoteQueue.removeEvent(event);
         this.eventProcessorService.setLastConsumedEvent(event.getType());
       });

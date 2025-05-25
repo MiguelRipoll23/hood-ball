@@ -9,6 +9,7 @@ import { WebSocketType } from "../enums/websocket-type.js";
 import { TunnelType } from "../enums/tunnel-type.js";
 import { APIUtils } from "../utils/api-utils.js";
 import type { GameState } from "../models/game-state.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class WebSocketService {
   private gameState: GameState;
@@ -40,7 +41,7 @@ export class WebSocketService {
     this.addEventListeners(this.webSocket);
   }
 
-  public sendMessage(typeId: WebSocketType, payload: Uint8Array | null): void {
+  public sendMessage(payload: ArrayBuffer): void {
     if (
       this.webSocket === null ||
       this.webSocket.readyState !== WebSocket.OPEN
@@ -49,9 +50,8 @@ export class WebSocketService {
     }
 
     try {
-      const message = new Uint8Array([typeId, ...(payload ? payload : [])]);
-      this.webSocket.send(message);
-      console.debug(`Sent message to server`, message);
+      this.webSocket.send(payload);
+      console.debug(`Sent message to server`, payload);
     } catch (error) {
       console.error(`Failed to send message to server`, error);
     }
@@ -93,7 +93,7 @@ export class WebSocketService {
   }
 
   private handleMessage(event: MessageEvent) {
-    const data = event.data;
+    const data: ArrayBuffer = event.data;
     console.debug("Received message from server", new Uint8Array(data));
 
     const dataView = new DataView(data);
@@ -138,27 +138,29 @@ export class WebSocketService {
       return;
     }
 
-    const payloadBytes = new Uint8Array(payload);
-    const originTokenBytes = payloadBytes.slice(0, 32);
-    const typeId = payloadBytes[32];
-    const dataBytes = payloadBytes.slice(33);
+    const binaryReader = BinaryReader.fromArrayBuffer(payload);
+
+    const originTokenBytes = binaryReader.bytes(32);
+    const tunnelTypeId = binaryReader.unsignedInt8();
+    const tunnelData = binaryReader.bytesAsArrayBuffer();
+
     const originToken = btoa(String.fromCharCode(...originTokenBytes));
 
-    switch (typeId) {
+    switch (tunnelTypeId) {
       case TunnelType.IceCandidate:
-        return this.handleNewIceCandidateMessage(originToken, dataBytes);
+        return this.handleNewIceCandidateMessage(originToken, tunnelData);
 
       case TunnelType.SessionDescription:
-        return this.handleSessionDescriptionMessage(originToken, dataBytes);
+        return this.handleSessionDescriptionMessage(originToken, tunnelData);
 
       default:
-        console.warn("Unknown tunnel type id", typeId);
+        console.warn("Unknown tunnel type id", tunnelTypeId);
     }
   }
 
   private handleNewIceCandidateMessage(
     originToken: string,
-    payload: Uint8Array
+    payload: ArrayBuffer
   ): void {
     let iceCandidateData;
 
@@ -176,7 +178,7 @@ export class WebSocketService {
 
   private handleSessionDescriptionMessage(
     originToken: string,
-    payload: Uint8Array
+    payload: ArrayBuffer
   ): void {
     let sessionDescriptionData;
 
