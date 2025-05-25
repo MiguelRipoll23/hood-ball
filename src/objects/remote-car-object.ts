@@ -5,6 +5,7 @@ import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
 } from "../constants/webrtc-constants.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class RemoteCarObject extends CarObject {
   constructor(
@@ -25,24 +26,25 @@ export class RemoteCarObject extends CarObject {
 
   public static deserialize(
     syncableId: string,
-    data: ArrayBuffer
+    arrayBuffer: ArrayBuffer
   ): MultiplayerGameObject {
-    const dataView = new DataView(data);
-    const x = dataView.getUint16(0);
-    const y = dataView.getUint16(2);
-    const angle = dataView.getInt16(4) / SCALE_FACTOR_FOR_ANGLES;
-    const speed = dataView.getInt16(6) / SCALE_FACTOR_FOR_SPEED;
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+
+    const x = binaryReader.unsignedInt16();
+    const y = binaryReader.unsignedInt16();
+    const angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+    const speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
 
     return new RemoteCarObject(syncableId, x, y, angle, speed);
   }
 
-  public override synchronize(data: ArrayBuffer): void {
-    const dataView = new DataView(data);
+  public override synchronize(arrayBuffer: ArrayBuffer): void {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    this.x = dataView.getUint16(0);
-    this.y = dataView.getUint16(2);
-    this.angle = dataView.getInt16(4) / SCALE_FACTOR_FOR_ANGLES;
-    this.speed = dataView.getInt16(6) / SCALE_FACTOR_FOR_SPEED;
+    this.x = binaryReader.unsignedInt16();
+    this.y = binaryReader.unsignedInt16();
+    this.angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+    this.speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
 
     this.updateHitbox();
   }

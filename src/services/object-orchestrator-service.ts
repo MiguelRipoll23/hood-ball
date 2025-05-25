@@ -58,13 +58,8 @@ export class ObjectOrchestrator {
 
   public handleObjectData(
     webrtcPeer: WebRTCPeer,
-    data: ArrayBuffer | null
+    binaryReader: BinaryReader
   ): void {
-    if (data === null) {
-      return console.warn("Received null data from peer");
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(data);
     const screenId = binaryReader.unsignedInt8();
     const objectStateId = binaryReader.unsignedInt8();
     const objectTypeId = binaryReader.unsignedInt8();
@@ -188,7 +183,7 @@ export class ObjectOrchestrator {
     const objectData = multiplayerObject.serialize();
 
     return BinaryWriter.build()
-      .byte(WebRTCType.ObjectData)
+      .unsignedInt8(WebRTCType.ObjectData)
       .unsignedInt8(screenTypeId)
       .unsignedInt8(objectStateId)
       .unsignedInt8(objectTypeId)

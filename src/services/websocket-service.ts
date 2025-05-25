@@ -6,10 +6,10 @@ import { EventType } from "../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
-import { TunnelType } from "../enums/tunnel-type.js";
 import { APIUtils } from "../utils/api-utils.js";
 import type { GameState } from "../models/game-state.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WebSocketService {
   private gameState: GameState;
@@ -41,7 +41,7 @@ export class WebSocketService {
     this.addEventListeners(this.webSocket);
   }
 
-  public sendMessage(payload: ArrayBuffer): void {
+  public sendMessage(arrayBuffer: ArrayBuffer): void {
     if (
       this.webSocket === null ||
       this.webSocket.readyState !== WebSocket.OPEN
@@ -50,8 +50,14 @@ export class WebSocketService {
     }
 
     try {
-      this.webSocket.send(payload);
-      console.debug(`Sent message to server`, payload);
+      this.webSocket.send(arrayBuffer);
+
+      if (this.gameController.isDebugging()) {
+        console.debug(
+          "%cSent message to server:\n" + BinaryWriter.preview(arrayBuffer),
+          "color: purple"
+        );
+      }
     } catch (error) {
       console.error(`Failed to send message to server`, error);
     }
@@ -93,24 +99,31 @@ export class WebSocketService {
   }
 
   private handleMessage(event: MessageEvent) {
-    const data: ArrayBuffer = event.data;
-    console.debug("Received message from server", new Uint8Array(data));
+    const arrayBuffer: ArrayBuffer = event.data;
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    const dataView = new DataView(data);
-    const typeId = dataView.getUint8(0);
-    const payload = data.byteLength > 1 ? data.slice(1) : null;
+    if (this.gameController.isDebugging()) {
+      console.debug(
+        "%cReceived message from server:\n" + binaryReader.preview(),
+        "color: green;"
+      );
+    }
+
+    const typeId = binaryReader.unsignedInt8();
 
     switch (typeId) {
       case WebSocketType.Notification:
-        return this.handleNotificationMessage(payload);
+        return this.handleNotificationMessage(binaryReader);
 
       case WebSocketType.PlayerIdentity:
         return this.gameController
           .getMatchmakingService()
-          .handlePlayerIdentity(payload);
+          .handlePlayerIdentity(binaryReader);
 
       case WebSocketType.Tunnel:
-        return this.handleTunnelMessage(payload);
+        return this.gameController
+          .getWebRTCService()
+          .handleTunnelWebRTCData(binaryReader);
 
       default: {
         console.warn("Unknown websocket message identifier", typeId);
@@ -118,79 +131,15 @@ export class WebSocketService {
     }
   }
 
-  private handleNotificationMessage(payload: ArrayBuffer | null) {
-    if (payload === null) {
-      return console.warn("Received empty notification");
-    }
+  private handleNotificationMessage(binaryReader: BinaryReader) {
+    const textBytes = binaryReader.bytesAsArrayBuffer();
 
-    const message = new TextDecoder("utf-8").decode(payload);
+    const message = new TextDecoder("utf-8").decode(textBytes);
     const localEvent = new LocalEvent<ServerNotificationPayload>(
       EventType.ServerNotification,
       { message }
     );
 
     this.eventProcessorService.addLocalEvent(localEvent);
-  }
-
-  private handleTunnelMessage(payload: ArrayBuffer | null): void {
-    if (payload === null || payload.byteLength < 33) {
-      console.warn("Invalid tunnel message length");
-      return;
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(payload);
-
-    const originTokenBytes = binaryReader.bytes(32);
-    const tunnelTypeId = binaryReader.unsignedInt8();
-    const tunnelData = binaryReader.bytesAsArrayBuffer();
-
-    const originToken = btoa(String.fromCharCode(...originTokenBytes));
-
-    switch (tunnelTypeId) {
-      case TunnelType.IceCandidate:
-        return this.handleNewIceCandidateMessage(originToken, tunnelData);
-
-      case TunnelType.SessionDescription:
-        return this.handleSessionDescriptionMessage(originToken, tunnelData);
-
-      default:
-        console.warn("Unknown tunnel type id", tunnelTypeId);
-    }
-  }
-
-  private handleNewIceCandidateMessage(
-    originToken: string,
-    payload: ArrayBuffer
-  ): void {
-    let iceCandidateData;
-
-    try {
-      iceCandidateData = JSON.parse(new TextDecoder().decode(payload));
-    } catch (error) {
-      console.error("Failed to parse ICE candidate data", error);
-      return;
-    }
-
-    this.gameController
-      .getWebRTCService()
-      .handleNewIceCandidate(originToken, iceCandidateData);
-  }
-
-  private handleSessionDescriptionMessage(
-    originToken: string,
-    payload: ArrayBuffer
-  ): void {
-    let sessionDescriptionData;
-
-    try {
-      sessionDescriptionData = JSON.parse(new TextDecoder().decode(payload));
-    } catch (error) {
-      console.error("Failed to parse session description data", error);
-      return;
-    }
-
-    this.gameController
-      .getWebRTCService()
-      .handleSessionDescriptionEvent(originToken, sessionDescriptionData);
   }
 }

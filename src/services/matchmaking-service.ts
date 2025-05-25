@@ -56,13 +56,7 @@ export class MatchmakingService {
     );
   }
 
-  public handlePlayerIdentity(payload: ArrayBuffer | null): void {
-    if (!payload || payload.byteLength < 64) {
-      console.warn("Invalid player identity payload", payload);
-      return;
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(payload);
+  public handlePlayerIdentity(binaryReader: BinaryReader): void {
     const tokenBytes = binaryReader.bytes(32);
     const playerId = binaryReader.fixedLengthString(32);
     const playerName = binaryReader.fixedLengthString(16);
@@ -157,19 +151,14 @@ export class MatchmakingService {
 
   public handleJoinResponse(
     peer: WebRTCPeer,
-    payload: ArrayBuffer | null
+    binaryReader: BinaryReader
   ): void {
-    if (payload === null) {
-      return console.warn("Received empty join response");
-    }
-
     if (this.gameState.getMatch() !== null) {
       return this.handleAlreadyJoinedMatch(peer);
     }
 
     console.log("Received join response from", peer.getToken());
 
-    const binaryReader = BinaryReader.fromArrayBuffer(payload);
     const matchState = binaryReader.unsignedInt8();
     const matchTotalSlots = binaryReader.unsignedInt8();
 
@@ -190,13 +179,8 @@ export class MatchmakingService {
 
   public handlePlayerConnection(
     peer: WebRTCPeer,
-    payload: ArrayBuffer | null
+    binaryReader: BinaryReader
   ): void {
-    if (payload === null || payload.byteLength < 36) {
-      return console.warn("Invalid player connection state payload", payload);
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(payload);
     const isConnected = binaryReader.boolean();
     const isHost = binaryReader.boolean();
     const playerId = binaryReader.fixedLengthString(32);
@@ -273,16 +257,11 @@ export class MatchmakingService {
     this.advertiseMatch();
   }
 
-  public handlePlayerPing(hosting: boolean, payload: ArrayBuffer | null): void {
+  public handlePlayerPing(hosting: boolean, binaryReader: BinaryReader): void {
     if (hosting) {
       return console.warn("Unexpected player ping information from a player");
     }
 
-    if (payload === null) {
-      return console.warn("Invalid player ping payload", payload);
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(payload);
     const playerId = binaryReader.fixedLengthString(32);
     const playerPingTime = binaryReader.unsignedInt16();
 

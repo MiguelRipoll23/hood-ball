@@ -6,6 +6,8 @@ import { BaseMultiplayerGameObject } from "./base/base-multiplayer-object.js";
 import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class ScoreboardObject
   extends BaseMultiplayerGameObject
@@ -95,21 +97,23 @@ export class ScoreboardObject
   }
 
   public serialize(): ArrayBuffer {
-    const arrayBuffer = new ArrayBuffer(2);
-    const dataView = new DataView(arrayBuffer);
-
-    dataView.setUint16(0, this.elapsedMilliseconds);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt16(this.elapsedMilliseconds)
+      .toArrayBuffer();
 
     return arrayBuffer;
   }
 
-  public synchronize(data: ArrayBuffer): void {
-    const dataView = new DataView(data);
-    this.elapsedMilliseconds = dataView.getUint16(0);
+  public synchronize(arrayBuffer: ArrayBuffer): void {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    this.elapsedMilliseconds = binaryReader.unsignedInt16();
   }
 
-  public sendSyncableData(webrtcPeer: WebRTCPeer, data: ArrayBuffer): void {
-    webrtcPeer.sendUnreliableOrderedMessage(data);
+  public sendSyncableData(
+    webrtcPeer: WebRTCPeer,
+    arrayBuffer: ArrayBuffer
+  ): void {
+    webrtcPeer.sendUnreliableOrderedMessage(arrayBuffer);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {

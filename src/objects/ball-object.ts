@@ -7,6 +7,8 @@ import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { ObjectUtils } from "../utils/object-utils.js";
 import { DebugUtils } from "../utils/debug-utils.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class BallObject
   extends BaseDynamicCollidingGameObject
@@ -110,30 +112,29 @@ export class BallObject
 
   public override sendSyncableData(
     webrtcPeer: WebRTCPeer,
-    data: ArrayBuffer
+    arrayBuffer: ArrayBuffer
   ): void {
-    webrtcPeer.sendUnreliableOrderedMessage(data);
+    webrtcPeer.sendUnreliableOrderedMessage(arrayBuffer);
   }
 
   public override serialize(): ArrayBuffer {
-    const arrayBuffer = new ArrayBuffer(8);
-    const dataView = new DataView(arrayBuffer);
-
-    dataView.setUint16(0, this.x);
-    dataView.setUint16(2, this.y);
-    dataView.setInt16(4, this.vx);
-    dataView.setInt16(6, this.vy);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt16(this.x)
+      .unsignedInt16(this.y)
+      .signedInt16(this.vx)
+      .signedInt16(this.vy)
+      .toArrayBuffer();
 
     return arrayBuffer;
   }
 
-  public override synchronize(data: ArrayBuffer): void {
-    const dataView = new DataView(data);
+  public override synchronize(arrayBuffer: ArrayBuffer): void {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    this.x = dataView.getUint16(0);
-    this.y = dataView.getUint16(2);
-    this.vx = dataView.getInt16(4);
-    this.vy = dataView.getInt16(6);
+    this.x = binaryReader.unsignedInt16();
+    this.y = binaryReader.unsignedInt16();
+    this.vx = binaryReader.signedInt16();
+    this.vy = binaryReader.signedInt16();
 
     this.updateHitbox();
   }
