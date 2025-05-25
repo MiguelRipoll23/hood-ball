@@ -1,6 +1,5 @@
 import { GameController } from "../models/game-controller.js";
 import { GamePlayer } from "../models/game-player.js";
-import { ConnectionStateType } from "../enums/connection-state-type.js";
 import { LoggerUtils } from "../utils/logger-utils.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { ObjectOrchestrator } from "./object-orchestrator-service.js";
@@ -20,9 +19,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
-
-  private connectionState: ConnectionStateType =
-    ConnectionStateType.Disconnected;
+  private connected = false;
 
   private messageQueue: Array<{
     channelKey: string;
@@ -65,8 +62,8 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.addEventListeners();
   }
 
-  public getConnectionState(): ConnectionStateType {
-    return this.connectionState;
+  public isConnected(): boolean {
+    return this.connected;
   }
 
   public getToken(): string {
@@ -161,7 +158,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   public disconnectGracefully(): void {
-    this.connectionState = ConnectionStateType.Disconnected;
+    this.connected = false;
     this.sendDisconnectMessage();
   }
 
@@ -259,16 +256,16 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private handleConnection(): void {
     this.logger.info("Peer connection established");
-    this.connectionState = ConnectionStateType.Connected;
+    this.connected = true;
   }
 
   private handleDisconnection(): void {
-    if (this.connectionState === ConnectionStateType.Disconnected) {
+    if (this.connected === false) {
       return;
     }
 
     this.logger.info("Peer connection closed");
-    this.connectionState = ConnectionStateType.Disconnected;
+    this.connected = false;
     this.gameController.getWebRTCService().removePeer(this.token);
     this.matchmakingService.onPeerDisconnected(this);
   }
@@ -508,7 +505,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private handleGracefulDisconnect(): void {
     console.log("Received graceful disconnect message");
-    this.connectionState = ConnectionStateType.Disconnected;
+    this.connected = false;
     this.disconnect();
   }
 

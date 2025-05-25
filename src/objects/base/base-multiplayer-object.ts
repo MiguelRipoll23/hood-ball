@@ -9,7 +9,6 @@ export class BaseMultiplayerGameObject
   implements MultiplayerGameObject
 {
   protected id: string | null = null;
-  protected displayId: string | null = null;
   protected typeId: ObjectType | null = null;
   protected syncableByHost: boolean = false;
   protected owner: GamePlayer | null = null;
@@ -33,12 +32,7 @@ export class BaseMultiplayerGameObject
   }
 
   public setId(id: string): void {
-    this.id = id.replace(/-/g, "");
-    this.displayId = id;
-  }
-
-  public getDisplayId(): string | null {
-    return this.displayId;
+    this.id = id;
   }
 
   public getTypeId(): ObjectType | null {

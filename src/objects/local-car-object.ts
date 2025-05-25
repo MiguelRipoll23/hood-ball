@@ -64,7 +64,7 @@ export class LocalCarObject extends CarObject {
   }
 
   private setSyncableValues(): void {
-    this.setId(crypto.randomUUID());
+    this.setId(crypto.randomUUID().replaceAll("-", ""));
     this.setTypeId(ObjectType.RemoteCar);
   }
 

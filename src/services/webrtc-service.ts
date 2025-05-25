@@ -4,6 +4,7 @@ import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
@@ -23,15 +24,14 @@ export class WebRTCService {
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     const offerBytes = new TextEncoder().encode(JSON.stringify(offer));
 
-    const payload = new Uint8Array([
-      ...tokenBytes,
-      TunnelType.SessionDescription,
-      ...offerBytes,
-    ]);
+    const webSocketPayload = BinaryWriter.build()
+      .unsignedInt8(WebSocketType.Tunnel)
+      .bytes(tokenBytes, 32)
+      .unsignedInt8(TunnelType.SessionDescription)
+      .bytes(offerBytes)
+      .toArrayBuffer();
 
-    this.gameController
-      .getWebSocketService()
-      .sendMessage(WebSocketType.Tunnel, payload);
+    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   public getPeers(): WebRTCPeer[] {
@@ -61,19 +61,18 @@ export class WebRTCService {
   ): void {
     console.log("Sending ICE candidate...", token, iceCandidate);
 
-    const candidateBytes = new TextEncoder().encode(
+    const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
+    const iceCandidateBytes = new TextEncoder().encode(
       JSON.stringify(iceCandidate)
     );
+    const webSocketPayload = BinaryWriter.build()
+      .unsignedInt8(WebSocketType.Tunnel)
+      .bytes(tokenBytes, 32)
+      .unsignedInt8(TunnelType.IceCandidate)
+      .bytes(iceCandidateBytes)
+      .toArrayBuffer();
 
-    const payload = new Uint8Array([
-      ...Uint8Array.from(atob(token), (c) => c.charCodeAt(0)),
-      TunnelType.IceCandidate,
-      ...candidateBytes,
-    ]);
-
-    this.gameController
-      .getWebSocketService()
-      .sendMessage(WebSocketType.Tunnel, payload);
+    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   public handleNewIceCandidate(
@@ -151,18 +150,15 @@ export class WebRTCService {
     console.log("Sending WebRTC answer...", token, answer);
 
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
-
     const answerBytes = new TextEncoder().encode(JSON.stringify(answer));
+    const webSocketPayload = BinaryWriter.build()
+      .unsignedInt8(WebSocketType.Tunnel)
+      .bytes(tokenBytes, 32)
+      .unsignedInt8(TunnelType.SessionDescription)
+      .bytes(answerBytes)
+      .toArrayBuffer();
 
-    const payload = new Uint8Array([
-      ...tokenBytes,
-      TunnelType.SessionDescription,
-      ...answerBytes,
-    ]);
-
-    this.gameController
-      .getWebSocketService()
-      .sendMessage(WebSocketType.Tunnel, payload);
+    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   private async handlePeerAnswer(

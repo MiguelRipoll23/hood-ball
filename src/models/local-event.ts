@@ -14,7 +14,7 @@ export class LocalEvent<T = unknown> implements GameEvent {
     return this.type;
   }
 
-  public getData(): T {
+  public getArrayBuffer(): T {
     return this.data;
   }
 }

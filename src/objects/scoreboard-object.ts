@@ -152,7 +152,7 @@ export class ScoreboardObject
   }
 
   private setSyncableValues() {
-    this.setId("d4e5f6a7-8b9c-0d1e-2f3a-4b5c6d7e8f9a");
+    this.setId("d4e5f6a78b9c0d1e2f3a4b5c6d7e8f9a");
     this.setTypeId(ObjectType.Scoreboard);
     this.setSyncableByHost(true);
   }

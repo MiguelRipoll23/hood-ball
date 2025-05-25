@@ -22,6 +22,7 @@ import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
   private gameState: GameState;
@@ -338,7 +339,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     new DataView(arrayBuffer).setInt8(0, this.countdownCurrentNumber);
 
     const countdownStartEvent = new RemoteEvent(EventType.Countdown);
-    countdownStartEvent.setBuffer(arrayBuffer);
+    countdownStartEvent.setArrayBuffer(arrayBuffer);
 
     this.gameController
       .getEventProcessorService()
@@ -425,13 +426,13 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const playerId: string = player.getId();
     const playerScore: number = player.getScore();
 
-    const arrayBuffer = new ArrayBuffer(32 + 1);
-
-    new Uint8Array(arrayBuffer).set(new TextEncoder().encode(playerId), 0);
-    new DataView(arrayBuffer).setUint8(32, playerScore);
+    const payload = BinaryWriter.build()
+      .fixedLengthString(playerId, 32)
+      .unsignedInt8(playerScore)
+      .toArrayBuffer();
 
     const goalEvent = new RemoteEvent(EventType.GoalScored);
-    goalEvent.setBuffer(arrayBuffer);
+    goalEvent.setArrayBuffer(payload);
 
     this.gameController.getEventProcessorService().sendEvent(goalEvent);
   }
@@ -556,12 +557,12 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private sendGameOverStartEvent(winner: GamePlayer): void {
     const playerId: string = winner.getId();
-
-    const arrayBuffer = new ArrayBuffer(32);
-    new Uint8Array(arrayBuffer).set(new TextEncoder().encode(playerId), 0);
+    const payload = BinaryWriter.build()
+      .fixedLengthString(playerId, 32)
+      .toArrayBuffer();
 
     const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
-    gameOverStartEvent.setBuffer(arrayBuffer);
+    gameOverStartEvent.setArrayBuffer(payload);
 
     this.gameController
       .getEventProcessorService()

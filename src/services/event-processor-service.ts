@@ -7,6 +7,7 @@ import { LocalEvent } from "../models/local-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { EventQueue } from "../models/event-queue.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -55,7 +56,7 @@ export class EventProcessorService {
     const payload = data.byteLength > 1 ? data.slice(1) : null;
 
     const event = new RemoteEvent(id);
-    event.setBuffer(payload);
+    event.setArrayBuffer(payload);
 
     this.remoteQueue.addEvent(event);
   }
@@ -91,21 +92,15 @@ export class EventProcessorService {
   }
 
   private sendEventToPeer(webrtcPeer: WebRTCPeer, event: RemoteEvent) {
-    const id = event.getType();
-    const data = event.getData();
+    const eventTypeId = event.getType();
+    const eventData = event.getArrayBuffer();
 
-    const dataBytesLength = data?.byteLength ?? 0;
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.EventData)
+      .unsignedInt8(eventTypeId)
+      .arrayBuffer(eventData ?? new ArrayBuffer(0))
+      .toArrayBuffer();
 
-    const arrayBuffer = new ArrayBuffer(2 + dataBytesLength);
-
-    const dataView = new DataView(arrayBuffer);
-    dataView.setUint8(0, WebRTCType.EventData);
-    dataView.setUint8(1, id);
-
-    if (data) {
-      new Uint8Array(arrayBuffer).set(new Uint8Array(data), 2);
-    }
-
-    webrtcPeer.sendReliableOrderedMessage(arrayBuffer);
+    webrtcPeer.sendReliableOrderedMessage(payload);
   }
 }
