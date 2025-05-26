@@ -57,7 +57,7 @@ export class EventProcessorService {
   }
 
   public sendEvent(event: RemoteEvent) {
-    console.log(`Sending remote event ${event.getType()}`, event);
+    console.log(`Sending remote event ${EventType[event.getType()]}`, event);
     this.webrtcService.getPeers().forEach((webrtcPeer) => {
       if (webrtcPeer.hasJoined()) {
         this.sendEventToPeer(webrtcPeer, event);
