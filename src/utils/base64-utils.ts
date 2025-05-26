@@ -3,6 +3,7 @@ export class Base64Utils {
     arrayBuffer: ArrayBuffer | ArrayBufferLike
   ): string {
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+
     return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
   }
 
@@ -14,6 +15,7 @@ export class Base64Utils {
     for (let i = 0; i < binary.length; i++) {
       bytes[i] = binary.charCodeAt(i);
     }
+
     return bytes.buffer;
   }
 
