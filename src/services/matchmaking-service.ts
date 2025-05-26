@@ -409,7 +409,7 @@ export class MatchmakingService {
 
     const body: FindMatchesRequest = {
       version: this.gameController.getVersion(),
-      total_slots: 1,
+      totalSlots: 1,
       attributes: MATCH_ATTRIBUTES,
     };
 
@@ -460,8 +460,8 @@ export class MatchmakingService {
 
     const body: AdvertiseMatchRequest = {
       version: this.gameController.getVersion(),
-      total_slots: match.getTotalSlots(),
-      available_slots: match.getAvailableSlots(),
+      totalSlots: match.getTotalSlots(),
+      availableSlots: match.getAvailableSlots(),
       attributes: match.getAttributes(),
     };
 

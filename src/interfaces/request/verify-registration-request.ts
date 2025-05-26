@@ -1,6 +1,6 @@
 import type { SerializedCredential } from "../serialized-credential.js";
 
 export interface VerifyRegistrationRequest {
-  transaction_id: string;
-  registration_response: SerializedCredential;
+  transactionId: string;
+  registrationResponse: SerializedCredential;
 }

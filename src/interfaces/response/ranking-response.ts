@@ -1,4 +1,4 @@
 export interface RankingResponse {
-  player_name: string;
+  playerName: string;
   score: number;
 }
