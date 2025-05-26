@@ -21,7 +21,7 @@ export class RankingTableObject extends BaseAnimatedGameObject {
     this.ranking.forEach((player, index) => {
       context.fillStyle = "white";
       context.fillText(`#${index + 1}`, startX, startY);
-      context.fillText(player.player_name, startX + 50, startY);
+      context.fillText(player.playerName, startX + 50, startY);
       context.fillText(
         player.score.toString(),
         context.canvas.width - 40,

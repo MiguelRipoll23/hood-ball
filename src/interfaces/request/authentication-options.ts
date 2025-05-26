@@ -1,3 +1,3 @@
 export interface AuthenticationOptionsRequest {
-  transaction_id: string;
+  transactionId: string;
 }

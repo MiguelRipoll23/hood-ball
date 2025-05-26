@@ -27,7 +27,7 @@ export class CredentialService {
   public async getCredential(): Promise<void> {
     const transactionId = crypto.randomUUID();
     const authenticationOptionsRequest: AuthenticationOptionsRequest = {
-      transaction_id: transactionId,
+      transactionId,
     };
 
     const authenticationOptions =
@@ -50,8 +50,8 @@ export class CredentialService {
     }
 
     const verifyAuthenticationRequest: VerifyAuthenticationRequest = {
-      transaction_id: transactionId,
-      authentication_response: WebAuthnUtils.serializeCredential(
+      transactionId,
+      authenticationResponse: WebAuthnUtils.serializeCredential(
         credential as PublicKeyCredential
       ),
     };
@@ -83,8 +83,8 @@ export class CredentialService {
 
     const transactionId = crypto.randomUUID();
     const registrationOptionsRequest: RegistrationOptionsRequest = {
-      transaction_id: transactionId,
-      display_name: displayName,
+      transactionId,
+      displayName,
     };
 
     const registrationOptions = await this.apiService.getRegistrationOptions(
@@ -119,8 +119,8 @@ export class CredentialService {
     }
 
     const verifyRegistrationRequest: VerifyRegistrationRequest = {
-      transaction_id: transactionId,
-      registration_response: WebAuthnUtils.serializeCredential(
+      transactionId,
+      registrationResponse: WebAuthnUtils.serializeCredential(
         credential as PublicKeyCredential
       ),
     };
@@ -161,9 +161,7 @@ export class CredentialService {
       .getGameServer()
       .setServerRegistration(new ServerRegistration(response));
 
-    const authenticationToken = response.authentication_token;
-    const userId = response.user_id;
-    const displayName = response.display_name;
+    const { authenticationToken, userId, displayName } = response;
 
     this.apiService.setAuthenticationToken(authenticationToken);
     this.gameState.getGamePlayer().setId(userId);

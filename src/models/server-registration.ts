@@ -8,11 +8,11 @@ export class ServerRegistration {
   private rtcIceServers: RTCIceServer[];
 
   constructor(registrationResponse: AuthenticationResponse) {
-    this.authenticationToken = registrationResponse.authentication_token;
-    this.sessionKey = registrationResponse.session_key;
-    this.userId = registrationResponse.user_id;
-    this.publicIp = registrationResponse.public_ip;
-    this.rtcIceServers = registrationResponse.rtc_ice_servers;
+    this.authenticationToken = registrationResponse.authenticationToken;
+    this.sessionKey = registrationResponse.sessionKey;
+    this.userId = registrationResponse.userId;
+    this.publicIp = registrationResponse.publicIp;
+    this.rtcIceServers = registrationResponse.rtcIceServers;
   }
 
   public getAuthenticationToken(): string {
