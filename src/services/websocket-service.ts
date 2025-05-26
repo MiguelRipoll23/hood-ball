@@ -113,17 +113,20 @@ export class WebSocketService {
 
     switch (typeId) {
       case WebSocketType.Notification:
-        return this.handleNotificationMessage(binaryReader);
+        this.handleNotificationMessage(binaryReader);
+        break;
 
       case WebSocketType.PlayerIdentity:
-        return this.gameController
+        this.gameController
           .getMatchmakingService()
           .handlePlayerIdentity(binaryReader);
+        break;
 
       case WebSocketType.Tunnel:
-        return this.gameController
+        this.gameController
           .getWebRTCService()
           .handleTunnelWebRTCData(binaryReader);
+        break;
 
       default: {
         console.warn("Unknown websocket message identifier", typeId);
