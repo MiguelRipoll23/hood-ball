@@ -197,6 +197,7 @@ export class MatchmakingService {
       }
 
       peer.setPlayer(gamePlayer);
+      this.receivedIdentities.delete(peer.getToken());
     }
 
     this.gameState.getMatch()?.addPlayer(gamePlayer);
@@ -591,25 +592,31 @@ export class MatchmakingService {
     peer: WebRTCPeer,
     gamePlayer: GamePlayer
   ): boolean {
-    const identity = this.receivedIdentities.get(peer.getToken());
+    const identity = this.receivedIdentities.get(peer.getToken()) ?? null;
 
-    if (!identity) {
+    if (identity === null) {
       console.warn("Host identity not found for token", peer.getToken());
       return true;
     }
 
-    const checks: [string, string, string][] = [
-      ["player ID", identity.playerId, gamePlayer.getId()],
-      ["player name", identity.playerName, gamePlayer.getName()],
-    ];
+    if (identity.playerId !== gamePlayer.getId()) {
+      console.warn(
+        `Host player ID mismatch: expected ${
+          identity.playerId
+        }, got ${gamePlayer.getId()} for ${peer.getName()}`
+      );
 
-    for (const [label, expected, actual] of checks) {
-      if (expected !== actual) {
-        console.warn(
-          `Host ${label} mismatch: expected ${expected}, got ${actual} for ${peer.getName()}`
-        );
-        return true;
-      }
+      return true;
+    }
+
+    if (identity.playerName !== gamePlayer.getName()) {
+      console.warn(
+        `Host player name mismatch: expected ${
+          identity.playerName
+        }, got ${gamePlayer.getName()} for ${peer.getName()}`
+      );
+
+      return true;
     }
 
     return false;
