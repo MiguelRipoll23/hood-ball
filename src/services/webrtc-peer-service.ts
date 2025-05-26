@@ -453,43 +453,48 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     switch (typeId) {
       case WebRTCType.JoinRequest:
-        return this.matchmakingService.handleJoinRequest(this);
+        this.matchmakingService.handleJoinRequest(this);
+        break;
 
       case WebRTCType.JoinResponse:
-        return this.matchmakingService.handleJoinResponse(this, binaryReader);
+        this.matchmakingService.handleJoinResponse(this, binaryReader);
+        break;
 
       case WebRTCType.PlayerConnection:
-        return this.matchmakingService.handlePlayerConnection(
-          this,
-          binaryReader
-        );
+        this.matchmakingService.handlePlayerConnection(this, binaryReader);
+        break;
 
       case WebRTCType.SnapshotEnd:
-        return this.matchmakingService.handleSnapshotEnd(this);
+        this.matchmakingService.handleSnapshotEnd(this);
+        break;
 
       case WebRTCType.SnapshotACK:
-        return this.matchmakingService.handleSnapshotACK(this);
+        this.matchmakingService.handleSnapshotACK(this);
+        break;
 
       case WebRTCType.ObjectData:
-        return this.objectOrchestrator.handleObjectData(this, binaryReader);
+        this.objectOrchestrator.handleObjectData(this, binaryReader);
+        break;
 
       case WebRTCType.EventData:
-        return this.eventProcessorService.handleEventData(this, binaryReader);
+        this.eventProcessorService.handleEventData(this, binaryReader);
+        break;
 
       case WebRTCType.GracefulDisconnect:
-        return this.handleGracefulDisconnect();
+        this.handleGracefulDisconnect();
+        break;
 
       case WebRTCType.PingRequest:
-        return this.handlePingRequest();
+        this.handlePingRequest();
+        break;
 
       case WebRTCType.PingResponse:
-        return this.handlePingResponse();
+        this.handlePingResponse();
+        break;
 
       case WebRTCType.PlayerPing:
-        return this.matchmakingService.handlePlayerPing(
-          this.host,
-          binaryReader
-        );
+        this.matchmakingService.handlePlayerPing(this.host, binaryReader);
+        break;
 
       default: {
         console.warn("Unknown message type identifier", typeId);

@@ -70,20 +70,9 @@ export class MatchmakingService {
     this.receivedIdentities.set(token, { playerId, playerName });
 
     if (this.gameState.getMatch()?.isHost()) {
-      console.log("Sending player identity to player", token);
-      const webSocketPayload = BinaryWriter.build()
-        .unsignedInt8(WebSocketType.PlayerIdentity)
-        .bytes(tokenBytes, 32)
-        .toArrayBuffer();
-      this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+      this.handlePlayerIdentityAsHost(token, tokenBytes);
     } else {
-      if (this.pendingIdentities.has(token) === false) {
-        console.log("Ignoring unsolicited identity for token", token);
-        return;
-      }
-
-      this.pendingIdentities.delete(token);
-      this.gameController.getWebRTCService().sendOffer(token);
+      this.handlePlayerIdentityAsPlayer(token);
     }
   }
 
@@ -119,11 +108,13 @@ export class MatchmakingService {
     const match = this.gameState.getMatch();
 
     if (match === null) {
-      return console.warn("Game match is null");
+      this.handleGameMatchNull(peer);
+      return;
     }
 
     if (match.getAvailableSlots() === 0) {
-      return this.handleUnavailableSlots(peer);
+      this.handleUnavailableSlots(peer);
+      return;
     }
 
     // Check if we have received the identity for this token
@@ -131,7 +122,8 @@ export class MatchmakingService {
     const identity = this.receivedIdentities.get(token) ?? null;
 
     if (identity === null) {
-      return this.handleUnknownIdentity(peer);
+      this.handleUnknownIdentity(peer);
+      return;
     }
 
     const { playerId, playerName } = identity;
@@ -199,7 +191,13 @@ export class MatchmakingService {
     );
 
     if (isHost) {
-      this.verifyHostIdentity(peer, gamePlayer);
+      if (this.isHostIdentityUnverified(peer, gamePlayer)) {
+        peer.disconnect();
+        return;
+      }
+
+      peer.setPlayer(gamePlayer);
+      this.receivedIdentities.delete(peer.getToken());
     }
 
     this.gameState.getMatch()?.addPlayer(gamePlayer);
@@ -214,7 +212,8 @@ export class MatchmakingService {
     const player = peer.getPlayer();
 
     if (player === null) {
-      return console.warn("Player is null");
+      this.handleRemotePlayerNull(peer);
+      return;
     }
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
@@ -235,7 +234,8 @@ export class MatchmakingService {
     const player = peer.getPlayer();
 
     if (player === null) {
-      return console.warn("Player is null");
+      this.handleRemotePlayerNull(peer);
+      return;
     }
 
     this.gameController
@@ -311,6 +311,26 @@ export class MatchmakingService {
     }
   }
 
+  private handlePlayerIdentityAsHost(
+    token: string,
+    tokenBytes: Uint8Array
+  ): void {
+    console.log("Sending player identity to player", token);
+    const webSocketPayload = BinaryWriter.build()
+      .unsignedInt8(WebSocketType.PlayerIdentity)
+      .bytes(tokenBytes, 32)
+      .toArrayBuffer();
+    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+  }
+
+  private handlePlayerIdentityAsPlayer(token: string): void {
+    console.log("Received player identity for token", token);
+    this.pendingIdentities.set(token, true);
+
+    // Send the offer to the host
+    this.gameController.getWebRTCService().sendOffer(token);
+  }
+
   private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
     console.warn(
       "Already joined a match, disconnecting peer...",
@@ -324,7 +344,8 @@ export class MatchmakingService {
     const player = peer.getPlayer();
 
     if (player === null) {
-      return console.warn("Player is null");
+      this.handleRemotePlayerNull(peer);
+      return;
     }
 
     console.log(`Player ${player.getName()} disconnected`);
@@ -480,6 +501,11 @@ export class MatchmakingService {
     peer.sendReliableOrderedMessage(payload, true);
   }
 
+  private handleGameMatchNull(peer: WebRTCPeer): void {
+    console.warn("Game match is null, disconnecting peer...", peer.getToken());
+    peer.disconnect();
+  }
+
   private handleUnavailableSlots(peer: WebRTCPeer): void {
     console.log(
       "Received join request but the match is full, disconnecting peer...",
@@ -495,6 +521,11 @@ export class MatchmakingService {
       peer.getToken()
     );
 
+    peer.disconnect();
+  }
+
+  private handleRemotePlayerNull(peer: WebRTCPeer): void {
+    console.warn("Remote player is null for peer", peer.getToken());
     peer.disconnect();
   }
 
@@ -519,7 +550,8 @@ export class MatchmakingService {
     const match = this.gameState.getMatch();
 
     if (match === null) {
-      return console.warn("Game match is null");
+      this.handleGameMatchNull(peer);
+      return;
     }
 
     console.log("Sending player list to", peer.getName());
@@ -556,36 +588,38 @@ export class MatchmakingService {
     peer.sendReliableOrderedMessage(payload, skipQueue);
   }
 
-  private verifyHostIdentity(peer: WebRTCPeer, gamePlayer: GamePlayer): void {
-    const identity = this.receivedIdentities.get(peer.getToken());
+  private isHostIdentityUnverified(
+    peer: WebRTCPeer,
+    gamePlayer: GamePlayer
+  ): boolean {
+    const identity = this.receivedIdentities.get(peer.getToken()) ?? null;
 
-    if (!identity) {
-      return console.warn("Host identity not found for token", peer.getToken());
+    if (identity === null) {
+      console.warn("Host identity not found for token", peer.getToken());
+      return true;
     }
 
-    const mismatches = [
-      {
-        label: "player ID",
-        expected: identity.playerId,
-        actual: gamePlayer.getId(),
-      },
-      {
-        label: "player name",
-        expected: identity.playerName,
-        actual: gamePlayer.getName(),
-      },
-    ];
+    if (identity.playerId !== gamePlayer.getId()) {
+      console.warn(
+        `Host player ID mismatch: expected ${
+          identity.playerId
+        }, got ${gamePlayer.getId()} for ${peer.getName()}`
+      );
 
-    for (const { label, expected, actual } of mismatches) {
-      if (expected !== actual) {
-        console.warn(
-          `Host ${label} mismatch: expected ${expected}, got ${actual}`
-        );
-        return peer.disconnect();
-      }
+      return true;
     }
 
-    peer.setPlayer(gamePlayer);
+    if (identity.playerName !== gamePlayer.getName()) {
+      console.warn(
+        `Host player name mismatch: expected ${
+          identity.playerName
+        }, got ${gamePlayer.getName()} for ${peer.getName()}`
+      );
+
+      return true;
+    }
+
+    return false;
   }
 
   private sendSnapshotEnd(peer: WebRTCPeer): void {
