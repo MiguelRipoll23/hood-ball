@@ -9,6 +9,7 @@ import { GameState } from "../models/game-state.js";
 import { LocalEvent } from "../models/local-event.js";
 import { ServerError } from "../models/server-error.js";
 import { ServerRegistration } from "../models/server-registration.js";
+import { Base64Utils } from "../utils/base64-utils.js";
 import { WebAuthnUtils } from "../utils/webauthn-utils.js";
 import { APIService } from "./api-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
@@ -93,7 +94,7 @@ export class CredentialService {
 
     const challenge = registrationOptions.challenge;
     const encodedUserId = registrationOptions.user.id;
-    const userId = atob(encodedUserId);
+    const userId = Base64Utils.base64UrlToString(encodedUserId);
     const pubKeyCredParams = registrationOptions.pubKeyCredParams;
 
     const publicKey = {
