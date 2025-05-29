@@ -40,7 +40,7 @@ export class BallObject
   }
 
   public static override getTypeId(): ObjectType {
-    return ObjectType.RemoteCar;
+    return ObjectType.Ball;
   }
 
   public override load(): void {

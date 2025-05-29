@@ -58,8 +58,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     return ScreenType.World;
   }
 
-  public override hasTransitionFinished(): void {
-    super.hasTransitionFinished();
+  public override onTransitionEnd(): void {
+    super.onTransitionEnd();
 
     this.scoreboardObject?.reset();
     this.toastObject?.show("Finding sessions...");
@@ -110,9 +110,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private addSyncableObjects(): void {
-    this.addSyncableObject(BallObject);
     this.addSyncableObject(RemoteCarObject);
-    this.addSyncableObject(ScoreboardObject);
   }
 
   private createBackgroundObject() {

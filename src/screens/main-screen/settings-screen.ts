@@ -1,6 +1,4 @@
-import { EventType } from "../../enums/event-type.js";
 import { GameController } from "../../models/game-controller.js";
-import { LocalEvent } from "../../models/local-event.js";
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
@@ -21,8 +19,8 @@ export class SettingsScreen extends BaseGameScreen {
     super.load();
   }
 
-  public override hasTransitionFinished(): void {
-    super.hasTransitionFinished();
+  public override onTransitionEnd(): void {
+    super.onTransitionEnd();
   }
 
   private loadTitleObject(): void {
@@ -106,9 +104,10 @@ export class SettingsScreen extends BaseGameScreen {
     const state = settingObject.getSettingState();
     this.gameController.setDebug(state);
 
+    // Update UI
     this.updateDebugStateForObjects();
 
-    const localEvent = new LocalEvent(EventType.DebugChanged, null);
-    this.gameController.getEventProcessorService().addLocalEvent(localEvent);
+    // Initialize debug service
+    this.gameController.getDebugService().init();
   }
 }

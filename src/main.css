@@ -72,3 +72,7 @@ button:disabled {
 hr {
   margin: 16px 0;
 }
+
+#debug {
+  position: absolute;
+}

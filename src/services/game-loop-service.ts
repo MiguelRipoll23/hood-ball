@@ -54,7 +54,6 @@ export class GameLoopService {
   public start(): void {
     this.isRunning = true;
     requestAnimationFrame(this.loop.bind(this));
-
     this.setInitialScreen();
   }
 
@@ -264,6 +263,7 @@ export class GameLoopService {
       .renderDebugInformation(this.context);
 
     this.gameController.getGamePointer().renderDebugInformation(this.context);
+    this.gameController.getDebugService().render();
 
     this.context.restore();
   }

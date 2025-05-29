@@ -40,8 +40,8 @@ export class MainMenuScreen extends BaseGameScreen {
     super.load();
   }
 
-  public override hasTransitionFinished(): void {
-    super.hasTransitionFinished();
+  public override onTransitionEnd(): void {
+    super.onTransitionEnd();
     this.enableMenuButtons();
 
     if (this.showNews) {

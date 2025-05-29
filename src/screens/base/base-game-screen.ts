@@ -72,7 +72,20 @@ export class BaseGameScreen implements GameScreen {
     });
   }
 
-  public hasTransitionFinished(): void {
+  public getUIObjects(): GameObject[] {
+    return this.uiObjects;
+  }
+
+  public getSceneObjects(): GameObject[] {
+    return this.sceneObjects;
+  }
+
+  public onTransitionStart(): void {
+    console.log(`Transition to ${this.constructor.name} started`);
+    this.updateDebugStateForObjects();
+  }
+
+  public onTransitionEnd(): void {
     console.log(`Transition to ${this.constructor.name} finished`);
   }
 

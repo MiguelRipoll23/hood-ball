@@ -27,8 +27,8 @@ export class MainScreen extends BaseGameScreen {
     }
   }
 
-  public hasTransitionFinished(): void {
-    this.screen?.hasTransitionFinished();
+  public onTransitionEnd(): void {
+    this.screen?.onTransitionEnd();
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

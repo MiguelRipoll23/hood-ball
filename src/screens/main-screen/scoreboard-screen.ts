@@ -24,8 +24,8 @@ export class ScoreboardScreen extends BaseGameScreen {
     super.load();
   }
 
-  public override hasTransitionFinished(): void {
-    super.hasTransitionFinished();
+  public override onTransitionEnd(): void {
+    super.onTransitionEnd();
     this.fetchRanking();
   }
 

@@ -14,6 +14,7 @@ import { GameKeyboard } from "./game-keyboard.js";
 import { GamePointer } from "./game-pointer.js";
 import { GameState } from "./game-state.js";
 import { GameGamepad } from "./game-gamepad.js";
+import { DebugService } from "../services/debug-service.js";
 
 export class GameController {
   private gameState: GameState;
@@ -25,6 +26,7 @@ export class GameController {
   private timers: TimerService[] = [];
   private intervals: IntervalService[] = [];
 
+  private readonly debugService: DebugService;
   private readonly transitionService: ScreenTransitionService;
   private readonly apiService: APIService;
   private readonly cryptoService: CryptoService;
@@ -44,6 +46,7 @@ export class GameController {
     this.gameKeyboard = new GameKeyboard();
     this.gameGamepad = new GameGamepad(this.gameFrame);
 
+    this.debugService = new DebugService(this);
     this.transitionService = new ScreenTransitionService(this.gameFrame);
     this.cryptoService = new CryptoService(this.gameState.getGameServer());
     this.apiService = new APIService(this);
@@ -160,6 +163,10 @@ export class GameController {
       "Removed interval, updated intervals count",
       this.intervals.length
     );
+  }
+
+  public getDebugService(): DebugService {
+    return this.debugService;
   }
 
   public getTransitionService(): ScreenTransitionService {
