@@ -22,14 +22,22 @@ export class EventQueueService<T extends GameEvent> {
 
     if (foundEvent) {
       foundEvent.consume();
-    }
-
-    if (this.events.length > EventQueueService.MAX_CONSUMED_EVENTS) {
-      this.cleanupConsumedEvents();
+      this.checkAndRemoveConsumedEvents();
     }
   }
 
-  protected cleanupConsumedEvents() {
+  private checkAndRemoveConsumedEvents() {
+    const consumedCount = this.events.filter((event) =>
+      event.isConsumed()
+    ).length;
+
+    if (consumedCount > EventQueueService.MAX_CONSUMED_EVENTS) {
+      this.removeConsumedEvents();
+    }
+  }
+
+  private removeConsumedEvents() {
     this.events = this.events.filter((event) => !event.isConsumed());
+    console.log(`Cleaned up consumed events. Remaining: ${this.events.length}`);
   }
 }
