@@ -102,7 +102,7 @@ export class BallObject
     // Restore the context state
     context.restore();
 
-    if (this.debug) {
+    if (this.debugSettings?.isDebugging()) {
       this.renderDebugInformation(context);
     }
 
