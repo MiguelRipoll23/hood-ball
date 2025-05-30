@@ -1,27 +1,22 @@
-import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameObject } from "../interfaces/object/game-object";
+import { ImGui } from "@mori2003/jsimgui";
+import type { GameObject } from "../interfaces/objects/game-object";
 import type { GameScreen } from "../interfaces/screen/game-screen";
 import type { GameController } from "../models/game-controller";
 import { BaseAnimatedGameObject } from "../objects/base/base-animated-object";
 import { BallObject } from "../objects/ball-object";
 import { RemoteCarObject } from "../objects/remote-car-object";
+import { BaseWindow } from "./base-window";
 
-export class ScreenInspectorWindow {
-  private readonly INITIAL_POSITION_X = window.innerWidth - 400;
-  private readonly INITIAL_POSITION_Y = window.innerHeight - 500;
-
+export class ScreenInspectorWindow extends BaseWindow {
   constructor(private gameController: GameController) {
+    super("Screen inspector", 300, 350);
     console.log(`${this.constructor.name} created`);
   }
 
   public render(): void {
-    ImGui.SetNextWindowPos(
-      new ImVec2(this.INITIAL_POSITION_X, this.INITIAL_POSITION_Y),
-      ImGui.Cond.FirstUseEver
-    );
+    if (!this.opened) return;
 
-    ImGui.SetNextWindowSize(new ImVec2(300, 350), ImGui.Cond.FirstUseEver);
-    ImGui.Begin("Screen inspector");
+    super.render();
 
     const screen = this.gameController.getGameFrame().getCurrentScreen();
     const subScreen =
@@ -66,6 +61,7 @@ export class ScreenInspectorWindow {
     ImGui.SeparatorText(
       subScreen ? subScreen.constructor.name : "No sub-screen"
     );
+
     this.renderObjectList(subObjects, `${idPrefix}_sub`);
   }
 
@@ -142,7 +138,7 @@ export class ScreenInspectorWindow {
 
       const ballObject = new BallObject(x, y, this.gameController.getCanvas());
       ballObject.setId(crypto.randomUUID().replaceAll("-", ""));
-      ballObject.setDebug(true);
+      ballObject.setDebugSettings(this.gameController.getDebugSettings());
       ballObject.setVY(5);
       ballObject.load();
 
@@ -171,7 +167,7 @@ export class ScreenInspectorWindow {
         0
       );
 
-      remoteCarObject.setDebug(true);
+      remoteCarObject.setDebugSettings(this.gameController.getDebugSettings());
       remoteCarObject.setOwner(
         this.gameController.getGameState().getGamePlayer()
       );

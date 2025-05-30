@@ -4,7 +4,7 @@ import {
 } from "../constants/colors-constants.js";
 import { TimerService } from "../services/timer-service.js";
 import { BaseAnimatedGameObject } from "./base/base-animated-object.js";
-import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 
 export class AlertObject
   extends BaseAnimatedGameObject

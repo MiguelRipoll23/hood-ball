@@ -43,11 +43,8 @@ export class SettingsScreen extends BaseGameScreen {
   }
 
   private loadDebugSettingObject(): void {
-    const settingObject = new SettingObject(
-      "debug",
-      "Debug",
-      this.gameController.isDebugging()
-    );
+    const debugging = this.gameController.isDebugging();
+    const settingObject = new SettingObject("debug", "Debug", debugging);
 
     settingObject.setY(75);
     settingObject.load();
@@ -102,7 +99,7 @@ export class SettingsScreen extends BaseGameScreen {
 
   private handleDebugSettingPress(settingObject: SettingObject): void {
     const state = settingObject.getSettingState();
-    this.gameController.setDebug(state);
+    this.gameController.getDebugSettings().setDebugging(state);
 
     // Update UI
     this.updateDebugStateForObjects();

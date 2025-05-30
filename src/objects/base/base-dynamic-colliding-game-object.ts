@@ -28,4 +28,40 @@ export class BaseDynamicCollidingGameObject extends BaseStaticCollidingGameObjec
   public getMass(): number {
     return this.mass;
   }
+
+  public render(context: CanvasRenderingContext2D): void {
+    if (this.debugSettings?.isDebugging()) {
+      this.renderDebugGizmos(context);
+    }
+
+    super.render(context);
+  }
+
+  private renderDebugGizmos(context: CanvasRenderingContext2D): void {
+    if (this.debugSettings?.areGizmosVisible() === false) {
+      return;
+    }
+
+    context.save();
+
+    // Draw center point
+    context.fillStyle = "yellow";
+    context.beginPath();
+    context.arc(this.x, this.y, 5, 0, 2 * Math.PI);
+    context.fill();
+
+    // Draw direction line (facing)
+    const lineLength = 30;
+    const endX = this.x + Math.cos(this.angle) * lineLength;
+    const endY = this.y + Math.sin(this.angle) * lineLength;
+
+    context.strokeStyle = "orange";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(this.x, this.y);
+    context.lineTo(endX, endY);
+    context.stroke();
+
+    context.restore();
+  }
 }

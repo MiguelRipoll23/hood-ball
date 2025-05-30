@@ -2,14 +2,14 @@ import { GameController } from "../../models/game-controller.js";
 import { GamePointer } from "../../models/game-pointer.js";
 import { LayerType } from "../../enums/layer-type.js";
 import { BaseTappableGameObject } from "../../objects/base/base-tappable-game-object.js";
-import type { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameObject } from "../../interfaces/objects/game-object.js";
 import type { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
-import { EventConsumer } from "../../services/event-consumer-service.js";
+import { EventConsumerService } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
 
 export class BaseGameScreen implements GameScreen {
-  protected eventConsumer: EventConsumer;
+  protected eventConsumerService: EventConsumerService;
 
   protected canvas: HTMLCanvasElement;
   protected screenManagerService: ScreenManagerService | null = null;
@@ -26,7 +26,7 @@ export class BaseGameScreen implements GameScreen {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameController.getCanvas();
     this.gamePointer = gameController.getGamePointer();
-    this.eventConsumer = new EventConsumer(gameController);
+    this.eventConsumerService = new EventConsumerService(gameController);
   }
 
   public isActive(): boolean {
@@ -113,14 +113,14 @@ export class BaseGameScreen implements GameScreen {
   }
 
   public addObjectToSceneLayer(object: GameObject): void {
-    object.setDebug(this.gameController.isDebugging());
+    object.setDebugSettings(this.gameController.getDebugSettings());
     object.load();
 
     this.sceneObjects.push(object);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.eventConsumer.consumeEvents();
+    this.eventConsumerService.consumeEvents();
 
     this.updateObjects(this.sceneObjects, deltaTimeStamp);
     this.updateObjects(this.uiObjects, deltaTimeStamp);
@@ -146,17 +146,20 @@ export class BaseGameScreen implements GameScreen {
   }
 
   protected updateDebugStateForObjects(): void {
-    const debug = this.gameController.isDebugging();
+    const debugSettings = this.gameController.getDebugSettings();
 
-    this.sceneObjects.forEach((object) => object.setDebug(debug));
-    this.uiObjects.forEach((object) => object.setDebug(debug));
+    this.sceneObjects.forEach((object) =>
+      object.setDebugSettings(debugSettings)
+    );
+
+    this.uiObjects.forEach((object) => object.setDebugSettings(debugSettings));
   }
 
   protected subscribeToLocalEvent<T>(
     eventType: EventType,
     eventCallback: (data: T) => void
   ) {
-    this.eventConsumer.subscribeToLocalEvent(eventType, eventCallback);
+    this.eventConsumerService.subscribeToLocalEvent(eventType, eventCallback);
 
     console.log(
       `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
@@ -167,7 +170,7 @@ export class BaseGameScreen implements GameScreen {
     eventType: EventType,
     eventCallback: (data: T) => void
   ) {
-    this.eventConsumer.subscribeToRemoteEvent(eventType, eventCallback);
+    this.eventConsumerService.subscribeToRemoteEvent(eventType, eventCallback);
 
     console.log(
       `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`

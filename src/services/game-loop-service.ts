@@ -5,13 +5,13 @@ import { MainScreen } from "../screens/main-screen.js";
 import { LoginScreen } from "../screens/main-screen/login-screen.js";
 import { MainMenuScreen } from "../screens/main-screen/main-menu-screen.js";
 import { EventType } from "../enums/event-type.js";
-import type { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
+import type { ServerDisconnectedPayload } from "../interfaces/events/server-disconnected-payload.js";
+import type { ServerNotificationPayload } from "../interfaces/events/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import type { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
-import { EventConsumer } from "./event-consumer-service.js";
+import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugObject } from "../objects/common/debug-object.js";
 
 export class GameLoopService {
@@ -30,14 +30,14 @@ export class GameLoopService {
   private currentFPS: number = 0;
 
   // Events
-  private eventConsumer: EventConsumer;
+  private eventConsumerService: EventConsumerService;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();
-    this.eventConsumer = new EventConsumer(this.gameController);
+    this.eventConsumerService = new EventConsumerService(this.gameController);
     this.setCanvasSize();
     this.addWindowAndGameListeners();
     this.loadObjects();
@@ -105,19 +105,19 @@ export class GameLoopService {
   }
 
   private subscribeToLocalEvents(): void {
-    this.eventConsumer.subscribeToLocalEvent(
+    this.eventConsumerService.subscribeToLocalEvent(
       EventType.ServerDisconnected,
       this.handleServerDisconnectedEvent.bind(this),
       true
     );
 
-    this.eventConsumer.subscribeToLocalEvent(
+    this.eventConsumerService.subscribeToLocalEvent(
       EventType.HostDisconnected,
       this.handleHostDisconnectedEvent.bind(this),
       true
     );
 
-    this.eventConsumer.subscribeToLocalEvent(
+    this.eventConsumerService.subscribeToLocalEvent(
       EventType.ServerNotification,
       this.handleServerNotificationEvent.bind(this),
       true
@@ -207,7 +207,7 @@ export class GameLoopService {
   }
 
   private update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.eventConsumer.consumeEvents();
+    this.eventConsumerService.consumeEvents();
 
     this.gameController
       .getTimers()

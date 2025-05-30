@@ -6,7 +6,7 @@ import { WebRTCService } from "./webrtc-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { DebugUtils } from "../utils/debug-utils.js";
-import { EventQueue } from "../models/event-queue.js";
+import { EventQueueService } from "./event-queue-service.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
 
@@ -18,22 +18,22 @@ export type EventSubscription = {
 export class EventProcessorService {
   private webrtcService: WebRTCService;
 
-  private localQueue: EventQueue<LocalEvent>;
-  private remoteQueue: EventQueue<RemoteEvent>;
+  private localQueue: EventQueueService<LocalEvent>;
+  private remoteQueue: EventQueueService<RemoteEvent>;
 
   private lastConsumedEvent: string | null = null;
 
   constructor(gameController: GameController) {
     this.webrtcService = gameController.getWebRTCService();
-    this.localQueue = new EventQueue<LocalEvent>();
-    this.remoteQueue = new EventQueue<RemoteEvent>();
+    this.localQueue = new EventQueueService<LocalEvent>();
+    this.remoteQueue = new EventQueueService<RemoteEvent>();
   }
 
-  public getLocalQueue(): EventQueue<LocalEvent> {
+  public getLocalQueue(): EventQueueService<LocalEvent> {
     return this.localQueue;
   }
 
-  public getRemoteQueue(): EventQueue<RemoteEvent> {
+  public getRemoteQueue(): EventQueueService<RemoteEvent> {
     return this.remoteQueue;
   }
 
@@ -51,7 +51,7 @@ export class EventProcessorService {
     const eventData = binaryReader.bytesAsArrayBuffer();
 
     const event = new RemoteEvent(eventTypeId);
-    event.setArrayBuffer(eventData);
+    event.setData(eventData);
 
     this.remoteQueue.addEvent(event);
   }
@@ -88,7 +88,7 @@ export class EventProcessorService {
 
   private sendEventToPeer(webrtcPeer: WebRTCPeer, event: RemoteEvent) {
     const eventTypeId = event.getType();
-    const eventData = event.getArrayBuffer();
+    const eventData = event.getData();
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.EventData)

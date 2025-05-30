@@ -15,8 +15,10 @@ import { GamePointer } from "./game-pointer.js";
 import { GameState } from "./game-state.js";
 import { GameGamepad } from "./game-gamepad.js";
 import { DebugService } from "../services/debug-service.js";
+import { DebugSettings } from "./debug-settings.js";
 
 export class GameController {
+  private debugSettings: DebugSettings;
   private gameState: GameState;
   private gameFrame: GameFrame;
   private gamePointer: GamePointer;
@@ -36,10 +38,8 @@ export class GameController {
   private objectOrchestrator: ObjectOrchestrator;
   private eventsProcessorService: EventProcessorService;
 
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private debug: boolean
-  ) {
+  constructor(private readonly canvas: HTMLCanvasElement, debugging: boolean) {
+    this.debugSettings = new DebugSettings(debugging);
     this.gameState = new GameState();
     this.gameFrame = new GameFrame();
     this.gamePointer = new GamePointer(this.canvas);
@@ -57,32 +57,20 @@ export class GameController {
     this.objectOrchestrator = new ObjectOrchestrator(this);
   }
 
-  public getVersion(): string {
-    return GAME_VERSION;
+  public isDebugging(): boolean {
+    return this.getDebugSettings().isDebugging();
   }
 
   public getCanvas(): HTMLCanvasElement {
     return this.canvas;
   }
 
-  public isDebugging(): boolean {
-    return this.debug;
+  public getVersion(): string {
+    return GAME_VERSION;
   }
 
-  public setDebug(debug: boolean) {
-    this.debug = debug;
-
-    if (debug) {
-      console.info(
-        "%cDebug mode on",
-        "color: #b6ff35; font-size: 20px; font-weight: bold"
-      );
-    } else {
-      console.info(
-        "%cDebug mode off",
-        "color: #ff5733; font-size: 20px; font-weight: bold"
-      );
-    }
+  public getDebugSettings(): DebugSettings {
+    return this.debugSettings;
   }
 
   public getGameState(): GameState {

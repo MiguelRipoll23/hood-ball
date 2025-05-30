@@ -47,22 +47,23 @@ export class HitboxObject extends BaseGameObject {
   }
 
   public render(context: CanvasRenderingContext2D): void {
-    if (this.debug === false) {
-      return;
+    if (
+      this.debugSettings?.isDebugging() &&
+      this.debugSettings?.areHitboxesVisible()
+    ) {
+      context.save();
+
+      context.strokeStyle = "rgba(148, 0, 211, 0.2)";
+      context.strokeRect(this.x, this.y, this.width, this.height);
+
+      if (this.colliding) {
+        // Fill with transparent purple
+        context.fillStyle = "rgba(148, 0, 211, 0.5)"; // Adjust alpha value for transparency
+        context.fillRect(this.x, this.y, this.width, this.height);
+      }
+
+      context.restore();
     }
-
-    context.save();
-
-    context.strokeStyle = "rgba(148, 0, 211, 0.2)";
-    context.strokeRect(this.x, this.y, this.width, this.height);
-
-    if (this.colliding) {
-      // Fill with transparent purple
-      context.fillStyle = "rgba(148, 0, 211, 0.5)"; // Adjust alpha value for transparency
-      context.fillRect(this.x, this.y, this.width, this.height);
-    }
-
-    context.restore();
   }
 
   private setPosition(x: number, y: number): void {

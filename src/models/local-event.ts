@@ -1,20 +1,9 @@
-import type { GameEvent } from "../interfaces/event/game-event.js";
+import type { GameEvent } from "../interfaces/events/game-event.js";
 import { EventType } from "../enums/event-type.js";
+import { BaseEvent } from "./base-event.js";
 
-export class LocalEvent<T = unknown> implements GameEvent {
-  private type: EventType;
-  private data: T;
-
-  constructor(id: EventType, data: T) {
-    this.type = id;
-    this.data = data;
-  }
-
-  public getType(): EventType {
-    return this.type;
-  }
-
-  public getArrayBuffer(): T {
-    return this.data;
+export class LocalEvent<T = unknown> extends BaseEvent<T> implements GameEvent {
+  constructor(id: EventType) {
+    super(id);
   }
 }

@@ -15,12 +15,12 @@ export class DebugService {
     this.gameCanvas = this.gameController.getCanvas();
     this.setCanvasSize();
     this.addEventListeners();
-    this.loadDebugWindow();
   }
 
   public async init(): Promise<void> {
     await ImGuiImplWeb.InitWebGL(this.debugCanvas);
     ImGui.SetNextWindowFocus();
+    this.loadDebugWindow();
     this.initialized = true;
     console.log(`${this.constructor.name} initialized`);
   }
@@ -32,8 +32,6 @@ export class DebugService {
     this.debugWindow?.render();
     ImGuiImplWeb.EndRenderWebGL();
   }
-
-  // --- Setup Methods ---
 
   private getDebugCanvas(): HTMLCanvasElement {
     const canvas = document.querySelector("#debug") as HTMLCanvasElement | null;
@@ -57,30 +55,8 @@ export class DebugService {
     this.debugWindow = new DebugWindow(this.gameController);
   }
 
-  // --- Event Forwarding ---
-
   private preloadCommonEvents(): void {
-    const commonEvents = [
-      "pointerdown",
-      "pointerup",
-      "pointermove",
-      "click",
-      "keydown",
-      "keyup",
-      "keypress",
-      "wheel",
-      "mousedown",
-      "mouseup",
-      "mousemove",
-      "touchstart",
-      "touchend",
-      "touchmove",
-      "drag",
-      "drop",
-      "submit",
-      "change",
-      "input",
-    ];
+    const commonEvents = ["pointerdown", "pointerup", "pointermove"];
     commonEvents.forEach((eventType) => this.registerEvent(eventType));
   }
 
@@ -95,16 +71,43 @@ export class DebugService {
       options?: boolean | AddEventListenerOptions
     ): void => {
       this.registerEvent(type);
-      originalAddEventListener(type, listener, options);
+
+      // If the event is 'wheel' or touch events, and options is not explicitly false or { passive: false },
+      // force passive to true for better scrolling performance.
+      if (
+        (type === "wheel" || type === "touchstart" || type === "touchmove") &&
+        !(typeof options === "boolean" && options === false) &&
+        !(typeof options === "object" && options.passive === false)
+      ) {
+        // Merge or override options to ensure passive: true
+        let newOptions: AddEventListenerOptions;
+        if (typeof options === "boolean") {
+          // If options is just capture boolean, convert to object
+          newOptions = { capture: options, passive: true };
+        } else if (typeof options === "object") {
+          newOptions = { ...options, passive: true };
+        } else {
+          newOptions = { passive: true };
+        }
+        originalAddEventListener(type, listener, newOptions);
+      } else {
+        // Use original options as-is
+        originalAddEventListener(type, listener, options);
+      }
     };
   }
 
   private registerEvent(type: string): void {
     if (this.knownEvents.has(type)) return;
     this.knownEvents.add(type);
+
+    const isScrollBlocking =
+      type === "wheel" || type === "touchstart" || type === "touchmove";
+
     this.debugCanvas.addEventListener(
       type,
-      this.cloneAndDispatchEvent.bind(this)
+      this.cloneAndDispatchEvent.bind(this),
+      isScrollBlocking ? { passive: true } : undefined
     );
   }
 
