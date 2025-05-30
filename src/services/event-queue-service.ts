@@ -1,6 +1,8 @@
 import type { GameEvent } from "../interfaces/events/game-event.js";
 
 export class EventQueueService<T extends GameEvent> {
+  private static readonly MAX_CONSUMED_EVENTS = 50;
+
   protected events: T[] = [];
 
   public getEvents(): T[] {
@@ -8,7 +10,7 @@ export class EventQueueService<T extends GameEvent> {
   }
 
   public getPendingEvents(): T[] {
-    return this.events.filter((event) => event.isConsumed() === false);
+    return this.events.filter((event) => !event.isConsumed());
   }
 
   public addEvent(event: T) {
@@ -21,5 +23,13 @@ export class EventQueueService<T extends GameEvent> {
     if (foundEvent) {
       foundEvent.consume();
     }
+
+    if (this.events.length > EventQueueService.MAX_CONSUMED_EVENTS) {
+      this.cleanupConsumedEvents();
+    }
+  }
+
+  protected cleanupConsumedEvents() {
+    this.events = this.events.filter((event) => !event.isConsumed());
   }
 }

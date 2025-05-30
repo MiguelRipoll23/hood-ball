@@ -1,7 +1,7 @@
 export class DebugSettings {
   private debugging: boolean;
 
-  private tappableAreaVisible: boolean = true;
+  private tappableAreasVisible: boolean = true;
   private hitboxVisible: boolean = true;
   private gizmosVisible: boolean = true;
 
@@ -30,11 +30,11 @@ export class DebugSettings {
   }
 
   public areTappableAreasVisible(): boolean {
-    return this.tappableAreaVisible;
+    return this.tappableAreasVisible;
   }
 
   public setTappableAreasVisibility(value: boolean): void {
-    this.tappableAreaVisible = value;
+    this.tappableAreasVisible = value;
     console.log(`Tappable areas visibility set to: ${value}`);
   }
 

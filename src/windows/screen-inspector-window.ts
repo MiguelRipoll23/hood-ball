@@ -142,11 +142,13 @@ export class ScreenInspectorWindow extends BaseWindow {
       ballObject.setVY(5);
       ballObject.load();
 
-      this.gameController
+      const currentScreen = this.gameController
         .getGameFrame()
-        .getCurrentScreen()
-        ?.getSceneObjects()
-        .push(ballObject);
+        .getCurrentScreen();
+
+      if (currentScreen) {
+        currentScreen.getSceneObjects().push(ballObject);
+      }
     }
   }
 
@@ -171,14 +173,16 @@ export class ScreenInspectorWindow extends BaseWindow {
       remoteCarObject.setOwner(
         this.gameController.getGameState().getGamePlayer()
       );
-      remoteCarObject.setVY(5);
-      remoteCarObject.load();
 
-      this.gameController
+      remoteCarObject.setVY(5);
+
+      const currentScreen = this.gameController
         .getGameFrame()
-        .getCurrentScreen()
-        ?.getSceneObjects()
-        .push(remoteCarObject);
+        .getCurrentScreen();
+
+      if (currentScreen) {
+        currentScreen.getSceneObjects().push(remoteCarObject);
+      }
     }
   }
 }
