@@ -20,8 +20,8 @@ import { ScreenType } from "../enums/screen-type.js";
 import { MainScreen } from "./main-screen.js";
 import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
 import { MatchStateType } from "../enums/match-state-type.js";
-import type { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
-import type { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
+import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
+import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
@@ -58,8 +58,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     return ScreenType.World;
   }
 
-  public override hasTransitionFinished(): void {
-    super.hasTransitionFinished();
+  public override onTransitionEnd(): void {
+    super.onTransitionEnd();
 
     this.scoreboardObject?.reset();
     this.toastObject?.show("Finding sessions...");
@@ -110,9 +110,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private addSyncableObjects(): void {
-    this.addSyncableObject(BallObject);
     this.addSyncableObject(RemoteCarObject);
-    this.addSyncableObject(ScoreboardObject);
   }
 
   private createBackgroundObject() {
@@ -339,7 +337,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     new DataView(arrayBuffer).setInt8(0, this.countdownCurrentNumber);
 
     const countdownStartEvent = new RemoteEvent(EventType.Countdown);
-    countdownStartEvent.setArrayBuffer(arrayBuffer);
+    countdownStartEvent.setData(arrayBuffer);
 
     this.gameController
       .getEventProcessorService()
@@ -432,7 +430,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       .toArrayBuffer();
 
     const goalEvent = new RemoteEvent(EventType.GoalScored);
-    goalEvent.setArrayBuffer(payload);
+    goalEvent.setData(payload);
 
     this.gameController.getEventProcessorService().sendEvent(goalEvent);
   }
@@ -562,7 +560,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       .toArrayBuffer();
 
     const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
-    gameOverStartEvent.setArrayBuffer(payload);
+    gameOverStartEvent.setData(payload);
 
     this.gameController
       .getEventProcessorService()

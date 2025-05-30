@@ -1,12 +1,14 @@
 import { ObjectStateType } from "../../enums/object-state-type.js";
-import type { GameObject } from "../../interfaces/object/game-object.js";
+import type { GameObject } from "../../interfaces/objects/game-object.js";
+import type { DebugSettings } from "../../models/debug-settings.js";
 
 export class BaseGameObject implements GameObject {
   protected loaded: boolean = false;
   protected state: ObjectStateType = ObjectStateType.Active;
   protected removed: boolean = false;
   protected opacity: number = 1;
-  protected debug: boolean = false;
+
+  protected debugSettings: DebugSettings | null = null;
 
   constructor() {
     console.log(`${this.constructor.name} created`);
@@ -53,8 +55,8 @@ export class BaseGameObject implements GameObject {
     this.opacity = opacity;
   }
 
-  public setDebug(debug: boolean): void {
-    this.debug = debug;
+  public setDebugSettings(debugSettings: DebugSettings | null): void {
+    this.debugSettings = debugSettings;
   }
 
   public update(_deltaTimeStamp: DOMHighResTimeStamp): void {}

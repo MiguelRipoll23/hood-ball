@@ -1,0 +1,72 @@
+import { ImGui, ImVec2 } from "@mori2003/jsimgui";
+
+export class BaseWindow {
+  private readonly DISPLAY_SIZE_MARGIN = 25;
+
+  protected opened = false;
+  protected size?: ImVec2;
+  private hasSetPosition = false;
+
+  constructor(private title: string, xSize?: number, ySize?: number) {
+    console.log(`${this.constructor.name} created`);
+    if (xSize !== undefined && ySize !== undefined) {
+      this.size = new ImVec2(xSize, ySize);
+    }
+  }
+
+  public isOpen(): boolean {
+    return this.opened;
+  }
+
+  public open(): void {
+    this.opened = true;
+    this.hasSetPosition = false; // Reset on open to reposition
+  }
+
+  public close(): void {
+    this.opened = false;
+  }
+
+  public toggle(): void {
+    this.opened = !this.opened;
+    if (this.opened) {
+      this.hasSetPosition = false;
+    }
+  }
+
+  public render(): void {
+    if (!this.opened) return;
+
+    if (this.size) {
+      ImGui.SetNextWindowSize(this.size, ImGui.Cond.FirstUseEver);
+    }
+
+    if (!this.hasSetPosition) {
+      const displaySize = ImGui.GetIO().DisplaySize;
+      const winWidth = this.size?.x ?? 200;
+      const winHeight = this.size?.y ?? 200;
+
+      const maxX = displaySize.x - winWidth - this.DISPLAY_SIZE_MARGIN;
+      const maxY = displaySize.y - winHeight - this.DISPLAY_SIZE_MARGIN;
+      const minX = this.DISPLAY_SIZE_MARGIN;
+      const minY = this.DISPLAY_SIZE_MARGIN;
+
+      const randX = minX + Math.random() * (maxX - minX);
+      const randY = minY + Math.random() * (maxY - minY);
+
+      ImGui.SetNextWindowPos(new ImVec2(randX, randY), ImGui.Cond.FirstUseEver);
+      this.hasSetPosition = true;
+    }
+
+    const isOpenRef = [this.opened];
+
+    if (!ImGui.Begin(this.title, isOpenRef, ImGui.WindowFlags.None)) {
+      ImGui.End();
+      this.opened = isOpenRef[0];
+      return;
+    }
+
+    // Update open state in case the user closes the window
+    this.opened = isOpenRef[0];
+  }
+}

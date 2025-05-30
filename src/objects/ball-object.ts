@@ -1,7 +1,7 @@
 import { HitboxObject } from "./common/hitbox-object.js";
 import { BaseDynamicCollidingGameObject } from "./base/base-dynamic-colliding-game-object.js";
 import { CarObject } from "./car-object.js";
-import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
@@ -40,7 +40,7 @@ export class BallObject
   }
 
   public static override getTypeId(): ObjectType {
-    return ObjectType.RemoteCar;
+    return ObjectType.Ball;
   }
 
   public override load(): void {

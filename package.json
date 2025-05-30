@@ -14,5 +14,8 @@
   "devDependencies": {
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
+  },
+  "dependencies": {
+    "@mori2003/jsimgui": "^0.3.0"
   }
 }

@@ -1,9 +1,12 @@
 import { LayerType } from "../../enums/layer-type.js";
-import type { GameObject } from "../object/game-object.js";
+import type { GameObject } from "../objects/game-object.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
 
 export interface GameScreen {
   isActive(): boolean;
+
+  getUIObjects(): GameObject[];
+  getSceneObjects(): GameObject[];
 
   getScreenManagerService(): ScreenManagerService | null;
   setScreenManagerService(screenManagerService: ScreenManagerService): void;
@@ -19,5 +22,7 @@ export interface GameScreen {
 
   getOpacity(): number;
   setOpacity(opacity: number): void;
-  hasTransitionFinished(): void;
+
+  onTransitionStart(): void;
+  onTransitionEnd(): void;
 }

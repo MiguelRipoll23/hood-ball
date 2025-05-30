@@ -1,23 +1,12 @@
-import type { GameEvent } from "../interfaces/event/game-event.js";
+import type { GameEvent } from "../interfaces/events/game-event.js";
 import { EventType } from "../enums/event-type.js";
+import { BaseEvent } from "./base-event.js";
 
-export class RemoteEvent implements GameEvent {
-  private type: EventType;
-  private arrayBuffer: ArrayBuffer | null = null;
-
+export class RemoteEvent<T = ArrayBuffer>
+  extends BaseEvent<T>
+  implements GameEvent
+{
   constructor(id: EventType) {
-    this.type = id;
-  }
-
-  public getType(): EventType {
-    return this.type;
-  }
-
-  public getArrayBuffer(): ArrayBuffer | null {
-    return this.arrayBuffer;
-  }
-
-  public setArrayBuffer(buffer: ArrayBuffer | null): void {
-    this.arrayBuffer = buffer;
+    super(id);
   }
 }

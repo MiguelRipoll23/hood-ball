@@ -1,6 +1,6 @@
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
-import type { MultiplayerGameObject } from "../interfaces/object/multiplayer-game-object.js";
+import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,

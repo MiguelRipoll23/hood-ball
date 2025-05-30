@@ -59,7 +59,11 @@ export class BaseTappableGameObject extends BaseAnimatedGameObject {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    if (this.debug && this.active) {
+    if (
+      this.debugSettings?.isDebugging() &&
+      this.debugSettings.areTappableAreasVisible() &&
+      this.active
+    ) {
       context.save();
 
       if (this.stealFocus) {

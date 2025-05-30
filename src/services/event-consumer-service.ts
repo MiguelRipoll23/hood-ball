@@ -1,16 +1,16 @@
 import { EventType } from "../enums/event-type.js";
-import { EventQueue } from "../models/event-queue.js";
-import type { EventSubscription } from "../models/event-subscription.js";
+import { EventQueueService } from "./event-queue-service.js";
+import type { EventSubscription } from "../types/event-subscription.js";
 import { GameController } from "../models/game-controller.js";
 import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
 
-export class EventConsumer {
+export class EventConsumerService {
   private eventProcessorService: EventProcessorService;
 
-  private localQueue: EventQueue<LocalEvent>;
-  private remoteQueue: EventQueue<RemoteEvent>;
+  private localQueue: EventQueueService<LocalEvent>;
+  private remoteQueue: EventQueueService<RemoteEvent>;
 
   private localSubscriptions: EventSubscription[] = [];
   private remoteSubscriptions: EventSubscription[] = [];
@@ -55,11 +55,11 @@ export class EventConsumer {
 
   public consumeEvents() {
     this.localQueue
-      .getEvents()
+      .getPendingEvents()
       .forEach((event) => this.consumeLocalEvent.bind(this)(event));
 
     this.remoteQueue
-      .getEvents()
+      .getPendingEvents()
       .forEach((event) => this.consumeRemoteEvent.bind(this)(event));
   }
 
@@ -67,8 +67,8 @@ export class EventConsumer {
     this.localSubscriptions
       .filter((subscription) => subscription.eventType === event.getType())
       .forEach((subscription) => {
-        subscription.eventCallback(event.getArrayBuffer());
-        this.localQueue.removeEvent(event);
+        subscription.eventCallback(event.getData());
+        this.localQueue.consumeEvent(event);
         this.eventProcessorService.setLastConsumedEvent(event.getType());
       });
   }
@@ -77,8 +77,8 @@ export class EventConsumer {
     this.remoteSubscriptions
       .filter((subscription) => subscription.eventType === event.getType())
       .forEach((subscription) => {
-        subscription.eventCallback(event.getArrayBuffer());
-        this.remoteQueue.removeEvent(event);
+        subscription.eventCallback(event.getData());
+        this.remoteQueue.consumeEvent(event);
         this.eventProcessorService.setLastConsumedEvent(event.getType());
       });
   }

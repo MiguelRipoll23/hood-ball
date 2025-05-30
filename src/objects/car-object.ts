@@ -126,7 +126,7 @@ export class CarObject extends BaseDynamicCollidingGameObject {
 
     this.renderPlayerName(context);
 
-    if (this.debug) {
+    if (this.debugSettings?.isDebugging()) {
       this.renderDebugInformation(context);
     }
 

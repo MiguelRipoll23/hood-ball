@@ -15,7 +15,10 @@ export class BaseStaticCollidingGameObject extends BaseAnimatedGameObject {
   private excludedCollisionClasses: CollidingGameObjectConstructor[] = [];
 
   public override load(): void {
-    this.hitboxObjects.forEach((object) => object.setDebug(this.debug));
+    this.hitboxObjects.forEach((object) =>
+      object.setDebugSettings(this.debugSettings)
+    );
+
     super.load();
   }
 

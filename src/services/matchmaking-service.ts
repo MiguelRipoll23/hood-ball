@@ -9,8 +9,8 @@ import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { EventType } from "../enums/event-type.js";
 import { LocalEvent } from "../models/local-event.js";
-import type { PlayerConnectedPayload } from "../interfaces/event/player-connected-payload.js";
-import type { PlayerDisconnectedPayload } from "../interfaces/event/player-disconnected-payload.js";
+import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
+import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
 import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
@@ -217,9 +217,13 @@ export class MatchmakingService {
     }
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
-      { player, matchmaking: true }
+      EventType.PlayerConnected
     );
+
+    localEvent.setData({
+      player,
+      matchmaking: true,
+    });
 
     this.gameController.getEventProcessorService().addLocalEvent(localEvent);
 
@@ -248,9 +252,13 @@ export class MatchmakingService {
       });
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
-      { player, matchmaking: false }
+      EventType.PlayerConnected
     );
+
+    localEvent.setData({
+      player,
+      matchmaking: false,
+    });
 
     this.gameController.getEventProcessorService().addLocalEvent(localEvent);
 
@@ -360,9 +368,10 @@ export class MatchmakingService {
       });
 
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
-      { player }
+      EventType.PlayerDisconnected
     );
+
+    playerDisconnectedEvent.setData({ player });
 
     this.gameController
       .getEventProcessorService()
@@ -388,9 +397,10 @@ export class MatchmakingService {
     match.removePlayer(player);
 
     const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
-      { player }
+      EventType.PlayerDisconnected
     );
+
+    localEvent.setData({ player });
 
     this.gameController.getEventProcessorService().addLocalEvent(localEvent);
   }
@@ -400,7 +410,7 @@ export class MatchmakingService {
 
     this.gameState.setMatch(null);
 
-    const localEvent = new LocalEvent(EventType.HostDisconnected, null);
+    const localEvent = new LocalEvent(EventType.HostDisconnected);
     this.gameController.getEventProcessorService().addLocalEvent(localEvent);
   }
 
@@ -469,7 +479,7 @@ export class MatchmakingService {
 
     await this.gameController.getAPIService().advertiseMatch(body);
 
-    const localEvent = new LocalEvent(EventType.MatchAdvertised, null);
+    const localEvent = new LocalEvent(EventType.MatchAdvertised);
     this.gameController.getEventProcessorService().addLocalEvent(localEvent);
   }
 

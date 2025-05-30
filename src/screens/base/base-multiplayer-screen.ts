@@ -4,7 +4,7 @@ import { BaseMultiplayerGameObject } from "../../objects/base/base-multiplayer-o
 import type {
   MultiplayerGameObject,
   StaticMultiplayerGameObject,
-} from "../../interfaces/object/multiplayer-game-object.js";
+} from "../../interfaces/objects/multiplayer-game-object.js";
 import { BaseGameScreen } from "../../screens/base/base-game-screen.js";
 import type { MultiplayerScreen } from "../../interfaces/screen/multiplayer-screen.js";
 import { ScreenType } from "../../enums/screen-type.js";

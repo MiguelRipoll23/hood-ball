@@ -3,8 +3,8 @@ import { GameController } from "../models/game-controller.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { EventType } from "../enums/event-type.js";
-import type { ServerDisconnectedPayload } from "../interfaces/event/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../interfaces/event/server-notification-payload.js";
+import type { ServerDisconnectedPayload } from "../interfaces/events/server-disconnected-payload.js";
+import type { ServerNotificationPayload } from "../interfaces/events/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { APIUtils } from "../utils/api-utils.js";
 import type { GameState } from "../models/game-state.js";
@@ -75,7 +75,7 @@ export class WebSocketService {
     this.gameState.getGameServer().setConnected(true);
     this.gameController
       .getEventProcessorService()
-      .addLocalEvent(new LocalEvent(EventType.ServerConnected, null));
+      .addLocalEvent(new LocalEvent(EventType.ServerConnected));
   }
 
   private handleCloseEvent(event: CloseEvent): void {
@@ -86,9 +86,10 @@ export class WebSocketService {
     };
 
     const localEvent = new LocalEvent<ServerDisconnectedPayload>(
-      EventType.ServerDisconnected,
-      payload
+      EventType.ServerDisconnected
     );
+
+    localEvent.setData(payload);
 
     this.eventProcessorService.addLocalEvent(localEvent);
     this.gameState.getGameServer().setConnected(false);
@@ -139,9 +140,12 @@ export class WebSocketService {
 
     const message = new TextDecoder("utf-8").decode(textBytes);
     const localEvent = new LocalEvent<ServerNotificationPayload>(
-      EventType.ServerNotification,
-      { message }
+      EventType.ServerNotification
     );
+
+    localEvent.setData({
+      message,
+    });
 
     this.eventProcessorService.addLocalEvent(localEvent);
   }
