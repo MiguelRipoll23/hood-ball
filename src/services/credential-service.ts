@@ -168,7 +168,7 @@ export class CredentialService {
     this.gameState.getGamePlayer().setId(userId);
     this.gameState.getGamePlayer().setName(displayName);
 
-    const localEvent = new LocalEvent(EventType.ServerAuthenticated, null);
+    const localEvent = new LocalEvent(EventType.ServerAuthenticated);
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 }
