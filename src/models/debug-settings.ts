@@ -1,6 +1,9 @@
 export class DebugSettings {
   private debugging: boolean;
 
+  private logWebSocketMessages: boolean = true;
+  private logWebRTCMessages: boolean = false;
+
   private tappableAreasVisible: boolean = true;
   private hitboxVisible: boolean = true;
   private gizmosVisible: boolean = true;
@@ -27,6 +30,24 @@ export class DebugSettings {
         "color: #ff5733; font-size: 20px; font-weight: bold"
       );
     }
+  }
+
+  public isWebSocketLoggingEnabled(): boolean {
+    return this.logWebSocketMessages;
+  }
+
+  public setWebSocketLogging(value: boolean): void {
+    this.logWebSocketMessages = value;
+    console.log(`WebSocket logging set to: ${value}`);
+  }
+
+  public isWebRTCLoggingEnabled(): boolean {
+    return this.logWebRTCMessages;
+  }
+
+  public setWebRTCLogging(value: boolean): void {
+    this.logWebRTCMessages = value;
+    console.log(`WebRTC logging set to: ${value}`);
   }
 
   public areTappableAreasVisible(): boolean {

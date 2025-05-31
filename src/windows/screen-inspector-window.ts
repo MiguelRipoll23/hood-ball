@@ -1,11 +1,11 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameObject } from "../interfaces/objects/game-object";
-import type { GameScreen } from "../interfaces/screen/game-screen";
-import type { GameController } from "../models/game-controller";
-import { BaseAnimatedGameObject } from "../objects/base/base-animated-object";
-import { BallObject } from "../objects/ball-object";
-import { RemoteCarObject } from "../objects/remote-car-object";
-import { BaseWindow } from "./base-window";
+import type { GameObject } from "../interfaces/objects/game-object.js";
+import type { GameScreen } from "../interfaces/screen/game-screen.js";
+import type { GameController } from "../models/game-controller.js";
+import { BaseAnimatedGameObject } from "../objects/base/base-animated-object.js";
+import { BallObject } from "../objects/ball-object.js";
+import { RemoteCarObject } from "../objects/remote-car-object.js";
+import { BaseWindow } from "./base-window.js";
 
 export class ScreenInspectorWindow extends BaseWindow {
   constructor(private gameController: GameController) {
