@@ -29,7 +29,11 @@ export class DebugService {
     if (!this.initialized) return;
 
     ImGuiImplWeb.BeginRenderWebGL();
-    this.debugWindow?.render();
+
+    if (this.debugWindow?.isOpen()) {
+      this.debugWindow.render();
+    }
+
     ImGuiImplWeb.EndRenderWebGL();
   }
 
