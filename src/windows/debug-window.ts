@@ -2,33 +2,40 @@ import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameController } from "../models/game-controller";
 import { ScreenInspectorWindow } from "./screen-inspector-window";
 import { EventInspectorWindow } from "./event-inspector-window";
+import { MatchInspectorWindow } from "./match-window";
+import { BaseWindow } from "./base-window";
 
-export class DebugWindow {
-  private screenInspectorWindow: ScreenInspectorWindow;
+export class DebugWindow extends BaseWindow {
   private eventInspectorWindow: EventInspectorWindow;
+  private screenInspectorWindow: ScreenInspectorWindow;
+  private matchInspectorWindow: MatchInspectorWindow;
 
   constructor(private gameController: GameController) {
-    console.log(`${this.constructor.name} created`);
-    this.screenInspectorWindow = new ScreenInspectorWindow(gameController);
+    super("Debug menu", new ImVec2(200, 220), ImGui.WindowFlags.MenuBar);
+    this.opened = true;
     this.eventInspectorWindow = new EventInspectorWindow(gameController);
+    this.screenInspectorWindow = new ScreenInspectorWindow(gameController);
+    this.matchInspectorWindow = new MatchInspectorWindow(gameController);
   }
 
   public render(): void {
-    this.renderMainMenu();
+    super.render();
+    this.renderMenu();
+
+    if (this.eventInspectorWindow.isOpen()) {
+      this.eventInspectorWindow.render();
+    }
 
     if (this.screenInspectorWindow.isOpen()) {
       this.screenInspectorWindow.render();
     }
 
-    if (this.eventInspectorWindow.isOpen()) {
-      this.eventInspectorWindow.render();
+    if (this.matchInspectorWindow.isOpen()) {
+      this.matchInspectorWindow.render();
     }
   }
 
-  private renderMainMenu(): void {
-    ImGui.SetNextWindowSize(new ImVec2(200, 220), ImGui.Cond.FirstUseEver);
-    ImGui.Begin("Debug menu", [false], ImGui.WindowFlags.MenuBar);
-
+  private renderMenu(): void {
     this.renderMenuBar();
     ImGui.TextWrapped("This menu is for development and testing purposes.");
     this.renderUISettings();
@@ -39,23 +46,31 @@ export class DebugWindow {
   private renderMenuBar(): void {
     if (ImGui.BeginMenuBar()) {
       if (ImGui.BeginMenu("Inspectors")) {
-        if (ImGui.MenuItem("Event queue", "E")) {
+        if (ImGui.MenuItem("Event", "E")) {
           this.toggleWindow("event");
         }
+
         if (ImGui.MenuItem("Screen", "S")) {
           this.toggleWindow("screen");
         }
+
+        if (ImGui.MenuItem("Match", "M")) {
+          this.matchInspectorWindow.toggle();
+        }
+
         ImGui.EndMenu();
       }
       ImGui.EndMenuBar();
     }
   }
 
-  private toggleWindow(type: "screen" | "event") {
-    if (type === "screen") {
-      this.screenInspectorWindow.toggle();
-    } else if (type === "event") {
+  private toggleWindow(type: "screen" | "event" | "match"): void {
+    if (type === "event") {
       this.eventInspectorWindow.toggle();
+    } else if (type === "screen") {
+      this.screenInspectorWindow.toggle();
+    } else if (type === "match") {
+      this.matchInspectorWindow.toggle();
     }
   }
 

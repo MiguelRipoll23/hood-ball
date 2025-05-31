@@ -10,7 +10,7 @@ export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
 
   constructor(private gameController: GameController) {
-    super("Event queue inspector", 330, 332);
+    super("Event inspector", new ImVec2(330, 300));
     console.log(`${this.constructor.name} created`);
   }
 
@@ -55,9 +55,14 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollX |
       ImGui.TableFlags.SizingFixedFit;
 
-    if (ImGui.BeginTable(tableId, 3, tableFlags, new ImVec2(315, 250))) {
+    ImGui.Text("Consumed");
+    ImGui.SameLine(0, 20);
+    ImGui.PushStyleColor(ImGui.Col.Text, 0xff00a5ff);
+    ImGui.Text("Pending");
+    ImGui.PopStyleColor();
+
+    if (ImGui.BeginTable(tableId, 2, tableFlags, new ImVec2(315, 200))) {
       ImGui.TableSetupColumn("Type");
-      ImGui.TableSetupColumn("Is Consumed");
       ImGui.TableSetupColumn("Consumed At");
       ImGui.TableHeadersRow();
 
@@ -91,12 +96,8 @@ export class EventInspectorWindow extends BaseWindow {
           this.selectedEvent = event;
         }
 
-        // Column 1: Is Consumed text
+        // Column 1: Consumed At text
         ImGui.TableSetColumnIndex(1);
-        ImGui.Text(isConsumed ? "Yes" : "No");
-
-        // Column 2: Consumed At text
-        ImGui.TableSetColumnIndex(2);
         ImGui.Text(relativeConsumedAt);
 
         ImGui.PopStyleColor();

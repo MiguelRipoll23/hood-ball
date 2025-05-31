@@ -1,4 +1,4 @@
-import { ImGui } from "@mori2003/jsimgui";
+import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameObject } from "../interfaces/objects/game-object";
 import type { GameScreen } from "../interfaces/screen/game-screen";
 import type { GameController } from "../models/game-controller";
@@ -9,13 +9,11 @@ import { BaseWindow } from "./base-window";
 
 export class ScreenInspectorWindow extends BaseWindow {
   constructor(private gameController: GameController) {
-    super("Screen inspector", 300, 350);
+    super("Screen inspector", new ImVec2(300, 350));
     console.log(`${this.constructor.name} created`);
   }
 
   public render(): void {
-    if (!this.opened) return;
-
     super.render();
 
     const screen = this.gameController.getGameFrame().getCurrentScreen();

@@ -1,17 +1,17 @@
-import { ImGui, ImVec2 } from "@mori2003/jsimgui";
+import { ImGui, ImVec2, type ImGuiWindowFlags } from "@mori2003/jsimgui";
 
 export class BaseWindow {
   private readonly DISPLAY_SIZE_MARGIN = 25;
 
   protected opened = false;
   protected size?: ImVec2;
+  protected flags?: ImGuiWindowFlags;
   private hasSetPosition = false;
 
-  constructor(private title: string, xSize?: number, ySize?: number) {
+  constructor(private title: string, size?: ImVec2, flags?: ImGuiWindowFlags) {
     console.log(`${this.constructor.name} created`);
-    if (xSize !== undefined && ySize !== undefined) {
-      this.size = new ImVec2(xSize, ySize);
-    }
+    this.size = size;
+    this.flags = flags;
   }
 
   public isOpen(): boolean {
@@ -35,8 +35,6 @@ export class BaseWindow {
   }
 
   public render(): void {
-    if (!this.opened) return;
-
     if (this.size) {
       ImGui.SetNextWindowSize(this.size, ImGui.Cond.FirstUseEver);
     }
@@ -60,7 +58,7 @@ export class BaseWindow {
 
     const isOpenRef = [this.opened];
 
-    if (!ImGui.Begin(this.title, isOpenRef, ImGui.WindowFlags.None)) {
+    if (!ImGui.Begin(this.title, isOpenRef, this.flags)) {
       ImGui.End();
       this.opened = isOpenRef[0];
       return;
