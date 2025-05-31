@@ -115,10 +115,6 @@ export class CredentialService {
       publicKey,
     });
 
-    if (credential === null) {
-      throw new Error("User canceled credential creation");
-    }
-
     const verifyRegistrationRequest: VerifyRegistrationRequest = {
       transactionId,
       registrationResponse: WebAuthnUtils.serializeCredential(

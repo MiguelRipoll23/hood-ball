@@ -156,11 +156,9 @@ export class LoginScreen extends BaseGameScreen {
 
     this.credentialService
       .createCredential(username, username)
-      .catch((error) => {
-        console.error(error);
-        alert(error.message);
-        this.registerButtonElement?.removeAttribute("disabled");
-      });
+      .catch((error) =>
+        this.handleCredentialError(error, this.registerButtonElement!)
+      );
   }
 
   private async handleSignInClick(): Promise<void> {
@@ -170,11 +168,24 @@ export class LoginScreen extends BaseGameScreen {
 
     this.signInButtonElement?.setAttribute("disabled", "true");
 
-    this.credentialService.getCredential().catch((error) => {
-      console.error(error);
+    this.credentialService
+      .getCredential()
+      .catch((error) =>
+        this.handleCredentialError(error, this.signInButtonElement!)
+      );
+  }
+
+  private handleCredentialError(
+    error: Error,
+    buttonElement: HTMLElement
+  ): void {
+    console.error(error);
+
+    if (error.name !== "NotAllowedError") {
       alert(error.message);
-      this.signInButtonElement?.removeAttribute("disabled");
-    });
+    }
+
+    buttonElement?.removeAttribute("disabled");
   }
 
   private downloadConfiguration(): void {
