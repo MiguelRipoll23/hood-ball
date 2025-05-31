@@ -161,7 +161,7 @@ export class LoginScreen extends BaseGameScreen {
       );
   }
 
-  private async handleSignInClick(): Promise<void> {
+  private handleSignInClick(): void {
     if (this.signInButtonElement?.hasAttribute("disabled")) {
       return;
     }
