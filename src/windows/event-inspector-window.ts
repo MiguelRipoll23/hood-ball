@@ -60,6 +60,7 @@ export class EventInspectorWindow extends BaseWindow {
     ImGui.PushStyleColor(ImGui.Col.Text, 0xff00a5ff);
     ImGui.Text("Pending");
     ImGui.PopStyleColor();
+    ImGui.Separator();
 
     if (ImGui.BeginTable(tableId, 2, tableFlags, new ImVec2(315, 200))) {
       ImGui.TableSetupColumn("Type");
