@@ -62,7 +62,7 @@ export class EventInspectorWindow extends BaseWindow {
     ImGui.PopStyleColor();
     ImGui.Separator();
 
-    if (ImGui.BeginTable(tableId, 2, tableFlags, new ImVec2(315, 200))) {
+    if (ImGui.BeginTable(tableId, 2, tableFlags, new ImVec2(300, 200))) {
       ImGui.TableSetupColumn("Type");
       ImGui.TableSetupColumn("Consumed At");
       ImGui.TableHeadersRow();
