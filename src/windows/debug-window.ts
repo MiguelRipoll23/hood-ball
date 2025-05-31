@@ -1,21 +1,24 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller";
-import { ScreenInspectorWindow } from "./screen-inspector-window";
-import { EventInspectorWindow } from "./event-inspector-window";
-import { MatchInspectorWindow } from "./match-window";
-import { BaseWindow } from "./base-window";
+import type { GameController } from "../models/game-controller.js";
+import { ScreenInspectorWindow } from "./screen-inspector-window.js";
+import { EventInspectorWindow } from "./event-inspector-window.js";
+import { MatchInspectorWindow } from "./match-inspector-window.js";
+import { BaseWindow } from "./base-window.js";
+import { PeerInspectorWindow } from "./peer-inspector-window.js";
 
 export class DebugWindow extends BaseWindow {
   private eventInspectorWindow: EventInspectorWindow;
   private screenInspectorWindow: ScreenInspectorWindow;
   private matchInspectorWindow: MatchInspectorWindow;
+  private peerInspectorWindow: PeerInspectorWindow;
 
   constructor(private gameController: GameController) {
-    super("Debug menu", new ImVec2(200, 220), ImGui.WindowFlags.MenuBar);
+    super("Debug menu", new ImVec2(220, 220), ImGui.WindowFlags.MenuBar);
     this.opened = true;
     this.eventInspectorWindow = new EventInspectorWindow(gameController);
     this.screenInspectorWindow = new ScreenInspectorWindow(gameController);
     this.matchInspectorWindow = new MatchInspectorWindow(gameController);
+    this.peerInspectorWindow = new PeerInspectorWindow(gameController);
   }
 
   public render(): void {
@@ -33,11 +36,15 @@ export class DebugWindow extends BaseWindow {
     if (this.matchInspectorWindow.isOpen()) {
       this.matchInspectorWindow.render();
     }
+
+    if (this.peerInspectorWindow.isOpen()) {
+      this.peerInspectorWindow.render();
+    }
   }
 
   private renderMenu(): void {
     this.renderMenuBar();
-    ImGui.TextWrapped("This menu is for development and testing purposes.");
+    this.renderLoggingSettings();
     this.renderUISettings();
 
     ImGui.End();
@@ -58,19 +65,43 @@ export class DebugWindow extends BaseWindow {
           this.matchInspectorWindow.toggle();
         }
 
+        if (ImGui.MenuItem("Peers", "P")) {
+          this.peerInspectorWindow.toggle();
+        }
+
         ImGui.EndMenu();
       }
       ImGui.EndMenuBar();
     }
   }
 
-  private toggleWindow(type: "screen" | "event" | "match"): void {
+  private toggleWindow(type: "screen" | "event" | "match" | "peer"): void {
     if (type === "event") {
       this.eventInspectorWindow.toggle();
     } else if (type === "screen") {
       this.screenInspectorWindow.toggle();
     } else if (type === "match") {
       this.matchInspectorWindow.toggle();
+    } else if (type === "peer") {
+      this.peerInspectorWindow.toggle();
+    }
+  }
+
+  private renderLoggingSettings(): void {
+    if (ImGui.CollapsingHeader("Logging", ImGui.TreeNodeFlags.DefaultOpen)) {
+      const debugSettings = this.gameController.getDebugSettings();
+
+      this.renderCheckbox(
+        "Log WebSocket messages",
+        debugSettings.isWebSocketLoggingEnabled(),
+        debugSettings.setWebSocketLogging.bind(debugSettings)
+      );
+
+      this.renderCheckbox(
+        "Log WebRTC messages",
+        debugSettings.isWebRTCLoggingEnabled(),
+        debugSettings.setWebRTCLogging.bind(debugSettings)
+      );
     }
   }
 

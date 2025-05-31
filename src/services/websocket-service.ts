@@ -52,7 +52,7 @@ export class WebSocketService {
     try {
       this.webSocket.send(arrayBuffer);
 
-      if (this.gameController.isDebugging()) {
+      if (this.gameController.getDebugSettings().isWebSocketLoggingEnabled()) {
         console.debug(
           "%cSent message to server:\n" + BinaryWriter.preview(arrayBuffer),
           "color: purple"
@@ -103,7 +103,7 @@ export class WebSocketService {
     const arrayBuffer: ArrayBuffer = event.data;
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    if (this.gameController.isDebugging()) {
+    if (this.gameController.getDebugSettings().isWebSocketLoggingEnabled()) {
       console.debug(
         "%cReceived message from server:\n" + binaryReader.preview(),
         "color: green;"

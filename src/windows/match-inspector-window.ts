@@ -32,7 +32,7 @@ export class MatchInspectorWindow extends BaseWindow {
     ImGui.TableSetupColumn("#");
     ImGui.TableSetupColumn("ID");
     ImGui.TableSetupColumn("Name");
-    ImGui.TableSetupColumn("Ping");
+    ImGui.TableSetupColumn("Ping (ms)");
     ImGui.TableSetupColumn("Score");
     ImGui.TableHeadersRow();
 
@@ -82,12 +82,15 @@ export class MatchInspectorWindow extends BaseWindow {
       this.renderMatchAttributes(match.getAttributes());
     }
 
-    if (ImGui.CollapsingHeader("Players", ImGui.TreeNodeFlags.DefaultOpen)) {
+    if (
+      ImGui.CollapsingHeader("Player list", ImGui.TreeNodeFlags.DefaultOpen)
+    ) {
       ImGui.PushStyleColor(ImGui.Col.Text, MatchInspectorWindow.HOST_COLOR);
       ImGui.Text("Host");
       ImGui.PopStyleColor();
       ImGui.SameLine(0, 20);
       ImGui.Text("Player");
+      ImGui.Separator();
 
       this.renderPlayersTable(match.getPlayers());
     }

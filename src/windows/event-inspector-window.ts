@@ -1,10 +1,10 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller";
-import { EventType } from "../enums/event-type";
-import type { GameEvent } from "../interfaces/events/game-event";
-import { LocalEvent } from "../models/local-event";
-import { RemoteEvent } from "../models/remote-event";
-import { BaseWindow } from "./base-window";
+import type { GameController } from "../models/game-controller.js";
+import { EventType } from "../enums/event-type.js";
+import type { GameEvent } from "../interfaces/events/game-event.js";
+import { LocalEvent } from "../models/local-event.js";
+import { RemoteEvent } from "../models/remote-event.js";
+import { BaseWindow } from "./base-window.js";
 
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
