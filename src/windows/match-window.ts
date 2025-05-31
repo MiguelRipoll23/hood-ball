@@ -2,8 +2,11 @@ import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameController } from "../models/game-controller";
 import { BaseWindow } from "./base-window";
 import { MatchStateType } from "../enums/match-state-type";
+import type { GamePlayer } from "../models/game-player";
 
 export class MatchInspectorWindow extends BaseWindow {
+  private static readonly HOST_COLOR = 0xffffff00;
+
   constructor(private gameController: GameController) {
     super("Match inspector", new ImVec2(500, 300));
     console.log(`${this.constructor.name} created`);
@@ -15,7 +18,7 @@ export class MatchInspectorWindow extends BaseWindow {
     }
   }
 
-  private renderPlayersTable(players: any[]) {
+  private renderPlayersTable(players: GamePlayer[]) {
     const tableFlags =
       ImGui.TableFlags.Borders |
       ImGui.TableFlags.RowBg |
@@ -51,7 +54,8 @@ export class MatchInspectorWindow extends BaseWindow {
       columns.forEach((renderColumn, colIndex) => {
         ImGui.TableSetColumnIndex(colIndex);
 
-        if (isHost) ImGui.PushStyleColor(ImGui.Col.Text, 0xffffff00);
+        if (isHost)
+          ImGui.PushStyleColor(ImGui.Col.Text, MatchInspectorWindow.HOST_COLOR);
         renderColumn();
         if (isHost) ImGui.PopStyleColor();
       });
@@ -79,7 +83,7 @@ export class MatchInspectorWindow extends BaseWindow {
     }
 
     if (ImGui.CollapsingHeader("Players", ImGui.TreeNodeFlags.DefaultOpen)) {
-      ImGui.PushStyleColor(ImGui.Col.Text, 0xffffff00);
+      ImGui.PushStyleColor(ImGui.Col.Text, MatchInspectorWindow.HOST_COLOR);
       ImGui.Text("Host");
       ImGui.PopStyleColor();
       ImGui.SameLine(0, 20);
