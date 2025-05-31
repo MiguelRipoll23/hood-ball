@@ -385,13 +385,9 @@ export class WebRTCPeerService implements WebRTCPeer {
       this.uploadBytesPerSecond += arrayBuffer.byteLength;
 
       // Log the message if debugging and the channel is reliable
-      const isLoggingEnable = this.gameController
-        .getDebugSettings()
-        .isWebRTCLoggingEnabled();
-
       const isReliableChannel = channel.label.startsWith("reliable");
 
-      if (isLoggingEnable && isReliableChannel) {
+      if (this.isLoggingEnabled() && isReliableChannel) {
         console.debug(
           `%cSent message to peer ${this.getName()}:\n` +
             BinaryWriter.preview(arrayBuffer),
@@ -439,13 +435,9 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.downloadBytesPerSecond += arrayBuffer.byteLength;
 
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    const isLoggingEnable = this.gameController
-      .getDebugSettings()
-      .isWebRTCLoggingEnabled();
-
     const isReliableChannel = channelLabel.startsWith("reliable");
 
-    if (isLoggingEnable && isReliableChannel) {
+    if (this.isLoggingEnabled() && isReliableChannel) {
       console.debug(
         `%cReceived message from peer ${this.getName()}:\n` +
           binaryReader.preview(),
@@ -549,5 +541,9 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     this.pingRoundTripTime = performance.now() - this.pingStartTime;
     this.pingStartTime = null;
+  }
+
+  private isLoggingEnabled(): boolean {
+    return this.gameController.getDebugSettings().isWebRTCLoggingEnabled();
   }
 }

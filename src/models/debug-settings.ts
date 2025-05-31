@@ -1,8 +1,8 @@
 export class DebugSettings {
   private debugging: boolean;
 
-  private mustLogWebSocketMessages: boolean = true;
-  private mustLogWebRTCMessages: boolean = false;
+  private logWebSocketMessages: boolean = true;
+  private logWebRTCMessages: boolean = false;
 
   private tappableAreasVisible: boolean = true;
   private hitboxVisible: boolean = true;
@@ -33,20 +33,20 @@ export class DebugSettings {
   }
 
   public isWebSocketLoggingEnabled(): boolean {
-    return this.mustLogWebSocketMessages;
+    return this.logWebSocketMessages;
   }
 
   public setWebSocketLogging(value: boolean): void {
-    this.mustLogWebSocketMessages = value;
+    this.logWebSocketMessages = value;
     console.log(`WebSocket logging set to: ${value}`);
   }
 
   public isWebRTCLoggingEnabled(): boolean {
-    return this.mustLogWebRTCMessages;
+    return this.logWebRTCMessages;
   }
 
   public setWebRTCLogging(value: boolean): void {
-    this.mustLogWebRTCMessages = value;
+    this.logWebRTCMessages = value;
     console.log(`WebRTC logging set to: ${value}`);
   }
 
