@@ -1,8 +1,8 @@
 import { BaseStaticCollidingGameObject } from "./base-static-colliding-game-object.js";
 
 export class BaseDynamicCollidingGameObject extends BaseStaticCollidingGameObject {
-  private static readonly LINE_LENGTH = 50; // bigger line length
-  private static readonly ARROW_SIZE = 15; // bigger arrow size
+  private static readonly LINE_LENGTH = 50;
+  private static readonly ARROW_SIZE = 15;
   private static readonly CENTER_CIRCLE_RADIUS = 7;
   private static readonly CENTER_FILL_STYLE = "rgba(255, 255, 0, 0.6)";
   private static readonly CENTER_STROKE_STYLE = "yellow";
