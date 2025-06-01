@@ -26,6 +26,8 @@ import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
+  private readonly COUNTDOWN_START_NUMBER = 4;
+
   private gameState: GameState;
   private scoreboardObject: ScoreboardObject | null = null;
   private localCarObject: LocalCarObject | null = null;
@@ -34,7 +36,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private alertObject: AlertObject | null = null;
   private toastObject: ToastObject | null = null;
 
-  private countdownCurrentNumber = 4;
+  private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
   constructor(gameController: GameController) {
     super(gameController);
@@ -512,7 +514,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return;
     }
 
-    this.countdownCurrentNumber = 3;
+    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
     this.showCountdown();
   }
 
