@@ -22,12 +22,17 @@ export class PeerInspectorWindow extends BaseWindow {
       ImGui.TableFlags.Resizable |
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.ScrollX |
-      ImGui.TableFlags.SizingStretchSame;
+      ImGui.TableFlags.SizingStretchProp;
 
     if (ImGui.BeginTable("PeersTable", 3, tableFlags)) {
-      ImGui.TableSetupColumn("Token / ID");
-      ImGui.TableSetupColumn("Ping (ms)");
-      ImGui.TableSetupColumn("State");
+      ImGui.TableSetupColumn("Token / ID", ImGui.TableColumnFlags.WidthStretch);
+      ImGui.TableSetupColumn(
+        "Ping (ms)",
+        ImGui.TableColumnFlags.WidthFixed,
+        80
+      );
+      ImGui.TableSetupColumn("State", ImGui.TableColumnFlags.WidthFixed, 100);
+
       ImGui.TableHeadersRow();
 
       for (const peer of peers) {

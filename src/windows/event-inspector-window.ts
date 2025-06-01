@@ -10,7 +10,7 @@ export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
 
   constructor(private gameController: GameController) {
-    super("Event inspector", new ImVec2(235, 250));
+    super("Event inspector", new ImVec2(195, 250));
     console.log(`${this.constructor.name} created`);
   }
 
@@ -62,7 +62,7 @@ export class EventInspectorWindow extends BaseWindow {
     ImGui.SameLine(0, 20);
     ImGui.Text("Consumed");
 
-    if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(220, 150))) {
+    if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(180, 150))) {
       events.forEach((event, i) => {
         ImGui.TableNextRow();
 

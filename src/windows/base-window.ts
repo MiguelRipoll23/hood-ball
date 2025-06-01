@@ -59,7 +59,6 @@ export class BaseWindow {
     }
 
     const isOpenRef = [this.opened];
-
     const visible = ImGui.Begin(this.title, isOpenRef, this.flags);
 
     this.opened = isOpenRef[0]; // Track user closing the window
