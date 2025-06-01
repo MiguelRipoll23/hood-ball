@@ -3,13 +3,23 @@ import { ImGui, ImVec2, type ImGuiWindowFlags } from "@mori2003/jsimgui";
 export class BaseWindow {
   private readonly DISPLAY_SIZE_MARGIN = 25;
 
-  protected opened = false;
+  protected title: string;
   protected size?: ImVec2;
+  protected closeable: boolean;
   protected flags?: ImGuiWindowFlags;
+
+  private opened = false;
   private hasSetPosition = false;
 
-  constructor(private title: string, size?: ImVec2, flags?: ImGuiWindowFlags) {
+  constructor(
+    title: string,
+    size?: ImVec2,
+    closeable = true,
+    flags?: ImGuiWindowFlags
+  ) {
     console.log(`${this.constructor.name} created`);
+    this.title = title;
+    this.closeable = closeable;
     this.size = size;
     this.flags = flags;
   }
@@ -59,9 +69,13 @@ export class BaseWindow {
     }
 
     const isOpenRef = [this.opened];
-    const visible = ImGui.Begin(this.title, isOpenRef, this.flags);
+    const visible = this.closeable
+      ? ImGui.Begin(this.title, isOpenRef, this.flags)
+      : ImGui.Begin(this.title, undefined, this.flags);
 
-    this.opened = isOpenRef[0]; // Track user closing the window
+    if (this.closeable) {
+      this.opened = isOpenRef[0]; // Track user closing the window
+    }
 
     if (visible) {
       this.renderContent();

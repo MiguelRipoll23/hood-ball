@@ -13,12 +13,12 @@ export class DebugWindow extends BaseWindow {
   private peerInspectorWindow: PeerInspectorWindow;
 
   constructor(private gameController: GameController) {
-    super("Debug menu", new ImVec2(220, 220), ImGui.WindowFlags.MenuBar);
-    this.opened = true;
+    super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
     this.eventInspectorWindow = new EventInspectorWindow(gameController);
     this.screenInspectorWindow = new ScreenInspectorWindow(gameController);
     this.matchInspectorWindow = new MatchInspectorWindow(gameController);
     this.peerInspectorWindow = new PeerInspectorWindow(gameController);
+    this.open();
   }
 
   protected override renderContent(): void {
