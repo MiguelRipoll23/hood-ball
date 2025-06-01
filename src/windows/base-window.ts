@@ -58,8 +58,6 @@ export class BaseWindow {
       this.hasSetPosition = true;
     }
 
-    ImGui.StyleColorsClassic();
-
     const isOpenRef = [this.opened];
     const visible = ImGui.Begin(this.title, isOpenRef, this.flags);
 
