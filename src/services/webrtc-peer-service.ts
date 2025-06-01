@@ -255,14 +255,14 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleDisconnection(): void {
-    if (this.connected === false) {
-      return;
-    }
-
     console.info("Peer connection closed");
-    this.connected = false;
     this.gameController.getWebRTCService().removePeer(this.token);
-    this.matchmakingService.onPeerDisconnected(this);
+
+    // If the peer was connected, notify the matchmaking service
+    if (this.connected) {
+      this.connected = false;
+      this.matchmakingService.onPeerDisconnected(this);
+    }
   }
 
   private addIceListeners(): void {
