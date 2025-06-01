@@ -101,10 +101,18 @@ export class SettingsScreen extends BaseGameScreen {
     const state = settingObject.getSettingState();
     this.gameController.getDebugSettings().setDebugging(state);
 
-    // Update UI
+    // Update UI if debugging state changes
     this.updateDebugStateForObjects();
 
-    // Initialize debug service
-    this.gameController.getDebugService().init();
+    if (state === false) {
+      return;
+    }
+
+    // Initialize debug service if not already initialized
+    const debugService = this.gameController.getDebugService();
+
+    if (debugService.isInitialized() === false) {
+      debugService.init();
+    }
   }
 }

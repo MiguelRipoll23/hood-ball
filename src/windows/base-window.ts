@@ -35,6 +35,8 @@ export class BaseWindow {
   }
 
   public render(): void {
+    if (!this.opened) return;
+
     if (this.size) {
       ImGui.SetNextWindowSize(this.size, ImGui.Cond.FirstUseEver);
     }
@@ -58,13 +60,20 @@ export class BaseWindow {
 
     const isOpenRef = [this.opened];
 
-    if (!ImGui.Begin(this.title, isOpenRef, this.flags)) {
-      ImGui.End();
-      this.opened = isOpenRef[0];
-      return;
+    const visible = ImGui.Begin(this.title, isOpenRef, this.flags);
+
+    this.opened = isOpenRef[0]; // Track user closing the window
+
+    if (visible) {
+      this.renderContent();
     }
 
-    // Update open state in case the user closes the window
-    this.opened = isOpenRef[0];
+    ImGui.End();
+  }
+
+  protected renderContent(): void {
+    ImGui.TextWrapped(
+      "This is a base window. Override renderContent() to add custom content."
+    );
   }
 }

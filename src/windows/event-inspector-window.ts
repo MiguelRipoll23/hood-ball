@@ -10,83 +10,70 @@ export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
 
   constructor(private gameController: GameController) {
-    super("Event inspector", new ImVec2(330, 300));
+    super("Event inspector", new ImVec2(235, 250));
     console.log(`${this.constructor.name} created`);
   }
 
-  public render(): void {
-    super.render();
-
+  protected override renderContent(): void {
     if (ImGui.BeginTabBar("##ObjectsTabBar")) {
-      if (ImGui.BeginTabItem("Local")) {
-        const localEvents = this.gameController
-          .getEventProcessorService()
-          .getLocalQueue()
-          .getEvents()
-          .toReversed();
-        this.renderEventTable("LocalEventsTable", localEvents);
-        ImGui.EndTabItem();
-      }
-
-      if (ImGui.BeginTabItem("Remote")) {
-        const remoteEvents = this.gameController
-          .getEventProcessorService()
-          .getRemoteQueue()
-          .getEvents()
-          .toReversed();
-        this.renderEventTable("RemoteEventsTable", remoteEvents);
-        ImGui.EndTabItem();
-      }
+      this.renderTab("Local", "LocalEventsTable", () =>
+        this.getReversedEvents("local")
+      );
+      this.renderTab("Remote", "RemoteEventsTable", () =>
+        this.getReversedEvents("remote")
+      );
 
       ImGui.EndTabBar();
     }
+  }
 
-    ImGui.End();
+  private renderTab(
+    tabName: string,
+    tableId: string,
+    getEvents: () => GameEvent[]
+  ): void {
+    if (ImGui.BeginTabItem(tabName)) {
+      this.renderEventTable(tableId, getEvents());
+      ImGui.EndTabItem();
+    }
+  }
+
+  private getReversedEvents(type: "local" | "remote"): GameEvent[] {
+    const queue =
+      type === "local"
+        ? this.gameController.getEventProcessorService().getLocalQueue()
+        : this.gameController.getEventProcessorService().getRemoteQueue();
+
+    return queue.getEvents().toReversed();
   }
 
   private renderEventTable(tableId: string, events: GameEvent[]): void {
-    const dateNow = Date.now();
-
     const tableFlags =
       ImGui.TableFlags.Borders |
       ImGui.TableFlags.RowBg |
       ImGui.TableFlags.Resizable |
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.ScrollX |
-      ImGui.TableFlags.SizingFixedFit;
+      ImGui.TableFlags.SizingStretchSame;
 
-    ImGui.Text("Consumed");
-    ImGui.SameLine(0, 20);
     ImGui.PushStyleColor(ImGui.Col.Text, 0xff00a5ff);
     ImGui.Text("Pending");
     ImGui.PopStyleColor();
-    ImGui.Separator();
+    ImGui.SameLine(0, 20);
+    ImGui.Text("Consumed");
 
-    if (ImGui.BeginTable(tableId, 2, tableFlags, new ImVec2(300, 200))) {
-      ImGui.TableSetupColumn("Type");
-      ImGui.TableSetupColumn("Consumed At");
-      ImGui.TableHeadersRow();
-
-      for (let i = 0; i < events.length; i++) {
-        const event = events[i];
-        const isConsumed = event.isConsumed();
-        const consumedAt = event.getConsumedAt();
-        const relativeConsumedAt =
-          isConsumed && consumedAt !== null
-            ? this.getRelativeTime(consumedAt, dateNow)
-            : "N/A";
-
-        const color = isConsumed ? 0xffffffff : 0xff00a5ff; // white or orange
-
+    if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(220, 150))) {
+      events.forEach((event, i) => {
         ImGui.TableNextRow();
 
-        // Push color for entire row
-        ImGui.PushStyleColor(ImGui.Col.Text, color);
-
-        // Column 0: Type with selectable
-        ImGui.TableSetColumnIndex(0);
+        const isConsumed = event.isConsumed();
+        const color = isConsumed ? 0xffffffff : 0xff00a5ff;
         const label = `${EventType[event.getType()]}##${tableId}-${i}`;
         const selected = this.selectedEvent === event;
+
+        ImGui.PushStyleColor(ImGui.Col.Text, color);
+
+        ImGui.TableSetColumnIndex(0);
         if (
           ImGui.Selectable(
             label,
@@ -97,12 +84,8 @@ export class EventInspectorWindow extends BaseWindow {
           this.selectedEvent = event;
         }
 
-        // Column 1: Consumed At text
-        ImGui.TableSetColumnIndex(1);
-        ImGui.Text(relativeConsumedAt);
-
         ImGui.PopStyleColor();
-      }
+      });
 
       ImGui.EndTable();
     }
@@ -112,36 +95,37 @@ export class EventInspectorWindow extends BaseWindow {
     }
   }
 
-  private getRelativeTime(timestamp: number, now: number): string {
-    const seconds = Math.floor((now - timestamp) / 1000);
-    if (seconds < 60) return `${seconds}s ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes}m ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours}h ago`;
-    const days = Math.floor(hours / 24);
-    return `${days}d ago`;
-  }
-
   private replayEvent(event: GameEvent): void {
     console.log(`Replaying event: ${event.getType()}`);
 
-    if (event instanceof LocalEvent) {
-      const localEvent = new LocalEvent(event.getType());
-      localEvent.setData(event.getData());
+    const newEvent = this.createEventClone(event);
 
+    if (newEvent instanceof LocalEvent) {
       this.gameController
         .getEventProcessorService()
         .getLocalQueue()
-        .addEvent(localEvent);
-    } else if (event instanceof RemoteEvent) {
-      const remoteEvent = new RemoteEvent(event.getType());
-      remoteEvent.setData(event.getData());
-
+        .addEvent(newEvent);
+    } else if (newEvent instanceof RemoteEvent) {
       this.gameController
         .getEventProcessorService()
         .getRemoteQueue()
-        .addEvent(remoteEvent);
+        .addEvent(newEvent);
     }
+  }
+
+  private createEventClone(event: GameEvent): GameEvent {
+    if (event instanceof LocalEvent) {
+      const localClone = new LocalEvent(event.getType());
+      localClone.setData(event.getData());
+      return localClone;
+    }
+
+    if (event instanceof RemoteEvent) {
+      const remoteClone = new RemoteEvent(event.getType());
+      remoteClone.setData(event.getData());
+      return remoteClone;
+    }
+
+    throw new Error("Unsupported event type");
   }
 }

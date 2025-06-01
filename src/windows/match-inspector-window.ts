@@ -12,66 +12,11 @@ export class MatchInspectorWindow extends BaseWindow {
     console.log(`${this.constructor.name} created`);
   }
 
-  private renderMatchAttributes(attributes: Record<string, any>) {
-    for (const [key, value] of Object.entries(attributes)) {
-      ImGui.Text(`${key}: ${value}`);
-    }
-  }
-
-  private renderPlayersTable(players: GamePlayer[]) {
-    const tableFlags =
-      ImGui.TableFlags.Borders |
-      ImGui.TableFlags.RowBg |
-      ImGui.TableFlags.Resizable |
-      ImGui.TableFlags.ScrollY |
-      ImGui.TableFlags.ScrollX |
-      ImGui.TableFlags.SizingFixedFit;
-
-    if (!ImGui.BeginTable("PlayersTable", 5, tableFlags)) return;
-
-    ImGui.TableSetupColumn("#");
-    ImGui.TableSetupColumn("ID");
-    ImGui.TableSetupColumn("Name");
-    ImGui.TableSetupColumn("Ping (ms)");
-    ImGui.TableSetupColumn("Score");
-    ImGui.TableHeadersRow();
-
-    players.forEach((player, index) => {
-      const isHost = player.isHost();
-      ImGui.TableNextRow();
-
-      const columns = [
-        () => ImGui.Text((index + 1).toString()),
-        () => ImGui.Text(player.getId()),
-        () => ImGui.Text(player.getName()),
-        () => {
-          const ping = player.getPingTime();
-          ImGui.Text(ping === null ? "N/A" : Math.round(ping).toString());
-        },
-        () => ImGui.Text(player.getScore().toString()),
-      ];
-
-      columns.forEach((renderColumn, colIndex) => {
-        ImGui.TableSetColumnIndex(colIndex);
-
-        if (isHost)
-          ImGui.PushStyleColor(ImGui.Col.Text, MatchInspectorWindow.HOST_COLOR);
-        renderColumn();
-        if (isHost) ImGui.PopStyleColor();
-      });
-    });
-
-    ImGui.EndTable();
-  }
-
-  public render(): void {
-    super.render();
-
+  protected override renderContent(): void {
     const match = this.gameController.getGameState().getMatch();
 
-    if (!match) {
+    if (match === null) {
       ImGui.Text("No active match.");
-      ImGui.End();
       return;
     }
 
@@ -90,11 +35,55 @@ export class MatchInspectorWindow extends BaseWindow {
       ImGui.PopStyleColor();
       ImGui.SameLine(0, 20);
       ImGui.Text("Player");
-      ImGui.Separator();
 
       this.renderPlayersTable(match.getPlayers());
     }
+  }
 
-    ImGui.End();
+  private renderMatchAttributes(attributes: Record<string, any>) {
+    for (const [key, value] of Object.entries(attributes)) {
+      ImGui.Text(`${key}: ${value}`);
+    }
+  }
+
+  private renderPlayersTable(players: GamePlayer[]) {
+    const tableFlags =
+      ImGui.TableFlags.BordersOuter |
+      ImGui.TableFlags.RowBg |
+      ImGui.TableFlags.Resizable |
+      ImGui.TableFlags.ScrollY |
+      ImGui.TableFlags.ScrollX |
+      ImGui.TableFlags.SizingFixedFit;
+
+    if (!ImGui.BeginTable("PlayersTable", 4, tableFlags)) return;
+
+    ImGui.TableSetupColumn("#");
+    ImGui.TableSetupColumn("ID");
+    ImGui.TableSetupColumn("Name");
+    ImGui.TableSetupColumn("Score");
+    ImGui.TableHeadersRow();
+
+    players.forEach((player, index) => {
+      const isHost = player.isHost();
+      ImGui.TableNextRow();
+
+      const columns = [
+        () => ImGui.Text((index + 1).toString()),
+        () => ImGui.Text(player.getId()),
+        () => ImGui.Text(player.getName()),
+        () => ImGui.Text(player.getScore().toString()),
+      ];
+
+      columns.forEach((renderColumn, colIndex) => {
+        ImGui.TableSetColumnIndex(colIndex);
+
+        if (isHost)
+          ImGui.PushStyleColor(ImGui.Col.Text, MatchInspectorWindow.HOST_COLOR);
+        renderColumn();
+        if (isHost) ImGui.PopStyleColor();
+      });
+    });
+
+    ImGui.EndTable();
   }
 }

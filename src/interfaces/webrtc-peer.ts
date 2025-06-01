@@ -1,6 +1,7 @@
 import { GamePlayer } from "../models/game-player.js";
 
 export interface WebRTCPeer {
+  getConnectionState(): RTCPeerConnectionState;
   isConnected(): boolean;
   getToken(): string;
   getPingTime(): number;

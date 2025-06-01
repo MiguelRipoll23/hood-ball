@@ -21,44 +21,30 @@ export class DebugWindow extends BaseWindow {
     this.peerInspectorWindow = new PeerInspectorWindow(gameController);
   }
 
-  public render(): void {
-    super.render();
+  protected override renderContent(): void {
     this.renderMenu();
 
-    if (this.eventInspectorWindow.isOpen()) {
-      this.eventInspectorWindow.render();
-    }
-
-    if (this.screenInspectorWindow.isOpen()) {
-      this.screenInspectorWindow.render();
-    }
-
-    if (this.matchInspectorWindow.isOpen()) {
-      this.matchInspectorWindow.render();
-    }
-
-    if (this.peerInspectorWindow.isOpen()) {
-      this.peerInspectorWindow.render();
-    }
+    this.eventInspectorWindow.render();
+    this.screenInspectorWindow.render();
+    this.matchInspectorWindow.render();
+    this.peerInspectorWindow.render();
   }
 
   private renderMenu(): void {
     this.renderMenuBar();
     this.renderLoggingSettings();
     this.renderUISettings();
-
-    ImGui.End();
   }
 
   private renderMenuBar(): void {
     if (ImGui.BeginMenuBar()) {
       if (ImGui.BeginMenu("Inspectors")) {
         if (ImGui.MenuItem("Event", "E")) {
-          this.toggleWindow("event");
+          this.eventInspectorWindow.toggle();
         }
 
         if (ImGui.MenuItem("Screen", "S")) {
-          this.toggleWindow("screen");
+          this.screenInspectorWindow.toggle();
         }
 
         if (ImGui.MenuItem("Match", "M")) {
@@ -72,18 +58,6 @@ export class DebugWindow extends BaseWindow {
         ImGui.EndMenu();
       }
       ImGui.EndMenuBar();
-    }
-  }
-
-  private toggleWindow(type: "screen" | "event" | "match" | "peer"): void {
-    if (type === "event") {
-      this.eventInspectorWindow.toggle();
-    } else if (type === "screen") {
-      this.screenInspectorWindow.toggle();
-    } else if (type === "match") {
-      this.matchInspectorWindow.toggle();
-    } else if (type === "peer") {
-      this.peerInspectorWindow.toggle();
     }
   }
 

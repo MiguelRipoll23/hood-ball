@@ -263,9 +263,10 @@ export class GameLoopService {
       .renderDebugInformation(this.context);
 
     this.gameController.getGamePointer().renderDebugInformation(this.context);
-    this.gameController.getDebugService().render();
-
     this.context.restore();
+
+    // Dear ImGui rendering
+    this.gameController.getDebugService().render();
   }
 
   private renderDebugGameInformation(): void {

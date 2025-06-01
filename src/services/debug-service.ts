@@ -17,6 +17,10 @@ export class DebugService {
     this.addEventListeners();
   }
 
+  public isInitialized(): boolean {
+    return this.initialized;
+  }
+
   public async init(): Promise<void> {
     await ImGuiImplWeb.InitWebGL(this.debugCanvas);
     ImGui.SetNextWindowFocus();
@@ -29,11 +33,7 @@ export class DebugService {
     if (!this.initialized) return;
 
     ImGuiImplWeb.BeginRenderWebGL();
-
-    if (this.debugWindow?.isOpen()) {
-      this.debugWindow.render();
-    }
-
+    this.debugWindow?.render();
     ImGuiImplWeb.EndRenderWebGL();
   }
 
