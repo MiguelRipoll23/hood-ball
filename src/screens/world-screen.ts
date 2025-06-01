@@ -90,6 +90,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       "Could not find or advertise match, returning to main screen menu..."
     );
 
+    this.gameController.getGameState().setMatch(null);
     this.returnToMainMenuScreen();
   }
 
