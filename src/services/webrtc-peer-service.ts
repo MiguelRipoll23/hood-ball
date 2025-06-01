@@ -263,8 +263,6 @@ export class WebRTCPeerService implements WebRTCPeer {
       this.connected = false;
       this.matchmakingService.onPeerDisconnected(this);
     }
-
-    console.info("Peer connection closed");
   }
 
   private addIceListeners(): void {
