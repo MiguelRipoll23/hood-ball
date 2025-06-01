@@ -198,12 +198,12 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   public sendPingRequest(): void {
-    const arrayBuffer = new ArrayBuffer(1);
-    const dataView = new DataView(arrayBuffer);
-    dataView.setInt8(0, WebRTCType.PingRequest);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.PingRequest)
+      .toArrayBuffer();
 
-    this.pingStartTime = performance.now();
     this.sendReliableOrderedMessage(arrayBuffer);
+    this.pingStartTime = performance.now();
   }
 
   private initializeDataChannels(): void {
@@ -515,10 +515,9 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private sendDisconnectMessage(): void {
-    const arrayBuffer = new ArrayBuffer(1);
-
-    const dataView = new DataView(arrayBuffer);
-    dataView.setUint8(0, WebRTCType.GracefulDisconnect);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.GracefulDisconnect)
+      .toArrayBuffer();
 
     this.sendReliableOrderedMessage(arrayBuffer);
     console.log("Disconnect message sent");
@@ -531,9 +530,9 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handlePingRequest(): void {
-    const arrayBuffer = new ArrayBuffer(1);
-    const dataView = new DataView(arrayBuffer);
-    dataView.setUint8(0, WebRTCType.PingResponse);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.PingResponse)
+      .toArrayBuffer();
 
     this.sendReliableOrderedMessage(arrayBuffer);
   }
