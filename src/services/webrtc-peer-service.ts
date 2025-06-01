@@ -59,6 +59,10 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.addEventListeners();
   }
 
+  public getConnectionState(): RTCPeerConnectionState {
+    return this.peerConnection.connectionState;
+  }
+
   public isConnected(): boolean {
     return this.connected;
   }

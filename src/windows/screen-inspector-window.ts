@@ -13,9 +13,7 @@ export class ScreenInspectorWindow extends BaseWindow {
     console.log(`${this.constructor.name} created`);
   }
 
-  public render(): void {
-    super.render();
-
+  protected override renderContent(): void {
     const screen = this.gameController.getGameFrame().getCurrentScreen();
     const subScreen =
       screen?.getScreenManagerService()?.getCurrentScreen() ?? null;
@@ -42,8 +40,6 @@ export class ScreenInspectorWindow extends BaseWindow {
       }
       ImGui.EndTabBar();
     }
-
-    ImGui.End();
   }
 
   private renderScreenSections(

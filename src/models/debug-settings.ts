@@ -6,7 +6,7 @@ export class DebugSettings {
 
   private tappableAreasVisible: boolean = true;
   private hitboxVisible: boolean = true;
-  private gizmosVisible: boolean = true;
+  private gizmosVisible: boolean = false;
 
   constructor(debugging: boolean) {
     this.debugging = debugging;
