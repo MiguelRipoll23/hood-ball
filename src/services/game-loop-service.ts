@@ -258,10 +258,6 @@ export class GameLoopService {
     this.renderDebugGameInformation();
     this.renderDebugScreenInformation();
 
-    this.getGameController()
-      .getEventProcessorService()
-      .renderDebugInformation(this.context);
-
     this.gameController.getGamePointer().renderDebugInformation(this.context);
     this.context.restore();
 

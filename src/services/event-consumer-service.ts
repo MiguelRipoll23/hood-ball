@@ -4,11 +4,8 @@ import type { EventSubscription } from "../types/event-subscription.js";
 import { GameController } from "../models/game-controller.js";
 import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
-import { EventProcessorService } from "./event-processor-service.js";
 
 export class EventConsumerService {
-  private eventProcessorService: EventProcessorService;
-
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
 
@@ -16,7 +13,6 @@ export class EventConsumerService {
   private remoteSubscriptions: EventSubscription[] = [];
 
   constructor(gameController: GameController) {
-    this.eventProcessorService = gameController.getEventProcessorService();
     this.localQueue = gameController.getEventProcessorService().getLocalQueue();
     this.remoteQueue = gameController
       .getEventProcessorService()
@@ -69,7 +65,6 @@ export class EventConsumerService {
       .forEach((subscription) => {
         subscription.eventCallback(event.getData());
         this.localQueue.consumeEvent(event);
-        this.eventProcessorService.setLastConsumedEvent(event.getType());
       });
   }
 
@@ -79,7 +74,6 @@ export class EventConsumerService {
       .forEach((subscription) => {
         subscription.eventCallback(event.getData());
         this.remoteQueue.consumeEvent(event);
-        this.eventProcessorService.setLastConsumedEvent(event.getType());
       });
   }
 }

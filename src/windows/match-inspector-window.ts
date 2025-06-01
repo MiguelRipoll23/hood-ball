@@ -8,7 +8,7 @@ export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;
 
   constructor(private gameController: GameController) {
-    super("Match inspector", new ImVec2(500, 300));
+    super("Match inspector", new ImVec2(450, 300));
     console.log(`${this.constructor.name} created`);
   }
 
@@ -53,14 +53,15 @@ export class MatchInspectorWindow extends BaseWindow {
       ImGui.TableFlags.Resizable |
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.ScrollX |
-      ImGui.TableFlags.SizingFixedFit;
+      ImGui.TableFlags.SizingStretchProp;
 
     if (!ImGui.BeginTable("PlayersTable", 4, tableFlags)) return;
 
-    ImGui.TableSetupColumn("#");
-    ImGui.TableSetupColumn("ID");
-    ImGui.TableSetupColumn("Name");
-    ImGui.TableSetupColumn("Score");
+    ImGui.TableSetupColumn("#", ImGui.TableColumnFlags.WidthFixed, 20);
+    ImGui.TableSetupColumn("ID", ImGui.TableColumnFlags.WidthStretch);
+    ImGui.TableSetupColumn("Name", ImGui.TableColumnFlags.WidthStretch);
+    ImGui.TableSetupColumn("Score", ImGui.TableColumnFlags.WidthFixed, 40);
+
     ImGui.TableHeadersRow();
 
     players.forEach((player, index) => {
