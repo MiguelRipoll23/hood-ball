@@ -23,8 +23,11 @@ import { MatchStateType } from "../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
+  private readonly COUNTDOWN_START_NUMBER = 4;
+
   private gameState: GameState;
   private scoreboardObject: ScoreboardObject | null = null;
   private localCarObject: LocalCarObject | null = null;
@@ -33,7 +36,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private alertObject: AlertObject | null = null;
   private toastObject: ToastObject | null = null;
 
-  private countdownCurrentNumber = 3;
+  private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
   constructor(gameController: GameController) {
     super(gameController);
@@ -265,38 +268,35 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private showCountdown() {
-    this.gameState.getMatch()?.setState(MatchStateType.Countdown);
-    console.log("Countdown number", this.countdownCurrentNumber);
+    const match = this.gameState.getMatch();
+    const isHost = match?.isHost();
 
-    // Reset local objects
-    if (this.countdownCurrentNumber === 3) {
-      this.resetForCountdown();
-    }
+    match?.setState(MatchStateType.Countdown);
+    console.log("Countdown tick:", this.countdownCurrentNumber);
 
-    if (this.gameState.getMatch()?.isHost()) {
+    // Reset game every countdown tick
+    this.resetForCountdown();
+
+    // Send event to other players
+    if (isHost) {
       this.sendCountdownEvent();
     }
 
-    // Countdown text
-    let text = this.countdownCurrentNumber.toString();
-
-    if (this.countdownCurrentNumber < 1) {
-      text = "GO!";
-    }
-
-    // Only show for 3, 2, 1 and GO!
-    if (this.countdownCurrentNumber >= 0) {
-      this.alertObject?.show([text], "#FFFF00");
+    // Show countdown text to players
+    if (this.countdownCurrentNumber >= 2) {
+      const displayNumber = this.countdownCurrentNumber - 1; // 4→3, 3→2, 2→1
+      this.alertObject?.show([displayNumber.toString()], "#FFFF00");
+    } else if (this.countdownCurrentNumber === 1) {
+      this.alertObject?.show(["GO!"], "#FFFF00");
     } else {
-      // 1 second delay before starting the game
+      // Reached 0 → Start the game
       return this.handleCountdownEnd();
     }
 
-    // Decrement countdown number
+    // Schedule next countdown tick
     this.countdownCurrentNumber -= 1;
 
-    // Add timer for next countdown if host
-    if (this.gameState.getMatch()?.isHost()) {
+    if (isHost) {
       this.gameController.addTimer(1, this.showCountdown.bind(this));
     }
   }
@@ -316,7 +316,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return console.warn("Host should not receive countdown event");
     }
 
-    const countdownNumber = new DataView(arrayBuffer).getInt8(0);
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const countdownNumber = binaryReader.unsignedInt8();
 
     this.countdownCurrentNumber = countdownNumber;
     this.showCountdown();
@@ -333,15 +334,14 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private sendCountdownEvent() {
-    const arrayBuffer = new ArrayBuffer(1);
-    new DataView(arrayBuffer).setInt8(0, this.countdownCurrentNumber);
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt8(this.countdownCurrentNumber)
+      .toArrayBuffer();
 
-    const countdownStartEvent = new RemoteEvent(EventType.Countdown);
-    countdownStartEvent.setData(arrayBuffer);
+    const countdownEvent = new RemoteEvent(EventType.Countdown);
+    countdownEvent.setData(arrayBuffer);
 
-    this.gameController
-      .getEventProcessorService()
-      .sendEvent(countdownStartEvent);
+    this.gameController.getEventProcessorService().sendEvent(countdownEvent);
   }
 
   private handleWaitingForPlayers(): void {
@@ -489,8 +489,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
 
     // Score
-    const playerId = new TextDecoder().decode(arrayBuffer.slice(0, 32));
-    const playerScore = new DataView(arrayBuffer).getUint8(32);
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const playerId = binaryReader.fixedLengthString(32);
+    const playerScore = binaryReader.unsignedInt8();
 
     const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
     player?.setScore(playerScore);
@@ -513,7 +514,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       return;
     }
 
-    this.countdownCurrentNumber = 3;
+    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
     this.showCountdown();
   }
 
