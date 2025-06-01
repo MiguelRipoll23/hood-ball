@@ -29,7 +29,7 @@ export class MatchmakingService {
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
-  private pendingIdentities: Map<string, boolean> = new Map();
+  private pendingIdentities: Map<string, boolean>;
   private receivedIdentities: Map<
     string,
     { playerId: string; playerName: string }
@@ -37,6 +37,7 @@ export class MatchmakingService {
 
   constructor(private gameController: GameController) {
     this.gameState = gameController.getGameState();
+    this.pendingIdentities = new Map();
     this.receivedIdentities = new Map();
   }
 
@@ -45,15 +46,19 @@ export class MatchmakingService {
 
     if (matches.length === 0) {
       console.log("No matches found");
-      return this.createAndAdvertiseMatch();
+      await this.createAndAdvertiseMatch();
+      return;
     }
 
     await this.joinMatches(matches);
 
-    this.findMatchesTimerService = this.gameController.addTimer(
-      10,
-      this.createAndAdvertiseMatch.bind(this)
-    );
+    await new Promise<void>((resolve) => {
+      this.findMatchesTimerService = this.gameController.addTimer(10, () =>
+        resolve()
+      );
+    });
+
+    await this.createAndAdvertiseMatch();
   }
 
   public handlePlayerIdentity(binaryReader: BinaryReader): void {
