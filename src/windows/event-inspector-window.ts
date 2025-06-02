@@ -10,7 +10,7 @@ export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
 
   constructor(private gameController: GameController) {
-    super("Event inspector", new ImVec2(195, 250));
+    super("Event inspector", new ImVec2(195, 230));
     console.log(`${this.constructor.name} created`);
   }
 
@@ -55,12 +55,6 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.ScrollX |
       ImGui.TableFlags.SizingStretchSame;
-
-    ImGui.PushStyleColor(ImGui.Col.Text, 0xff00a5ff);
-    ImGui.Text("Pending");
-    ImGui.PopStyleColor();
-    ImGui.SameLine(0, 20);
-    ImGui.Text("Consumed");
 
     if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(180, 150))) {
       events.forEach((event, i) => {
