@@ -11,10 +11,15 @@ battle.
   server and player
 - WebRTC for real-time communication between host and players
 - Web Crypto API for server configuration and player scores handling
+- Debug menu to inspect game and network state
 
 ## Demo
 
 https://github.com/user-attachments/assets/8634a9e5-b85c-43ca-a130-4412aed5753c
+
+### Debug UI
+
+![Dear imgui](https://github.com/user-attachments/assets/ef6b8656-fb20-446a-afdf-89567ab23de5)
 
 ## Contributions
 
