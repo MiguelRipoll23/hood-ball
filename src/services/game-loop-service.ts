@@ -38,8 +38,8 @@ export class GameLoopService {
     this.gameController = new GameController(this.canvas, this.debug);
     this.gameFrame = this.gameController.getGameFrame();
     this.eventConsumerService = new EventConsumerService(this.gameController);
-    this.setCanvasSize();
     this.addWindowAndGameListeners();
+    this.setCanvasSize();
     this.loadObjects();
   }
 
