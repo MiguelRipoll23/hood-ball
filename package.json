@@ -16,6 +16,6 @@
     "vite": "^6.3.5"
   },
   "dependencies": {
-    "@mori2003/jsimgui": "^0.3.0"
+    "@mori2003/jsimgui": "^0.4.0"
   }
 }
