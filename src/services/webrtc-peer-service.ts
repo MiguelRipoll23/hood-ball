@@ -651,6 +651,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
 
     this.pingTime = performance.now() - this.pingStartTime;
+    this.player?.setPingTime(this.pingTime);
   }
 
   private isLoggingEnabled(): boolean {
