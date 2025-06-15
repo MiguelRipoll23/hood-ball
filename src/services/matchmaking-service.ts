@@ -271,12 +271,15 @@ export class MatchmakingService {
   }
 
   public handlePlayerPing(hosting: boolean, binaryReader: BinaryReader): void {
+    console.log("Received player ping information");
+
     if (hosting) {
       return console.warn("Unexpected player ping information from a player");
     }
 
     const playerId = binaryReader.fixedLengthString(32);
     const playerPingTime = binaryReader.unsignedInt16();
+    console.log(`Player ${playerId} ping time: ${playerPingTime}ms`);
 
     this.gameState.getMatch()?.getPlayer(playerId)?.setPingTime(playerPingTime);
   }
@@ -462,7 +465,7 @@ export class MatchmakingService {
     // Add ping check
     this.pingCheckInterval = this.gameController.addInterval(
       1,
-      this.updateAndSendPingToPlayers.bind(this)
+      this.sendPingToJoinedPlayers.bind(this)
     );
   }
 
@@ -657,23 +660,19 @@ export class MatchmakingService {
     peer.sendReliableOrderedMessage(payload, true);
   }
 
-  private updateAndSendPingToPlayers(): void {
-    this.sendPlayerPingToPlayers();
+  private sendPingToJoinedPlayers(): void {
+    this.sendPingInformationToJoinedPlayers();
 
     this.gameController
       .getWebRTCService()
       .getPeers()
       .filter((peer) => peer.hasJoined())
       .forEach((peer) => {
-        peer.getPlayer()?.setPingTime(peer.getPingTime());
-
-        if (peer.mustPing()) {
-          peer.sendPingRequest();
-        }
+        peer.sendPingRequest();
       });
   }
 
-  private sendPlayerPingToPlayers(): void {
+  private sendPingInformationToJoinedPlayers(): void {
     const players = this.gameState.getMatch()?.getPlayers() || [];
 
     this.gameController
@@ -696,20 +695,20 @@ export class MatchmakingService {
   }
 
   private sendPlayerPingToPlayer(player: GamePlayer, peer: WebRTCPeer): void {
-    const playerId = player.getId();
-    const playerPingTime = player.getPingTime();
+    const peerPingTime = peer.getPingTime();
 
-    if (playerPingTime === null) {
+    if (peerPingTime === null) {
       return;
     }
+
+    const playerId = player.getId();
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PlayerPing)
       .fixedLengthString(playerId, 32)
-      .unsignedInt16(playerPingTime)
+      .unsignedInt16(peerPingTime)
       .toArrayBuffer();
 
-    // Send the reliable ordered message
-    peer.sendReliableOrderedMessage(payload, true);
+    peer.sendUnreliableUnorderedMessage(payload);
   }
 }
