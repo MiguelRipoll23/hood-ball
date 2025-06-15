@@ -114,7 +114,7 @@ export class BallObject
     webrtcPeer: WebRTCPeer,
     arrayBuffer: ArrayBuffer
   ): void {
-    webrtcPeer.sendUnreliableOrderedMessage(arrayBuffer);
+    webrtcPeer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
   public override serialize(): ArrayBuffer {
