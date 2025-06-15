@@ -4,7 +4,7 @@ export interface WebRTCPeer {
   getConnectionState(): RTCPeerConnectionState;
   isConnected(): boolean;
   getToken(): string;
-  getPingTime(): number;
+  getPingTime(): number | null;
   getName(): string;
   getPlayer(): GamePlayer | null;
   setPlayer(player: GamePlayer): void;
@@ -18,7 +18,6 @@ export interface WebRTCPeer {
   ): Promise<RTCSessionDescriptionInit>;
   connect(answer: RTCSessionDescriptionInit): Promise<void>;
   addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void;
-  mustPing(): boolean;
   sendPingRequest(): void;
   sendReliableOrderedMessage(
     arrayBuffer: ArrayBuffer,

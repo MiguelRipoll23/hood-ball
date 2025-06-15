@@ -113,7 +113,7 @@ export class ScoreboardObject
     webrtcPeer: WebRTCPeer,
     arrayBuffer: ArrayBuffer
   ): void {
-    webrtcPeer.sendUnreliableOrderedMessage(arrayBuffer);
+    webrtcPeer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {

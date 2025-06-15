@@ -37,8 +37,13 @@ export class BinaryReader {
   }
 
   public bytes(length: number): Uint8Array {
+    if (length < 0 || this.position + length > this.bufferLength) {
+      throw new RangeError("Attempt to read beyond buffer bounds");
+    }
+
     const start = this.position;
     this.position += length;
+
     return this.uint8.subarray(start, this.position);
   }
 
@@ -110,6 +115,14 @@ export class BinaryReader {
     const bytes = this.uint8.subarray(this.position, this.position + length);
     this.position += length;
     return this.decoder.decode(bytes);
+  }
+
+  public seek(position: number): void {
+    if (position < 0 || position > this.bufferLength) {
+      throw new RangeError("Position out of bounds");
+    }
+
+    this.position = position;
   }
 
   public preview(bytesPerLine: number = 24): string {
