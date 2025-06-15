@@ -18,7 +18,6 @@ export interface WebRTCPeer {
   ): Promise<RTCSessionDescriptionInit>;
   connect(answer: RTCSessionDescriptionInit): Promise<void>;
   addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void;
-  mustPing(): boolean;
   sendPingRequest(): void;
   sendReliableOrderedMessage(
     arrayBuffer: ArrayBuffer,

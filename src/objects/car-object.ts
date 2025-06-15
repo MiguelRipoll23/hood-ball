@@ -87,7 +87,7 @@ export class CarObject extends BaseDynamicCollidingGameObject {
     webrtcPeer: WebRTCPeer,
     arrayBuffer: ArrayBuffer
   ): void {
-    webrtcPeer.sendUnreliableOrderedMessage(arrayBuffer);
+    webrtcPeer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

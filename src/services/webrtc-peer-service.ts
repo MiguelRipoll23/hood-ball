@@ -10,6 +10,9 @@ import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
+  private SEQUENCE_MAXIMUM = 65535;
+  private SEQUENCE_WINDOW = (this.SEQUENCE_MAXIMUM + 1) / 2;
+
   private matchmakingService: MatchmakingService;
   private webRTCService: WebRTCService;
   private objectOrchestrator: ObjectOrchestrator;
@@ -19,6 +22,11 @@ export class WebRTCPeerService implements WebRTCPeer {
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
   private connected = false;
+
+  private incomingReliableSequence = 0;
+  private incomingUnreliableSequence = 0;
+  private outgoingReliableSequence = 0;
+  private outgoingUnreliableSequence = 0;
 
   private messageQueue: Array<{
     channelKey: string;
@@ -30,7 +38,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private joined: boolean = false;
 
   private pingStartTime: number | null = null;
-  private pingRoundTripTime: number = 0;
+  private pingTime: number = 0;
 
   private downloadBytesPerSecond: number = 0;
   private uploadBytesPerSecond: number = 0;
@@ -144,18 +152,8 @@ export class WebRTCPeerService implements WebRTCPeer {
     });
   }
 
-  public mustPing(): boolean {
-    return this.pingStartTime === null;
-  }
-
   public getPingTime(): number {
-    // Calculate ping round trip time
-    if (this.pingStartTime === null) {
-      return this.pingRoundTripTime;
-    }
-
-    // Current ping round trip time
-    return performance.now() - this.pingStartTime;
+    return this.pingTime;
   }
 
   public disconnectGracefully(): void {
@@ -178,7 +176,12 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer,
     skipQueue = false
   ): void {
-    this.sendMessage("reliable-unordered", arrayBuffer, skipQueue);
+    const updatedArrayBuffer = this.prependSequenceNumber(
+      this.outgoingReliableSequence,
+      arrayBuffer
+    );
+
+    this.sendMessage("reliable-unordered", updatedArrayBuffer, skipQueue);
   }
 
   public sendUnreliableOrderedMessage(arrayBuffer: ArrayBuffer): void {
@@ -194,7 +197,12 @@ export class WebRTCPeerService implements WebRTCPeer {
       return;
     }
 
-    this.sendMessage("unreliable-unordered", arrayBuffer, true);
+    const updatedArrayBuffer = this.prependSequenceNumber(
+      this.outgoingUnreliableSequence,
+      arrayBuffer
+    );
+
+    this.sendMessage("unreliable-unordered", updatedArrayBuffer, true);
   }
 
   public sendPingRequest(): void {
@@ -202,7 +210,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       .unsignedInt8(WebRTCType.PingRequest)
       .toArrayBuffer();
 
-    this.sendReliableOrderedMessage(arrayBuffer);
+    this.sendUnreliableUnorderedMessage(arrayBuffer);
     this.pingStartTime = performance.now();
   }
 
@@ -364,14 +372,30 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
   }
 
+  private prependSequenceNumber(
+    sequence: number,
+    arrayBuffer: ArrayBuffer
+  ): ArrayBuffer {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const typeId = binaryReader.unsignedInt8(); // Type ID
+    const remainingBytes = binaryReader.bytesAsArrayBuffer();
+
+    return BinaryWriter.build()
+      .unsignedInt8(typeId)
+      .unsignedInt16(sequence)
+      .arrayBuffer(remainingBytes)
+      .toArrayBuffer();
+  }
+
   private sendMessage(
     channelKey: string,
     arrayBuffer: ArrayBuffer,
     skipQueue = false
   ): void {
-    const shouldSendImmediately = this.joined || skipQueue;
+    // Queue message if the peer has not joined, unless skipQueue is true
+    const mustQueueMessage = !this.joined && !skipQueue;
 
-    if (shouldSendImmediately === false) {
+    if (channelKey.startsWith("reliable") && mustQueueMessage) {
       this.queueMessage(channelKey, arrayBuffer);
       return;
     }
@@ -384,30 +408,34 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     try {
       channel.send(arrayBuffer);
-
-      // Update upload stats
-      this.uploadBytesPerSecond += arrayBuffer.byteLength;
-
-      // Log the message if debugging and the channel is reliable
-      const isReliableChannel = channel.label.startsWith("reliable");
-
-      if (this.isLoggingEnabled() && isReliableChannel) {
-        console.debug(
-          `%cSent message to peer ${this.getName()}:\n` +
-            BinaryWriter.preview(arrayBuffer),
-          "color: purple;"
-        );
-      }
     } catch (error) {
       console.error(`Error sending ${channelKey} message to peer`, error);
+      return;
+    }
+
+    // Update upload stats
+    this.uploadBytesPerSecond += arrayBuffer.byteLength;
+
+    // Increment the outgoing sequence number if the channel is unordered
+    this.incrementOutgoingSequenceIfUnordered(channel.label);
+
+    // Log the message if debugging and the channel is reliable
+    const isReliableChannel = channel.label.startsWith("reliable");
+
+    if (isReliableChannel) {
+      this.logOutgoingReliableMessage(channel.label, arrayBuffer);
     }
   }
 
   private queueMessage(channelKey: string, arrayBuffer: ArrayBuffer): void {
     this.messageQueue.push({ channelKey, arrayBuffer });
+    this.logOutgoingQueuedReliableMessage(channelKey, arrayBuffer);
+  }
 
-    if (channelKey.startsWith("reliable")) {
-      console.debug("Queued message", channelKey, new Uint8Array(arrayBuffer));
+  private sendQueuedMessages(): void {
+    while (this.messageQueue.length > 0) {
+      const { channelKey, arrayBuffer } = this.messageQueue.shift()!;
+      this.sendMessage(channelKey, arrayBuffer, true);
     }
   }
 
@@ -427,10 +455,37 @@ export class WebRTCPeerService implements WebRTCPeer {
     return true;
   }
 
-  private sendQueuedMessages(): void {
-    while (this.messageQueue.length > 0) {
-      const { channelKey, arrayBuffer } = this.messageQueue.shift()!;
-      this.sendMessage(channelKey, arrayBuffer, true);
+  private logOutgoingQueuedReliableMessage(
+    channelKey: string,
+    arrayBuffer: ArrayBuffer
+  ): void {
+    if (this.isLoggingEnabled()) {
+      console.debug(
+        `%cQueued ${channelKey} message for peer ${this.getName()}:\n` +
+          BinaryWriter.preview(arrayBuffer),
+        "color: orange;"
+      );
+    }
+  }
+
+  private logOutgoingReliableMessage(
+    channelKey: string,
+    arrayBuffer: ArrayBuffer
+  ): void {
+    if (this.isLoggingEnabled()) {
+      console.debug(
+        `%cSent ${channelKey} message to peer ${this.getName()}:\n` +
+          BinaryWriter.preview(arrayBuffer),
+        "color: purple;"
+      );
+    }
+  }
+
+  private incrementOutgoingSequenceIfUnordered(channelLabel: string) {
+    if (channelLabel === "reliable-unordered") {
+      this.outgoingReliableSequence++;
+    } else if (channelLabel === "unreliable-unordered") {
+      this.outgoingUnreliableSequence++;
     }
   }
 
@@ -441,18 +496,18 @@ export class WebRTCPeerService implements WebRTCPeer {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const isReliableChannel = channelLabel.startsWith("reliable");
 
-    if (this.isLoggingEnabled() && isReliableChannel) {
-      console.debug(
-        `%cReceived message from peer ${this.getName()}:\n` +
-          binaryReader.preview(),
-        "color: green;"
-      );
+    if (isReliableChannel) {
+      this.logIncomingReliableMessage(channelLabel, arrayBuffer);
     }
 
     const typeId = binaryReader.unsignedInt8();
 
     if (this.isInvalidStateForId(typeId)) {
-      return console.warn("Invalid player state for message", typeId);
+      return;
+    }
+
+    if (this.isInvalidSequence(channelLabel, binaryReader)) {
+      return;
     }
 
     switch (typeId) {
@@ -506,12 +561,65 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
   }
 
+  private logIncomingReliableMessage(
+    channelLabel: string,
+    arrayBuffer: ArrayBuffer
+  ): void {
+    if (this.isLoggingEnabled()) {
+      console.debug(
+        `%cReceived ${channelLabel} message from peer ${this.getName()}:\n` +
+          BinaryWriter.preview(arrayBuffer),
+        "color: green;"
+      );
+    }
+  }
+
+  private isInvalidSequence(
+    channelLabel: string,
+    binaryReader: BinaryReader
+  ): boolean {
+    // Skip if channel is already ordered
+    if (channelLabel.endsWith("ordered")) {
+      return false;
+    }
+
+    const sequenceNumber = binaryReader.unsignedInt16();
+    const isReliable = channelLabel.startsWith("reliable");
+
+    const currentSequence = isReliable
+      ? this.incomingReliableSequence
+      : this.incomingUnreliableSequence;
+
+    if (this.sequenceGreaterThan(sequenceNumber, currentSequence)) {
+      if (isReliable) {
+        this.incomingReliableSequence = sequenceNumber;
+      } else {
+        this.incomingUnreliableSequence = sequenceNumber;
+      }
+
+      return false;
+    }
+
+    console.warn(
+      `Received duplicate or out-of-order ${channelLabel} message with sequence number ${sequenceNumber}`
+    );
+
+    return true;
+  }
+
   private isInvalidStateForId(id: number): boolean {
     if (this.joined) {
       return false;
     }
 
     return id > WebRTCType.SnapshotACK;
+  }
+
+  private sequenceGreaterThan(a: number, b: number): boolean {
+    return (
+      (a > b && a - b < this.SEQUENCE_WINDOW) ||
+      (a < b && b - a > this.SEQUENCE_WINDOW)
+    );
   }
 
   private sendDisconnectMessage(): void {
@@ -534,7 +642,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       .unsignedInt8(WebRTCType.PingResponse)
       .toArrayBuffer();
 
-    this.sendReliableOrderedMessage(arrayBuffer);
+    this.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
   private handlePingResponse(): void {
@@ -542,8 +650,8 @@ export class WebRTCPeerService implements WebRTCPeer {
       return;
     }
 
-    this.pingRoundTripTime = performance.now() - this.pingStartTime;
-    this.pingStartTime = null;
+    this.pingTime = performance.now() - this.pingStartTime;
+    this.player?.setPingTime(this.pingTime);
   }
 
   private isLoggingEnabled(): boolean {
