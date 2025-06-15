@@ -271,8 +271,6 @@ export class MatchmakingService {
   }
 
   public handlePlayerPing(hosting: boolean, binaryReader: BinaryReader): void {
-    console.log("Received player ping information");
-
     if (hosting) {
       return console.warn("Unexpected player ping information from a player");
     }

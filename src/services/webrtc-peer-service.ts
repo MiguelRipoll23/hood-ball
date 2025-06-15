@@ -23,8 +23,8 @@ export class WebRTCPeerService implements WebRTCPeer {
   private dataChannels: Record<string, RTCDataChannel> = {};
   private connected = false;
 
-  private incomingReliableSequence = 0;
-  private incomingUnreliableSequence = 0;
+  private incomingReliableSequence = this.SEQUENCE_MAXIMUM;
+  private incomingUnreliableSequence = this.SEQUENCE_MAXIMUM;
   private outgoingReliableSequence = 0;
   private outgoingUnreliableSequence = 0;
 
