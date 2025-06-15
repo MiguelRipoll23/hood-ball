@@ -279,7 +279,6 @@ export class MatchmakingService {
 
     const playerId = binaryReader.fixedLengthString(32);
     const playerPingTime = binaryReader.unsignedInt16();
-    console.log(`Player ${playerId} ping time: ${playerPingTime}ms`);
 
     this.gameState.getMatch()?.getPlayer(playerId)?.setPingTime(playerPingTime);
   }
@@ -695,9 +694,9 @@ export class MatchmakingService {
   }
 
   private sendPlayerPingToPlayer(player: GamePlayer, peer: WebRTCPeer): void {
-    const peerPingTime = peer.getPingTime();
+    const playerPing = player.getPingTime();
 
-    if (peerPingTime === null) {
+    if (playerPing === null) {
       return;
     }
 
@@ -706,7 +705,7 @@ export class MatchmakingService {
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PlayerPing)
       .fixedLengthString(playerId, 32)
-      .unsignedInt16(peerPingTime)
+      .unsignedInt16(playerPing)
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);

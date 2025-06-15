@@ -112,6 +112,14 @@ export class BinaryReader {
     return this.decoder.decode(bytes);
   }
 
+  public seek(position: number): void {
+    if (position < 0 || position >= this.bufferLength) {
+      throw new RangeError("Position out of bounds");
+    }
+
+    this.position = position;
+  }
+
   public preview(bytesPerLine: number = 24): string {
     return DebugUtils.getHexDump(this.uint8, bytesPerLine);
   }

@@ -4,7 +4,7 @@ export interface WebRTCPeer {
   getConnectionState(): RTCPeerConnectionState;
   isConnected(): boolean;
   getToken(): string;
-  getPingTime(): number;
+  getPingTime(): number | null;
   getName(): string;
   getPlayer(): GamePlayer | null;
   setPlayer(player: GamePlayer): void;

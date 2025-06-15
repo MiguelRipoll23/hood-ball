@@ -37,8 +37,8 @@ export class WebRTCPeerService implements WebRTCPeer {
   private player: GamePlayer | null = null;
   private joined: boolean = false;
 
-  private pingStartTime: number | null = null;
-  private pingTime: number = 0;
+  private pingRequestTime: number | null = null;
+  private pingTime: number | null = null;
 
   private downloadBytesPerSecond: number = 0;
   private uploadBytesPerSecond: number = 0;
@@ -152,7 +152,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     });
   }
 
-  public getPingTime(): number {
+  public getPingTime(): number | null {
     return this.pingTime;
   }
 
@@ -176,12 +176,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer,
     skipQueue = false
   ): void {
-    const updatedArrayBuffer = this.prependSequenceNumber(
-      this.outgoingReliableSequence,
-      arrayBuffer
-    );
-
-    this.sendMessage("reliable-unordered", updatedArrayBuffer, skipQueue);
+    this.sendMessage("reliable-unordered", arrayBuffer, skipQueue);
   }
 
   public sendUnreliableOrderedMessage(arrayBuffer: ArrayBuffer): void {
@@ -197,12 +192,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       return;
     }
 
-    const updatedArrayBuffer = this.prependSequenceNumber(
-      this.outgoingUnreliableSequence,
-      arrayBuffer
-    );
-
-    this.sendMessage("unreliable-unordered", updatedArrayBuffer, true);
+    this.sendMessage("unreliable-unordered", arrayBuffer, true);
   }
 
   public sendPingRequest(): void {
@@ -211,7 +201,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       .toArrayBuffer();
 
     this.sendUnreliableUnorderedMessage(arrayBuffer);
-    this.pingStartTime = performance.now();
+    this.pingRequestTime = performance.now();
   }
 
   private initializeDataChannels(): void {
@@ -372,21 +362,6 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
   }
 
-  private prependSequenceNumber(
-    sequence: number,
-    arrayBuffer: ArrayBuffer
-  ): ArrayBuffer {
-    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    const typeId = binaryReader.unsignedInt8(); // Type ID
-    const remainingBytes = binaryReader.bytesAsArrayBuffer();
-
-    return BinaryWriter.build()
-      .unsignedInt8(typeId)
-      .unsignedInt16(sequence)
-      .arrayBuffer(remainingBytes)
-      .toArrayBuffer();
-  }
-
   private sendMessage(
     channelKey: string,
     arrayBuffer: ArrayBuffer,
@@ -404,6 +379,14 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     if (!this.isChannelAvailable(channel, channelKey)) {
       return;
+    }
+
+    // For unordered channels, prepend the sequence number
+    if (channel.label.endsWith("unordered")) {
+      arrayBuffer = this.insertSequenceToMessageHeader(
+        channel.label,
+        arrayBuffer
+      );
     }
 
     try {
@@ -455,6 +438,24 @@ export class WebRTCPeerService implements WebRTCPeer {
     return true;
   }
 
+  private insertSequenceToMessageHeader(
+    channelKey: string,
+    arrayBuffer: ArrayBuffer
+  ): ArrayBuffer {
+    const sequence = channelKey.startsWith("reliable")
+      ? this.outgoingReliableSequence
+      : this.outgoingUnreliableSequence;
+
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const commandId = binaryReader.unsignedInt8();
+
+    return BinaryWriter.build(arrayBuffer.byteLength + 2)
+      .unsignedInt8(commandId)
+      .unsignedInt16(sequence) // sequence number
+      .bytes(binaryReader.bytesAsUint8Array()) // rest of the message
+      .toArrayBuffer();
+  }
+
   private logOutgoingQueuedReliableMessage(
     channelKey: string,
     arrayBuffer: ArrayBuffer
@@ -483,9 +484,11 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private incrementOutgoingSequenceIfUnordered(channelLabel: string) {
     if (channelLabel === "reliable-unordered") {
-      this.outgoingReliableSequence++;
+      this.outgoingReliableSequence =
+        (this.outgoingReliableSequence + 1) & this.SEQUENCE_MAXIMUM;
     } else if (channelLabel === "unreliable-unordered") {
-      this.outgoingUnreliableSequence++;
+      this.outgoingUnreliableSequence =
+        (this.outgoingUnreliableSequence + 1) & this.SEQUENCE_MAXIMUM;
     }
   }
 
@@ -494,15 +497,14 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.downloadBytesPerSecond += arrayBuffer.byteLength;
 
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    const isReliableChannel = channelLabel.startsWith("reliable");
 
-    if (isReliableChannel) {
+    if (channelLabel.startsWith("reliable")) {
       this.logIncomingReliableMessage(channelLabel, arrayBuffer);
     }
 
-    const typeId = binaryReader.unsignedInt8();
+    const commandId = binaryReader.unsignedInt8();
 
-    if (this.isInvalidStateForId(typeId)) {
+    if (this.isInvalidStateForCommandId(commandId)) {
       return;
     }
 
@@ -510,7 +512,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       return;
     }
 
-    switch (typeId) {
+    switch (commandId) {
       case WebRTCType.JoinRequest:
         this.matchmakingService.handleJoinRequest(this);
         break;
@@ -556,7 +558,7 @@ export class WebRTCPeerService implements WebRTCPeer {
         break;
 
       default: {
-        console.warn("Unknown message type identifier", typeId);
+        console.warn("Unknown message type identifier", commandId);
       }
     }
   }
@@ -579,7 +581,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     binaryReader: BinaryReader
   ): boolean {
     // Skip if channel is already ordered
-    if (channelLabel.endsWith("ordered")) {
+    if (channelLabel.endsWith("-ordered")) {
       return false;
     }
 
@@ -607,7 +609,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     return true;
   }
 
-  private isInvalidStateForId(id: number): boolean {
+  private isInvalidStateForCommandId(id: number): boolean {
     if (this.joined) {
       return false;
     }
@@ -646,11 +648,11 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handlePingResponse(): void {
-    if (this.pingStartTime === null) {
+    if (this.pingRequestTime === null) {
       return;
     }
 
-    this.pingTime = performance.now() - this.pingStartTime;
+    this.pingTime = performance.now() - this.pingRequestTime;
     this.player?.setPingTime(this.pingTime);
   }
 
