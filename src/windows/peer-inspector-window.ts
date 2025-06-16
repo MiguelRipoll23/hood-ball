@@ -41,8 +41,10 @@ export class PeerInspectorWindow extends BaseWindow {
         ImGui.TableSetColumnIndex(0);
         ImGui.Text(peer.getPlayer()?.getId() ?? peer.getToken());
 
+        const pingTime = peer.getPingTime()?.toFixed(0) ?? "--";
+
         ImGui.TableSetColumnIndex(1);
-        ImGui.Text(`${peer.getPingTime().toFixed(0)}`);
+        ImGui.Text(pingTime);
 
         ImGui.TableSetColumnIndex(2);
         const isConnected = peer.isConnected();
