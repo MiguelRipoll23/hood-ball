@@ -213,7 +213,7 @@ export class ObjectOrchestrator {
       return webrtcPeer.sendReliableOrderedMessage(dataBuffer);
     }
 
-    webrtcPeer.sendUnreliableOrderedMessage(dataBuffer);
+    webrtcPeer.sendUnreliableUnorderedMessage(dataBuffer);
   }
 
   // Remote

@@ -1,6 +1,5 @@
 import { HitboxObject } from "./common/hitbox-object.js";
 import { BaseDynamicCollidingGameObject } from "./base/base-dynamic-colliding-game-object.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { GamePlayer } from "../models/game-player.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
@@ -81,13 +80,6 @@ export class CarObject extends BaseDynamicCollidingGameObject {
       .toArrayBuffer();
 
     return arrayBuffer;
-  }
-
-  public override sendSyncableData(
-    webrtcPeer: WebRTCPeer,
-    arrayBuffer: ArrayBuffer
-  ): void {
-    webrtcPeer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

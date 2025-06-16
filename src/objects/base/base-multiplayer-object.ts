@@ -1,6 +1,5 @@
 import { GamePlayer } from "../../models/game-player.js";
 import { ObjectType } from "../../enums/object-type.js";
-import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import type { MultiplayerGameObject } from "../../interfaces/objects/multiplayer-game-object.js";
 import { BaseGameObject } from "./base-game-object.js";
 
@@ -88,14 +87,6 @@ export class BaseMultiplayerGameObject
   }
 
   public serialize(): ArrayBuffer {
-    throw new Error("Method not implemented.");
-  }
-
-  public sendSyncableData(
-    _webrtcPeer: WebRTCPeer,
-    _arrayBuffer: ArrayBuffer,
-    _periodicUpdate: boolean
-  ): void {
     throw new Error("Method not implemented.");
   }
 

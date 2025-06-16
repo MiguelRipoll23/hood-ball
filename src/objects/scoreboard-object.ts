@@ -4,7 +4,6 @@ import {
 } from "../constants/colors-constants.js";
 import { BaseMultiplayerGameObject } from "./base/base-multiplayer-object.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
@@ -107,13 +106,6 @@ export class ScoreboardObject
   public synchronize(arrayBuffer: ArrayBuffer): void {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     this.elapsedMilliseconds = binaryReader.unsignedInt16();
-  }
-
-  public sendSyncableData(
-    webrtcPeer: WebRTCPeer,
-    arrayBuffer: ArrayBuffer
-  ): void {
-    webrtcPeer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
