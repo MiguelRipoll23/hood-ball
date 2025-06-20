@@ -11,7 +11,8 @@ import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_MAXIMUM = 65535;
-  private SEQUENCE_WINDOW = (this.SEQUENCE_MAXIMUM + 1) / 2;
+  private SEQUENCE_PAST_WINDOW = (this.SEQUENCE_MAXIMUM + 1) / 2;
+  private SEQUENCE_FUTURE_WINDOW = 32;
 
   private matchmakingService: MatchmakingService;
   private webRTCService: WebRTCService;
@@ -580,7 +581,6 @@ export class WebRTCPeerService implements WebRTCPeer {
     channelLabel: string,
     binaryReader: BinaryReader
   ): boolean {
-    // Skip if channel is already ordered
     if (channelLabel.endsWith("-ordered")) {
       return false;
     }
@@ -592,20 +592,33 @@ export class WebRTCPeerService implements WebRTCPeer {
       ? this.incomingReliableSequence
       : this.incomingUnreliableSequence;
 
-    if (this.sequenceGreaterThan(sequenceNumber, currentSequence)) {
+    const maxFuture =
+      (currentSequence + this.SEQUENCE_FUTURE_WINDOW) & this.SEQUENCE_MAXIMUM;
+
+    const inFuture =
+      this.sequenceGreaterThan(sequenceNumber, currentSequence) &&
+      this.sequenceGreaterThan(maxFuture, sequenceNumber);
+
+    if (sequenceNumber === currentSequence) {
+      // Duplicate
+      console.warn(`Duplicate ${channelLabel} message: ${sequenceNumber}`);
+      return true;
+    }
+
+    if (inFuture) {
+      // Accept and update sequence
       if (isReliable) {
         this.incomingReliableSequence = sequenceNumber;
       } else {
         this.incomingUnreliableSequence = sequenceNumber;
       }
-
       return false;
     }
 
+    // Old or too far in the future
     console.warn(
-      `Received duplicate or out-of-order ${channelLabel} message with sequence number ${sequenceNumber}`
+      `Out-of-order ${channelLabel} message: ${sequenceNumber} (current: ${currentSequence})`
     );
-
     return true;
   }
 
@@ -619,8 +632,8 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private sequenceGreaterThan(a: number, b: number): boolean {
     return (
-      (a > b && a - b < this.SEQUENCE_WINDOW) ||
-      (a < b && b - a > this.SEQUENCE_WINDOW)
+      (a > b && a - b < this.SEQUENCE_PAST_WINDOW) ||
+      (a < b && b - a > this.SEQUENCE_PAST_WINDOW)
     );
   }
 
