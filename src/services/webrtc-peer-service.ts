@@ -605,7 +605,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       return true;
     }
 
-    if (inFuture || this.sequenceGreaterThan(sequenceNumber, currentSequence)) {
+    if (inFuture) {
       // Accept and update sequence
       if (isReliable) {
         this.incomingReliableSequence = sequenceNumber;
