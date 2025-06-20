@@ -290,7 +290,7 @@ export class MatchmakingService {
 
     const savePlayerScoresRequest: SavePlayerScoresRequest[] = [];
 
-    players.forEach(async (player) => {
+    players.forEach((player) => {
       const playerId = player.getId();
       const playerName = player.getName();
       const score = player.getScore();
