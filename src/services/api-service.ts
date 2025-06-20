@@ -18,7 +18,7 @@ import type { VersionResponse } from "../interfaces/response/version-response.js
 import type { RankingResponse } from "../interfaces/response/ranking-response.js";
 import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
 import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
-import type { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
+import type { SavePlayerScoreRequest } from "../interfaces/request/save-score-request.js";
 import type { AuthenticationOptionsResponse } from "../interfaces/response/authentication-options-response.js";
 import type { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
 import type { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
@@ -266,7 +266,9 @@ export class APIService {
     console.log("Match deleted");
   }
 
-  public async saveScore(saveScoreRequest: SaveScoreRequest): Promise<void> {
+  public async saveScore(
+    saveScoreRequest: SavePlayerScoreRequest
+  ): Promise<void> {
     if (this.authenticationToken === null) {
       throw new Error("Authentication token not found");
     }

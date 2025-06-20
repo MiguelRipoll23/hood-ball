@@ -14,7 +14,7 @@ import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disc
 import { WebRTCType } from "../enums/webrtc-type.js";
 import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
 import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
-import type { SaveScoreRequest } from "../interfaces/request/save-score-request.js";
+import type { SavePlayerScoresRequest } from "../interfaces/request/save-score-request.js";
 import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";
@@ -282,11 +282,29 @@ export class MatchmakingService {
   }
 
   public async savePlayerScore(): Promise<void> {
-    const gamePlayer = this.gameState.getGamePlayer();
-    const score = gamePlayer.getScore();
-    const saveScoreRequest: SaveScoreRequest = { score };
+    const players = this.gameState.getMatch()?.getPlayers();
 
-    await this.gameController.getAPIService().saveScore(saveScoreRequest);
+    if (players === undefined || players.length === 0) {
+      return console.warn("No players in the match to save score");
+    }
+
+    const savePlayerScoresRequest: SavePlayerScoresRequest[] = [];
+
+    players.forEach(async (player) => {
+      const playerId = player.getId();
+      const playerName = player.getName();
+      const score = player.getScore();
+
+      savePlayerScoresRequest.push({
+        playerId,
+        playerName,
+        score,
+      });
+    });
+
+    await this.gameController
+      .getAPIService()
+      .saveScore(savePlayerScoresRequest);
   }
 
   public async handleGameOver(): Promise<void> {
