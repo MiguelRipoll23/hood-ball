@@ -600,8 +600,10 @@ export class WorldScreen extends BaseCollidingGameScreen {
     // Timer
     this.gameController.addTimer(5, this.handleGameOverEnd.bind(this));
 
-    // Save player score
-    this.gameController.getMatchmakingService().savePlayerScore();
+    // Save player scores if host
+    if (this.gameState.getMatch()?.isHost()) {
+      this.gameController.getMatchmakingService().savePlayerScore();
+    }
   }
 
   private handleGameOverEnd() {
