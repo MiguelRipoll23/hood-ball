@@ -1,6 +1,8 @@
+import type { WebRTCType } from "../enums/webrtc-type.js";
 import { GamePlayer } from "../models/game-player.js";
 
 export interface WebRTCPeer {
+  getCommandHandlers(): Map<WebRTCType, (...args: any[]) => any>;
   getConnectionState(): RTCPeerConnectionState;
   isConnected(): boolean;
   getToken(): string;

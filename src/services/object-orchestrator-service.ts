@@ -29,6 +29,12 @@ export class ObjectOrchestrator {
     this.gameState = gameController.getGameState();
   }
 
+  public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
+    webrtcPeer
+      .getCommandHandlers()
+      .set(WebRTCType.ObjectData, this.handleObjectData.bind(this, webrtcPeer));
+  }
+
   public sendLocalData(
     multiplayerScreen: MultiplayerScreen,
     deltaTimeStamp: number
