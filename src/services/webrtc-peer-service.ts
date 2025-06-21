@@ -67,8 +67,16 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.registerCommandHandlers();
   }
 
-  public getCommandHandlers(): Map<WebRTCType, (...args: any[]) => void> {
-    return this.commandHandlers;
+  public addCommandHandler(
+    commandId: WebRTCType,
+    handler: (...args: any[]) => void
+  ): void {
+    this.commandHandlers.set(commandId, handler);
+    console.log(
+      `Command handler ${
+        WebRTCType[commandId]
+      } registered for peer ${this.getName()}`
+    );
   }
 
   public getConnectionState(): RTCPeerConnectionState {

@@ -27,11 +27,12 @@ export class EventProcessorService {
   }
 
   public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer
-      .getCommandHandlers()
-      .set(WebRTCType.EventData, (binaryReader: BinaryReader) => {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.EventData,
+      (binaryReader: BinaryReader) => {
         this.handleEventData(webrtcPeer, binaryReader);
-      });
+      }
+    );
   }
 
   public getLocalQueue(): EventQueueService<LocalEvent> {

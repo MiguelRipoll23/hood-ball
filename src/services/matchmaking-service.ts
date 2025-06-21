@@ -735,40 +735,43 @@ export class MatchmakingService {
   }
 
   private registerJoinHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.getCommandHandlers().set(WebRTCType.JoinRequest, () => {
+    webrtcPeer.addCommandHandler(WebRTCType.JoinRequest, () => {
       this.handleJoinRequest(webrtcPeer);
     });
 
-    webrtcPeer
-      .getCommandHandlers()
-      .set(WebRTCType.JoinResponse, (binaryReader: BinaryReader) => {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.JoinResponse,
+      (binaryReader: BinaryReader) => {
         this.handleJoinResponse(webrtcPeer, binaryReader);
-      });
+      }
+    );
   }
 
   private registerSnapshotHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer
-      .getCommandHandlers()
-      .set(WebRTCType.SnapshotEnd, () => this.handleSnapshotEnd(webrtcPeer));
+    webrtcPeer.addCommandHandler(WebRTCType.SnapshotEnd, () =>
+      this.handleSnapshotEnd(webrtcPeer)
+    );
 
-    webrtcPeer
-      .getCommandHandlers()
-      .set(WebRTCType.SnapshotACK, () => this.handleSnapshotACK(webrtcPeer));
+    webrtcPeer.addCommandHandler(WebRTCType.SnapshotACK, () =>
+      this.handleSnapshotACK(webrtcPeer)
+    );
   }
 
   private registerConnectionHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer
-      .getCommandHandlers()
-      .set(WebRTCType.PlayerConnection, (binaryReader: BinaryReader) => {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.PlayerConnection,
+      (binaryReader: BinaryReader) => {
         this.handlePlayerConnection(webrtcPeer, binaryReader);
-      });
+      }
+    );
   }
 
   private registerPingHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer
-      .getCommandHandlers()
-      .set(WebRTCType.PlayerPing, (binaryReader: BinaryReader) => {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.PlayerPing,
+      (binaryReader: BinaryReader) => {
         this.handlePlayerPing(binaryReader);
-      });
+      }
+    );
   }
 }
