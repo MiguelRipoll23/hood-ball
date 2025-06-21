@@ -552,7 +552,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       commandHandler(binaryReader);
     } catch (error) {
       console.error(
-        `Error executing command handler for ID ${commandId}:`,
+        `Error executing command handler for ID ${commandId} from peer ${this.getName()}:`,
         error
       );
     }
