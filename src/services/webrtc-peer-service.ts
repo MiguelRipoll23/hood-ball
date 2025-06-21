@@ -24,11 +24,6 @@ export class WebRTCPeerService implements WebRTCPeer {
   private outgoingReliableSequence = 0;
   private outgoingUnreliableSequence = 0;
 
-  private messageQueue: Array<{
-    channelKey: string;
-    arrayBuffer: ArrayBuffer;
-  }> = [];
-
   private host: boolean = false;
   private player: GamePlayer | null = null;
   private joined: boolean = false;
@@ -41,8 +36,13 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private readonly commandHandlers = new Map<
     WebRTCType,
-    (...args: any[]) => void
+    (binaryReader: BinaryReader) => void
   >();
+
+  private messageQueue: Array<{
+    channelKey: string;
+    arrayBuffer: ArrayBuffer;
+  }> = [];
 
   constructor(private gameController: GameController, private token: string) {
     this.matchmakingService = this.gameController.getMatchmakingService();
@@ -69,7 +69,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   public addCommandHandler(
     commandId: WebRTCType,
-    handler: (...args: any[]) => void
+    handler: (binaryReader: BinaryReader) => void
   ): void {
     this.commandHandlers.set(commandId, handler);
     console.log(
