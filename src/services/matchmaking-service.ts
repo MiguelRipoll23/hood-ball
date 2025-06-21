@@ -41,6 +41,13 @@ export class MatchmakingService {
     this.receivedIdentities = new Map();
   }
 
+  public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
+    this.registerJoinHandlers(webrtcPeer);
+    this.registerSnapshotHandlers(webrtcPeer);
+    this.registerConnectionHandlers(webrtcPeer);
+    this.registerPingHandlers(webrtcPeer);
+  }
+
   public async findOrAdvertiseMatch(): Promise<void> {
     const matches = await this.findMatches();
 
@@ -270,8 +277,8 @@ export class MatchmakingService {
     this.advertiseMatch();
   }
 
-  public handlePlayerPing(hosting: boolean, binaryReader: BinaryReader): void {
-    if (hosting) {
+  public handlePlayerPing(binaryReader: BinaryReader): void {
+    if (this.gameState.getGamePlayer().isHost()) {
       return console.warn("Unexpected player ping information from a player");
     }
 
@@ -725,5 +732,46 @@ export class MatchmakingService {
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
+  }
+
+  private registerJoinHandlers(webrtcPeer: WebRTCPeer): void {
+    webrtcPeer.addCommandHandler(WebRTCType.JoinRequest, () => {
+      this.handleJoinRequest(webrtcPeer);
+    });
+
+    webrtcPeer.addCommandHandler(
+      WebRTCType.JoinResponse,
+      (binaryReader: BinaryReader) => {
+        this.handleJoinResponse(webrtcPeer, binaryReader);
+      }
+    );
+  }
+
+  private registerSnapshotHandlers(webrtcPeer: WebRTCPeer): void {
+    webrtcPeer.addCommandHandler(WebRTCType.SnapshotEnd, () =>
+      this.handleSnapshotEnd(webrtcPeer)
+    );
+
+    webrtcPeer.addCommandHandler(WebRTCType.SnapshotACK, () =>
+      this.handleSnapshotACK(webrtcPeer)
+    );
+  }
+
+  private registerConnectionHandlers(webrtcPeer: WebRTCPeer): void {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.PlayerConnection,
+      (binaryReader: BinaryReader) => {
+        this.handlePlayerConnection(webrtcPeer, binaryReader);
+      }
+    );
+  }
+
+  private registerPingHandlers(webrtcPeer: WebRTCPeer): void {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.PlayerPing,
+      (binaryReader: BinaryReader) => {
+        this.handlePlayerPing(binaryReader);
+      }
+    );
   }
 }

@@ -26,6 +26,15 @@ export class EventProcessorService {
     this.remoteQueue = new EventQueueService<RemoteEvent>();
   }
 
+  public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
+    webrtcPeer.addCommandHandler(
+      WebRTCType.EventData,
+      (binaryReader: BinaryReader) => {
+        this.handleEventData(webrtcPeer, binaryReader);
+      }
+    );
+  }
+
   public getLocalQueue(): EventQueueService<LocalEvent> {
     return this.localQueue;
   }

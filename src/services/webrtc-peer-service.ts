@@ -1,8 +1,6 @@
 import { GameController } from "../models/game-controller.js";
 import { GamePlayer } from "../models/game-player.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import { ObjectOrchestrator } from "./object-orchestrator-service.js";
-import { EventProcessorService } from "./event-processor-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
@@ -16,9 +14,6 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private matchmakingService: MatchmakingService;
   private webRTCService: WebRTCService;
-  private objectOrchestrator: ObjectOrchestrator;
-  private eventProcessorService: EventProcessorService;
-
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
@@ -28,11 +23,6 @@ export class WebRTCPeerService implements WebRTCPeer {
   private incomingUnreliableSequence = this.SEQUENCE_MAXIMUM;
   private outgoingReliableSequence = 0;
   private outgoingUnreliableSequence = 0;
-
-  private messageQueue: Array<{
-    channelKey: string;
-    arrayBuffer: ArrayBuffer;
-  }> = [];
 
   private host: boolean = false;
   private player: GamePlayer | null = null;
@@ -44,11 +34,19 @@ export class WebRTCPeerService implements WebRTCPeer {
   private downloadBytesPerSecond: number = 0;
   private uploadBytesPerSecond: number = 0;
 
+  private readonly commandHandlers = new Map<
+    WebRTCType,
+    (binaryReader: BinaryReader) => void
+  >();
+
+  private messageQueue: Array<{
+    channelKey: string;
+    arrayBuffer: ArrayBuffer;
+  }> = [];
+
   constructor(private gameController: GameController, private token: string) {
     this.matchmakingService = this.gameController.getMatchmakingService();
     this.webRTCService = this.gameController.getWebRTCService();
-    this.objectOrchestrator = this.gameController.getObjectOrchestrator();
-    this.eventProcessorService = this.gameController.getEventProcessorService();
 
     this.host =
       this.gameController.getGameState().getMatch()?.isHost() ?? false;
@@ -66,6 +64,19 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
 
     this.addEventListeners();
+    this.registerCommandHandlers();
+  }
+
+  public addCommandHandler(
+    commandId: WebRTCType,
+    handler: (binaryReader: BinaryReader) => void
+  ): void {
+    this.commandHandlers.set(commandId, handler);
+    console.log(
+      `Command handler ${
+        WebRTCType[commandId]
+      } registered for peer ${this.getName()}`
+    );
   }
 
   public getConnectionState(): RTCPeerConnectionState {
@@ -363,6 +374,32 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
   }
 
+  private registerCommandHandlers(): void {
+    this.registerConnectionCommandHandlers();
+    this.matchmakingService.registerCommandHandlers(this);
+    this.gameController
+      .getEventProcessorService()
+      .registerCommandHandlers(this);
+    this.gameController.getObjectOrchestrator().registerCommandHandlers(this);
+  }
+
+  private registerConnectionCommandHandlers(): void {
+    this.commandHandlers.set(
+      WebRTCType.GracefulDisconnect,
+      this.handleGracefulDisconnect.bind(this)
+    );
+
+    this.commandHandlers.set(
+      WebRTCType.PingRequest,
+      this.handlePingRequest.bind(this)
+    );
+
+    this.commandHandlers.set(
+      WebRTCType.PingResponse,
+      this.handlePingResponse.bind(this)
+    );
+  }
+
   private sendMessage(
     channelKey: string,
     arrayBuffer: ArrayBuffer,
@@ -505,62 +542,27 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     const commandId = binaryReader.unsignedInt8();
 
-    if (this.isInvalidStateForCommandId(commandId)) {
+    if (
+      this.isInvalidStateForCommandId(commandId) ||
+      this.isInvalidSequence(channelLabel, binaryReader)
+    ) {
       return;
     }
 
-    if (this.isInvalidSequence(channelLabel, binaryReader)) {
+    const commandHandler = this.commandHandlers.get(commandId);
+
+    if (commandHandler === undefined) {
+      console.warn(`No command handler found for ID ${commandId}`);
       return;
     }
 
-    switch (commandId) {
-      case WebRTCType.JoinRequest:
-        this.matchmakingService.handleJoinRequest(this);
-        break;
-
-      case WebRTCType.JoinResponse:
-        this.matchmakingService.handleJoinResponse(this, binaryReader);
-        break;
-
-      case WebRTCType.PlayerConnection:
-        this.matchmakingService.handlePlayerConnection(this, binaryReader);
-        break;
-
-      case WebRTCType.SnapshotEnd:
-        this.matchmakingService.handleSnapshotEnd(this);
-        break;
-
-      case WebRTCType.SnapshotACK:
-        this.matchmakingService.handleSnapshotACK(this);
-        break;
-
-      case WebRTCType.ObjectData:
-        this.objectOrchestrator.handleObjectData(this, binaryReader);
-        break;
-
-      case WebRTCType.EventData:
-        this.eventProcessorService.handleEventData(this, binaryReader);
-        break;
-
-      case WebRTCType.GracefulDisconnect:
-        this.handleGracefulDisconnect();
-        break;
-
-      case WebRTCType.PingRequest:
-        this.handlePingRequest();
-        break;
-
-      case WebRTCType.PingResponse:
-        this.handlePingResponse();
-        break;
-
-      case WebRTCType.PlayerPing:
-        this.matchmakingService.handlePlayerPing(this.host, binaryReader);
-        break;
-
-      default: {
-        console.warn("Unknown message type identifier", commandId);
-      }
+    try {
+      commandHandler(binaryReader);
+    } catch (error) {
+      console.error(
+        `Error executing command handler for ID ${commandId} from peer ${this.getName()}:`,
+        error
+      );
     }
   }
 
