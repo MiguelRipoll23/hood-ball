@@ -1,15 +1,11 @@
 import { getPeerCommandHandlers } from "../decorators/peer-command-handler-decorator";
 import { WebRTCType } from "../enums/webrtc-type";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer";
+import type { PeerCommandHandlerFunction } from "../types/peer-command-handler-function-type";
 import type { BinaryReader } from "../utils/binary-reader-utils";
 
-type CommandHandlerFunction = (
-  webrtcPeer: WebRTCPeer,
-  binaryReader: BinaryReader
-) => void;
-
 export class WebRTCDispatcherService {
-  private commandHandlers = new Map<WebRTCType, CommandHandlerFunction>();
+  private commandHandlers = new Map<WebRTCType, PeerCommandHandlerFunction>();
 
   public registerCommandHandlers(instance: any): void {
     const commandHandlers = getPeerCommandHandlers().filter(
@@ -18,6 +14,15 @@ export class WebRTCDispatcherService {
     );
 
     for (const { commandId, methodName } of commandHandlers) {
+      const method = instance[methodName];
+
+      if (typeof method !== "function") {
+        console.error(
+          `Method "${methodName}" not found or is not a function on the instance.`
+        );
+        continue;
+      }
+
       const boundMethod = instance[methodName].bind(instance);
       this.bindCommandHandler(commandId, boundMethod);
     }
@@ -40,7 +45,7 @@ export class WebRTCDispatcherService {
 
   private bindCommandHandler(
     commandId: WebRTCType,
-    commandHandler: CommandHandlerFunction
+    commandHandler: PeerCommandHandlerFunction
   ): void {
     this.commandHandlers.set(commandId, commandHandler);
     console.log(`Command handler bound for ${WebRTCType[commandId]}`);

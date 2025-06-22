@@ -3,7 +3,7 @@ import { GameFrame } from "../models/game-frame.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
 import { ObjectUtils } from "../utils/object-utils.js";
 import type { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";

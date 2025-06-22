@@ -1,7 +1,7 @@
 import { EventType } from "../enums/event-type.js";
 import { GameController } from "../models/game-controller.js";
 import { RemoteEvent } from "../models/remote-event.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";

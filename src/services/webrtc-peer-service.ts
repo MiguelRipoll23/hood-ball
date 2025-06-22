@@ -3,7 +3,7 @@ import { GamePlayer } from "../models/game-player.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { WebRTCType } from "../enums/webrtc-type";
 import { WebRTCService } from "./webrtc-service.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 

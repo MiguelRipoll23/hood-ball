@@ -5,7 +5,7 @@ import { Match } from "../models/match.js";
 import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
 import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { EventType } from "../enums/event-type.js";
 import { LocalEvent } from "../models/local-event.js";
@@ -280,9 +280,10 @@ export class MatchmakingService {
   @PeerCommandHandler(WebRTCType.PlayerPing)
   public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gameState.getGamePlayer().isHost()) {
-      return console.warn(
+      console.warn(
         `Unexpected player ping information from player ${peer.getName()}`
       );
+      return;
     }
 
     const playerId = binaryReader.fixedLengthString(32);
