@@ -12,7 +12,7 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { ObjectType } from "../enums/object-type.js";
-import { CommandHandler } from "../decorators/command-handler-decorator.js";
+import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 
 export class ObjectOrchestrator {
   private readonly PERIODIC_MILLISECONDS = 500;
@@ -58,7 +58,7 @@ export class ObjectOrchestrator {
     }
   }
 
-  @CommandHandler(WebRTCType.ObjectData)
+  @PeerCommandHandler(WebRTCType.ObjectData)
   public handleObjectData(
     webrtcPeer: WebRTCPeer,
     binaryReader: BinaryReader

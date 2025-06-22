@@ -8,7 +8,7 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { EventQueueService } from "./event-queue-service.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
-import { CommandHandler } from "../decorators/command-handler-decorator.js";
+import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -41,7 +41,7 @@ export class EventProcessorService {
     this.localQueue.addEvent(event);
   }
 
-  @CommandHandler(WebRTCType.EventData)
+  @PeerCommandHandler(WebRTCType.EventData)
   public handleEventData(webrtcPeer: WebRTCPeer, binaryReader: BinaryReader) {
     if (webrtcPeer.getPlayer()?.isHost() === false) {
       return console.warn("Received event from non-host player");

@@ -1,4 +1,4 @@
-import { getCommandHandlers } from "../decorators/command-handler-decorator";
+import { getPeerCommandHandlers } from "../decorators/peer-command-handler-decorator";
 import { WebRTCType } from "../enums/webrtc-type";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer";
 import type { BinaryReader } from "../utils/binary-reader-utils";
@@ -12,7 +12,7 @@ export class WebRTCDispatcherService {
   private commandHandlers = new Map<WebRTCType, CommandHandlerFunction>();
 
   public registerCommandHandlers(instance: any): void {
-    const commandHandlers = getCommandHandlers().filter(
+    const commandHandlers = getPeerCommandHandlers().filter(
       (commandHandler) =>
         commandHandler.target === Object.getPrototypeOf(instance)
     );

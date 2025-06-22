@@ -8,7 +8,7 @@ import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
 import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
-import { CommandHandler } from "../decorators/command-handler-decorator.js";
+import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 
 export class WebRTCService {
   private dispatcherService: WebRTCDispatcherService;
@@ -132,13 +132,13 @@ export class WebRTCService {
     peer.addRemoteIceCandidate(iceCandidate);
   }
 
-  @CommandHandler(WebRTCType.GracefulDisconnect)
+  @PeerCommandHandler(WebRTCType.GracefulDisconnect)
   public handleGracefulDisconnect(peer: WebRTCPeer): void {
     console.log("Received graceful disconnect message");
     peer.disconnect(true);
   }
 
-  @CommandHandler(WebRTCType.PingRequest)
+  @PeerCommandHandler(WebRTCType.PingRequest)
   public handlePingRequest(peer: WebRTCPeer): void {
     const arrayBuffer = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PingResponse)
@@ -147,7 +147,7 @@ export class WebRTCService {
     peer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
-  @CommandHandler(WebRTCType.PingResponse)
+  @PeerCommandHandler(WebRTCType.PingResponse)
   public handlePingResponse(peer: WebRTCPeer): void {
     const pingRequestTime = peer.getPingRequestTime();
 

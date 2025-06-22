@@ -8,7 +8,7 @@ interface CommandHandlerMetadata {
 
 const commandHandlers: CommandHandlerMetadata[] = [];
 
-export function CommandHandler(commandId: WebRTCType) {
+export function PeerCommandHandler(commandId: WebRTCType) {
   return function (
     target: any,
     propertyKey: string,
@@ -22,6 +22,6 @@ export function CommandHandler(commandId: WebRTCType) {
   };
 }
 
-export function getCommandHandlers(): CommandHandlerMetadata[] {
+export function getPeerCommandHandlers(): CommandHandlerMetadata[] {
   return commandHandlers;
 }

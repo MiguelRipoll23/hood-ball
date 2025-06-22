@@ -22,7 +22,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
-import { CommandHandler } from "../decorators/command-handler-decorator.js";
+import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 
 export class MatchmakingService {
   private gameState: GameState;
@@ -111,7 +111,7 @@ export class MatchmakingService {
     }
   }
 
-  @CommandHandler(WebRTCType.JoinRequest)
+  @PeerCommandHandler(WebRTCType.JoinRequest)
   public handleJoinRequest(peer: WebRTCPeer): void {
     const match = this.gameState.getMatch();
 
@@ -149,7 +149,7 @@ export class MatchmakingService {
     this.sendJoinResponse(peer, match);
   }
 
-  @CommandHandler(WebRTCType.JoinResponse)
+  @PeerCommandHandler(WebRTCType.JoinResponse)
   public handleJoinResponse(
     peer: WebRTCPeer,
     binaryReader: BinaryReader
@@ -178,7 +178,7 @@ export class MatchmakingService {
     match.addPlayer(localGamePlayer);
   }
 
-  @CommandHandler(WebRTCType.PlayerConnection)
+  @PeerCommandHandler(WebRTCType.PlayerConnection)
   public handlePlayerConnection(
     peer: WebRTCPeer,
     binaryReader: BinaryReader
@@ -213,7 +213,7 @@ export class MatchmakingService {
     this.gameState.getMatch()?.addPlayer(gamePlayer);
   }
 
-  @CommandHandler(WebRTCType.SnapshotEnd)
+  @PeerCommandHandler(WebRTCType.SnapshotEnd)
   public handleSnapshotEnd(peer: WebRTCPeer): void {
     console.log("Received snapshot from", peer.getName());
 
@@ -241,7 +241,7 @@ export class MatchmakingService {
     this.sendSnapshotACK(peer);
   }
 
-  @CommandHandler(WebRTCType.SnapshotACK)
+  @PeerCommandHandler(WebRTCType.SnapshotACK)
   public handleSnapshotACK(peer: WebRTCPeer): void {
     console.log("Received snapshot ACK from", peer.getName());
 
@@ -277,7 +277,7 @@ export class MatchmakingService {
     this.advertiseMatch();
   }
 
-  @CommandHandler(WebRTCType.PlayerPing)
+  @PeerCommandHandler(WebRTCType.PlayerPing)
   public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gameState.getGamePlayer().isHost()) {
       return console.warn(
