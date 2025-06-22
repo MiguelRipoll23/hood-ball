@@ -58,7 +58,7 @@ export class GamePlayer {
     return this.pingTime;
   }
 
-  public setPingTime(pingTime: number): void {
+  public setPingTime(pingTime: number | null): void {
     this.pingTime = pingTime;
   }
 

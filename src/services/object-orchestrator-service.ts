@@ -12,6 +12,7 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { ObjectType } from "../enums/object-type.js";
+import { CommandHandler } from "../decorators/command-handler-decorator.js";
 
 export class ObjectOrchestrator {
   private readonly PERIODIC_MILLISECONDS = 500;
@@ -27,13 +28,7 @@ export class ObjectOrchestrator {
     this.webrtcService = gameController.getWebRTCService();
     this.gameFrame = gameController.getGameFrame();
     this.gameState = gameController.getGameState();
-  }
-
-  public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.addCommandHandler(
-      WebRTCType.ObjectData,
-      this.handleObjectData.bind(this, webrtcPeer)
-    );
+    this.webrtcService.registerCommandHandlers(this);
   }
 
   public sendLocalData(
@@ -63,6 +58,7 @@ export class ObjectOrchestrator {
     }
   }
 
+  @CommandHandler(WebRTCType.ObjectData)
   public handleObjectData(
     webrtcPeer: WebRTCPeer,
     binaryReader: BinaryReader

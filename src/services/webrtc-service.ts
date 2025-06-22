@@ -6,15 +6,39 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
+import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
+import { WebRTCType } from "../enums/webrtc-type.js";
+import { CommandHandler } from "../decorators/command-handler-decorator.js";
 
 export class WebRTCService {
+  private dispatcherService: WebRTCDispatcherService;
   private peers: Map<string, WebRTCPeer> = new Map();
 
   // Network stats
   private downloadKilobytesPerSecond: number = 0;
   private uploadKilobytesPerSecond: number = 0;
 
-  constructor(private gameController: GameController) {}
+  constructor(private gameController: GameController) {
+    this.dispatcherService = new WebRTCDispatcherService();
+    this.dispatcherService.registerCommandHandlers(this);
+    console.log("WebRTC service initialized");
+  }
+
+  public registerCommandHandlers(instance: any): void {
+    this.dispatcherService.registerCommandHandlers(instance);
+  }
+
+  public dispatchCommandHandler(
+    commandId: WebRTCType,
+    peer: WebRTCPeer,
+    binaryReader: BinaryReader
+  ): void {
+    this.dispatcherService.dispatchCommandHandler(
+      commandId,
+      peer,
+      binaryReader
+    );
+  }
 
   public async sendOffer(token: string): Promise<void> {
     const peer = this.addPeer(token);
@@ -106,6 +130,32 @@ export class WebRTCService {
     }
 
     peer.addRemoteIceCandidate(iceCandidate);
+  }
+
+  @CommandHandler(WebRTCType.GracefulDisconnect)
+  public handleGracefulDisconnect(peer: WebRTCPeer): void {
+    console.log("Received graceful disconnect message");
+    peer.disconnect(true);
+  }
+
+  @CommandHandler(WebRTCType.PingRequest)
+  public handlePingRequest(peer: WebRTCPeer): void {
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.PingResponse)
+      .toArrayBuffer();
+
+    peer.sendUnreliableUnorderedMessage(arrayBuffer);
+  }
+
+  @CommandHandler(WebRTCType.PingResponse)
+  public handlePingResponse(peer: WebRTCPeer): void {
+    const pingRequestTime = peer.getPingRequestTime();
+
+    if (pingRequestTime === null) {
+      return;
+    }
+
+    peer.setPingTime(performance.now() - pingRequestTime);
   }
 
   public resetNetworkStats(): void {

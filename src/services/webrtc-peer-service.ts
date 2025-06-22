@@ -1,7 +1,7 @@
 import { GameController } from "../models/game-controller.js";
 import { GamePlayer } from "../models/game-player.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import { WebRTCType } from "../enums/webrtc-type.js";
+import { WebRTCType } from "../enums/webrtc-type";
 import { WebRTCService } from "./webrtc-service.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
@@ -34,11 +34,6 @@ export class WebRTCPeerService implements WebRTCPeer {
   private downloadBytesPerSecond: number = 0;
   private uploadBytesPerSecond: number = 0;
 
-  private readonly commandHandlers = new Map<
-    WebRTCType,
-    (binaryReader: BinaryReader) => void
-  >();
-
   private messageQueue: Array<{
     channelKey: string;
     arrayBuffer: ArrayBuffer;
@@ -64,19 +59,6 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
 
     this.addEventListeners();
-    this.registerCommandHandlers();
-  }
-
-  public addCommandHandler(
-    commandId: WebRTCType,
-    handler: (binaryReader: BinaryReader) => void
-  ): void {
-    this.commandHandlers.set(commandId, handler);
-    console.log(
-      `Command handler ${
-        WebRTCType[commandId]
-      } registered for peer ${this.getName()}`
-    );
   }
 
   public getConnectionState(): RTCPeerConnectionState {
@@ -127,6 +109,10 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.uploadBytesPerSecond = 0;
   }
 
+  public getPingRequestTime(): number | null {
+    return this.pingRequestTime;
+  }
+
   public addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void {
     this.processIceCandidate(iceCandidate, false);
   }
@@ -168,12 +154,21 @@ export class WebRTCPeerService implements WebRTCPeer {
     return this.pingTime;
   }
 
+  public setPingTime(pingTime: number | null): void {
+    this.pingTime = pingTime;
+    this.player?.setPingTime(pingTime);
+  }
+
   public disconnectGracefully(): void {
     this.connected = false;
     this.sendDisconnectMessage();
   }
 
-  public disconnect(): void {
+  public disconnect(graceful = false): void {
+    if (graceful) {
+      this.connected = false;
+    }
+
     this.peerConnection.close();
   }
 
@@ -374,32 +369,6 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
   }
 
-  private registerCommandHandlers(): void {
-    this.registerConnectionCommandHandlers();
-    this.matchmakingService.registerCommandHandlers(this);
-    this.gameController
-      .getEventProcessorService()
-      .registerCommandHandlers(this);
-    this.gameController.getObjectOrchestrator().registerCommandHandlers(this);
-  }
-
-  private registerConnectionCommandHandlers(): void {
-    this.commandHandlers.set(
-      WebRTCType.GracefulDisconnect,
-      this.handleGracefulDisconnect.bind(this)
-    );
-
-    this.commandHandlers.set(
-      WebRTCType.PingRequest,
-      this.handlePingRequest.bind(this)
-    );
-
-    this.commandHandlers.set(
-      WebRTCType.PingResponse,
-      this.handlePingResponse.bind(this)
-    );
-  }
-
   private sendMessage(
     channelKey: string,
     arrayBuffer: ArrayBuffer,
@@ -549,15 +518,8 @@ export class WebRTCPeerService implements WebRTCPeer {
       return;
     }
 
-    const commandHandler = this.commandHandlers.get(commandId);
-
-    if (commandHandler === undefined) {
-      console.warn(`No command handler found for ID ${commandId}`);
-      return;
-    }
-
     try {
-      commandHandler(binaryReader);
+      this.webRTCService.dispatchCommandHandler(commandId, this, binaryReader);
     } catch (error) {
       console.error(
         `Error executing command handler for ID ${commandId} from peer ${this.getName()}:`,
@@ -646,29 +608,6 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     this.sendReliableOrderedMessage(arrayBuffer);
     console.log("Disconnect message sent");
-  }
-
-  private handleGracefulDisconnect(): void {
-    console.log("Received graceful disconnect message");
-    this.connected = false;
-    this.disconnect();
-  }
-
-  private handlePingRequest(): void {
-    const arrayBuffer = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.PingResponse)
-      .toArrayBuffer();
-
-    this.sendUnreliableUnorderedMessage(arrayBuffer);
-  }
-
-  private handlePingResponse(): void {
-    if (this.pingRequestTime === null) {
-      return;
-    }
-
-    this.pingTime = performance.now() - this.pingRequestTime;
-    this.player?.setPingTime(this.pingTime);
   }
 
   private isLoggingEnabled(): boolean {
