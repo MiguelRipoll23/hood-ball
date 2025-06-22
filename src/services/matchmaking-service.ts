@@ -5,7 +5,7 @@ import { Match } from "../models/match.js";
 import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
 import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { EventType } from "../enums/event-type.js";
 import { LocalEvent } from "../models/local-event.js";
@@ -22,6 +22,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 
 export class MatchmakingService {
   private gameState: GameState;
@@ -39,13 +40,7 @@ export class MatchmakingService {
     this.gameState = gameController.getGameState();
     this.pendingIdentities = new Map();
     this.receivedIdentities = new Map();
-  }
-
-  public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
-    this.registerJoinHandlers(webrtcPeer);
-    this.registerSnapshotHandlers(webrtcPeer);
-    this.registerConnectionHandlers(webrtcPeer);
-    this.registerPingHandlers(webrtcPeer);
+    this.gameController.getWebRTCService().registerCommandHandlers(this);
   }
 
   public async findOrAdvertiseMatch(): Promise<void> {
@@ -116,6 +111,7 @@ export class MatchmakingService {
     }
   }
 
+  @PeerCommandHandler(WebRTCType.JoinRequest)
   public handleJoinRequest(peer: WebRTCPeer): void {
     const match = this.gameState.getMatch();
 
@@ -153,6 +149,7 @@ export class MatchmakingService {
     this.sendJoinResponse(peer, match);
   }
 
+  @PeerCommandHandler(WebRTCType.JoinResponse)
   public handleJoinResponse(
     peer: WebRTCPeer,
     binaryReader: BinaryReader
@@ -181,6 +178,7 @@ export class MatchmakingService {
     match.addPlayer(localGamePlayer);
   }
 
+  @PeerCommandHandler(WebRTCType.PlayerConnection)
   public handlePlayerConnection(
     peer: WebRTCPeer,
     binaryReader: BinaryReader
@@ -204,7 +202,7 @@ export class MatchmakingService {
 
     if (isHost) {
       if (this.isHostIdentityUnverified(peer, gamePlayer)) {
-        peer.disconnect();
+        peer.disconnect(true);
         return;
       }
 
@@ -215,6 +213,7 @@ export class MatchmakingService {
     this.gameState.getMatch()?.addPlayer(gamePlayer);
   }
 
+  @PeerCommandHandler(WebRTCType.SnapshotEnd)
   public handleSnapshotEnd(peer: WebRTCPeer): void {
     console.log("Received snapshot from", peer.getName());
 
@@ -242,6 +241,7 @@ export class MatchmakingService {
     this.sendSnapshotACK(peer);
   }
 
+  @PeerCommandHandler(WebRTCType.SnapshotACK)
   public handleSnapshotACK(peer: WebRTCPeer): void {
     console.log("Received snapshot ACK from", peer.getName());
 
@@ -277,9 +277,13 @@ export class MatchmakingService {
     this.advertiseMatch();
   }
 
-  public handlePlayerPing(binaryReader: BinaryReader): void {
+  @PeerCommandHandler(WebRTCType.PlayerPing)
+  public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gameState.getGamePlayer().isHost()) {
-      return console.warn("Unexpected player ping information from a player");
+      console.warn(
+        `Unexpected player ping information from player ${peer.getName()}`
+      );
+      return;
     }
 
     const playerId = binaryReader.fixedLengthString(32);
@@ -375,7 +379,7 @@ export class MatchmakingService {
       peer.getToken()
     );
 
-    peer.disconnect();
+    peer.disconnect(true);
   }
 
   private handlePlayerDisconnection(peer: WebRTCPeer): void {
@@ -543,7 +547,7 @@ export class MatchmakingService {
 
   private handleGameMatchNull(peer: WebRTCPeer): void {
     console.warn("Game match is null, disconnecting peer...", peer.getToken());
-    peer.disconnect();
+    peer.disconnect(true);
   }
 
   private handleUnavailableSlots(peer: WebRTCPeer): void {
@@ -552,7 +556,7 @@ export class MatchmakingService {
       peer.getToken()
     );
 
-    peer.disconnect();
+    peer.disconnect(true);
   }
 
   private handleUnknownIdentity(peer: WebRTCPeer): void {
@@ -561,12 +565,12 @@ export class MatchmakingService {
       peer.getToken()
     );
 
-    peer.disconnect();
+    peer.disconnect(true);
   }
 
   private handleRemotePlayerNull(peer: WebRTCPeer): void {
     console.warn("Remote player is null for peer", peer.getToken());
-    peer.disconnect();
+    peer.disconnect(true);
   }
 
   private sendJoinResponse(peer: WebRTCPeer, match: Match): void {
@@ -732,46 +736,5 @@ export class MatchmakingService {
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
-  }
-
-  private registerJoinHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.addCommandHandler(WebRTCType.JoinRequest, () => {
-      this.handleJoinRequest(webrtcPeer);
-    });
-
-    webrtcPeer.addCommandHandler(
-      WebRTCType.JoinResponse,
-      (binaryReader: BinaryReader) => {
-        this.handleJoinResponse(webrtcPeer, binaryReader);
-      }
-    );
-  }
-
-  private registerSnapshotHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.addCommandHandler(WebRTCType.SnapshotEnd, () =>
-      this.handleSnapshotEnd(webrtcPeer)
-    );
-
-    webrtcPeer.addCommandHandler(WebRTCType.SnapshotACK, () =>
-      this.handleSnapshotACK(webrtcPeer)
-    );
-  }
-
-  private registerConnectionHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.addCommandHandler(
-      WebRTCType.PlayerConnection,
-      (binaryReader: BinaryReader) => {
-        this.handlePlayerConnection(webrtcPeer, binaryReader);
-      }
-    );
-  }
-
-  private registerPingHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.addCommandHandler(
-      WebRTCType.PlayerPing,
-      (binaryReader: BinaryReader) => {
-        this.handlePlayerPing(binaryReader);
-      }
-    );
   }
 }

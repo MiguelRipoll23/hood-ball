@@ -3,7 +3,7 @@ import { GameFrame } from "../models/game-frame.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
 import { ObjectUtils } from "../utils/object-utils.js";
 import type { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
@@ -12,6 +12,7 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { ObjectType } from "../enums/object-type.js";
+import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 
 export class ObjectOrchestrator {
   private readonly PERIODIC_MILLISECONDS = 500;
@@ -27,13 +28,7 @@ export class ObjectOrchestrator {
     this.webrtcService = gameController.getWebRTCService();
     this.gameFrame = gameController.getGameFrame();
     this.gameState = gameController.getGameState();
-  }
-
-  public registerCommandHandlers(webrtcPeer: WebRTCPeer): void {
-    webrtcPeer.addCommandHandler(
-      WebRTCType.ObjectData,
-      this.handleObjectData.bind(this, webrtcPeer)
-    );
+    this.webrtcService.registerCommandHandlers(this);
   }
 
   public sendLocalData(
@@ -63,6 +58,7 @@ export class ObjectOrchestrator {
     }
   }
 
+  @PeerCommandHandler(WebRTCType.ObjectData)
   public handleObjectData(
     webrtcPeer: WebRTCPeer,
     binaryReader: BinaryReader

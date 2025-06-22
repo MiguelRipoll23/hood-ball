@@ -1,23 +1,19 @@
-import type { WebRTCType } from "../enums/webrtc-type.js";
-import { GamePlayer } from "../models/game-player.js";
-import type { BinaryReader } from "../utils/binary-reader-utils.js";
+import { GamePlayer } from "../../models/game-player.js";
 
 export interface WebRTCPeer {
   getConnectionState(): RTCPeerConnectionState;
   isConnected(): boolean;
   getToken(): string;
+  getPingRequestTime(): number | null;
   getPingTime(): number | null;
+  setPingTime(pingTime: number | null): void;
   getName(): string;
   getPlayer(): GamePlayer | null;
   setPlayer(player: GamePlayer): void;
   hasJoined(): boolean;
   setJoined(joined: boolean): void;
-  disconnect(): void;
+  disconnect(graceful: boolean): void;
   disconnectGracefully(): void;
-  addCommandHandler(
-    type: WebRTCType,
-    handler: (binaryReader: BinaryReader) => void
-  ): void;
   createOffer(): Promise<RTCSessionDescriptionInit>;
   createAnswer(
     offer: RTCSessionDescriptionInit
