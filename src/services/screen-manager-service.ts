@@ -9,13 +9,18 @@ export class ScreenManagerService implements ScreenManager {
 
   private transitionService: ScreenTransitionService;
 
-  constructor(screen: GameScreen) {
-    this.transitionService = new ScreenTransitionService();
-    this.stack.push(screen);
+  constructor() {
+    this.transitionService = new ScreenTransitionService(this);
   }
 
   public getTransitionService(): ScreenTransitionService {
     return this.transitionService;
+  }
+
+  public setInitialScreen(screen: GameScreen): void {
+    this.currentScreen = screen;
+    this.currentScreen.setScreenManagerService(this);
+    this.stack.push(screen);
   }
 
   public getPreviousScreen(): GameScreen | null {
