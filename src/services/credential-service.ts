@@ -15,10 +15,12 @@ import { EventProcessorService } from "./event-processor-service.js";
 import { ServiceLocator } from "./service-locator.js";
 
 export class CredentialService {
-  private apiService: APIService;
+  private gameState: GameState;
+  private readonly apiService: APIService;
   private readonly eventProcessorService: EventProcessorService;
 
-  constructor(private gameState: GameState) {
+  constructor() {
+    this.gameState = ServiceLocator.get(GameState);
     this.apiService = ServiceLocator.get(APIService);
     this.eventProcessorService = ServiceLocator.get(EventProcessorService);
   }

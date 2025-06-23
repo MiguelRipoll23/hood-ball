@@ -43,7 +43,14 @@ export class WebSocketDispatcherService {
       return;
     }
 
-    commandHandler(binaryReader);
+    try {
+      commandHandler(binaryReader);
+    } catch (error) {
+      console.error(
+        `Error executing command handler for ${WebSocketType[commandId]}:`,
+        error
+      );
+    }
   }
 
   private bindCommandHandler(

@@ -1,10 +1,11 @@
 import { GameServer } from "../models/game-server.js";
-import type { GameState } from "../models/game-state.js";
+import { GameState } from "../models/game-state.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class CryptoService {
   private gameServer: GameServer;
 
-  constructor(gameState: GameState) {
+  constructor(gameState = ServiceLocator.get(GameState)) {
     this.gameServer = gameState.getGameServer();
   }
 

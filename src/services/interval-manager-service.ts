@@ -1,4 +1,4 @@
-import { IntervalService } from "./interval-service.ts";
+import { IntervalService } from "./interval-service.js";
 
 export class IntervalManagerService {
   private intervals: Set<IntervalService> = new Set();

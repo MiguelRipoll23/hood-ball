@@ -1,4 +1,4 @@
-import type { GameState } from "../models/game-state.js";
+import { GameState } from "../models/game-state.js";
 import { APIService } from "./api-service.js";
 import { CredentialService } from "./credential-service.js";
 import { CryptoService } from "./crypto-service.js";
@@ -15,19 +15,25 @@ import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
 
 export class ServiceManager {
-  public static register(gameState: GameState): void {
-    this.registerCoreServices(gameState);
-    this.registerCommunicationServices(gameState);
-    this.registerGameplayServices(gameState);
-    this.initializeServices();
+  public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
+    const gameState = new GameState(canvas, debugging);
+    ServiceManager.registerGameStates(gameState);
+    ServiceManager.registerCoreServices();
+    ServiceManager.registerCommunicationServices();
+    ServiceManager.registerGameplayServices();
+    ServiceManager.initializeServices();
   }
 
-  private static registerCoreServices(gameState: GameState): void {
-    ServiceLocator.register(DebugService, new DebugService(gameState));
-    ServiceLocator.register(CryptoService, new CryptoService(gameState));
+  private static registerGameStates(gameState: GameState): void {
+    ServiceLocator.register(GameState, gameState);
+  }
+
+  private static registerCoreServices(): void {
+    ServiceLocator.register(DebugService, new DebugService());
+    ServiceLocator.register(CryptoService, new CryptoService());
     ServiceLocator.register(
       ScreenTransitionService,
-      new ScreenTransitionService(gameState.getGameFrame())
+      new ScreenTransitionService()
     );
     ServiceLocator.register(TimerManagerService, new TimerManagerService());
     ServiceLocator.register(
@@ -39,25 +45,19 @@ export class ServiceManager {
     ServiceLocator.register(EventConsumerService, new EventConsumerService());
     ServiceLocator.register(
       ObjectOrchestratorService,
-      new ObjectOrchestratorService(gameState)
+      new ObjectOrchestratorService()
     );
   }
 
-  private static registerGameplayServices(gameState: GameState): void {
+  private static registerGameplayServices(): void {
     ServiceLocator.register(APIService, new APIService());
-    ServiceLocator.register(
-      CredentialService,
-      new CredentialService(gameState)
-    );
-    ServiceLocator.register(
-      MatchmakingService,
-      new MatchmakingService(gameState)
-    );
+    ServiceLocator.register(CredentialService, new CredentialService());
+    ServiceLocator.register(MatchmakingService, new MatchmakingService());
   }
 
-  private static registerCommunicationServices(gameState: GameState): void {
-    ServiceLocator.register(WebSocketService, new WebSocketService(gameState));
-    ServiceLocator.register(WebRTCService, new WebRTCService(gameState));
+  private static registerCommunicationServices(): void {
+    ServiceLocator.register(WebSocketService, new WebSocketService());
+    ServiceLocator.register(WebRTCService, new WebRTCService());
   }
 
   private static initializeServices() {

@@ -1,6 +1,7 @@
 import { ImGui, ImGuiImplWeb } from "@mori2003/jsimgui";
 import { DebugWindow } from "../windows/debug-window";
-import type { GameState } from "../models/game-state";
+import { GameState } from "../models/game-state";
+import { ServiceLocator } from "./service-locator";
 
 export class DebugService {
   private debugCanvas: HTMLCanvasElement;
@@ -10,7 +11,7 @@ export class DebugService {
   private debugWindow: DebugWindow | null = null;
   private readonly knownEvents = new Set<string>();
 
-  constructor(private gameState: GameState) {
+  constructor(private gameState = ServiceLocator.get(GameState)) {
     console.log(`${this.constructor.name} created`);
     this.debugCanvas = this.getDebugCanvas();
     this.gameCanvas = this.gameState.getCanvas();

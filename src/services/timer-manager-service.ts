@@ -19,13 +19,17 @@ export class TimerManagerService {
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    const completedTimers: TimerService[] = [];
+
     for (const timer of this.timers) {
       if (timer.hasCompleted()) {
-        this.removeTimer(timer);
+        completedTimers.push(timer);
       } else {
         timer.update(deltaTimeStamp);
       }
     }
+
+    completedTimers.forEach((timer) => this.removeTimer(timer));
   }
 
   public clear(): void {

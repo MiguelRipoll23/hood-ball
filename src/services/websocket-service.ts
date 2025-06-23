@@ -6,7 +6,7 @@ import type { ServerDisconnectedPayload } from "../interfaces/events/server-disc
 import type { ServerNotificationPayload } from "../interfaces/events/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { APIUtils } from "../utils/api-utils.js";
-import type { GameState } from "../models/game-state.js";
+import { GameState } from "../models/game-state.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
@@ -20,7 +20,7 @@ export class WebSocketService {
   private eventProcessorService: EventProcessorService;
   private dispatcherService: WebSocketDispatcherService;
 
-  constructor(private gameState: GameState) {
+  constructor(private gameState = ServiceLocator.get(GameState)) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.eventProcessorService = ServiceLocator.get(EventProcessorService);
     this.dispatcherService = new WebSocketDispatcherService();

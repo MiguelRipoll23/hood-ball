@@ -50,7 +50,7 @@ export class MatchmakingService {
   private readonly webrtcService: WebRTCService;
   private readonly eventProcessorService: EventProcessorService;
 
-  constructor(private gameState: GameState) {
+  constructor(private gameState = ServiceLocator.get(GameState)) {
     this.pendingIdentities = new Map();
     this.receivedIdentities = new Map();
     this.timerManagerService = ServiceLocator.get(TimerManagerService);

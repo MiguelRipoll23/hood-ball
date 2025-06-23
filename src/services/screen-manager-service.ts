@@ -10,7 +10,7 @@ export class ScreenManagerService implements ScreenManager {
   private transitionService: ScreenTransitionService;
 
   constructor(screen: GameScreen) {
-    this.transitionService = new ScreenTransitionService(this);
+    this.transitionService = new ScreenTransitionService();
     this.stack.push(screen);
   }
 

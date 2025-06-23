@@ -6,7 +6,7 @@ import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { ServiceLocator } from "./service-locator.js";
-import type { GameState } from "../models/game-state.js";
+import { GameState } from "../models/game-state.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_MAXIMUM = 65535;
@@ -40,7 +40,10 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer;
   }> = [];
 
-  constructor(private gameState: GameState, private token: string) {
+  constructor(
+    private gameState = ServiceLocator.get(GameState),
+    private token: string
+  ) {
     this.matchmakingService = ServiceLocator.get(MatchmakingService);
     this.webrtcService = ServiceLocator.get(WebRTCService);
 

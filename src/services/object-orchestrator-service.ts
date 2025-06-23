@@ -20,7 +20,7 @@ export class ObjectOrchestratorService {
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
-  constructor(private gameState: GameState) {}
+  constructor(private gameState = ServiceLocator.get(GameState)) {}
 
   public initialize(): void {
     this.webrtcService = ServiceLocator.get(WebRTCService);

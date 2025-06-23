@@ -49,9 +49,9 @@ export class GameLoopService {
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    this.gameState = new GameState(this.canvas, this.debug);
+    ServiceManager.register(this.canvas, this.debug);
+    this.gameState = ServiceLocator.get(GameState);
     this.gameFrame = this.gameState.getGameFrame();
-    ServiceManager.register(this.gameState);
     this.debugService = ServiceLocator.get(DebugService);
     this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.timerManagerService = ServiceLocator.get(TimerManagerService);

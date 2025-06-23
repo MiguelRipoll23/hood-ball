@@ -11,7 +11,7 @@ import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator
 import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { ServiceLocator } from "./service-locator.js";
-import type { GameState } from "../models/game-state.js";
+import { GameState } from "../models/game-state.js";
 
 export class WebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
@@ -23,7 +23,7 @@ export class WebRTCService {
   private readonly dispatcherService: WebRTCDispatcherService;
   private webSocketService: WebSocketService | null = null;
 
-  constructor(private gameState: GameState) {
+  constructor(private gameState = ServiceLocator.get(GameState)) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
   }
