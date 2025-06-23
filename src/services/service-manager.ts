@@ -18,7 +18,7 @@ export class ServiceManager {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
     const gameState = new GameState(canvas, debugging);
     ServiceManager.registerGameStates(gameState);
-    ServiceManager.registerCoreServices();
+    ServiceManager.registerCoreServices(gameState);
     ServiceManager.registerCommunicationServices();
     ServiceManager.registerGameplayServices();
     ServiceManager.initializeServices();
@@ -28,12 +28,14 @@ export class ServiceManager {
     ServiceLocator.register(GameState, gameState);
   }
 
-  private static registerCoreServices(): void {
+  private static registerCoreServices(gameState: GameState): void {
+    const gameFrame = gameState.getGameFrame();
+
     ServiceLocator.register(DebugService, new DebugService());
     ServiceLocator.register(CryptoService, new CryptoService());
     ServiceLocator.register(
       ScreenTransitionService,
-      new ScreenTransitionService()
+      new ScreenTransitionService(gameFrame)
     );
     ServiceLocator.register(TimerManagerService, new TimerManagerService());
     ServiceLocator.register(

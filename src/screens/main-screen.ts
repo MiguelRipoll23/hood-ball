@@ -9,9 +9,11 @@ export class MainScreen extends BaseGameScreen {
 
   constructor(gameState: GameState) {
     super(gameState);
+    this.screenManagerService = new ScreenManagerService();
   }
 
   public setScreen(screen: GameScreen): void {
+    console.log("MainScreen: Setting new screen", screen.constructor.name);
     this.screen = screen;
     this.updateScreen(screen);
   }
@@ -48,11 +50,7 @@ export class MainScreen extends BaseGameScreen {
   private updateScreen(screen: GameScreen): void {
     // Set the screen to be fully visible
     this.screen?.setOpacity(1);
-
-    this.screenManagerService = new ScreenManagerService(screen);
-    this.screenManagerService.setCurrentScreen(screen);
-
-    this.screen?.setScreenManagerService(this.screenManagerService);
+    this.screenManagerService?.pushScreenToStack(screen);
   }
 
   private createMainBackgroundObject() {
