@@ -1,20 +1,20 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameObject } from "../interfaces/objects/game-object.js";
 import type { GameScreen } from "../interfaces/screen/game-screen.js";
-import type { GameController } from "../models/game-controller.js";
 import { BaseAnimatedGameObject } from "../objects/base/base-animated-object.js";
 import { BallObject } from "../objects/ball-object.js";
 import { RemoteCarObject } from "../objects/remote-car-object.js";
 import { BaseWindow } from "./base-window.js";
+import type { GameState } from "../models/game-state.js";
 
 export class ScreenInspectorWindow extends BaseWindow {
-  constructor(private gameController: GameController) {
+  constructor(private gameState: GameState) {
     super("Screen inspector", new ImVec2(300, 350));
     console.log(`${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {
-    const screen = this.gameController.getGameFrame().getCurrentScreen();
+    const screen = this.gameState.getGameFrame().getCurrentScreen();
     const subScreen =
       screen?.getScreenManagerService()?.getCurrentScreen() ?? null;
 
@@ -93,8 +93,8 @@ export class ScreenInspectorWindow extends BaseWindow {
   private renderObjectActions(object: GameObject, uniqueId: string): void {
     if (object instanceof BaseAnimatedGameObject) {
       if (ImGui.Button(`Teleport##${uniqueId}`)) {
-        const canvasWidth = this.gameController.getCanvas().width;
-        const canvasHeight = this.gameController.getCanvas().height;
+        const canvasWidth = this.gameState.getCanvas().width;
+        const canvasHeight = this.gameState.getCanvas().height;
         const x = 25 + Math.random() * (canvasWidth - 25);
         const y = 25 + Math.random() * (canvasHeight - 25);
         object.setX(x);
@@ -130,15 +130,13 @@ export class ScreenInspectorWindow extends BaseWindow {
       const x = object.getX();
       const y = object.getY() - object.getHeight() * 2;
 
-      const ballObject = new BallObject(x, y, this.gameController.getCanvas());
+      const ballObject = new BallObject(x, y, this.gameState.getCanvas());
       ballObject.setId(crypto.randomUUID().replaceAll("-", ""));
-      ballObject.setDebugSettings(this.gameController.getDebugSettings());
+      ballObject.setDebugSettings(this.gameState.getDebugSettings());
       ballObject.setVY(5);
       ballObject.load();
 
-      const currentScreen = this.gameController
-        .getGameFrame()
-        .getCurrentScreen();
+      const currentScreen = this.gameState.getGameFrame().getCurrentScreen();
 
       if (currentScreen) {
         currentScreen.getSceneObjects().push(ballObject);
@@ -163,16 +161,12 @@ export class ScreenInspectorWindow extends BaseWindow {
         0
       );
 
-      remoteCarObject.setDebugSettings(this.gameController.getDebugSettings());
-      remoteCarObject.setOwner(
-        this.gameController.getGameState().getGamePlayer()
-      );
+      remoteCarObject.setDebugSettings(this.gameState.getDebugSettings());
+      remoteCarObject.setOwner(this.gameState.getGamePlayer());
 
       remoteCarObject.setVY(5);
 
-      const currentScreen = this.gameController
-        .getGameFrame()
-        .getCurrentScreen();
+      const currentScreen = this.gameState.getGameFrame().getCurrentScreen();
 
       if (currentScreen) {
         currentScreen.getSceneObjects().push(remoteCarObject);

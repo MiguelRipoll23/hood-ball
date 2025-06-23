@@ -1,18 +1,22 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller.js";
 import { BaseWindow } from "./base-window.js";
+import { WebRTCService } from "../services/webrtc-service.js";
+import { ServiceLocator } from "../services/service-locator.js";
 
 export class PeerInspectorWindow extends BaseWindow {
   private static readonly COLOR_CONNECTED_STATE = 0xff00ff00;
   private static readonly COLOR_OTHER_STATE = 0xffffffff;
 
-  constructor(private gameController: GameController) {
+  private readonly webrtcService: WebRTCService;
+
+  constructor() {
     super("Peer inspector", new ImVec2(500, 300));
+    this.webrtcService = ServiceLocator.get(WebRTCService);
     console.log(`${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {
-    const peers = this.gameController.getWebRTCService().getPeers();
+    const peers = this.webrtcService.getPeers();
 
     ImGui.Text("Total: " + peers.length);
 

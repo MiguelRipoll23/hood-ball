@@ -1,10 +1,10 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller.js";
 import { ScreenInspectorWindow } from "./screen-inspector-window.js";
 import { EventInspectorWindow } from "./event-inspector-window.js";
 import { MatchInspectorWindow } from "./match-inspector-window.js";
 import { BaseWindow } from "./base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
+import type { GameState } from "../models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
   private eventInspectorWindow: EventInspectorWindow;
@@ -12,12 +12,12 @@ export class DebugWindow extends BaseWindow {
   private matchInspectorWindow: MatchInspectorWindow;
   private peerInspectorWindow: PeerInspectorWindow;
 
-  constructor(private gameController: GameController) {
+  constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
-    this.eventInspectorWindow = new EventInspectorWindow(gameController);
-    this.screenInspectorWindow = new ScreenInspectorWindow(gameController);
-    this.matchInspectorWindow = new MatchInspectorWindow(gameController);
-    this.peerInspectorWindow = new PeerInspectorWindow(gameController);
+    this.eventInspectorWindow = new EventInspectorWindow();
+    this.screenInspectorWindow = new ScreenInspectorWindow(gameState);
+    this.matchInspectorWindow = new MatchInspectorWindow(gameState);
+    this.peerInspectorWindow = new PeerInspectorWindow();
     this.open();
   }
 
@@ -63,7 +63,7 @@ export class DebugWindow extends BaseWindow {
 
   private renderLoggingSettings(): void {
     if (ImGui.CollapsingHeader("Logging", ImGui.TreeNodeFlags.DefaultOpen)) {
-      const debugSettings = this.gameController.getDebugSettings();
+      const debugSettings = this.gameState.getDebugSettings();
 
       this.renderCheckbox(
         "Log WebSocket messages",
@@ -81,7 +81,7 @@ export class DebugWindow extends BaseWindow {
 
   private renderUISettings(): void {
     if (ImGui.CollapsingHeader("UI", ImGui.TreeNodeFlags.DefaultOpen)) {
-      const debugSettings = this.gameController.getDebugSettings();
+      const debugSettings = this.gameState.getDebugSettings();
 
       this.renderCheckbox(
         "Show tappable areas",

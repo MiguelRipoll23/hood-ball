@@ -1,10 +1,12 @@
 import { GameServer } from "../models/game-server.js";
+import { GameState } from "../models/game-state.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class CryptoService {
   private gameServer: GameServer;
 
-  constructor(gameServer: GameServer) {
-    this.gameServer = gameServer;
+  constructor(gameState = ServiceLocator.get(GameState)) {
+    this.gameServer = gameState.getGameServer();
   }
 
   public async encryptRequest(request: string): Promise<ArrayBuffer> {

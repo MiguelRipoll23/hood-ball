@@ -1,10 +1,12 @@
-import { GameController } from "../../models/game-controller.js";
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import type { RankingResponse } from "../../interfaces/response/ranking-response.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { RankingTableObject } from "../../objects/ranking-table-object.js";
+import type { GameState } from "../../models/game-state.js";
+import { APIService } from "../../services/api-service.js";
+import { ServiceLocator } from "../../services/service-locator.js";
 
 export class ScoreboardScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
@@ -12,8 +14,11 @@ export class ScoreboardScreen extends BaseGameScreen {
   private rankingTableObject: RankingTableObject | null = null;
   private closeableMessageObject: CloseableMessageObject | null = null;
 
-  constructor(gameController: GameController) {
-    super(gameController);
+  private apiService: APIService;
+
+  constructor(gameState: GameState) {
+    super(gameState);
+    this.apiService = ServiceLocator.get(APIService);
   }
 
   public override load(): void {
@@ -55,8 +60,7 @@ export class ScoreboardScreen extends BaseGameScreen {
   }
 
   private fetchRanking(): void {
-    const apiService = this.gameController.getAPIService();
-    apiService
+    this.apiService
       .getRanking()
       .then((ranking) => {
         this.setRankingData(ranking);

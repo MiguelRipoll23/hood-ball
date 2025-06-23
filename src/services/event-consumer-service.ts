@@ -1,9 +1,10 @@
 import { EventType } from "../enums/event-type.js";
 import { EventQueueService } from "./event-queue-service.js";
 import type { EventSubscription } from "../types/event-subscription.js";
-import { GameController } from "../models/game-controller.js";
 import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
+import { EventProcessorService } from "./event-processor-service.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class EventConsumerService {
   private localQueue: EventQueueService<LocalEvent>;
@@ -12,11 +13,10 @@ export class EventConsumerService {
   private localSubscriptions: EventSubscription[] = [];
   private remoteSubscriptions: EventSubscription[] = [];
 
-  constructor(gameController: GameController) {
-    this.localQueue = gameController.getEventProcessorService().getLocalQueue();
-    this.remoteQueue = gameController
-      .getEventProcessorService()
-      .getRemoteQueue();
+  constructor() {
+    const eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.localQueue = eventProcessorService.getLocalQueue();
+    this.remoteQueue = eventProcessorService.getRemoteQueue();
   }
 
   public subscribeToLocalEvent<T>(

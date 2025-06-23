@@ -1,19 +1,19 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller";
 import { BaseWindow } from "./base-window";
 import { MatchStateType } from "../enums/match-state-type";
 import type { GamePlayer } from "../models/game-player";
+import type { GameState } from "../models/game-state";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;
 
-  constructor(private gameController: GameController) {
+  constructor(private gameState: GameState) {
     super("Match inspector", new ImVec2(450, 300));
     console.log(`${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {
-    const match = this.gameController.getGameState().getMatch();
+    const match = this.gameState.getMatch();
 
     if (match === null) {
       ImGui.Text("No active match.");

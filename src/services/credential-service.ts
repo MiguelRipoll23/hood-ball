@@ -4,7 +4,6 @@ import type { RegistrationOptionsRequest } from "../interfaces/request/registrat
 import type { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
 import type { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
 import type { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
-import { GameController } from "../models/game-controller.js";
 import { GameState } from "../models/game-state.js";
 import { LocalEvent } from "../models/local-event.js";
 import { ServerError } from "../models/server-error.js";
@@ -13,16 +12,17 @@ import { Base64Utils } from "../utils/base64-utils.js";
 import { WebAuthnUtils } from "../utils/webauthn-utils.js";
 import { APIService } from "./api-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class CredentialService {
   private gameState: GameState;
-  private apiService: APIService;
-  private eventProcessorService: EventProcessorService;
+  private readonly apiService: APIService;
+  private readonly eventProcessorService: EventProcessorService;
 
-  constructor(gameController: GameController) {
-    this.gameState = gameController.getGameState();
-    this.apiService = gameController.getAPIService();
-    this.eventProcessorService = gameController.getEventProcessorService();
+  constructor() {
+    this.gameState = ServiceLocator.get(GameState);
+    this.apiService = ServiceLocator.get(APIService);
+    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
   }
 
   public async getCredential(): Promise<void> {

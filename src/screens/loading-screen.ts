@@ -1,18 +1,19 @@
-import { GameController } from "../models/game-controller.js";
+import type { GameState } from "../models/game-state.js";
 import { LoadingBackgroundObject } from "../objects/backgrounds/loading-background-object.js";
 import { ProgressBarObject } from "../objects/common/progress-bar-object.js";
 import { ScreenTransitionService } from "../services/screen-transition-service.js";
+import { ServiceLocator } from "../services/service-locator.js";
 import { BaseGameScreen } from "./base/base-game-screen.js";
 import { WorldScreen } from "./world-screen.js";
 
 export class LoadingScreen extends BaseGameScreen {
-  private transitionService: ScreenTransitionService;
+  private screenTransitionService: ScreenTransitionService;
   private progressBarObject: ProgressBarObject | null = null;
   private worldScreen: WorldScreen | null = null;
 
-  constructor(gameController: GameController) {
-    super(gameController);
-    this.transitionService = gameController.getTransitionService();
+  constructor(gameState: GameState) {
+    super(gameState);
+    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
   }
 
   public override load(): void {
@@ -25,10 +26,10 @@ export class LoadingScreen extends BaseGameScreen {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
-    this.worldScreen = new WorldScreen(this.gameController);
+    this.worldScreen = new WorldScreen(this.gameState);
     this.worldScreen.load();
 
-    this.transitionService.fadeOutAndIn(this.worldScreen, 1, 1);
+    this.screenTransitionService.fadeOutAndIn(this.worldScreen, 1, 1);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

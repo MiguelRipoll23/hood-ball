@@ -1,5 +1,4 @@
 import { WEBSOCKET_ENDPOINT } from "../constants/api-constants.js";
-import { GameController } from "../models/game-controller.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { EventType } from "../enums/event-type.js";
@@ -7,20 +6,29 @@ import type { ServerDisconnectedPayload } from "../interfaces/events/server-disc
 import type { ServerNotificationPayload } from "../interfaces/events/server-notification-payload.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { APIUtils } from "../utils/api-utils.js";
-import type { GameState } from "../models/game-state.js";
+import { GameState } from "../models/game-state.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
+import { ServerCommandHandler } from "../decorators/server-command-handler.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class WebSocketService {
-  private gameState: GameState;
-  private eventProcessorService: EventProcessorService;
   private baseURL: string;
   private webSocket: WebSocket | null = null;
 
-  constructor(private gameController: GameController) {
-    this.gameState = gameController.getGameState();
-    this.eventProcessorService = gameController.getEventProcessorService();
+  private eventProcessorService: EventProcessorService;
+  private dispatcherService: WebSocketDispatcherService;
+
+  constructor(private gameState = ServiceLocator.get(GameState)) {
     this.baseURL = APIUtils.getWSBaseURL();
+    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.dispatcherService = new WebSocketDispatcherService();
+    this.dispatcherService.registerCommandHandlers(this);
+  }
+
+  public registerCommandHandlers(instance: any): void {
+    this.dispatcherService.registerCommandHandlers(instance);
   }
 
   public connectToServer(): void {
@@ -63,6 +71,22 @@ export class WebSocketService {
     }
   }
 
+  @ServerCommandHandler(WebSocketType.Notification)
+  public handleNotificationMessage(binaryReader: BinaryReader) {
+    const textBytes = binaryReader.bytesAsArrayBuffer();
+
+    const message = new TextDecoder("utf-8").decode(textBytes);
+    const localEvent = new LocalEvent<ServerNotificationPayload>(
+      EventType.ServerNotification
+    );
+
+    localEvent.setData({
+      message,
+    });
+
+    this.eventProcessorService.addLocalEvent(localEvent);
+  }
+
   private addEventListeners(webSocket: WebSocket): void {
     webSocket.addEventListener("open", this.handleOpenEvent.bind(this));
     webSocket.addEventListener("close", this.handleCloseEvent.bind(this));
@@ -73,9 +97,9 @@ export class WebSocketService {
   private handleOpenEvent(): void {
     console.log("Connected to server");
     this.gameState.getGameServer().setConnected(true);
-    this.gameController
-      .getEventProcessorService()
-      .addLocalEvent(new LocalEvent(EventType.ServerConnected));
+    this.eventProcessorService.addLocalEvent(
+      new LocalEvent(EventType.ServerConnected)
+    );
   }
 
   private handleCloseEvent(event: CloseEvent): void {
@@ -110,47 +134,19 @@ export class WebSocketService {
       );
     }
 
-    const typeId = binaryReader.unsignedInt8();
+    const commandId = binaryReader.unsignedInt8();
 
-    switch (typeId) {
-      case WebSocketType.Notification:
-        this.handleNotificationMessage(binaryReader);
-        break;
-
-      case WebSocketType.PlayerIdentity:
-        this.gameController
-          .getMatchmakingService()
-          .handlePlayerIdentity(binaryReader);
-        break;
-
-      case WebSocketType.Tunnel:
-        this.gameController
-          .getWebRTCService()
-          .handleTunnelWebRTCData(binaryReader);
-        break;
-
-      default: {
-        console.warn("Unknown websocket message identifier", typeId);
-      }
+    try {
+      this.dispatcherService.dispatchCommand(commandId, binaryReader);
+    } catch (error) {
+      console.error(
+        `Error executing server command handler for ID ${commandId}}:`,
+        error
+      );
     }
   }
 
-  private handleNotificationMessage(binaryReader: BinaryReader) {
-    const textBytes = binaryReader.bytesAsArrayBuffer();
-
-    const message = new TextDecoder("utf-8").decode(textBytes);
-    const localEvent = new LocalEvent<ServerNotificationPayload>(
-      EventType.ServerNotification
-    );
-
-    localEvent.setData({
-      message,
-    });
-
-    this.eventProcessorService.addLocalEvent(localEvent);
-  }
-
   private isLoggingEnabled(): boolean {
-    return this.gameController.getDebugSettings().isWebSocketLoggingEnabled();
+    return this.gameState.getDebugSettings().isWebSocketLoggingEnabled();
   }
 }

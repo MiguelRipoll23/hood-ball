@@ -1,14 +1,16 @@
-import { getPeerCommandHandlers } from "../decorators/peer-command-handler-decorator";
-import { WebRTCType } from "../enums/webrtc-type";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer";
-import type { PeerCommandHandlerFunction } from "../types/peer-command-handler-function-type";
+import { getServerCommandHandlers } from "../decorators/server-command-handler";
+import { WebSocketType } from "../enums/websocket-type";
+import type { ServerCommandHandlerFunction } from "../types/server-command-handler-function-type";
 import type { BinaryReader } from "../utils/binary-reader-utils";
 
-export class WebRTCDispatcherService {
-  private commandHandlers = new Map<WebRTCType, PeerCommandHandlerFunction>();
+export class WebSocketDispatcherService {
+  private commandHandlers = new Map<
+    WebSocketType,
+    ServerCommandHandlerFunction
+  >();
 
   public registerCommandHandlers(instance: any): void {
-    const commandHandlers = getPeerCommandHandlers().filter(
+    const commandHandlers = getServerCommandHandlers().filter(
       (commandHandler) =>
         commandHandler.target === Object.getPrototypeOf(instance)
     );
@@ -29,27 +31,33 @@ export class WebRTCDispatcherService {
   }
 
   public dispatchCommand(
-    commandId: WebRTCType,
-    webrtcPeer: WebRTCPeer,
+    commandId: WebSocketType,
     binaryReader: BinaryReader
   ): void {
     const commandHandler = this.commandHandlers.get(commandId);
 
     if (commandHandler === undefined) {
       console.warn(
-        `No peer command handler found for ${WebRTCType[commandId]}`
+        `No server command handler found for ${WebSocketType[commandId]}`
       );
       return;
     }
 
-    commandHandler(webrtcPeer, binaryReader);
+    try {
+      commandHandler(binaryReader);
+    } catch (error) {
+      console.error(
+        `Error executing command handler for ${WebSocketType[commandId]}:`,
+        error
+      );
+    }
   }
 
   private bindCommandHandler(
-    commandId: WebRTCType,
-    commandHandler: PeerCommandHandlerFunction
+    commandId: WebSocketType,
+    commandHandler: ServerCommandHandlerFunction
   ): void {
     this.commandHandlers.set(commandId, commandHandler);
-    console.log(`Peer command handler bound for ${WebRTCType[commandId]}`);
+    console.log(`Server command handler bound for ${WebSocketType[commandId]}`);
   }
 }

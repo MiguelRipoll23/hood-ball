@@ -1,16 +1,19 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller.js";
 import { EventType } from "../enums/event-type.js";
 import type { GameEvent } from "../interfaces/events/game-event.js";
 import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { BaseWindow } from "./base-window.js";
+import { EventProcessorService } from "../services/event-processor-service.js";
+import { ServiceLocator } from "../services/service-locator.js";
 
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
+  private readonly eventProcessorService: EventProcessorService;
 
-  constructor(private gameController: GameController) {
+  constructor() {
     super("Event inspector", new ImVec2(195, 230));
+    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
 
@@ -41,8 +44,8 @@ export class EventInspectorWindow extends BaseWindow {
   private getReversedEvents(type: "local" | "remote"): GameEvent[] {
     const queue =
       type === "local"
-        ? this.gameController.getEventProcessorService().getLocalQueue()
-        : this.gameController.getEventProcessorService().getRemoteQueue();
+        ? this.eventProcessorService.getLocalQueue()
+        : this.eventProcessorService.getRemoteQueue();
 
     return queue.getEvents().toReversed();
   }
@@ -95,15 +98,9 @@ export class EventInspectorWindow extends BaseWindow {
     const newEvent = this.createEventClone(event);
 
     if (newEvent instanceof LocalEvent) {
-      this.gameController
-        .getEventProcessorService()
-        .getLocalQueue()
-        .addEvent(newEvent);
+      this.eventProcessorService.getLocalQueue().addEvent(newEvent);
     } else if (newEvent instanceof RemoteEvent) {
-      this.gameController
-        .getEventProcessorService()
-        .getRemoteQueue()
-        .addEvent(newEvent);
+      this.eventProcessorService.getRemoteQueue().addEvent(newEvent);
     }
   }
 

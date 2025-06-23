@@ -1,4 +1,3 @@
-import { GameController } from "../../models/game-controller.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { MenuOptionObject } from "../../objects/common/menu-option-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
@@ -11,23 +10,25 @@ import { LoadingScreen } from "../loading-screen.js";
 import { ScoreboardScreen } from "./scoreboard-screen.js";
 import { SettingsScreen } from "./settings-screen.js";
 import { EventType } from "../../enums/event-type.js";
+import type { GameState } from "../../models/game-state.js";
+import { ServiceLocator } from "../../services/service-locator.js";
 
 export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
 
   private apiService: APIService;
-  private transitionService: ScreenTransitionService;
+  private screenTransitionService: ScreenTransitionService;
 
   private messagesResponse: MessagesResponse[] | null = null;
 
   private serverMessageWindowObject: ServerMessageWindowObject | null = null;
   private closeableMessageObject: CloseableMessageObject | null = null;
 
-  constructor(gameController: GameController, private showNews: boolean) {
-    super(gameController);
+  constructor(gameState: GameState, private showNews: boolean) {
+    super(gameState);
     this.showNews = showNews;
-    this.apiService = gameController.getAPIService();
-    this.transitionService = gameController.getTransitionService();
+    this.apiService = ServiceLocator.get(APIService);
+    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.subscribeToEvents();
   }
 
@@ -190,16 +191,16 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToLoadingScreen(): void {
     this.disableMenuButtons();
 
-    const loadingScreen = new LoadingScreen(this.gameController);
+    const loadingScreen = new LoadingScreen(this.gameState);
     loadingScreen.load();
 
-    this.transitionService.crossfade(loadingScreen, 0.2);
+    this.screenTransitionService.crossfade(loadingScreen, 0.2);
   }
 
   private transitionToScoreboardScreen(): void {
     this.disableMenuButtons();
 
-    const scoreboardScreen = new ScoreboardScreen(this.gameController);
+    const scoreboardScreen = new ScoreboardScreen(this.gameState);
     scoreboardScreen.load();
 
     this.screenManagerService
@@ -210,7 +211,7 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToSettingsScreen(): void {
     this.disableMenuButtons();
 
-    const settingsScreen = new SettingsScreen(this.gameController);
+    const settingsScreen = new SettingsScreen(this.gameState);
     settingsScreen.load();
 
     this.screenManagerService
@@ -235,9 +236,7 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   private showWelcomePlayerName(context: CanvasRenderingContext2D): void {
-    const playerName =
-      this.gameController.getGameState().getGamePlayer()?.getName() ||
-      "Unknown";
+    const playerName = this.gameState.getGamePlayer()?.getName() || "Unknown";
 
     // Draw text that says Hello
     context.font = "bold 28px system-ui";

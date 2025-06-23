@@ -1,5 +1,7 @@
 import type { GameScreen } from "../interfaces/screen/game-screen.js";
 import type { ScreenManager } from "../interfaces/screen/screen-manager.js";
+import { GameState } from "../models/game-state.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class ScreenTransitionService {
   private screenManager: ScreenManager;
@@ -14,8 +16,8 @@ export class ScreenTransitionService {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  constructor(screenManager: ScreenManager) {
-    this.screenManager = screenManager;
+  constructor(gameState = ServiceLocator.get(GameState)) {
+    this.screenManager = gameState.getGameFrame();
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {

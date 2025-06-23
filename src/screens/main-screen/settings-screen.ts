@@ -1,15 +1,17 @@
-import { GameController } from "../../models/game-controller.js";
+import type { GameState } from "../../models/game-state.js";
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
+import { DebugService } from "../../services/debug-service.js";
+import { ServiceLocator } from "../../services/service-locator.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 
 export class SettingsScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
   private buttonObject: ButtonObject | null = null;
 
-  constructor(gameController: GameController) {
-    super(gameController);
+  constructor(gameState: GameState) {
+    super(gameState);
   }
 
   public override load(): void {
@@ -43,7 +45,7 @@ export class SettingsScreen extends BaseGameScreen {
   }
 
   private loadDebugSettingObject(): void {
-    const debugging = this.gameController.isDebugging();
+    const debugging = this.gameState.isDebugging();
     const settingObject = new SettingObject("debug", "Debug", debugging);
 
     settingObject.setY(75);
@@ -99,7 +101,7 @@ export class SettingsScreen extends BaseGameScreen {
 
   private handleDebugSettingPress(settingObject: SettingObject): void {
     const state = settingObject.getSettingState();
-    this.gameController.getDebugSettings().setDebugging(state);
+    this.gameState.getDebugSettings().setDebugging(state);
 
     // Update UI if debugging state changes
     this.updateDebugStateForObjects();
@@ -109,7 +111,7 @@ export class SettingsScreen extends BaseGameScreen {
     }
 
     // Initialize debug service if not already initialized
-    const debugService = this.gameController.getDebugService();
+    const debugService = ServiceLocator.get(DebugService);
 
     if (debugService.isInitialized() === false) {
       debugService.init();
