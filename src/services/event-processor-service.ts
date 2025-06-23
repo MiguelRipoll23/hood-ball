@@ -1,14 +1,14 @@
 import { EventType } from "../enums/event-type.js";
-import { GameController } from "../models/game-controller.js";
 import { RemoteEvent } from "../models/remote-event.js";
-import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
-import { WebRTCService } from "./webrtc-service.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { LocalEvent } from "../models/local-event.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { EventQueueService } from "./event-queue-service.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
+import { WebRTCService } from "./webrtc-service.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -16,16 +16,19 @@ export type EventSubscription = {
 };
 
 export class EventProcessorService {
-  private webrtcService: WebRTCService;
-
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
+  private webrtcService: WebRTCService | null = null;
 
-  constructor(gameController: GameController) {
-    this.webrtcService = gameController.getWebRTCService();
+  constructor() {
     this.localQueue = new EventQueueService<LocalEvent>();
     this.remoteQueue = new EventQueueService<RemoteEvent>();
+  }
+
+  public initialize(): void {
+    this.webrtcService = ServiceLocator.get(WebRTCService);
     this.webrtcService.registerCommandHandlers(this);
+    console.log("Event processor service initialized");
   }
 
   public getLocalQueue(): EventQueueService<LocalEvent> {
@@ -58,11 +61,22 @@ export class EventProcessorService {
 
   public sendEvent(event: RemoteEvent) {
     console.log(`Sending remote event ${EventType[event.getType()]}`, event);
-    this.webrtcService.getPeers().forEach((webrtcPeer) => {
-      if (webrtcPeer.hasJoined()) {
-        this.sendEventToPeer(webrtcPeer, event);
-      }
-    });
+
+    this.getWebRTCService()
+      .getPeers()
+      .forEach((webrtcPeer) => {
+        if (webrtcPeer.hasJoined()) {
+          this.sendEventToPeer(webrtcPeer, event);
+        }
+      });
+  }
+
+  private getWebRTCService(): WebRTCService {
+    if (this.webrtcService === null) {
+      throw new Error("WebRTCService is not initialized");
+    }
+
+    return this.webrtcService;
   }
 
   private sendEventToPeer(webrtcPeer: WebRTCPeer, event: RemoteEvent) {

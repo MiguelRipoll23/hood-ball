@@ -4,14 +4,13 @@ import { WebSocketService } from "../../services/websocket-service.js";
 import { APIService } from "../../services/api-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { MainMenuScreen } from "./main-menu-screen.js";
-import { GameController } from "../../models/game-controller.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/credential-service.js";
+import { ServiceLocator } from "../../services/service-locator.js";
 
 export class LoginScreen extends BaseGameScreen {
-  private gameState: GameState;
   private apiService: APIService;
   private cryptoService: CryptoService;
   private webSocketService: WebSocketService;
@@ -25,13 +24,12 @@ export class LoginScreen extends BaseGameScreen {
   private registerButtonElement: HTMLElement | null = null;
   private signInButtonElement: HTMLElement | null = null;
 
-  constructor(gameController: GameController) {
-    super(gameController);
-    this.gameState = gameController.getGameState();
-    this.apiService = gameController.getAPIService();
-    this.cryptoService = gameController.getCryptoService();
-    this.webSocketService = gameController.getWebSocketService();
-    this.credentialService = new CredentialService(gameController);
+  constructor(gameState: GameState) {
+    super(gameState);
+    this.apiService = ServiceLocator.get(APIService);
+    this.cryptoService = ServiceLocator.get(CryptoService);
+    this.webSocketService = ServiceLocator.get(WebSocketService);
+    this.credentialService = ServiceLocator.get(CredentialService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"
@@ -120,7 +118,7 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private showDialog(): void {
-    this.gameController.getGamePointer().setPreventDefault(false);
+    this.gameState.getGamePointer().setPreventDefault(false);
 
     this.displayNameInputElement?.addEventListener(
       "input",
@@ -189,7 +187,7 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private downloadConfiguration(): void {
-    this.gameController.getGamePointer().setPreventDefault(true);
+    this.gameState.getGamePointer().setPreventDefault(true);
 
     this.dialogElement?.close();
     this.messageObject?.show("Downloading configuration...");
@@ -226,7 +224,7 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private transitionToMainMenuScreen(): void {
-    const mainMenuScreen = new MainMenuScreen(this.gameController, true);
+    const mainMenuScreen = new MainMenuScreen(this.gameState, true);
     mainMenuScreen.load();
 
     this.screenManagerService

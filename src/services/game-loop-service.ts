@@ -1,4 +1,3 @@
-import { GameController } from "../models/game-controller.js";
 import { GameFrame } from "../models/game-frame.js";
 import { NotificationObject } from "../objects/common/notification-object.js";
 import { MainScreen } from "../screens/main-screen.js";
@@ -13,12 +12,21 @@ import type { GameScreen } from "../interfaces/screen/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugObject } from "../objects/common/debug-object.js";
+import { GameState } from "../models/game-state.js";
+import { ServiceLocator } from "./service-locator.js";
+import { ScreenTransitionService } from "./screen-transition-service.js";
+import { MatchmakingService } from "./matchmaking-service.js";
+import { DebugService } from "./debug-service.js";
+import { WebRTCService } from "./webrtc-service.js";
+import { TimerManagerService } from "./timer-manager-service.js";
+import { IntervalManagerService } from "./interval-manager-service.js";
+import { ServiceManager } from "./service-manager.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
   private debug: boolean = window.location.search.includes("debug");
 
-  private gameController: GameController;
+  private gameState: GameState;
   private gameFrame: GameFrame;
 
   private isRunning: boolean = false;
@@ -29,15 +37,28 @@ export class GameLoopService {
   // Game stats
   private currentFPS: number = 0;
 
-  // Events
+  // Services
+  private debugService: DebugService;
+  private screenTransitionService: ScreenTransitionService;
+  private timerManagerService: TimerManagerService;
+  private intervalManagerService: IntervalManagerService;
   private eventConsumerService: EventConsumerService;
+  private matchmakingService: MatchmakingService;
+  private webrtcService: WebRTCService;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    this.gameController = new GameController(this.canvas, this.debug);
-    this.gameFrame = this.gameController.getGameFrame();
-    this.eventConsumerService = new EventConsumerService(this.gameController);
+    this.gameState = new GameState(this.canvas, this.debug);
+    this.gameFrame = this.gameState.getGameFrame();
+    ServiceManager.register(this.gameState);
+    this.debugService = ServiceLocator.get(DebugService);
+    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
+    this.timerManagerService = ServiceLocator.get(TimerManagerService);
+    this.intervalManagerService = ServiceLocator.get(IntervalManagerService);
+    this.eventConsumerService = ServiceLocator.get(EventConsumerService);
+    this.matchmakingService = ServiceLocator.get(MatchmakingService);
+    this.webrtcService = ServiceLocator.get(WebRTCService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadObjects();
@@ -45,10 +66,6 @@ export class GameLoopService {
 
   public getCanvas(): HTMLCanvasElement {
     return this.canvas;
-  }
-
-  public getGameController(): GameController {
-    return this.gameController;
   }
 
   public start(): void {
@@ -145,15 +162,13 @@ export class GameLoopService {
   private handleHostDisconnectedEvent(): void {
     alert("Host has disconnected");
 
-    const mainScreen = new MainScreen(this.getGameController());
-    const mainMenuScreen = new MainMenuScreen(this.getGameController(), false);
+    const mainScreen = new MainScreen(this.gameState);
+    const mainMenuScreen = new MainMenuScreen(this.gameState, false);
 
     mainScreen.setScreen(mainMenuScreen);
     mainScreen.load();
 
-    this.getGameController()
-      .getTransitionService()
-      .fadeOutAndIn(mainScreen, 1, 1);
+    this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);
   }
 
   private loadObjects(): void {
@@ -172,13 +187,13 @@ export class GameLoopService {
   }
 
   private setInitialScreen() {
-    const mainScreen = new MainScreen(this.gameController);
-    const loginScreen = new LoginScreen(this.gameController);
+    const mainScreen = new MainScreen(this.gameState);
+    const loginScreen = new LoginScreen(this.gameState);
 
     mainScreen.setScreen(loginScreen);
     mainScreen.load();
 
-    this.gameController.getTransitionService().crossfade(mainScreen, 1);
+    this.screenTransitionService.crossfade(mainScreen, 1);
   }
 
   private loop(timeStamp: DOMHighResTimeStamp): void {
@@ -195,7 +210,7 @@ export class GameLoopService {
 
     if (this.elapsedMilliseconds >= 1_000) {
       this.elapsedMilliseconds = 0;
-      this.gameController.getWebRTCService().resetNetworkStats();
+      this.webrtcService.resetNetworkStats();
     }
 
     this.update(this.deltaTimeStamp);
@@ -209,28 +224,17 @@ export class GameLoopService {
   private update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.eventConsumerService.consumeEvents();
 
-    this.gameController
-      .getTimers()
-      .forEach((timer) => timer.update(deltaTimeStamp));
-
-    this.gameController
-      .getIntervals()
-      .forEach((interval) => interval.update(deltaTimeStamp));
-
-    this.gameController.getTransitionService().update(deltaTimeStamp);
+    this.timerManagerService.update(deltaTimeStamp);
+    this.intervalManagerService.update(deltaTimeStamp);
+    this.screenTransitionService.update(deltaTimeStamp);
 
     this.gameFrame.getCurrentScreen()?.update(deltaTimeStamp);
     this.gameFrame.getNextScreen()?.update(deltaTimeStamp);
     this.gameFrame.getNotificationObject()?.update(deltaTimeStamp);
 
-    if (this.gameController.isDebugging()) {
+    if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugObject()?.update(deltaTimeStamp);
     }
-
-    this.gameController
-      .getTimers()
-      .filter((timer) => timer.hasCompleted())
-      .forEach((timer) => this.gameController.removeTimer(timer));
   }
 
   private render(): void {
@@ -240,7 +244,7 @@ export class GameLoopService {
     this.gameFrame.getNextScreen()?.render(this.context);
     this.gameFrame.getNotificationObject()?.render(this.context);
 
-    if (this.gameController.isDebugging()) {
+    if (this.gameState.isDebugging()) {
       this.renderDebugInformation();
     }
   }
@@ -248,21 +252,19 @@ export class GameLoopService {
   private renderDebugInformation(): void {
     this.context.save();
 
-    this.gameController
-      .getMatchmakingService()
-      .renderDebugInformation(this.context);
+    this.matchmakingService.renderDebugInformation(this.context);
 
-    this.gameController.getWebRTCService().renderDebugInformation(this.context);
+    this.webrtcService.renderDebugInformation(this.context);
     this.gameFrame.getDebugObject()?.render(this.context);
 
     this.renderDebugGameInformation();
     this.renderDebugScreenInformation();
 
-    this.gameController.getGamePointer().renderDebugInformation(this.context);
+    this.gameState.getGamePointer().renderDebugInformation(this.context);
     this.context.restore();
 
     // Dear ImGui rendering
-    this.gameController.getDebugService().render();
+    this.debugService.render();
   }
 
   private renderDebugGameInformation(): void {

@@ -1,6 +1,5 @@
-import { GameController } from "../models/game-controller.js";
 import { TunnelType } from "../enums/tunnel-type.js";
-import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
@@ -9,18 +8,29 @@ import type { BinaryReader } from "../utils/binary-reader-utils.js";
 import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
+import { ServerCommandHandler } from "../decorators/server-command-handler.js";
+import { WebSocketService } from "./websocket-service.js";
+import { ServiceLocator } from "./service-locator.js";
+import type { GameState } from "../models/game-state.js";
 
 export class WebRTCService {
-  private dispatcherService: WebRTCDispatcherService;
   private peers: Map<string, WebRTCPeer> = new Map();
 
   // Network stats
   private downloadKilobytesPerSecond: number = 0;
   private uploadKilobytesPerSecond: number = 0;
 
-  constructor(private gameController: GameController) {
+  private readonly dispatcherService: WebRTCDispatcherService;
+  private webSocketService: WebSocketService | null = null;
+
+  constructor(private gameState: GameState) {
     this.dispatcherService = new WebRTCDispatcherService();
-    this.dispatcherService.registerCommandHandlers(this);
+    this.registerCommandHandlers(this);
+  }
+
+  public initialize(): void {
+    this.webSocketService = ServiceLocator.get(WebSocketService);
+    this.webSocketService.registerCommandHandlers(this);
     console.log("WebRTC service initialized");
   }
 
@@ -28,16 +38,12 @@ export class WebRTCService {
     this.dispatcherService.registerCommandHandlers(instance);
   }
 
-  public dispatchCommandHandler(
+  public dispatchCommand(
     commandId: WebRTCType,
     peer: WebRTCPeer,
     binaryReader: BinaryReader
   ): void {
-    this.dispatcherService.dispatchCommandHandler(
-      commandId,
-      peer,
-      binaryReader
-    );
+    this.dispatcherService.dispatchCommand(commandId, peer, binaryReader);
   }
 
   public async sendOffer(token: string): Promise<void> {
@@ -56,7 +62,7 @@ export class WebRTCService {
       .bytes(offerBytes)
       .toArrayBuffer();
 
-    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+    this.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   public getPeers(): WebRTCPeer[] {
@@ -69,6 +75,7 @@ export class WebRTCService {
     console.log("Removed WebRTC peer, updated peers count", this.peers.size);
   }
 
+  @ServerCommandHandler(WebSocketType.Tunnel)
   public handleTunnelWebRTCData(binaryReader: BinaryReader): void {
     const originTokenBytes = binaryReader.bytes(32);
     const tunnelTypeId = binaryReader.unsignedInt8();
@@ -92,7 +99,7 @@ export class WebRTCService {
     originToken: string,
     rtcSessionDescription: RTCSessionDescriptionInit
   ): void {
-    if (this.gameController.getGameState().getMatch()?.isHost()) {
+    if (this.gameState.getMatch()?.isHost()) {
       this.handlePeerOffer(originToken, rtcSessionDescription);
     } else {
       this.handlePeerAnswer(originToken, rtcSessionDescription);
@@ -116,7 +123,7 @@ export class WebRTCService {
       .bytes(iceCandidateBytes)
       .toArrayBuffer();
 
-    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+    this.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   public handleNewIceCandidate(
@@ -165,10 +172,10 @@ export class WebRTCService {
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    const match = this.gameController.getGameState().getMatch();
+    const match = this.gameState.getMatch();
     if (match === null) return;
 
-    const player = this.gameController.getGameState().getGamePlayer();
+    const player = this.gameState.getGamePlayer();
 
     if (player === null) {
       DebugUtils.renderText(context, 24, 24, "No player found");
@@ -199,8 +206,16 @@ export class WebRTCService {
     );
   }
 
+  private getWebSocketService(): WebSocketService {
+    if (this.webSocketService === null) {
+      throw new Error("WebSocketService is not initialized");
+    }
+
+    return this.webSocketService;
+  }
+
   private addPeer(token: string): WebRTCPeer {
-    const peer = new WebRTCPeerService(this.gameController, token);
+    const peer = new WebRTCPeerService(this.gameState, token);
     this.peers.set(token, peer);
 
     console.log("Added WebRTC peer, updated peers count", this.peers.size);
@@ -260,7 +275,7 @@ export class WebRTCService {
       .bytes(answerBytes)
       .toArrayBuffer();
 
-    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+    this.getWebSocketService().sendMessage(webSocketPayload);
   }
 
   private async handlePeerAnswer(

@@ -1,10 +1,11 @@
 import { GameServer } from "../models/game-server.js";
+import type { GameState } from "../models/game-state.js";
 
 export class CryptoService {
   private gameServer: GameServer;
 
-  constructor(gameServer: GameServer) {
-    this.gameServer = gameServer;
+  constructor(gameState: GameState) {
+    this.gameServer = gameState.getGameServer();
   }
 
   public async encryptRequest(request: string): Promise<ArrayBuffer> {

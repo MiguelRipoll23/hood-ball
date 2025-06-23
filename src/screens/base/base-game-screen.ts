@@ -1,4 +1,3 @@
-import { GameController } from "../../models/game-controller.js";
 import { GamePointer } from "../../models/game-pointer.js";
 import { LayerType } from "../../enums/layer-type.js";
 import { BaseTappableGameObject } from "../../objects/base/base-tappable-game-object.js";
@@ -7,6 +6,8 @@ import type { GameScreen } from "../../interfaces/screen/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { EventConsumerService } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
+import type { GameState } from "../../models/game-state.js";
+import { ServiceLocator } from "../../services/service-locator.js";
 
 export class BaseGameScreen implements GameScreen {
   protected eventConsumerService: EventConsumerService;
@@ -22,11 +23,11 @@ export class BaseGameScreen implements GameScreen {
 
   private gamePointer: GamePointer;
 
-  constructor(protected gameController: GameController) {
+  constructor(protected gameState: GameState) {
     console.log(`${this.constructor.name} created`);
-    this.canvas = gameController.getCanvas();
-    this.gamePointer = gameController.getGamePointer();
-    this.eventConsumerService = new EventConsumerService(gameController);
+    this.canvas = gameState.getCanvas();
+    this.gamePointer = gameState.getGamePointer();
+    this.eventConsumerService = ServiceLocator.get(EventConsumerService);
   }
 
   public isActive(): boolean {
@@ -113,7 +114,7 @@ export class BaseGameScreen implements GameScreen {
   }
 
   public addObjectToSceneLayer(object: GameObject): void {
-    object.setDebugSettings(this.gameController.getDebugSettings());
+    object.setDebugSettings(this.gameState.getDebugSettings());
     object.load();
 
     this.sceneObjects.push(object);
@@ -146,7 +147,7 @@ export class BaseGameScreen implements GameScreen {
   }
 
   protected updateDebugStateForObjects(): void {
-    const debugSettings = this.gameController.getDebugSettings();
+    const debugSettings = this.gameState.getDebugSettings();
 
     this.sceneObjects.forEach((object) =>
       object.setDebugSettings(debugSettings)

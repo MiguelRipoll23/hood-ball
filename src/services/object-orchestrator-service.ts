@@ -1,9 +1,7 @@
-import { GameController } from "../models/game-controller.js";
-import { GameFrame } from "../models/game-frame.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectUtils } from "../utils/object-utils.js";
 import type { MultiplayerScreen } from "../interfaces/screen/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
@@ -13,22 +11,21 @@ import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { ObjectType } from "../enums/object-type.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
+import { ServiceLocator } from "./service-locator.js";
 
-export class ObjectOrchestrator {
+export class ObjectOrchestratorService {
   private readonly PERIODIC_MILLISECONDS = 500;
 
-  private webrtcService: WebRTCService;
-  private gameFrame: GameFrame;
-  private gameState: GameState;
-
+  private webrtcService: WebRTCService | null = null;
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
-  constructor(gameController: GameController) {
-    this.webrtcService = gameController.getWebRTCService();
-    this.gameFrame = gameController.getGameFrame();
-    this.gameState = gameController.getGameState();
+  constructor(private gameState: GameState) {}
+
+  public initialize(): void {
+    this.webrtcService = ServiceLocator.get(WebRTCService);
     this.webrtcService.registerCommandHandlers(this);
+    console.log("Object orchestrator service initialized");
   }
 
   public sendLocalData(
@@ -80,7 +77,7 @@ export class ObjectOrchestrator {
 
     // Check for screen
     const objectMultiplayerScreen = ScreenUtils.getScreenById(
-      this.gameFrame,
+      this.gameState.getGameFrame(),
       screenId
     );
 
@@ -106,6 +103,14 @@ export class ObjectOrchestrator {
     }
   }
 
+  private getWebRTCService(): WebRTCService {
+    if (this.webrtcService === null) {
+      throw new Error("WebRTCService is not initialized");
+    }
+
+    return this.webrtcService;
+  }
+
   // Local
   private sendLocalObjectData(
     multiplayerScreen: MultiplayerScreen,
@@ -124,15 +129,17 @@ export class ObjectOrchestrator {
       multiplayerObject
     );
 
-    this.webrtcService.getPeers().forEach((webrtcPeer) => {
-      if (webrtcPeer.hasJoined()) {
-        this.sendLocalObjectDataToPeer(
-          multiplayerObject,
-          webrtcPeer,
-          arrayBuffer
-        );
-      }
-    });
+    this.getWebRTCService()
+      .getPeers()
+      .forEach((webrtcPeer) => {
+        if (webrtcPeer.hasJoined()) {
+          this.sendLocalObjectDataToPeer(
+            multiplayerObject,
+            webrtcPeer,
+            arrayBuffer
+          );
+        }
+      });
 
     multiplayerObject.setSync(false);
     multiplayerObject.setSyncReliably(false);

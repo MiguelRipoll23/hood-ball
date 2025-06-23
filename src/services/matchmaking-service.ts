@@ -1,11 +1,10 @@
-import { GameController } from "../models/game-controller.js";
 import type { FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
 import { TimerService } from "./timer-service.js";
 import { Match } from "../models/match.js";
 import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
 import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { EventType } from "../enums/event-type.js";
 import { LocalEvent } from "../models/local-event.js";
@@ -23,10 +22,17 @@ import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
+import { ServerCommandHandler } from "../decorators/server-command-handler.js";
+import { ServiceLocator } from "./service-locator.js";
+import { WebSocketService } from "./websocket-service.js";
+import { WebRTCService } from "./webrtc-service.js";
+import { EventProcessorService } from "./event-processor-service.js";
+import { APIService } from "./api-service.js";
+import { TimerManagerService } from "./timer-manager-service.js";
+import { IntervalManagerService } from "./interval-manager-service.js";
+import { GAME_VERSION } from "../constants/game-constants.js";
 
 export class MatchmakingService {
-  private gameState: GameState;
-
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
@@ -36,11 +42,29 @@ export class MatchmakingService {
     { playerId: string; playerName: string }
   >;
 
-  constructor(private gameController: GameController) {
-    this.gameState = gameController.getGameState();
+  private readonly timerManagerService: TimerManagerService;
+  private readonly intervalManagerService: IntervalManagerService;
+
+  private readonly apiService: APIService;
+  private readonly webSocketService: WebSocketService;
+  private readonly webrtcService: WebRTCService;
+  private readonly eventProcessorService: EventProcessorService;
+
+  constructor(private gameState: GameState) {
     this.pendingIdentities = new Map();
     this.receivedIdentities = new Map();
-    this.gameController.getWebRTCService().registerCommandHandlers(this);
+    this.timerManagerService = ServiceLocator.get(TimerManagerService);
+    this.intervalManagerService = ServiceLocator.get(IntervalManagerService);
+    this.apiService = ServiceLocator.get(APIService);
+    this.webSocketService = ServiceLocator.get(WebSocketService);
+    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.registerCommandHandlers();
+  }
+
+  private registerCommandHandlers(): void {
+    this.webSocketService.registerCommandHandlers(this);
+    this.webrtcService.registerCommandHandlers(this);
   }
 
   public async findOrAdvertiseMatch(): Promise<void> {
@@ -55,14 +79,16 @@ export class MatchmakingService {
     await this.joinMatches(matches);
 
     await new Promise<void>((resolve) => {
-      this.findMatchesTimerService = this.gameController.addTimer(10, () =>
-        resolve()
+      this.findMatchesTimerService = this.timerManagerService.createTimer(
+        10,
+        () => resolve()
       );
     });
 
     await this.createAndAdvertiseMatch();
   }
 
+  @ServerCommandHandler(WebSocketType.PlayerIdentity)
   public handlePlayerIdentity(binaryReader: BinaryReader): void {
     const tokenBytes = binaryReader.bytes(32);
     const playerId = binaryReader.fixedLengthString(32);
@@ -236,7 +262,7 @@ export class MatchmakingService {
       matchmaking: true,
     });
 
-    this.gameController.getEventProcessorService().addLocalEvent(localEvent);
+    this.eventProcessorService.addLocalEvent(localEvent);
 
     this.sendSnapshotACK(peer);
   }
@@ -254,8 +280,7 @@ export class MatchmakingService {
       return;
     }
 
-    this.gameController
-      .getWebRTCService()
+    this.webrtcService
       .getPeers()
       .filter((matchPeer) => matchPeer !== peer)
       .forEach((peer) => {
@@ -272,7 +297,7 @@ export class MatchmakingService {
       matchmaking: false,
     });
 
-    this.gameController.getEventProcessorService().addLocalEvent(localEvent);
+    this.eventProcessorService.addLocalEvent(localEvent);
 
     this.advertiseMatch();
   }
@@ -313,31 +338,27 @@ export class MatchmakingService {
       });
     });
 
-    await this.gameController
-      .getAPIService()
-      .saveScore(savePlayerScoresRequest);
+    await this.apiService.saveScore(savePlayerScoresRequest);
   }
 
   public async handleGameOver(): Promise<void> {
     if (this.gameState.getMatch()?.isHost()) {
-      this.gameController
-        .getWebRTCService()
+      this.webrtcService
         .getPeers()
         .forEach((peer) => peer.disconnectGracefully());
 
       this.removePingCheckInterval();
 
-      await this.gameController
-        .getAPIService()
+      await this.apiService
         .removeMatch()
         .catch((error) => console.error(error));
     }
 
-    this.gameController.getGameState().setMatch(null);
+    this.gameState.setMatch(null);
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    const match = this.gameController.getGameState().getMatch();
+    const match = this.gameState.getMatch();
 
     if (match === null) {
       return;
@@ -349,7 +370,7 @@ export class MatchmakingService {
 
   private removePingCheckInterval(): void {
     if (this.pingCheckInterval !== null) {
-      this.gameController.removeInterval(this.pingCheckInterval);
+      this.intervalManagerService.removeInterval(this.pingCheckInterval);
     }
   }
 
@@ -362,7 +383,8 @@ export class MatchmakingService {
       .unsignedInt8(WebSocketType.PlayerIdentity)
       .bytes(tokenBytes, 32)
       .toArrayBuffer();
-    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+
+    this.webSocketService.sendMessage(webSocketPayload);
   }
 
   private handlePlayerIdentityAsPlayer(token: string): void {
@@ -370,7 +392,7 @@ export class MatchmakingService {
     this.pendingIdentities.set(token, true);
 
     // Send the offer to the host
-    this.gameController.getWebRTCService().sendOffer(token);
+    this.webrtcService.sendOffer(token);
   }
 
   private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
@@ -393,8 +415,7 @@ export class MatchmakingService {
     console.log(`Player ${player.getName()} disconnected`);
     this.gameState.getMatch()?.removePlayer(player);
 
-    this.gameController
-      .getWebRTCService()
+    this.webrtcService
       .getPeers()
       .filter((matchPeer) => matchPeer !== peer)
       .forEach((peer) => {
@@ -407,9 +428,7 @@ export class MatchmakingService {
 
     playerDisconnectedEvent.setData({ player });
 
-    this.gameController
-      .getEventProcessorService()
-      .addLocalEvent(playerDisconnectedEvent);
+    this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
 
     this.advertiseMatch();
   }
@@ -436,7 +455,7 @@ export class MatchmakingService {
 
     localEvent.setData({ player });
 
-    this.gameController.getEventProcessorService().addLocalEvent(localEvent);
+    this.eventProcessorService.addLocalEvent(localEvent);
   }
 
   private handleHostDisconnected(peer: WebRTCPeer): void {
@@ -445,19 +464,19 @@ export class MatchmakingService {
     this.gameState.setMatch(null);
 
     const localEvent = new LocalEvent(EventType.HostDisconnected);
-    this.gameController.getEventProcessorService().addLocalEvent(localEvent);
+    this.eventProcessorService.addLocalEvent(localEvent);
   }
 
   private async findMatches(): Promise<FindMatchesResponse[]> {
     console.log("Finding matches...");
 
     const body: FindMatchesRequest = {
-      version: this.gameController.getVersion(),
+      version: GAME_VERSION,
       totalSlots: 1,
       attributes: MATCH_ATTRIBUTES,
     };
 
-    return this.gameController.getAPIService().findMatches(body);
+    return this.apiService.findMatches(body);
   }
 
   private async createAndAdvertiseMatch(): Promise<void> {
@@ -489,7 +508,7 @@ export class MatchmakingService {
     await this.advertiseMatch();
 
     // Add ping check
-    this.pingCheckInterval = this.gameController.addInterval(
+    this.pingCheckInterval = this.intervalManagerService.createInterval(
       1,
       this.sendPingToJoinedPlayers.bind(this)
     );
@@ -503,7 +522,7 @@ export class MatchmakingService {
     }
 
     const body: AdvertiseMatchRequest = {
-      version: this.gameController.getVersion(),
+      version: GAME_VERSION,
       totalSlots: match.getTotalSlots(),
       availableSlots: match.getAvailableSlots(),
       attributes: match.getAttributes(),
@@ -511,10 +530,10 @@ export class MatchmakingService {
 
     console.log("Advertising match...");
 
-    await this.gameController.getAPIService().advertiseMatch(body);
+    await this.apiService.advertiseMatch(body);
 
     const localEvent = new LocalEvent(EventType.MatchAdvertised);
-    this.gameController.getEventProcessorService().addLocalEvent(localEvent);
+    this.eventProcessorService.addLocalEvent(localEvent);
   }
 
   private async joinMatches(matches: FindMatchesResponse[]): Promise<void> {
@@ -534,7 +553,7 @@ export class MatchmakingService {
       .bytes(tokenBytes, 32)
       .toArrayBuffer();
 
-    this.gameController.getWebSocketService().sendMessage(webSocketPayload);
+    this.webSocketService.sendMessage(webSocketPayload);
   }
 
   private sendJoinRequest(peer: WebRTCPeer): void {
@@ -689,8 +708,7 @@ export class MatchmakingService {
   private sendPingToJoinedPlayers(): void {
     this.sendPingInformationToJoinedPlayers();
 
-    this.gameController
-      .getWebRTCService()
+    this.webrtcService
       .getPeers()
       .filter((peer) => peer.hasJoined())
       .forEach((peer) => {
@@ -701,8 +719,7 @@ export class MatchmakingService {
   private sendPingInformationToJoinedPlayers(): void {
     const players = this.gameState.getMatch()?.getPlayers() || [];
 
-    this.gameController
-      .getWebRTCService()
+    this.webrtcService
       .getPeers()
       .filter((peer) => peer.hasJoined())
       .forEach((peer) => {

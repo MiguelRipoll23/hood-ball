@@ -1,18 +1,19 @@
 import { ImGui, ImGuiImplWeb } from "@mori2003/jsimgui";
-import type { GameController } from "../models/game-controller";
 import { DebugWindow } from "../windows/debug-window";
+import type { GameState } from "../models/game-state";
 
 export class DebugService {
   private debugCanvas: HTMLCanvasElement;
   private gameCanvas: HTMLCanvasElement;
+
   private initialized = false;
   private debugWindow: DebugWindow | null = null;
   private readonly knownEvents = new Set<string>();
 
-  constructor(private gameController: GameController) {
+  constructor(private gameState: GameState) {
     console.log(`${this.constructor.name} created`);
     this.debugCanvas = this.getDebugCanvas();
-    this.gameCanvas = this.gameController.getCanvas();
+    this.gameCanvas = this.gameState.getCanvas();
     this.setCanvasSize();
     this.addEventListeners();
   }
@@ -56,7 +57,7 @@ export class DebugService {
   }
 
   private loadDebugWindow(): void {
-    this.debugWindow = new DebugWindow(this.gameController);
+    this.debugWindow = new DebugWindow(this.gameState);
   }
 
   private preloadCommonEvents(): void {

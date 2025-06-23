@@ -7,7 +7,6 @@ import { BaseCollidingGameScreen } from "./base/base-colliding-game-screen.js";
 import { GameState } from "../models/game-state.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../constants/configuration-constants.js";
-import { GameController } from "../models/game-controller.js";
 import { AlertObject } from "../objects/alert-object.js";
 import { ToastObject } from "../objects/common/toast-object.js";
 import { TeamType } from "../enums/team-type.js";
@@ -24,11 +23,22 @@ import type { PlayerConnectedPayload } from "../interfaces/events/player-connect
 import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { MatchmakingService } from "../services/matchmaking-service.js";
+import { ServiceLocator } from "../services/service-locator.js";
+import { EventProcessorService } from "../services/event-processor-service.js";
+import { ObjectOrchestratorService } from "../services/object-orchestrator-service.js";
+import { ScreenTransitionService } from "../services/screen-transition-service.js";
+import { TimerManagerService } from "../services/timer-manager-service.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
   private readonly COUNTDOWN_START_NUMBER = 4;
 
-  private gameState: GameState;
+  private readonly screenTransitionService: ScreenTransitionService;
+  private readonly timerManagerService: TimerManagerService;
+  private readonly matchmakingService: MatchmakingService;
+  private readonly eventProcessorService: EventProcessorService;
+  private readonly objectOrchestrator: ObjectOrchestratorService;
+
   private scoreboardObject: ScoreboardObject | null = null;
   private localCarObject: LocalCarObject | null = null;
   private ballObject: BallObject | null = null;
@@ -38,10 +48,14 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
-  constructor(gameController: GameController) {
-    super(gameController);
-    this.gameState = gameController.getGameState();
+  constructor(protected gameState: GameState) {
+    super(gameState);
     this.gameState.getGamePlayer().reset();
+    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
+    this.timerManagerService = ServiceLocator.get(TimerManagerService);
+    this.matchmakingService = ServiceLocator.get(MatchmakingService);
+    this.objectOrchestrator = ServiceLocator.get(ObjectOrchestratorService);
+    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
     this.addSyncableObjects();
     this.subscribeToEvents();
   }
@@ -66,8 +80,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
     this.scoreboardObject?.reset();
     this.toastObject?.show("Finding sessions...");
-    this.gameController
-      .getMatchmakingService()
+    this.matchmakingService
       .findOrAdvertiseMatch()
       .catch(this.handleMatchmakingError.bind(this));
   }
@@ -78,9 +91,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.handleMatchState();
     this.detectScoresIfHost();
 
-    this.gameController
-      .getObjectOrchestrator()
-      .sendLocalData(this, deltaTimeStamp);
+    this.objectOrchestrator.sendLocalData(this, deltaTimeStamp);
   }
 
   private handleMatchmakingError(error: Error) {
@@ -90,7 +101,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       "Could not find or advertise match, returning to main screen menu..."
     );
 
-    this.gameController.getGameState().setMatch(null);
+    this.gameState.setMatch(null);
     this.returnToMainMenuScreen();
   }
 
@@ -194,9 +205,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private createPlayerAndLocalCarObjects() {
-    const gamePointer = this.gameController.getGamePointer();
-    const gameKeyboard = this.gameController.getGameKeyboard();
-    const gameGamepad = this.gameController.getGameGamepad();
+    const gamePointer = this.gameState.getGamePointer();
+    const gameKeyboard = this.gameState.getGameKeyboard();
+    const gameGamepad = this.gameState.getGameGamepad();
 
     this.localCarObject = new LocalCarObject(
       0,
@@ -298,7 +309,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.countdownCurrentNumber -= 1;
 
     if (isHost) {
-      this.gameController.addTimer(1, this.showCountdown.bind(this));
+      this.timerManagerService.createTimer(1, this.showCountdown.bind(this));
     }
   }
 
@@ -342,7 +353,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const countdownEvent = new RemoteEvent(EventType.Countdown);
     countdownEvent.setData(arrayBuffer);
 
-    this.gameController.getEventProcessorService().sendEvent(countdownEvent);
+    this.eventProcessorService.sendEvent(countdownEvent);
   }
 
   private handleWaitingForPlayers(): void {
@@ -404,9 +415,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
     // Scoreboard
     const goalTeam =
-      player === this.gameController.getGameState().getGamePlayer()
-        ? TeamType.Blue
-        : TeamType.Red;
+      player === this.gameState.getGamePlayer() ? TeamType.Blue : TeamType.Red;
 
     if (goalTeam === TeamType.Blue) {
       this.scoreboardObject?.incrementBlueScore();
@@ -418,7 +427,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.showGoalAlert(player, goalTeam);
 
     // Timer
-    this.gameController.addTimer(5, this.handleGoalTimeEnd.bind(this));
+    this.timerManagerService.createTimer(5, this.handleGoalTimeEnd.bind(this));
   }
 
   private sendGoalEvent(player: GamePlayer) {
@@ -433,7 +442,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const goalEvent = new RemoteEvent(EventType.GoalScored);
     goalEvent.setData(payload);
 
-    this.gameController.getEventProcessorService().sendEvent(goalEvent);
+    this.eventProcessorService.sendEvent(goalEvent);
   }
 
   private updateScoreboard() {
@@ -503,7 +512,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     // Alert
     let team: TeamType = TeamType.Red;
 
-    if (player === this.gameController.getGameState().getGamePlayer()) {
+    if (player === this.gameState.getGamePlayer()) {
       team = TeamType.Blue;
     }
 
@@ -564,9 +573,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
     gameOverStartEvent.setData(payload);
 
-    this.gameController
-      .getEventProcessorService()
-      .sendEvent(gameOverStartEvent);
+    this.eventProcessorService.sendEvent(gameOverStartEvent);
   }
 
   private handleRemoteGameOverStartEvent(
@@ -598,28 +605,28 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.alertObject?.show([playerName, "WINS!"], playerTeam);
 
     // Timer
-    this.gameController.addTimer(5, this.handleGameOverEnd.bind(this));
+    this.timerManagerService.createTimer(5, this.handleGameOverEnd.bind(this));
 
     // Save player scores if host
     if (this.gameState.getMatch()?.isHost()) {
-      this.gameController.getMatchmakingService().savePlayerScore();
+      this.matchmakingService.savePlayerScore();
     }
   }
 
   private handleGameOverEnd() {
     console.log("Game over end");
 
-    this.gameController.getMatchmakingService().handleGameOver();
+    this.matchmakingService.handleGameOver();
     this.returnToMainMenuScreen();
   }
 
   private returnToMainMenuScreen(): void {
-    const mainScreen = new MainScreen(this.gameController);
-    const mainMenuScreen = new MainMenuScreen(this.gameController, false);
+    const mainScreen = new MainScreen(this.gameState);
+    const mainMenuScreen = new MainMenuScreen(this.gameState, false);
 
     mainScreen.setScreen(mainMenuScreen);
     mainScreen.load();
 
-    this.gameController.getTransitionService().fadeOutAndIn(mainScreen, 1, 1);
+    this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);
   }
 }

@@ -26,17 +26,17 @@ import type { AuthenticationOptionsRequest } from "../interfaces/request/authent
 import type { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
 import type { RegistrationOptionsResponse } from "../interfaces/response/registration-options-response.js";
 import { CryptoService } from "./crypto-service.js";
-import { GameController } from "../models/game-controller.js";
 import { APIUtils } from "../utils/api-utils.js";
+import { ServiceLocator } from "./service-locator.js";
 
 export class APIService {
   private baseURL: string;
   private authenticationToken: string | null = null;
-  private cryptoService: CryptoService;
+  private readonly cryptoService: CryptoService;
 
-  constructor(gameController: GameController) {
+  constructor() {
     this.baseURL = APIUtils.getBaseURL();
-    this.cryptoService = gameController.getCryptoService();
+    this.cryptoService = ServiceLocator.get(CryptoService);
   }
 
   public setAuthenticationToken(authenticationToken: string): void {
