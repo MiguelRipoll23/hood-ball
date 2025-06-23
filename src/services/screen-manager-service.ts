@@ -17,7 +17,7 @@ export class ScreenManagerService implements ScreenManager {
     return this.transitionService;
   }
 
-  public pushScreenToStack(screen: GameScreen): void {
+  public setInitialScreen(screen: GameScreen): void {
     this.currentScreen = screen;
     this.currentScreen.setScreenManagerService(this);
     this.stack.push(screen);

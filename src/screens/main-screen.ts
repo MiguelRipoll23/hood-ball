@@ -50,7 +50,7 @@ export class MainScreen extends BaseGameScreen {
   private updateScreen(screen: GameScreen): void {
     // Set the screen to be fully visible
     this.screen?.setOpacity(1);
-    this.screenManagerService?.pushScreenToStack(screen);
+    this.screenManagerService?.setInitialScreen(screen);
   }
 
   private createMainBackgroundObject() {
