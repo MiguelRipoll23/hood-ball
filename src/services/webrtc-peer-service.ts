@@ -141,15 +141,12 @@ export class WebRTCPeerService implements WebRTCPeer {
       new RTCSessionDescription(answer)
     );
 
-    this.iceCandidatesQueue.forEach((candidate) =>
-      this.processIceCandidate(candidate, true)
-    );
-
-    this.iceCandidatesQueue = [];
-
     this.iceCandidatesQueue.forEach((candidate) => {
+      this.processIceCandidate(candidate, true);
       this.webrtcService.sendIceCandidate(this.token, candidate);
     });
+
+    this.iceCandidatesQueue = [];
   }
 
   public getPingTime(): number | null {

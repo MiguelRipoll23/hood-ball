@@ -70,7 +70,7 @@ export class Match {
 
     console.log(
       `Removed player ${player.getName()} from match, total players`,
-      this.players
+      this.players.size
     );
   }
 
