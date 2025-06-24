@@ -26,7 +26,7 @@ export class ServerMessageWindowObject extends CloseableWindowObject {
     this.next = false;
 
     const pages = `${index + 1}/${length}`;
-    console.log(`Opening server message message (${pages})`);
+    console.log(`Opening server message (${pages})`);
 
     super.open(`SERVER MESSAGE (${pages})`, title, content);
   }
