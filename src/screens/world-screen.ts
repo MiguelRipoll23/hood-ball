@@ -26,7 +26,9 @@ import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { MatchmakingService } from "../services/matchmaking-service.js";
 import { ServiceLocator } from "../services/service-locator.js";
 import { EventProcessorService } from "../services/event-processor-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
 import { ObjectOrchestratorService } from "../services/object-orchestrator-service.js";
+import type { IObjectOrchestratorService } from "../interfaces/services/object-orchestrator-service.js";
 import { ScreenTransitionService } from "../services/screen-transition-service.js";
 import { TimerManagerService } from "../services/timer-manager-service.js";
 
@@ -36,8 +38,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private readonly screenTransitionService: ScreenTransitionService;
   private readonly timerManagerService: TimerManagerService;
   private readonly matchmakingService: MatchmakingService;
-  private readonly eventProcessorService: EventProcessorService;
-  private readonly objectOrchestrator: ObjectOrchestratorService;
+  private readonly eventProcessorService: IEventProcessorService;
+  private readonly objectOrchestrator: IObjectOrchestratorService;
 
   private scoreboardObject: ScoreboardObject | null = null;
   private localCarObject: LocalCarObject | null = null;
@@ -54,8 +56,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.timerManagerService = ServiceLocator.get(TimerManagerService);
     this.matchmakingService = ServiceLocator.get(MatchmakingService);
-    this.objectOrchestrator = ServiceLocator.get(ObjectOrchestratorService);
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.objectOrchestrator = ServiceLocator.get<IObjectOrchestratorService>(ObjectOrchestratorService);
+    this.eventProcessorService = ServiceLocator.get<IEventProcessorService>(EventProcessorService);
     this.addSyncableObjects();
     this.subscribeToEvents();
   }

@@ -1,5 +1,7 @@
 import { WEBSOCKET_ENDPOINT } from "../constants/api-constants.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
+import type { IWebSocketService } from "../interfaces/services/websocket-service.js";
 import { LocalEvent } from "../models/local-event.js";
 import { EventType } from "../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../interfaces/events/server-disconnected-payload.js";
@@ -13,16 +15,19 @@ import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { ServiceLocator } from "./service-locator.js";
 
-export class WebSocketService {
+export class WebSocketService implements IWebSocketService {
   private baseURL: string;
   private webSocket: WebSocket | null = null;
 
-  private eventProcessorService: EventProcessorService;
+  private eventProcessorService: IEventProcessorService;
   private dispatcherService: WebSocketDispatcherService;
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {
+  constructor(
+    private gameState = ServiceLocator.get(GameState),
+    eventProcessorService: IEventProcessorService = ServiceLocator.get(EventProcessorService)
+  ) {
     this.baseURL = APIUtils.getWSBaseURL();
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.eventProcessorService = eventProcessorService;
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
   }

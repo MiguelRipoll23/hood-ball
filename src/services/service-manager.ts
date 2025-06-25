@@ -11,6 +11,7 @@ import { ObjectOrchestratorService } from "./object-orchestrator-service.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
 import { ServiceLocator } from "./service-locator.js";
 import { TimerManagerService } from "./timer-manager-service.js";
+import { EventBusService } from "./event-bus-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
 
@@ -32,6 +33,7 @@ export class ServiceManager {
     const gameFrame = gameState.getGameFrame();
 
     ServiceLocator.register(DebugService, new DebugService());
+    ServiceLocator.register(EventBusService, new EventBusService());
     ServiceLocator.register(CryptoService, new CryptoService());
     ServiceLocator.register(
       ScreenTransitionService,

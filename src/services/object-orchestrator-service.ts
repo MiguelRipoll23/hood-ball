@@ -1,5 +1,7 @@
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import { WebRTCService } from "./webrtc-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service.js";
+import type { IObjectOrchestratorService } from "../interfaces/services/object-orchestrator-service.js";
 import { GameState } from "../models/game-state.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectUtils } from "../utils/object-utils.js";
@@ -13,17 +15,17 @@ import type { ObjectType } from "../enums/object-type.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 import { ServiceLocator } from "./service-locator.js";
 
-export class ObjectOrchestratorService {
+export class ObjectOrchestratorService implements IObjectOrchestratorService {
   private readonly PERIODIC_MILLISECONDS = 500;
 
-  private webrtcService: WebRTCService | null = null;
+  private webrtcService: IWebRTCService | null = null;
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
   constructor(private gameState = ServiceLocator.get(GameState)) {}
 
   public initialize(): void {
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcService = ServiceLocator.get<IWebRTCService>(WebRTCService);
     this.webrtcService.registerCommandHandlers(this);
     console.log("Object orchestrator service initialized");
   }
@@ -103,7 +105,7 @@ export class ObjectOrchestratorService {
     }
   }
 
-  private getWebRTCService(): WebRTCService {
+  private getWebRTCService(): IWebRTCService {
     if (this.webrtcService === null) {
       throw new Error("WebRTCService is not initialized");
     }

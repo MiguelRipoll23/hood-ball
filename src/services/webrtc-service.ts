@@ -10,10 +10,12 @@ import { WebRTCType } from "../enums/webrtc-type.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
+import type { IWebSocketService } from "../interfaces/services/websocket-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service.js";
 import { ServiceLocator } from "./service-locator.js";
 import { GameState } from "../models/game-state.js";
 
-export class WebRTCService {
+export class WebRTCService implements IWebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
 
   // Network stats
@@ -21,7 +23,7 @@ export class WebRTCService {
   private uploadKilobytesPerSecond: number = 0;
 
   private readonly dispatcherService: WebRTCDispatcherService;
-  private webSocketService: WebSocketService | null = null;
+  private webSocketService: IWebSocketService | null = null;
 
   constructor(private gameState = ServiceLocator.get(GameState)) {
     this.dispatcherService = new WebRTCDispatcherService();
@@ -29,7 +31,7 @@ export class WebRTCService {
   }
 
   public initialize(): void {
-    this.webSocketService = ServiceLocator.get(WebSocketService);
+    this.webSocketService = ServiceLocator.get<IWebSocketService>(WebSocketService);
     this.webSocketService.registerCommandHandlers(this);
     console.log("WebRTC service initialized");
   }
@@ -206,7 +208,7 @@ export class WebRTCService {
     );
   }
 
-  private getWebSocketService(): WebSocketService {
+  private getWebSocketService(): IWebSocketService {
     if (this.webSocketService === null) {
       throw new Error("WebSocketService is not initialized");
     }

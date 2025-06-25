@@ -26,7 +26,10 @@ import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { ServiceLocator } from "./service-locator.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
+import type { IWebSocketService } from "../interfaces/services/websocket-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
 import { APIService } from "./api-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
@@ -46,9 +49,9 @@ export class MatchmakingService {
   private readonly intervalManagerService: IntervalManagerService;
 
   private readonly apiService: APIService;
-  private readonly webSocketService: WebSocketService;
-  private readonly webrtcService: WebRTCService;
-  private readonly eventProcessorService: EventProcessorService;
+  private readonly webSocketService: IWebSocketService;
+  private readonly webrtcService: IWebRTCService;
+  private readonly eventProcessorService: IEventProcessorService;
 
   constructor(private gameState = ServiceLocator.get(GameState)) {
     this.pendingIdentities = new Map();
@@ -56,9 +59,9 @@ export class MatchmakingService {
     this.timerManagerService = ServiceLocator.get(TimerManagerService);
     this.intervalManagerService = ServiceLocator.get(IntervalManagerService);
     this.apiService = ServiceLocator.get(APIService);
-    this.webSocketService = ServiceLocator.get(WebSocketService);
-    this.webrtcService = ServiceLocator.get(WebRTCService);
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.webSocketService = ServiceLocator.get<IWebSocketService>(WebSocketService);
+    this.webrtcService = ServiceLocator.get<IWebRTCService>(WebRTCService);
+    this.eventProcessorService = ServiceLocator.get<IEventProcessorService>(EventProcessorService);
     this.registerCommandHandlers();
   }
 
