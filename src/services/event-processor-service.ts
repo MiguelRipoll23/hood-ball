@@ -8,25 +8,33 @@ import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
 import { WebRTCService } from "./webrtc-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service.js";
 import { ServiceLocator } from "./service-locator.js";
+import type { IEventBusService } from "../interfaces/services/event-bus-service.js";
+import { EventBusService } from "./event-bus-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
 
 export type EventSubscription = {
   eventType: EventType;
   eventCallback: (data: unknown) => void;
 };
 
-export class EventProcessorService {
+export class EventProcessorService implements IEventProcessorService {
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
-  private webrtcService: WebRTCService | null = null;
+  private webrtcService: IWebRTCService | null = null;
+  private readonly eventBus: IEventBusService;
 
-  constructor() {
+  constructor(
+    eventBus: IEventBusService = ServiceLocator.get(EventBusService)
+  ) {
+    this.eventBus = eventBus;
     this.localQueue = new EventQueueService<LocalEvent>();
     this.remoteQueue = new EventQueueService<RemoteEvent>();
   }
 
   public initialize(): void {
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcService = ServiceLocator.get<IWebRTCService>(WebRTCService);
     this.webrtcService.registerCommandHandlers(this);
     console.log("Event processor service initialized");
   }
@@ -42,6 +50,7 @@ export class EventProcessorService {
   public addLocalEvent(event: LocalEvent) {
     console.log(`Added local event ${EventType[event.getType()]}`, event);
     this.localQueue.addEvent(event);
+    this.eventBus.emit("localEvent", event);
   }
 
   @PeerCommandHandler(WebRTCType.EventData)
@@ -57,6 +66,7 @@ export class EventProcessorService {
     event.setData(eventData);
 
     this.remoteQueue.addEvent(event);
+    this.eventBus.emit("remoteEvent", event);
   }
 
   public sendEvent(event: RemoteEvent) {
@@ -71,7 +81,7 @@ export class EventProcessorService {
       });
   }
 
-  private getWebRTCService(): WebRTCService {
+  private getWebRTCService(): IWebRTCService {
     if (this.webrtcService === null) {
       throw new Error("WebRTCService is not initialized");
     }

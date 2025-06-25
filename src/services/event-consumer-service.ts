@@ -4,19 +4,27 @@ import type { EventSubscription } from "../types/event-subscription.js";
 import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
 import { ServiceLocator } from "./service-locator.js";
+import type { IEventBusService } from "../interfaces/services/event-bus-service.js";
+import { EventBusService } from "./event-bus-service.js";
+import type { IEventConsumerService } from "../interfaces/services/event-consumer-service.js";
 
-export class EventConsumerService {
+export class EventConsumerService implements IEventConsumerService {
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
 
   private localSubscriptions: EventSubscription[] = [];
   private remoteSubscriptions: EventSubscription[] = [];
 
-  constructor() {
-    const eventProcessorService = ServiceLocator.get(EventProcessorService);
+  constructor(
+    eventBus: IEventBusService = ServiceLocator.get(EventBusService)
+  ) {
+    const eventProcessorService = ServiceLocator.get<IEventProcessorService>(EventProcessorService);
     this.localQueue = eventProcessorService.getLocalQueue();
     this.remoteQueue = eventProcessorService.getRemoteQueue();
+    eventBus.on("localEvent", (e) => this.localQueue.addEvent(e as LocalEvent));
+    eventBus.on("remoteEvent", (e) => this.remoteQueue.addEvent(e as RemoteEvent));
   }
 
   public subscribeToLocalEvent<T>(

@@ -2,6 +2,7 @@ import { GamePlayer } from "../models/game-player.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { WebRTCService } from "./webrtc-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
@@ -14,7 +15,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_FUTURE_WINDOW = 32;
 
   private matchmakingService: MatchmakingService;
-  private webrtcService: WebRTCService;
+  private webrtcService: IWebRTCService;
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
@@ -45,7 +46,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     private token: string
   ) {
     this.matchmakingService = ServiceLocator.get(MatchmakingService);
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcService = ServiceLocator.get<IWebRTCService>(WebRTCService);
 
     this.host = gameState.getMatch()?.isHost() ?? false;
 

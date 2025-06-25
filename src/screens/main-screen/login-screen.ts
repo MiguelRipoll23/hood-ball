@@ -1,6 +1,7 @@
 import { MessageObject } from "../../objects/common/message-object.js";
 import { CryptoService } from "../../services/crypto-service.js";
 import { WebSocketService } from "../../services/websocket-service.js";
+import type { IWebSocketService } from "../../interfaces/services/websocket-service.js";
 import { APIService } from "../../services/api-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { MainMenuScreen } from "./main-menu-screen.js";
@@ -13,7 +14,7 @@ import { ServiceLocator } from "../../services/service-locator.js";
 export class LoginScreen extends BaseGameScreen {
   private apiService: APIService;
   private cryptoService: CryptoService;
-  private webSocketService: WebSocketService;
+  private webSocketService: IWebSocketService;
   private credentialService: CredentialService;
 
   private messageObject: MessageObject | null = null;
@@ -28,7 +29,7 @@ export class LoginScreen extends BaseGameScreen {
     super(gameState);
     this.apiService = ServiceLocator.get(APIService);
     this.cryptoService = ServiceLocator.get(CryptoService);
-    this.webSocketService = ServiceLocator.get(WebSocketService);
+    this.webSocketService = ServiceLocator.get<IWebSocketService>(WebSocketService);
     this.credentialService = ServiceLocator.get(CredentialService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(

@@ -18,6 +18,7 @@ import { ScreenTransitionService } from "./screen-transition-service.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { DebugService } from "./debug-service.js";
 import { WebRTCService } from "./webrtc-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceManager } from "./service-manager.js";
@@ -44,7 +45,7 @@ export class GameLoopService {
   private intervalManagerService: IntervalManagerService;
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
-  private webrtcService: WebRTCService;
+  private webrtcService: IWebRTCService;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
@@ -58,7 +59,7 @@ export class GameLoopService {
     this.intervalManagerService = ServiceLocator.get(IntervalManagerService);
     this.eventConsumerService = ServiceLocator.get(EventConsumerService);
     this.matchmakingService = ServiceLocator.get(MatchmakingService);
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcService = ServiceLocator.get<IWebRTCService>(WebRTCService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadObjects();

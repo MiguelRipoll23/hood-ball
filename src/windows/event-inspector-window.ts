@@ -5,15 +5,16 @@ import { LocalEvent } from "../models/local-event.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { BaseWindow } from "./base-window.js";
 import { EventProcessorService } from "../services/event-processor-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
 import { ServiceLocator } from "../services/service-locator.js";
 
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
-  private readonly eventProcessorService: EventProcessorService;
+  private readonly eventProcessorService: IEventProcessorService;
 
   constructor() {
     super("Event inspector", new ImVec2(195, 230));
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.eventProcessorService = ServiceLocator.get<IEventProcessorService>(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
 

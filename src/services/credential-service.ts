@@ -12,17 +12,18 @@ import { Base64Utils } from "../utils/base64-utils.js";
 import { WebAuthnUtils } from "../utils/webauthn-utils.js";
 import { APIService } from "./api-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import type { IEventProcessorService } from "../interfaces/services/event-processor-service.js";
 import { ServiceLocator } from "./service-locator.js";
 
 export class CredentialService {
   private gameState: GameState;
   private readonly apiService: APIService;
-  private readonly eventProcessorService: EventProcessorService;
+  private readonly eventProcessorService: IEventProcessorService;
 
   constructor() {
     this.gameState = ServiceLocator.get(GameState);
     this.apiService = ServiceLocator.get(APIService);
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.eventProcessorService = ServiceLocator.get<IEventProcessorService>(EventProcessorService);
   }
 
   public async getCredential(): Promise<void> {
