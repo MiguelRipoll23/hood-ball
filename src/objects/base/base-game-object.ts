@@ -61,6 +61,10 @@ export class BaseGameObject implements GameObject {
     }
   }
 
+  protected resetOpacity(context: CanvasRenderingContext2D): void {
+    this.opacity = context.globalAlpha;
+  }
+
   public setDebugSettings(debugSettings: DebugSettings | null): void {
     this.debugSettings = debugSettings;
   }
