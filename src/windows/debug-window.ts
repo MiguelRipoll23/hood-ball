@@ -37,6 +37,7 @@ export class DebugWindow extends BaseWindow {
     if (this.screenInspectorWindow.isOpen()) {
       this.screenInspectorWindow.render();
     }
+
     if (this.matchInspectorWindow.isOpen()) {
       this.matchInspectorWindow.render();
     }
