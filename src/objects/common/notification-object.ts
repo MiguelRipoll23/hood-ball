@@ -28,6 +28,8 @@ export class NotificationObject extends BaseAnimatedGameObject {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
+    context.save();
+
     this.applyOpacity(context);
 
     // Draw red borders
@@ -44,7 +46,7 @@ export class NotificationObject extends BaseAnimatedGameObject {
     context.font = "20px system-ui";
     context.fillText(this.text, this.textX, this.y + this.HEIGHT / 2 + 6);
 
-    this.resetToGlobalOpacity(context);
+    context.restore();
   }
 
   public show(text: string): void {
