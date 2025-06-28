@@ -29,11 +29,21 @@ export class DebugWindow extends BaseWindow {
     super.render();
 
     // Always render child windows so they remain visible even when
-    // the debug menu window itself is closed.
-    this.eventInspectorWindow.render();
-    this.screenInspectorWindow.render();
-    this.matchInspectorWindow.render();
-    this.peerInspectorWindow.render();
+    // the debug menu window itself is closed
+    if (this.eventInspectorWindow.isOpen()) {
+      this.eventInspectorWindow.render();
+    }
+
+    if (this.screenInspectorWindow.isOpen()) {
+      this.screenInspectorWindow.render();
+    }
+    if (this.matchInspectorWindow.isOpen()) {
+      this.matchInspectorWindow.render();
+    }
+
+    if (this.peerInspectorWindow.isOpen()) {
+      this.peerInspectorWindow.render();
+    }
   }
 
   private renderMenu(): void {
