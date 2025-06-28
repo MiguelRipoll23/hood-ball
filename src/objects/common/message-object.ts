@@ -35,10 +35,10 @@ export class MessageObject extends BaseAnimatedGameObject {
   }
 
   public render(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
     this.drawRoundedRectangle(context);
     this.drawText(context);
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
   }
 
   private drawRoundedRectangle(context: CanvasRenderingContext2D): void {

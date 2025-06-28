@@ -28,7 +28,9 @@ export class NotificationObject extends BaseAnimatedGameObject {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
+    context.save();
+
+    this.applyOpacity(context);
 
     // Draw red borders
     context.fillStyle = "rgba(255, 0, 0, 0.85)";
@@ -44,7 +46,7 @@ export class NotificationObject extends BaseAnimatedGameObject {
     context.font = "20px system-ui";
     context.fillText(this.text, this.textX, this.y + this.HEIGHT / 2 + 6);
 
-    context.globalAlpha = 1;
+    context.restore();
   }
 
   public show(text: string): void {

@@ -62,7 +62,7 @@ export class AlertObject
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
 
     this.setTransformOrigin(context);
     this.setFontStyle(context);

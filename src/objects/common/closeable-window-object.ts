@@ -77,12 +77,14 @@ export class CloseableWindowObject extends BaseTappableGameObject {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
+    context.save();
+
+    this.applyOpacity(context);
 
     this.backdropObject.render(context);
     this.renderWindow(context);
 
-    context.globalAlpha = 1; // Reset global alpha
+    context.restore();
 
     super.render(context);
   }

@@ -65,12 +65,6 @@ export class BaseGameScreen implements GameScreen {
 
   public setOpacity(opacity: number): void {
     this.opacity = opacity;
-
-    [...this.sceneObjects, ...this.uiObjects].forEach((object) => {
-      if (object.getOpacity() > opacity) {
-        object.setOpacity(opacity);
-      }
-    });
   }
 
   public getUIObjects(): GameObject[] {
