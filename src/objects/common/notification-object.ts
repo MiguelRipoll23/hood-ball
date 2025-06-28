@@ -28,7 +28,7 @@ export class NotificationObject extends BaseAnimatedGameObject {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
 
     // Draw red borders
     context.fillStyle = "rgba(255, 0, 0, 0.85)";

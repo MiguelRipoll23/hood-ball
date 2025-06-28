@@ -43,10 +43,6 @@ export class DebugObject extends BaseAnimatedGameObject {
     context.restore();
   }
 
-  private applyOpacity(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
-  }
-
   private drawText(context: CanvasRenderingContext2D): void {
     context.fillStyle = "#FFFF00";
     context.font = "18px system-ui";

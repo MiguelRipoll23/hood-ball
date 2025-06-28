@@ -95,10 +95,6 @@ export class ToastObject extends BaseAnimatedGameObject {
     this.y = this.topMargin; // Set y position based on topMargin
   }
 
-  private applyOpacity(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
-  }
-
   private applyTransformations(context: CanvasRenderingContext2D): void {
     context.translate(this.x + this.width / 2, this.y + this.height / 2);
     context.rotate((this.angle * Math.PI) / 180);

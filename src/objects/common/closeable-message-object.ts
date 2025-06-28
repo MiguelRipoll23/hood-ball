@@ -44,10 +44,10 @@ export class CloseableMessageObject extends BaseTappableGameObject {
   }
 
   public render(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
     this.drawRoundedRectangle(context);
     this.drawText(context);
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
 
     super.render(context);
   }

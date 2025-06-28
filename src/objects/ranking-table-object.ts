@@ -10,7 +10,7 @@ export class RankingTableObject extends BaseAnimatedGameObject {
 
   public render(context: CanvasRenderingContext2D): void {
     context.save();
-    context.globalAlpha = this.opacity;
+    this.applyOpacity(context);
 
     context.font = "bold 24px system-ui";
     context.textAlign = "left";
