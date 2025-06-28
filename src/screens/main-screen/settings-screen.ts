@@ -107,6 +107,8 @@ export class SettingsScreen extends BaseGameScreen {
     this.updateDebugStateForObjects();
 
     if (state === false) {
+      const debugService = ServiceLocator.get(DebugService);
+      debugService.stop();
       return;
     }
 

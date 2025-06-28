@@ -32,11 +32,15 @@ export class DebugService {
   }
 
   public render(): void {
-    if (!this.initialized) return;
+    if (!this.initialized || !this.gameState.isDebugging()) return;
 
     ImGuiImplWeb.BeginRenderWebGL();
     this.debugWindow?.render();
     ImGuiImplWeb.EndRenderWebGL();
+  }
+
+  public stop(): void {
+    this.debugWindow?.close();
   }
 
   private getDebugCanvas(): HTMLCanvasElement {
