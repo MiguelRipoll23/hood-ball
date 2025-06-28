@@ -56,12 +56,14 @@ export class BaseGameObject implements GameObject {
   }
 
   protected applyOpacity(context: CanvasRenderingContext2D): void {
+    // Apply desired object opacity only if it's less than the screen opacity
     if (context.globalAlpha > this.opacity) {
       context.globalAlpha = this.opacity;
     }
   }
 
-  protected resetOpacity(context: CanvasRenderingContext2D): void {
+  protected resetToGlobalOpacity(context: CanvasRenderingContext2D): void {
+    // Reset object opacity to the screen opacity
     this.opacity = context.globalAlpha;
   }
 

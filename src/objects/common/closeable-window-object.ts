@@ -82,7 +82,7 @@ export class CloseableWindowObject extends BaseTappableGameObject {
     this.backdropObject.render(context);
     this.renderWindow(context);
 
-    this.resetOpacity(context);
+    this.resetToGlobalOpacity(context);
 
     super.render(context);
   }
