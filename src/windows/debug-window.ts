@@ -23,7 +23,13 @@ export class DebugWindow extends BaseWindow {
 
   protected override renderContent(): void {
     this.renderMenu();
+  }
 
+  public override render(): void {
+    super.render();
+
+    // Always render child windows so they remain visible even when
+    // the debug menu window itself is closed.
     this.eventInspectorWindow.render();
     this.screenInspectorWindow.render();
     this.matchInspectorWindow.render();
