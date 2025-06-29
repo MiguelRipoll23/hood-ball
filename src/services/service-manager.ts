@@ -64,8 +64,9 @@ export class ServiceManager {
 
   private static initializeServices() {
     const webrtcService = ServiceLocator.get(WebRTCService);
+    const matchmakingService = ServiceLocator.get(MatchmakingService);
     ServiceLocator.get(ObjectOrchestratorService).initialize();
     ServiceLocator.get(EventProcessorService).initialize(webrtcService);
-    webrtcService.initialize();
+    webrtcService.initialize(matchmakingService);
   }
 }

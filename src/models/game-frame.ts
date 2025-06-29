@@ -25,6 +25,24 @@ export class GameFrame implements ScreenManager {
     this.nextScreen = screen;
   }
 
+  public setInitialScreen(screen: GameScreen): void {
+    this.currentScreen = screen;
+  }
+
+  public getPreviousScreen(): GameScreen | null {
+    return null;
+  }
+
+  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    this.currentScreen?.update(deltaTimeStamp);
+    this.nextScreen?.update(deltaTimeStamp);
+  }
+
+  public render(context: CanvasRenderingContext2D): void {
+    this.currentScreen?.render(context);
+    this.nextScreen?.render(context);
+  }
+
   public getNotificationObject(): NotificationObject | null {
     return this.notificationObject;
   }
