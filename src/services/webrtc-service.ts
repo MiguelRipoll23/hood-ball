@@ -12,8 +12,9 @@ import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { ServiceLocator } from "./service-locator.js";
 import { GameState } from "../models/game-state.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
 
-export class WebRTCService {
+export class WebRTCService implements IWebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
 
   // Network stats
@@ -215,7 +216,7 @@ export class WebRTCService {
   }
 
   private addPeer(token: string): WebRTCPeer {
-    const peer = new WebRTCPeerService(this.gameState, token);
+    const peer = new WebRTCPeerService(this.gameState, token, this);
     this.peers.set(token, peer);
 
     console.log("Added WebRTC peer, updated peers count", this.peers.size);
