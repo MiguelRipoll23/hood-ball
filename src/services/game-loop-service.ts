@@ -8,7 +8,7 @@ import type { ServerDisconnectedPayload } from "../interfaces/events/server-disc
 import type { ServerNotificationPayload } from "../interfaces/events/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
-import type { GameScreen } from "../interfaces/screena/game-screen.js";
+import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugObject } from "../objects/common/debug-object.js";

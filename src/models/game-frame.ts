@@ -1,6 +1,6 @@
 import { NotificationObject } from "../objects/common/notification-object.js";
-import type { GameScreen } from "../interfaces/screena/game-screen.js";
-import type { ScreenManager } from "../interfaces/screena/screen-manager.js";
+import type { GameScreen } from "../interfaces/screens/game-screen.js";
+import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
 import { DebugObject } from "../objects/common/debug-object.js";
 
 export class GameFrame implements ScreenManager {
