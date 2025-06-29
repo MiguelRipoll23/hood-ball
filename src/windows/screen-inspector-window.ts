@@ -1,6 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameObject } from "../interfaces/objects/game-object.js";
-import type { GameScreen } from "../interfaces/screen/game-screen.js";
+import type { GameScreen } from "../interfaces/screena/game-screen.js";
 import { BaseAnimatedGameObject } from "../objects/base/base-animated-object.js";
 import { BallObject } from "../objects/ball-object.js";
 import { RemoteCarObject } from "../objects/remote-car-object.js";

@@ -3,7 +3,7 @@ import { MenuOptionObject } from "../../objects/common/menu-option-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { ServerMessageWindowObject } from "../../objects/server-message-window-object.js";
 import { APIService } from "../../services/api-service.js";
-import type { MessagesResponse } from "../../interfaces/response/messages-response.js";
+import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
 import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { LoadingScreen } from "../loading-screen.js";

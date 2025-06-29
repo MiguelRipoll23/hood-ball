@@ -6,7 +6,7 @@ import type {
   StaticMultiplayerGameObject,
 } from "../../interfaces/objects/multiplayer-game-object.js";
 import { BaseGameScreen } from "../../screens/base/base-game-screen.js";
-import type { MultiplayerScreen } from "../../interfaces/screen/multiplayer-screen.js";
+import type { MultiplayerScreen } from "../../interfaces/screena/multiplayer-screen.js";
 import { ScreenType } from "../../enums/screen-type.js";
 
 export class BaseMultiplayerScreen

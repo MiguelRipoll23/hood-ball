@@ -1,4 +1,4 @@
-import type { FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
+import type { FindMatchesResponse } from "../interfaces/responses/find-matches-response.js";
 import { TimerService } from "./timer-service.js";
 import { Match } from "../models/match.js";
 import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
@@ -11,9 +11,9 @@ import { LocalEvent } from "../models/local-event.js";
 import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
-import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
-import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
-import type { SavePlayerScoresRequest } from "../interfaces/request/save-score-request.js";
+import type { AdvertiseMatchRequest } from "../interfaces/requests/advertise-match-request.js";
+import type { FindMatchesRequest } from "../interfaces/requests/find-matches-request.js";
+import type { SavePlayerScoresRequest } from "../interfaces/requests/save-score-request.js";
 import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";

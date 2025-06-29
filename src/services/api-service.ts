@@ -11,20 +11,20 @@ import {
   VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
   AUTHENTICATION_OPTIONS_ENDPOINT,
 } from "../constants/api-constants.js";
-import type { FindMatchesResponse } from "../interfaces/response/find-matches-response.js";
-import type { MessagesResponse } from "../interfaces/response/messages-response.js";
-import type { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
-import type { VersionResponse } from "../interfaces/response/version-response.js";
-import type { RankingResponse } from "../interfaces/response/ranking-response.js";
-import type { AdvertiseMatchRequest } from "../interfaces/request/advertise-match-request.js";
-import type { FindMatchesRequest } from "../interfaces/request/find-matches-request.js";
-import type { SavePlayerScoresRequest } from "../interfaces/request/save-score-request.js";
-import type { AuthenticationOptionsResponse } from "../interfaces/response/authentication-options-response.js";
-import type { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
-import type { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
-import type { AuthenticationOptionsRequest } from "../interfaces/request/authentication-options.js";
-import type { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
-import type { RegistrationOptionsResponse } from "../interfaces/response/registration-options-response.js";
+import type { FindMatchesResponse } from "../interfaces/responses/find-matches-response.js";
+import type { MessagesResponse } from "../interfaces/responses/messages-response.js";
+import type { AuthenticationResponse } from "../interfaces/responses/authentication-response.js";
+import type { VersionResponse } from "../interfaces/responses/version-response.js";
+import type { RankingResponse } from "../interfaces/responses/ranking-response.js";
+import type { AdvertiseMatchRequest } from "../interfaces/requests/advertise-match-request.js";
+import type { FindMatchesRequest } from "../interfaces/requests/find-matches-request.js";
+import type { SavePlayerScoresRequest } from "../interfaces/requests/save-score-request.js";
+import type { AuthenticationOptionsResponse } from "../interfaces/responses/authentication-options-response.js";
+import type { VerifyRegistrationRequest } from "../interfaces/requests/verify-registration-request.js";
+import type { RegistrationOptionsRequest } from "../interfaces/requests/registration-options-request.js";
+import type { AuthenticationOptionsRequest } from "../interfaces/requests/authentication-options.js";
+import type { VerifyAuthenticationRequest } from "../interfaces/requests/verify-authentication-request.js";
+import type { RegistrationOptionsResponse } from "../interfaces/responses/registration-options-response.js";
 import { CryptoService } from "./crypto-service.js";
 import { APIUtils } from "../utils/api-utils.js";
 import { ServiceLocator } from "./service-locator.js";
