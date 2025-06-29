@@ -1,7 +1,7 @@
 import { GamePlayer } from "../models/game-player.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
-import { WebRTCService } from "./webrtc-service.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
@@ -14,7 +14,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_FUTURE_WINDOW = 32;
 
   private matchmakingService: MatchmakingService;
-  private webrtcService: WebRTCService;
+  private webrtcDelegate: IWebRTCService;
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
@@ -41,11 +41,12 @@ export class WebRTCPeerService implements WebRTCPeer {
   }> = [];
 
   constructor(
-    private gameState = ServiceLocator.get(GameState),
-    private token: string
+    private token: string,
+    webrtcDelegate: IWebRTCService,
+    private gameState = ServiceLocator.get(GameState)
   ) {
     this.matchmakingService = ServiceLocator.get(MatchmakingService);
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcDelegate = webrtcDelegate;
 
     this.host = gameState.getMatch()?.isHost() ?? false;
 
@@ -143,7 +144,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     this.iceCandidatesQueue.forEach((candidate) => {
       this.processIceCandidate(candidate, true);
-      this.webrtcService.sendIceCandidate(this.token, candidate);
+      this.webrtcDelegate.sendIceCandidate(this.token, candidate);
     });
 
     this.iceCandidatesQueue = [];
@@ -264,7 +265,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private handleDisconnection(): void {
     console.info("Peer connection closed");
-    this.webrtcService.removePeer(this.token);
+    this.webrtcDelegate.removePeer(this.token);
 
     // If the peer was connected, notify the matchmaking service
     if (this.connected) {
@@ -351,7 +352,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       console.info("Queued ICE candidate", iceCandidate);
     }
 
-    this.webrtcService.sendIceCandidate(this.token, iceCandidate);
+    this.webrtcDelegate.sendIceCandidate(this.token, iceCandidate);
   }
 
   private async processIceCandidate(
@@ -518,7 +519,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
 
     try {
-      this.webrtcService.dispatchCommand(commandId, this, binaryReader);
+      this.webrtcDelegate.dispatchCommand(commandId, this, binaryReader);
     } catch (error) {
       console.error(
         `Error executing command handler for ID ${commandId} from peer ${this.getName()}:`,

@@ -2,7 +2,7 @@ import { GamePointer } from "../../models/game-pointer.js";
 import { LayerType } from "../../enums/layer-type.js";
 import { BaseTappableGameObject } from "../../objects/base/base-tappable-game-object.js";
 import type { GameObject } from "../../interfaces/objects/game-object.js";
-import type { GameScreen } from "../../interfaces/screen/game-screen.js";
+import type { GameScreen } from "../../interfaces/screena/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { EventConsumerService } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";

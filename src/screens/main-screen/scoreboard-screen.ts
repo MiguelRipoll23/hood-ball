@@ -1,6 +1,6 @@
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
-import type { RankingResponse } from "../../interfaces/response/ranking-response.js";
+import type { RankingResponse } from "../../interfaces/responses/ranking-response.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { RankingTableObject } from "../../objects/ranking-table-object.js";

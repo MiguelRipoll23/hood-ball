@@ -3,7 +3,7 @@ import {
   API_PATH,
   API_VERSION,
 } from "../constants/api-constants.js";
-import type { ErrorResponse } from "../interfaces/response/error-response.js";
+import type { ErrorResponse } from "../interfaces/responses/error-response.js";
 import { ServerError } from "../models/server-error.js";
 
 export class APIUtils {

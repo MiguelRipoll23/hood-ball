@@ -1,9 +1,9 @@
 import { EventType } from "../enums/event-type.js";
-import type { AuthenticationOptionsRequest } from "../interfaces/request/authentication-options.js";
-import type { RegistrationOptionsRequest } from "../interfaces/request/registration-options-request.js";
-import type { VerifyAuthenticationRequest } from "../interfaces/request/verify-authentication-request.js";
-import type { VerifyRegistrationRequest } from "../interfaces/request/verify-registration-request.js";
-import type { AuthenticationResponse } from "../interfaces/response/authentication-response.js";
+import type { AuthenticationOptionsRequest } from "../interfaces/requests/authentication-options.js";
+import type { RegistrationOptionsRequest } from "../interfaces/requests/registration-options-request.js";
+import type { VerifyAuthenticationRequest } from "../interfaces/requests/verify-authentication-request.js";
+import type { VerifyRegistrationRequest } from "../interfaces/requests/verify-registration-request.js";
+import type { AuthenticationResponse } from "../interfaces/responses/authentication-response.js";
 import { GameState } from "../models/game-state.js";
 import { LocalEvent } from "../models/local-event.js";
 import { ServerError } from "../models/server-error.js";
