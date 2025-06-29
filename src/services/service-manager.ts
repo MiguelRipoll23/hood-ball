@@ -59,7 +59,11 @@ export class ServiceManager {
 
   private static registerCommunicationServices(): void {
     ServiceLocator.register(WebSocketService, new WebSocketService());
-    ServiceLocator.register(WebRTCService, new WebRTCService());
+    const matchmakingService = ServiceLocator.get(MatchmakingService);
+    ServiceLocator.register(
+      WebRTCService,
+      new WebRTCService(undefined, matchmakingService)
+    );
   }
 
   private static initializeServices() {

@@ -1,8 +1,8 @@
 import { AnimationType } from "../enums/animation-type.js";
-import { BaseAnimatedGameObject } from "../objects/base/base-animated-object.js";
+import type { AnimatableGameObject } from "../interfaces/objects/animatable-game-object.js";
 
 export class ObjectAnimationService {
-  private readonly object: BaseAnimatedGameObject;
+  private readonly object: AnimatableGameObject;
 
   private completed: boolean = false;
 
@@ -15,7 +15,7 @@ export class ObjectAnimationService {
   private animationType: AnimationType;
 
   constructor(
-    object: BaseAnimatedGameObject,
+    object: AnimatableGameObject,
     animationType: AnimationType,
     startValue: number,
     endValue: number,

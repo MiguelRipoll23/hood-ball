@@ -191,7 +191,9 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToLoadingScreen(): void {
     this.disableMenuButtons();
 
-    const loadingScreen = new LoadingScreen(this.gameState);
+    const loadingScreen = new LoadingScreen(this.gameState, async () =>
+      new MainMenuScreen(this.gameState, false)
+    );
     loadingScreen.load();
 
     this.screenTransitionService.crossfade(loadingScreen, 0.2);

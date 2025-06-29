@@ -13,7 +13,7 @@ export class ScreenTransitionService {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  constructor(private screenManager: ScreenManager) {}
+  constructor(private screenManager: ScreenManager<GameScreen>) {}
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.isFadingOutAndIn) {

@@ -1,6 +1,7 @@
 import { TunnelType } from "../enums/tunnel-type.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
+import type { PeerConnectionDelegate } from "../interfaces/peer-connection-delegate.js";
 import { DebugUtils } from "../utils/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
@@ -23,8 +24,13 @@ export class WebRTCService implements IWebRTCService {
 
   private readonly dispatcherService: WebRTCDispatcherService;
   private webSocketService: WebSocketService | null = null;
+  private readonly delegate: PeerConnectionDelegate;
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {
+  constructor(
+    private gameState = ServiceLocator.get(GameState),
+    delegate: PeerConnectionDelegate
+  ) {
+    this.delegate = delegate;
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
   }
@@ -216,7 +222,7 @@ export class WebRTCService implements IWebRTCService {
   }
 
   private addPeer(token: string): WebRTCPeer {
-    const peer = new WebRTCPeerService(token, this, this.gameState);
+    const peer = new WebRTCPeerService(token, this, this.delegate, this.gameState);
     this.peers.set(token, peer);
 
     console.log("Added WebRTC peer, updated peers count", this.peers.size);

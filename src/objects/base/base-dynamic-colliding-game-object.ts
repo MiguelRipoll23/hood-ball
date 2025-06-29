@@ -39,6 +39,10 @@ export class BaseDynamicCollidingGameObject extends BaseStaticCollidingGameObjec
     return this.mass;
   }
 
+  public override isDynamic(): boolean {
+    return true;
+  }
+
   public render(context: CanvasRenderingContext2D): void {
     if (this.debugSettings?.isDebugging()) {
       this.renderDebugGizmos(context);

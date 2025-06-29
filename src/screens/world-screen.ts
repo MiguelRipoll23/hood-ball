@@ -17,7 +17,7 @@ import { EventType } from "../enums/event-type.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { ScreenType } from "../enums/screen-type.js";
 import { MainScreen } from "./main-screen.js";
-import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
+import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
@@ -47,10 +47,15 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private toastObject: ToastObject | null = null;
 
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+  private readonly mainMenuFactory: () => Promise<GameScreen>;
 
-  constructor(protected gameState: GameState) {
+  constructor(
+    protected gameState: GameState,
+    mainMenuFactory: () => Promise<GameScreen>
+  ) {
     super(gameState);
     this.gameState.getGamePlayer().reset();
+    this.mainMenuFactory = mainMenuFactory;
     this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.timerManagerService = ServiceLocator.get(TimerManagerService);
     this.matchmakingService = ServiceLocator.get(MatchmakingService);
@@ -94,7 +99,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.objectOrchestrator.sendLocalData(this, deltaTimeStamp);
   }
 
-  private handleMatchmakingError(error: Error) {
+  private async handleMatchmakingError(error: Error) {
     console.error("Matchmaking error", error);
 
     alert(
@@ -102,7 +107,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     );
 
     this.gameState.setMatch(null);
-    this.returnToMainMenuScreen();
+    await this.returnToMainMenuScreen();
   }
 
   private handleMatchState(): void {
@@ -613,16 +618,16 @@ export class WorldScreen extends BaseCollidingGameScreen {
     }
   }
 
-  private handleGameOverEnd() {
+  private async handleGameOverEnd() {
     console.log("Game over end");
 
     this.matchmakingService.handleGameOver();
-    this.returnToMainMenuScreen();
+    await this.returnToMainMenuScreen();
   }
 
-  private returnToMainMenuScreen(): void {
+  private async returnToMainMenuScreen(): Promise<void> {
     const mainScreen = new MainScreen(this.gameState);
-    const mainMenuScreen = new MainMenuScreen(this.gameState, false);
+    const mainMenuScreen = await this.mainMenuFactory();
 
     mainScreen.setScreen(mainMenuScreen);
     mainScreen.load();

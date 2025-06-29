@@ -4,6 +4,7 @@ import { BaseTappableGameObject } from "../../objects/base/base-tappable-game-ob
 import type { GameObject } from "../../interfaces/objects/game-object.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
+import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
 import { EventConsumerService } from "../../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../models/game-state.js";
@@ -34,14 +35,14 @@ export class BaseGameScreen implements GameScreen {
     return this.opacity > 0;
   }
 
-  public getScreenManagerService(): ScreenManagerService | null {
+  public getScreenManagerService(): ScreenManager<GameScreen> | null {
     return this.screenManagerService;
   }
 
   public setScreenManagerService(
-    screenManagerService: ScreenManagerService
+    screenManagerService: ScreenManager<GameScreen>
   ): void {
-    this.screenManagerService = screenManagerService;
+    this.screenManagerService = screenManagerService as ScreenManagerService;
   }
 
   public load(): void {

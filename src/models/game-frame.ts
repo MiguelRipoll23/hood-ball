@@ -3,7 +3,7 @@ import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
 import { DebugObject } from "../objects/common/debug-object.js";
 
-export class GameFrame implements ScreenManager {
+export class GameFrame implements ScreenManager<GameScreen> {
   private currentScreen: GameScreen | null = null;
   private nextScreen: GameScreen | null = null;
   private notificationObject: NotificationObject | null = null;

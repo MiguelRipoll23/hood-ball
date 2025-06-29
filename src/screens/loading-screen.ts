@@ -5,15 +5,18 @@ import { ScreenTransitionService } from "../services/screen-transition-service.j
 import { ServiceLocator } from "../services/service-locator.js";
 import { BaseGameScreen } from "./base/base-game-screen.js";
 import { WorldScreen } from "./world-screen.js";
+import type { GameScreen } from "../interfaces/screens/game-screen.js";
 
 export class LoadingScreen extends BaseGameScreen {
   private screenTransitionService: ScreenTransitionService;
   private progressBarObject: ProgressBarObject | null = null;
   private worldScreen: WorldScreen | null = null;
+  private mainMenuFactory: () => Promise<GameScreen>;
 
-  constructor(gameState: GameState) {
+  constructor(gameState: GameState, mainMenuFactory: () => Promise<GameScreen>) {
     super(gameState);
     this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
+    this.mainMenuFactory = mainMenuFactory;
   }
 
   public override load(): void {
@@ -26,7 +29,7 @@ export class LoadingScreen extends BaseGameScreen {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
-    this.worldScreen = new WorldScreen(this.gameState);
+    this.worldScreen = new WorldScreen(this.gameState, this.mainMenuFactory);
     this.worldScreen.load();
 
     this.screenTransitionService.fadeOutAndIn(this.worldScreen, 1, 1);
