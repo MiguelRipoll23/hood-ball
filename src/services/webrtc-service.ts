@@ -13,6 +13,7 @@ import { WebSocketService } from "./websocket-service.js";
 import { ServiceLocator } from "./service-locator.js";
 import { GameState } from "../models/game-state.js";
 import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
+import type { PeerConnectionListener } from "../interfaces/services/peer-connection-listener.js";
 
 export class WebRTCService implements IWebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
@@ -23,15 +24,17 @@ export class WebRTCService implements IWebRTCService {
 
   private readonly dispatcherService: WebRTCDispatcherService;
   private webSocketService: WebSocketService | null = null;
+  private connectionListener: PeerConnectionListener | null = null;
 
   constructor(private gameState = ServiceLocator.get(GameState)) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
   }
 
-  public initialize(): void {
+  public initialize(listener: PeerConnectionListener): void {
     this.webSocketService = ServiceLocator.get(WebSocketService);
     this.webSocketService.registerCommandHandlers(this);
+    this.connectionListener = listener;
     console.log("WebRTC service initialized");
   }
 
@@ -216,7 +219,15 @@ export class WebRTCService implements IWebRTCService {
   }
 
   private addPeer(token: string): WebRTCPeer {
-    const peer = new WebRTCPeerService(token, this, this.gameState);
+    if (this.connectionListener === null) {
+      throw new Error("WebRTCService not initialized");
+    }
+    const peer = new WebRTCPeerService(
+      token,
+      this,
+      this.connectionListener,
+      this.gameState
+    );
     this.peers.set(token, peer);
 
     console.log("Added WebRTC peer, updated peers count", this.peers.size);

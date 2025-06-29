@@ -15,6 +15,10 @@ export class BaseDynamicCollidingGameObject extends BaseStaticCollidingGameObjec
   protected vy: number = 0;
   protected mass: number = 0;
 
+  public override isDynamic(): boolean {
+    return true;
+  }
+
   constructor() {
     super();
   }
