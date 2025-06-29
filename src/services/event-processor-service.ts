@@ -7,8 +7,7 @@ import { EventQueueService } from "./event-queue-service.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
-import { WebRTCService } from "./webrtc-service.js";
-import { ServiceLocator } from "./service-locator.js";
+import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -18,15 +17,15 @@ export type EventSubscription = {
 export class EventProcessorService {
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
-  private webrtcService: WebRTCService | null = null;
+  private webrtcService: IWebRTCService | null = null;
 
   constructor() {
     this.localQueue = new EventQueueService<LocalEvent>();
     this.remoteQueue = new EventQueueService<RemoteEvent>();
   }
 
-  public initialize(): void {
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+  public initialize(webrtcService: IWebRTCService): void {
+    this.webrtcService = webrtcService;
     this.webrtcService.registerCommandHandlers(this);
     console.log("Event processor service initialized");
   }
@@ -71,7 +70,7 @@ export class EventProcessorService {
       });
   }
 
-  private getWebRTCService(): WebRTCService {
+  private getWebRTCService(): IWebRTCService {
     if (this.webrtcService === null) {
       throw new Error("WebRTCService is not initialized");
     }
