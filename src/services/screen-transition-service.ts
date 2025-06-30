@@ -1,5 +1,6 @@
 import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
+import type { GameFrame } from "../models/game-frame.js";
 
 export class ScreenTransitionService {
   private elapsedTransitionMilliseconds: number = 0;
@@ -13,7 +14,7 @@ export class ScreenTransitionService {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  constructor(private screenManager: ScreenManager) {}
+  constructor(private screenManager: GameFrame | ScreenManager) {}
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.isFadingOutAndIn) {

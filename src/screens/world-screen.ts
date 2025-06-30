@@ -27,6 +27,8 @@ import { EventProcessorService } from "../services/event-processor-service.js";
 import { ObjectOrchestratorService } from "../services/object-orchestrator-service.js";
 import { ScreenTransitionService } from "../services/screen-transition-service.js";
 import { TimerManagerService } from "../services/timer-manager-service.js";
+import { MainScreen } from "./main-screen.js";
+import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -619,11 +621,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private async returnToMainMenuScreen(): Promise<void> {
-    const { MainScreen } = await import("./main-screen.js");
-    const { MainMenuScreen } = await import(
-      "./main-screen/main-menu-screen.js"
-    );
-
     const mainScreen = new MainScreen(this.gameState);
     const mainMenuScreen = new MainMenuScreen(this.gameState, false);
 
