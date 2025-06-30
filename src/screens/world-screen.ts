@@ -627,7 +627,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const mainScreen = new MainScreen(this.gameState);
     const mainMenuScreen = new MainMenuScreen(this.gameState, false);
 
-    mainScreen.setScreen(mainMenuScreen);
+    mainScreen.activateScreen(mainMenuScreen);
     mainScreen.load();
 
     this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);

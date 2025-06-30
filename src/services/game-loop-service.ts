@@ -165,7 +165,7 @@ export class GameLoopService {
     const mainScreen = new MainScreen(this.gameState);
     const mainMenuScreen = new MainMenuScreen(this.gameState, false);
 
-    mainScreen.setScreen(mainMenuScreen);
+    mainScreen.activateScreen(mainMenuScreen);
     mainScreen.load();
 
     this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);
@@ -190,7 +190,7 @@ export class GameLoopService {
     const mainScreen = new MainScreen(this.gameState);
     const loginScreen = new LoginScreen(this.gameState);
 
-    mainScreen.setScreen(loginScreen);
+    mainScreen.activateScreen(loginScreen);
     mainScreen.load();
 
     this.screenTransitionService.crossfade(mainScreen, 1);

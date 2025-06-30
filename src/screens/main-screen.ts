@@ -12,7 +12,7 @@ export class MainScreen extends BaseGameScreen {
     this.screenManagerService = new ScreenManagerService();
   }
 
-  public setScreen(screen: GameScreen): void {
+  public activateScreen(screen: GameScreen): void {
     this.screen = screen;
     this.screen?.setOpacity(1);
     this.screenManagerService?.setInitialScreen(screen);
