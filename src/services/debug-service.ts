@@ -6,6 +6,7 @@ import { ServiceLocator } from "./service-locator";
 export class DebugService {
   private debugCanvas: HTMLCanvasElement;
   private gameCanvas: HTMLCanvasElement;
+  private context: WebGLRenderingContext | null = null;
 
   private initialized = false;
   private debugWindow: DebugWindow | null = null;
@@ -25,6 +26,7 @@ export class DebugService {
 
   public async init(): Promise<void> {
     await ImGuiImplWeb.InitWebGL(this.debugCanvas);
+    this.setCanvasContext();
     ImGui.SetNextWindowFocus();
     this.loadDebugWindow();
     this.initialized = true;
@@ -34,9 +36,13 @@ export class DebugService {
   public render(): void {
     if (!this.initialized) return;
 
-    ImGuiImplWeb.BeginRenderWebGL();
-    this.debugWindow?.render();
-    ImGuiImplWeb.EndRenderWebGL();
+    if (this.gameState.isDebugging()) {
+      ImGuiImplWeb.BeginRenderWebGL();
+      this.debugWindow?.render();
+      ImGuiImplWeb.EndRenderWebGL();
+    } else {
+      this.clearCanvas();
+    }
   }
 
   private getDebugCanvas(): HTMLCanvasElement {
@@ -45,62 +51,38 @@ export class DebugService {
     return canvas;
   }
 
+  private setCanvasContext(): void {
+    this.context =
+      this.debugCanvas.getContext("webgl2") ||
+      this.debugCanvas.getContext("webgl");
+  }
+
   private setCanvasSize(): void {
     this.debugCanvas.width = window.innerWidth;
     this.debugCanvas.height = window.innerHeight;
   }
 
-  private addEventListeners(): void {
-    window.addEventListener("resize", this.setCanvasSize.bind(this));
-
-    this.preloadCommonEvents();
-    this.patchAddEventListener();
+  private clearCanvas(): void {
+    this.context?.clearColor(0, 0, 0, 0);
+    this.context?.clear(
+      this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT
+    );
   }
 
   private loadDebugWindow(): void {
     this.debugWindow = new DebugWindow(this.gameState);
   }
 
-  private preloadCommonEvents(): void {
-    const commonEvents = ["pointerdown", "pointerup", "pointermove"];
-    commonEvents.forEach((eventType) => this.registerEvent(eventType));
+  private addEventListeners(): void {
+    window.addEventListener("resize", this.setCanvasSize.bind(this));
+    this.preloadCommonEvents();
+    this.patchCanvasAddEventListener();
   }
 
-  private patchAddEventListener(): void {
-    const originalAddEventListener = this.debugCanvas.addEventListener.bind(
-      this.debugCanvas
+  private preloadCommonEvents(): void {
+    ["pointerdown", "pointerup", "pointermove"].forEach((type) =>
+      this.registerEvent(type)
     );
-
-    this.debugCanvas.addEventListener = (
-      type: string,
-      listener: EventListenerOrEventListenerObject,
-      options?: boolean | AddEventListenerOptions
-    ): void => {
-      this.registerEvent(type);
-
-      // If the event is 'wheel' or touch events, and options is not explicitly false or { passive: false },
-      // force passive to true for better scrolling performance.
-      if (
-        (type === "wheel" || type === "touchstart" || type === "touchmove") &&
-        !(typeof options === "boolean" && options === false) &&
-        !(typeof options === "object" && options.passive === false)
-      ) {
-        // Merge or override options to ensure passive: true
-        let newOptions: AddEventListenerOptions;
-        if (typeof options === "boolean") {
-          // If options is just capture boolean, convert to object
-          newOptions = { capture: options, passive: true };
-        } else if (typeof options === "object") {
-          newOptions = { ...options, passive: true };
-        } else {
-          newOptions = { passive: true };
-        }
-        originalAddEventListener(type, listener, newOptions);
-      } else {
-        // Use original options as-is
-        originalAddEventListener(type, listener, options);
-      }
-    };
   }
 
   private registerEvent(type: string): void {
@@ -122,10 +104,39 @@ export class DebugService {
       const EventConstructor = event.constructor as {
         new (type: string, eventInitDict?: any): Event;
       };
-      const clonedEvent = new EventConstructor(event.type, event);
-      this.gameCanvas.dispatchEvent(clonedEvent);
+      const cloned = new EventConstructor(event.type, event);
+      this.gameCanvas.dispatchEvent(cloned);
     } catch (error) {
       console.warn(`Could not forward event "${event.type}":`, error);
     }
+  }
+
+  private patchCanvasAddEventListener(): void {
+    const originalAdd = this.debugCanvas.addEventListener.bind(
+      this.debugCanvas
+    );
+
+    this.debugCanvas.addEventListener = (
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions
+    ): void => {
+      this.registerEvent(type);
+
+      const needsPassive =
+        (type === "wheel" || type === "touchstart" || type === "touchmove") &&
+        !(
+          (typeof options === "boolean" && options === false) ||
+          (typeof options === "object" && options.passive === false)
+        );
+
+      const finalOptions = needsPassive
+        ? typeof options === "boolean"
+          ? { capture: options, passive: true }
+          : { ...options, passive: true }
+        : options;
+
+      originalAdd(type, listener, finalOptions);
+    };
   }
 }

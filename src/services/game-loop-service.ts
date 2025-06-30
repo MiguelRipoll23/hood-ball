@@ -247,6 +247,9 @@ export class GameLoopService {
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();
     }
+
+    // Dear ImGui rendering
+    this.debugService.render();
   }
 
   private renderDebugInformation(): void {
@@ -262,9 +265,6 @@ export class GameLoopService {
 
     this.gameState.getGamePointer().renderDebugInformation(this.context);
     this.context.restore();
-
-    // Dear ImGui rendering
-    this.debugService.render();
   }
 
   private renderDebugGameInformation(): void {
