@@ -620,7 +620,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private async returnToMainMenuScreen(): Promise<void> {
     const { MainScreen } = await import("./main-screen.js");
-    const { MainMenuScreen } = await import("./main-screen/main-menu-screen.js");
+    const { MainMenuScreen } = await import(
+      "./main-screen/main-menu-screen.js"
+    );
 
     const mainScreen = new MainScreen(this.gameState);
     const mainMenuScreen = new MainMenuScreen(this.gameState, false);

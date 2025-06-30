@@ -9,18 +9,15 @@ import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/credential-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
-import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 
 export class LoginScreen extends BaseGameScreen {
   private apiService: APIService;
   private cryptoService: CryptoService;
   private webSocketService: WebSocketService;
   private credentialService: CredentialService;
-  private screenTransitionService: ScreenTransitionService;
 
   private messageObject: MessageObject | null = null;
   private errorCloseableMessageObject: CloseableMessageObject | null = null;
-
   private dialogElement: HTMLDialogElement | null = null;
   private displayNameInputElement: HTMLInputElement | null = null;
   private registerButtonElement: HTMLElement | null = null;
@@ -32,7 +29,6 @@ export class LoginScreen extends BaseGameScreen {
     this.cryptoService = ServiceLocator.get(CryptoService);
     this.webSocketService = ServiceLocator.get(WebSocketService);
     this.credentialService = ServiceLocator.get(CredentialService);
-    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"
@@ -230,6 +226,8 @@ export class LoginScreen extends BaseGameScreen {
     const mainMenuScreen = new MainMenuScreen(this.gameState, true);
     mainMenuScreen.load();
 
-    this.screenTransitionService.crossfade(mainMenuScreen, 0.2);
+    this.screenManagerService
+      ?.getTransitionService()
+      .crossfade(mainMenuScreen, 0.2);
   }
 }

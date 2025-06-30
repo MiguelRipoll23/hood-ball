@@ -5,16 +5,13 @@ import { SettingObject } from "../../objects/setting-object.js";
 import { DebugService } from "../../services/debug-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
-import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 
 export class SettingsScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
   private buttonObject: ButtonObject | null = null;
-  private screenTransitionService: ScreenTransitionService;
 
   constructor(gameState: GameState) {
     super(gameState);
-    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
   }
 
   public override load(): void {
@@ -84,7 +81,9 @@ export class SettingsScreen extends BaseGameScreen {
 
     console.log("Returning to", previousScreen.constructor.name);
 
-    this.screenTransitionService.crossfade(previousScreen, 0.2);
+    this.screenManagerService
+      ?.getTransitionService()
+      .crossfade(previousScreen, 0.2);
   }
 
   private handleSettingObjectPress(settingObject: SettingObject): void {

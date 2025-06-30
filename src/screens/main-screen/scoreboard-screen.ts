@@ -7,7 +7,6 @@ import { RankingTableObject } from "../../objects/ranking-table-object.js";
 import type { GameState } from "../../models/game-state.js";
 import { APIService } from "../../services/api-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
-import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 
 export class ScoreboardScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
@@ -16,12 +15,10 @@ export class ScoreboardScreen extends BaseGameScreen {
   private closeableMessageObject: CloseableMessageObject | null = null;
 
   private apiService: APIService;
-  private screenTransitionService: ScreenTransitionService;
 
   constructor(gameState: GameState) {
     super(gameState);
     this.apiService = ServiceLocator.get(APIService);
-    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
   }
 
   public override load(): void {
@@ -103,6 +100,8 @@ export class ScoreboardScreen extends BaseGameScreen {
 
     console.log("Returning to", previousScreen.constructor.name);
 
-    this.screenTransitionService.crossfade(previousScreen, 0.2);
+    this.screenManagerService
+      ?.getTransitionService()
+      .crossfade(previousScreen, 0.2);
   }
 }

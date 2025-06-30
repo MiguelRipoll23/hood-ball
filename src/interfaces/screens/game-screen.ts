@@ -17,7 +17,7 @@ export interface GameScreen {
   getObjectLayer(object: GameObject): LayerType;
   addObjectToSceneLayer(object: GameObject): void;
 
-  update(deltaTimeStamp: number): void;
+  update(deltaTimeStamp: DOMHighResTimeStamp): void;
   render(context: CanvasRenderingContext2D): void;
 
   getOpacity(): number;
