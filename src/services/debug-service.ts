@@ -26,7 +26,7 @@ export class DebugService {
 
   public async init(): Promise<void> {
     await ImGuiImplWeb.InitWebGL(this.debugCanvas);
-    this.context = this.debugCanvas.getContext("webgl2");
+    this.setCanvasContext();
     ImGui.SetNextWindowFocus();
     this.loadDebugWindow();
     this.initialized = true;
@@ -49,6 +49,12 @@ export class DebugService {
     const canvas = document.querySelector("#debug") as HTMLCanvasElement | null;
     if (!canvas) throw new Error("Debug canvas not found");
     return canvas;
+  }
+
+  private setCanvasContext(): void {
+    this.context =
+      this.debugCanvas.getContext("webgl2") ||
+      this.debugCanvas.getContext("webgl");
   }
 
   private setCanvasSize(): void {
