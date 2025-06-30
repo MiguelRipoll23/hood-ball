@@ -26,13 +26,14 @@ import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { ServiceLocator } from "./service-locator.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
+import type { PeerConnectionListener } from "../interfaces/services/peer-connection-listener.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { APIService } from "./api-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 
-export class MatchmakingService {
+export class MatchmakingService implements PeerConnectionListener {
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 

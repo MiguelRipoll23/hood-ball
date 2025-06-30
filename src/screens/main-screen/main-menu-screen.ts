@@ -4,7 +4,6 @@ import { TitleObject } from "../../objects/common/title-object.js";
 import { ServerMessageWindowObject } from "../../objects/server-message-window-object.js";
 import { APIService } from "../../services/api-service.js";
 import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
-import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { LoadingScreen } from "../loading-screen.js";
 import { ScoreboardScreen } from "./scoreboard-screen.js";
@@ -17,7 +16,6 @@ export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
 
   private apiService: APIService;
-  private screenTransitionService: ScreenTransitionService;
 
   private messagesResponse: MessagesResponse[] | null = null;
 
@@ -28,7 +26,6 @@ export class MainMenuScreen extends BaseGameScreen {
     super(gameState);
     this.showNews = showNews;
     this.apiService = ServiceLocator.get(APIService);
-    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.subscribeToEvents();
   }
 
@@ -194,7 +191,9 @@ export class MainMenuScreen extends BaseGameScreen {
     const loadingScreen = new LoadingScreen(this.gameState);
     loadingScreen.load();
 
-    this.screenTransitionService.crossfade(loadingScreen, 0.2);
+    this.screenManagerService
+      ?.getTransitionService()
+      .crossfade(loadingScreen, 0.2);
   }
 
   private transitionToScoreboardScreen(): void {

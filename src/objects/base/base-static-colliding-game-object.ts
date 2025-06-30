@@ -1,6 +1,5 @@
 import { HitboxObject } from "../common/hitbox-object.js";
 import { BaseAnimatedGameObject } from "./base-animated-object.js";
-import { BaseDynamicCollidingGameObject } from "./base-dynamic-colliding-game-object.js";
 
 type CollidingGameObjectConstructor = new (
   ...args: never[]
@@ -13,6 +12,10 @@ export class BaseStaticCollidingGameObject extends BaseAnimatedGameObject {
   private collidingObjects: BaseStaticCollidingGameObject[] = [];
   private avoidingCollision = false;
   private excludedCollisionClasses: CollidingGameObjectConstructor[] = [];
+
+  public isDynamic(): boolean {
+    return false;
+  }
 
   public override load(): void {
     this.hitboxObjects.forEach((object) =>
@@ -41,7 +44,7 @@ export class BaseStaticCollidingGameObject extends BaseAnimatedGameObject {
         this.isCollisionClassIncluded(
           object.constructor as CollidingGameObjectConstructor
         ) &&
-        !(object instanceof BaseDynamicCollidingGameObject) &&
+        !object.isDynamic() &&
         object.hasRigidBody()
     );
   }

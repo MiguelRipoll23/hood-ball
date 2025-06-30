@@ -18,7 +18,6 @@ export class LoginScreen extends BaseGameScreen {
 
   private messageObject: MessageObject | null = null;
   private errorCloseableMessageObject: CloseableMessageObject | null = null;
-
   private dialogElement: HTMLDialogElement | null = null;
   private displayNameInputElement: HTMLInputElement | null = null;
   private registerButtonElement: HTMLElement | null = null;

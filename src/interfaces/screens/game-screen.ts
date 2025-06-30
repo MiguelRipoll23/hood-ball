@@ -1,6 +1,6 @@
 import { LayerType } from "../../enums/layer-type.js";
 import type { GameObject } from "../objects/game-object.js";
-import { ScreenManagerService } from "../../services/screen-manager-service.js";
+import type { ScreenManager } from "./screen-manager.js";
 
 export interface GameScreen {
   isActive(): boolean;
@@ -8,8 +8,8 @@ export interface GameScreen {
   getUIObjects(): GameObject[];
   getSceneObjects(): GameObject[];
 
-  getScreenManagerService(): ScreenManagerService | null;
-  setScreenManagerService(screenManagerService: ScreenManagerService): void;
+  getScreenManagerService(): ScreenManager | null;
+  setScreenManagerService(screenManagerService: ScreenManager): void;
 
   load(): void;
   hasLoaded(): boolean;
@@ -17,7 +17,7 @@ export interface GameScreen {
   getObjectLayer(object: GameObject): LayerType;
   addObjectToSceneLayer(object: GameObject): void;
 
-  update(deltaTimeStamp: number): void;
+  update(deltaTimeStamp: DOMHighResTimeStamp): void;
   render(context: CanvasRenderingContext2D): void;
 
   getOpacity(): number;

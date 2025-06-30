@@ -1,5 +1,5 @@
 import { GamePlayer } from "../models/game-player.js";
-import { MatchmakingService } from "./matchmaking-service.js";
+import type { PeerConnectionListener } from "../interfaces/services/peer-connection-listener.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
 import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
@@ -13,7 +13,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_PAST_WINDOW = (this.SEQUENCE_MAXIMUM + 1) / 2;
   private SEQUENCE_FUTURE_WINDOW = 32;
 
-  private matchmakingService: MatchmakingService;
+  private connectionListener: PeerConnectionListener;
   private webrtcDelegate: IWebRTCService;
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
@@ -43,9 +43,10 @@ export class WebRTCPeerService implements WebRTCPeer {
   constructor(
     private token: string,
     webrtcDelegate: IWebRTCService,
+    connectionListener: PeerConnectionListener,
     private gameState = ServiceLocator.get(GameState)
   ) {
-    this.matchmakingService = ServiceLocator.get(MatchmakingService);
+    this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;
 
     this.host = gameState.getMatch()?.isHost() ?? false;
@@ -267,10 +268,10 @@ export class WebRTCPeerService implements WebRTCPeer {
     console.info("Peer connection closed");
     this.webrtcDelegate.removePeer(this.token);
 
-    // If the peer was connected, notify the matchmaking service
+    // If the peer was connected, notify the listener
     if (this.connected) {
       this.connected = false;
-      this.matchmakingService.onPeerDisconnected(this);
+      this.connectionListener.onPeerDisconnected(this);
     }
   }
 
@@ -330,7 +331,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     console.info(`Data channel ${label} opened`);
 
     if (this.host === false && this.areAllDataChannelsOpen()) {
-      this.matchmakingService.onPeerConnected(this);
+      this.connectionListener.onPeerConnected(this);
     }
   }
 

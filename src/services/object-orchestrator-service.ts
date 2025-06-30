@@ -5,7 +5,7 @@ import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { ObjectUtils } from "../utils/object-utils.js";
 import type { MultiplayerScreen } from "../interfaces/screens/multiplayer-screen.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
-import { ScreenUtils } from "../utils/screen-utils.js";
+import { ScreenUtils } from "../screens/utils/screen-utils.js";
 import { WebRTCType } from "../enums/webrtc-type.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";

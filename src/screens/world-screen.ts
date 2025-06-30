@@ -16,8 +16,6 @@ import { GamePlayer } from "../models/game-player.js";
 import { EventType } from "../enums/event-type.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { ScreenType } from "../enums/screen-type.js";
-import { MainScreen } from "./main-screen.js";
-import { MainMenuScreen } from "./main-screen/main-menu-screen.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
@@ -102,7 +100,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     );
 
     this.gameState.setMatch(null);
-    this.returnToMainMenuScreen();
+    void this.returnToMainMenuScreen();
   }
 
   private handleMatchState(): void {
@@ -617,14 +615,19 @@ export class WorldScreen extends BaseCollidingGameScreen {
     console.log("Game over end");
 
     this.matchmakingService.handleGameOver();
-    this.returnToMainMenuScreen();
+    void this.returnToMainMenuScreen();
   }
 
-  private returnToMainMenuScreen(): void {
+  private async returnToMainMenuScreen(): Promise<void> {
+    const { MainScreen } = await import("./main-screen.js");
+    const { MainMenuScreen } = await import(
+      "./main-screen/main-menu-screen.js"
+    );
+
     const mainScreen = new MainScreen(this.gameState);
     const mainMenuScreen = new MainMenuScreen(this.gameState, false);
 
-    mainScreen.setScreen(mainMenuScreen);
+    mainScreen.activateScreen(mainMenuScreen);
     mainScreen.load();
 
     this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);

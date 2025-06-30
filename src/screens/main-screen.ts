@@ -12,10 +12,10 @@ export class MainScreen extends BaseGameScreen {
     this.screenManagerService = new ScreenManagerService();
   }
 
-  public setScreen(screen: GameScreen): void {
-    console.log("MainScreen: Setting new screen", screen.constructor.name);
+  public activateScreen(screen: GameScreen): void {
     this.screen = screen;
-    this.updateScreen(screen);
+    this.screen?.setOpacity(1);
+    this.screenManagerService?.setInitialScreen(screen);
   }
 
   public override load(): void {
@@ -45,12 +45,6 @@ export class MainScreen extends BaseGameScreen {
     super.render(context);
 
     this.screenManagerService?.render(context);
-  }
-
-  private updateScreen(screen: GameScreen): void {
-    // Set the screen to be fully visible
-    this.screen?.setOpacity(1);
-    this.screenManagerService?.setInitialScreen(screen);
   }
 
   private createMainBackgroundObject() {
