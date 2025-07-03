@@ -7,20 +7,20 @@ import { EventType } from "../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../interfaces/events/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
-import { DebugUtils } from "../utils/debug-utils.js";
+import { DebugUtils } from "../debug/debug-utils.js";
 import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
-import { DebugObject } from "../objects/common/debug-object.js";
+import { DebugObject } from "../debug/debug-object.js";
 import { GameState } from "../models/game-state.js";
 import { ServiceLocator } from "./service-locator.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import { DebugService } from "./debug-service.js";
+import { DebugService } from "../debug/debug-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
-import { ServiceManager } from "./service-manager.js";
+import { ServiceRegistry } from "./service-registry.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -49,7 +49,7 @@ export class GameLoopService {
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
-    ServiceManager.register(this.canvas, this.debug);
+    ServiceRegistry.register(this.canvas, this.debug);
     this.gameState = ServiceLocator.get(GameState);
     this.gameFrame = this.gameState.getGameFrame();
     this.debugService = ServiceLocator.get(DebugService);

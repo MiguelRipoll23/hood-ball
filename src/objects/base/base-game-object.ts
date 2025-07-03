@@ -1,6 +1,6 @@
 import { ObjectStateType } from "../../enums/object-state-type.js";
 import type { GameObject } from "../../interfaces/objects/game-object.js";
-import type { DebugSettings } from "../../models/debug-settings.js";
+import type { DebugSettings } from "../../debug/debug-settings.js";
 
 export class BaseGameObject implements GameObject {
   protected loaded: boolean = false;

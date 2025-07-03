@@ -1,6 +1,6 @@
 import { NotificationObject } from "../objects/common/notification-object.js";
 import type { GameScreen } from "../interfaces/screens/game-screen.js";
-import { DebugObject } from "../objects/common/debug-object.js";
+import { DebugObject } from "../debug/debug-object.js";
 
 export class GameFrame {
   private currentScreen: GameScreen | null = null;

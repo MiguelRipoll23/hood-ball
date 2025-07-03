@@ -5,7 +5,7 @@ import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-ga
 import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { ObjectUtils } from "../utils/object-utils.js";
-import { DebugUtils } from "../utils/debug-utils.js";
+import { DebugUtils } from "../debug/debug-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 
