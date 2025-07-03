@@ -1,0 +1,186 @@
+import { MatchStateType } from "../enums/match-state-type.js";
+import { EventType } from "../enums/event-type.js";
+import { TeamType } from "../enums/team-type.js";
+import { RemoteEvent } from "../models/remote-event.js";
+import { GameState } from "../models/game-state.js";
+import { GamePlayer } from "../models/game-player.js";
+import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { BallObject } from "../objects/ball-object.js";
+import { GoalObject } from "../objects/goal-object.js";
+import { ScoreboardObject } from "../objects/scoreboard-object.js";
+import { AlertObject } from "../objects/alert-object.js";
+import { TimerManagerService } from "./timer-manager-service.js";
+import { EventProcessorService } from "./event-processor-service.js";
+import { MatchmakingService } from "./matchmaking-service.js";
+
+export class ScoreManagerService {
+  constructor(
+    private readonly gameState: GameState,
+    private readonly ballObject: BallObject,
+    private readonly goalObject: GoalObject,
+    private readonly scoreboardObject: ScoreboardObject,
+    private readonly alertObject: AlertObject,
+    private readonly timerManagerService: TimerManagerService,
+    private readonly eventProcessorService: EventProcessorService,
+    private readonly matchmakingService: MatchmakingService,
+    private readonly goalTimeEndCallback: () => void,
+    private readonly gameOverEndCallback: () => void,
+  ) {}
+
+  public updateScoreboard(): void {
+    const players = this.gameState.getMatch()?.getPlayers() ?? [];
+    let totalScore = 0;
+    players.forEach((player) => {
+      const score = player.getScore();
+      if (player === this.gameState.getGamePlayer()) {
+        return this.scoreboardObject.setBlueScore(score);
+      }
+      totalScore += score;
+    });
+    this.scoreboardObject.setRedScore(totalScore);
+  }
+
+  public detectScoresIfHost(): void {
+    const host = this.gameState.getMatch()?.isHost() ?? false;
+    const matchState = this.gameState.getMatch()?.getState();
+    if (host && matchState === MatchStateType.InProgress) {
+      this.detectScores();
+      this.detectGameEnd();
+    }
+  }
+
+  public handleRemoteGoal(arrayBuffer: ArrayBuffer | null): void {
+    if (arrayBuffer === null) {
+      return console.warn("Array buffer is null");
+    }
+    if (this.gameState.getMatch()?.isHost()) {
+      return console.warn("Host should not receive goal event");
+    }
+    this.scoreboardObject.stopTimer();
+    this.ballObject.handleGoalScored();
+    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const playerId = binaryReader.fixedLengthString(32);
+    const playerScore = binaryReader.unsignedInt8();
+    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    player?.setScore(playerScore);
+    this.updateScoreboard();
+    let team: TeamType = TeamType.Red;
+    if (player === this.gameState.getGamePlayer()) {
+      team = TeamType.Blue;
+    }
+    this.showGoalAlert(player, team);
+  }
+
+  public handleRemoteGameOverStartEvent(arrayBuffer: ArrayBuffer | null): void {
+    if (arrayBuffer === null) {
+      return console.warn("Array buffer is null");
+    }
+    if (this.gameState.getMatch()?.isHost()) {
+      return console.warn("Host should not receive game over event");
+    }
+    const playerId = new TextDecoder().decode(arrayBuffer);
+    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    this.handleGameOverStart(player);
+  }
+
+  private detectScores(): void {
+    const playersCount = this.gameState.getMatch()?.getPlayers().length ?? 0;
+    if (playersCount < 2) {
+      return;
+    }
+    const goalScored = this.goalObject.getCollidingObjects().includes(this.ballObject);
+    if (goalScored) {
+      this.handleGoalScored();
+    }
+  }
+
+  private handleGoalScored(): void {
+    const player = this.ballObject.getLastPlayer();
+    if (player === null) {
+      return console.warn("Player is null");
+    }
+    this.scoreboardObject.stopTimer();
+    this.ballObject.handleGoalScored();
+    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
+    player.sumScore(1);
+    this.sendGoalEvent(player);
+    const goalTeam =
+      player === this.gameState.getGamePlayer() ? TeamType.Blue : TeamType.Red;
+    if (goalTeam === TeamType.Blue) {
+      this.scoreboardObject.incrementBlueScore();
+    } else {
+      this.scoreboardObject.incrementRedScore();
+    }
+    this.showGoalAlert(player, goalTeam);
+    this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
+  }
+
+  private sendGoalEvent(player: GamePlayer): void {
+    const playerId: string = player.getId();
+    const playerScore: number = player.getScore();
+    const payload = BinaryWriter.build()
+      .fixedLengthString(playerId, 32)
+      .unsignedInt8(playerScore)
+      .toArrayBuffer();
+    const goalEvent = new RemoteEvent(EventType.GoalScored);
+    goalEvent.setData(payload);
+    this.eventProcessorService.sendEvent(goalEvent);
+  }
+
+  private showGoalAlert(player: GamePlayer | null | undefined, goalTeam: TeamType): void {
+    const playerName = player?.getName().toUpperCase() || "UNKNOWN";
+    let color = "white";
+    if (goalTeam === TeamType.Blue) {
+      color = "blue";
+    } else if (goalTeam === TeamType.Red) {
+      color = "red";
+    }
+    this.alertObject.show([playerName, "SCORED!"], color);
+  }
+
+  private detectGameEnd(): void {
+    if (this.gameState.getMatch()?.getState() === MatchStateType.GameOver) {
+      return;
+    }
+    if (this.scoreboardObject.hasTimerFinished() === true) {
+      this.handleTimerEnd();
+    }
+  }
+
+  private handleTimerEnd(): void {
+    const players = this.gameState.getMatch()?.getPlayers() || [];
+    let winner = this.gameState.getGamePlayer();
+    for (const player of players) {
+      if (player.getScore() > winner.getScore()) {
+        winner = player;
+      }
+    }
+    const isTie = players.every((player) => player.getScore() === winner.getScore());
+    if (isTie) {
+      return;
+    }
+    this.sendGameOverStartEvent(winner);
+    this.handleGameOverStart(winner);
+  }
+
+  private sendGameOverStartEvent(winner: GamePlayer): void {
+    const playerId: string = winner.getId();
+    const payload = BinaryWriter.build().fixedLengthString(playerId, 32).toArrayBuffer();
+    const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
+    gameOverStartEvent.setData(payload);
+    this.eventProcessorService.sendEvent(gameOverStartEvent);
+  }
+
+  private handleGameOverStart(winner: GamePlayer | null): void {
+    this.gameState.getMatch()?.setState(MatchStateType.GameOver);
+    const playerName = winner?.getName().toUpperCase() ?? "UNKNOWN";
+    const playerTeam = winner === this.gameState.getGamePlayer() ? "blue" : "red";
+    this.alertObject.show([playerName, "WINS!"], playerTeam);
+    this.timerManagerService.createTimer(5, this.gameOverEndCallback);
+    if (this.gameState.getMatch()?.isHost()) {
+      this.matchmakingService.savePlayerScore();
+    }
+  }
+}
