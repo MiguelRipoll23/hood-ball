@@ -1,39 +1,19 @@
-import { TimerService } from "./timer-service.js";
-import { Match } from "../models/match.js";
-import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
-import { GamePlayer } from "../models/game-player.js";
 import { GameState } from "../models/game-state.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
 import { MatchStateType } from "../enums/match-state-type.js";
-import { EventType } from "../enums/event-type.js";
-import { LocalEvent } from "../models/local-event.js";
-import type { PlayerConnectedPayload } from "../interfaces/events/player-connected-payload.js";
-import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
-import { WebRTCType } from "../enums/webrtc-type.js";
 import type { SavePlayerScoresRequest } from "../interfaces/requests/save-score-request.js";
-import { IntervalService } from "./interval-service.js";
 import { DebugUtils } from "../debug/debug-utils.js";
-import { WebSocketType } from "../enums/websocket-type.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import { BinaryReader } from "../utils/binary-reader-utils.js";
-import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
-import { ServerCommandHandler } from "../decorators/server-command-handler.js";
 import { ServiceLocator } from "./service-locator.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
-import type { PeerConnectionListener } from "../interfaces/services/peer-connection-listener.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { APIService } from "./api-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
+import { MatchmakingNetworkService } from "./matchmaking-network-service.js";
 import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
 
-export class MatchmakingService
-  implements PeerConnectionListener, IMatchmakingProvider
-{
-  private findMatchesTimerService: TimerService | null = null;
-  private pingCheckInterval: IntervalService | null = null;
+export class MatchmakingService implements IMatchmakingProvider {
 
   private pendingIdentities: Map<string, boolean>;
   private receivedIdentities: Map<
@@ -49,6 +29,7 @@ export class MatchmakingService
   private readonly webrtcService: WebRTCService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly matchFinderService: MatchFinderService;
+  private readonly networkService: MatchmakingNetworkService;
 
   constructor(private gameState = ServiceLocator.get(GameState)) {
     this.pendingIdentities = new Map();
@@ -66,12 +47,27 @@ export class MatchmakingService
       this.pendingIdentities,
       this.eventProcessorService,
     );
+    this.networkService = new MatchmakingNetworkService(
+      this.gameState,
+      this.timerManagerService,
+      this.intervalManagerService,
+      this.webSocketService,
+      this.webrtcService,
+      this.eventProcessorService,
+      this.matchFinderService,
+      this.pendingIdentities,
+      this.receivedIdentities,
+    );
     this.registerCommandHandlers();
   }
 
+  public getNetworkService(): MatchmakingNetworkService {
+    return this.networkService;
+  }
+
   private registerCommandHandlers(): void {
-    this.webSocketService.registerCommandHandlers(this);
-    this.webrtcService.registerCommandHandlers(this);
+    this.webSocketService.registerCommandHandlers(this.networkService);
+    this.webrtcService.registerCommandHandlers(this.networkService);
   }
 
   public async findOrAdvertiseMatch(): Promise<void> {
@@ -80,257 +76,20 @@ export class MatchmakingService
     if (matches.length === 0) {
       console.log("No matches found");
       await this.matchFinderService.createAndAdvertiseMatch();
-      this.pingCheckInterval = this.intervalManagerService.createInterval(
-        1,
-        this.sendPingToJoinedPlayers.bind(this)
-      );
+      this.networkService.startPingCheckInterval();
       return;
     }
 
     await this.matchFinderService.joinMatches(matches);
 
     await new Promise<void>((resolve) => {
-      this.findMatchesTimerService = this.timerManagerService.createTimer(
-        10,
-        () => resolve()
-      );
+      this.networkService.startFindMatchesTimer(() => resolve());
     });
 
     await this.matchFinderService.createAndAdvertiseMatch();
-    this.pingCheckInterval = this.intervalManagerService.createInterval(
-      1,
-      this.sendPingToJoinedPlayers.bind(this)
-    );
+    this.networkService.startPingCheckInterval();
   }
 
-  @ServerCommandHandler(WebSocketType.PlayerIdentity)
-  public handlePlayerIdentity(binaryReader: BinaryReader): void {
-    const tokenBytes = binaryReader.bytes(32);
-    const playerId = binaryReader.fixedLengthString(32);
-    const playerName = binaryReader.fixedLengthString(16);
-
-    const token = btoa(String.fromCharCode(...tokenBytes));
-
-    console.log(
-      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
-    );
-
-    this.receivedIdentities.set(token, { playerId, playerName });
-
-    if (this.gameState.getMatch()?.isHost()) {
-      this.handlePlayerIdentityAsHost(token, tokenBytes);
-    } else {
-      this.handlePlayerIdentityAsPlayer(token);
-    }
-  }
-
-  public onPeerConnected(peer: WebRTCPeer): void {
-    if (this.gameState.getMatch()?.isHost()) {
-      return console.log("Peer connected", peer);
-    }
-
-    console.log("Connected to host", peer);
-
-    this.sendJoinRequest(peer);
-  }
-
-  public onPeerDisconnected(peer: WebRTCPeer): void {
-    if (peer.hasJoined() === false) {
-      return console.warn("Ignoring disconnection from non-joined peer", peer);
-    }
-
-    const playerId = peer.getPlayer()?.getId() ?? null;
-
-    if (playerId === null) {
-      return console.warn("Unknown peer disconnected", peer);
-    }
-
-    if (this.gameState.getMatch()?.isHost()) {
-      this.handlePlayerDisconnection(peer);
-    } else {
-      this.handleHostDisconnected(peer);
-    }
-  }
-
-  @PeerCommandHandler(WebRTCType.JoinRequest)
-  public handleJoinRequest(peer: WebRTCPeer): void {
-    const match = this.gameState.getMatch();
-
-    if (match === null) {
-      this.handleGameMatchNull(peer);
-      return;
-    }
-
-    if (match.getAvailableSlots() === 0) {
-      this.handleUnavailableSlots(peer);
-      return;
-    }
-
-    // Check if we have received the identity for this token
-    const token = peer.getToken();
-    const identity = this.receivedIdentities.get(token) ?? null;
-
-    if (identity === null) {
-      this.handleUnknownIdentity(peer);
-      return;
-    }
-
-    const { playerId, playerName } = identity;
-    console.log("Received join request from", playerName);
-
-    // Add player to game match
-    const gamePlayer = new GamePlayer(playerId, playerName);
-    peer.setPlayer(gamePlayer);
-
-    match.addPlayer(gamePlayer);
-
-    // Delete the identity from the map
-    this.receivedIdentities.delete(token);
-
-    this.sendJoinResponse(peer, match);
-  }
-
-  @PeerCommandHandler(WebRTCType.JoinResponse)
-  public handleJoinResponse(
-    peer: WebRTCPeer,
-    binaryReader: BinaryReader
-  ): void {
-    if (this.gameState.getMatch() !== null) {
-      return this.handleAlreadyJoinedMatch(peer);
-    }
-
-    console.log("Received join response from", peer.getToken());
-
-    const matchState = binaryReader.unsignedInt8();
-    const matchTotalSlots = binaryReader.unsignedInt8();
-
-    // Create game match
-    const match = new Match(
-      false,
-      matchState,
-      matchTotalSlots,
-      MATCH_ATTRIBUTES
-    );
-
-    this.gameState.setMatch(match);
-
-    // Add local player
-    const localGamePlayer = this.gameState.getGamePlayer();
-    match.addPlayer(localGamePlayer);
-  }
-
-  @PeerCommandHandler(WebRTCType.PlayerConnection)
-  public handlePlayerConnection(
-    peer: WebRTCPeer,
-    binaryReader: BinaryReader
-  ): void {
-    const isConnected = binaryReader.boolean();
-    const isHost = binaryReader.boolean();
-    const playerId = binaryReader.fixedLengthString(32);
-    const playerName = binaryReader.fixedLengthString(16);
-    const playerScore = binaryReader.unsignedInt8();
-
-    if (isConnected === false) {
-      return this.handlePlayerDisconnectedById(playerId);
-    }
-
-    const gamePlayer = new GamePlayer(
-      playerId,
-      playerName,
-      isHost,
-      playerScore
-    );
-
-    if (isHost) {
-      if (this.isHostIdentityUnverified(peer, gamePlayer)) {
-        peer.disconnect(true);
-        return;
-      }
-
-      peer.setPlayer(gamePlayer);
-      this.receivedIdentities.delete(peer.getToken());
-    }
-
-    this.gameState.getMatch()?.addPlayer(gamePlayer);
-  }
-
-  @PeerCommandHandler(WebRTCType.SnapshotEnd)
-  public handleSnapshotEnd(peer: WebRTCPeer): void {
-    console.log("Received snapshot from", peer.getName());
-
-    this.findMatchesTimerService?.stop(false);
-    peer.setJoined(true);
-
-    const player = peer.getPlayer();
-
-    if (player === null) {
-      this.handleRemotePlayerNull(peer);
-      return;
-    }
-
-    const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected
-    );
-
-    localEvent.setData({
-      player,
-      matchmaking: true,
-    });
-
-    this.eventProcessorService.addLocalEvent(localEvent);
-
-    this.sendSnapshotACK(peer);
-  }
-
-  @PeerCommandHandler(WebRTCType.SnapshotACK)
-  public handleSnapshotACK(peer: WebRTCPeer): void {
-    console.log("Received snapshot ACK from", peer.getName());
-
-    peer.setJoined(true);
-
-    const player = peer.getPlayer();
-
-    if (player === null) {
-      this.handleRemotePlayerNull(peer);
-      return;
-    }
-
-    this.webrtcService
-      .getPeers()
-      .filter((matchPeer) => matchPeer !== peer)
-      .forEach((peer) => {
-        console.log("Sending player connection to", peer.getName());
-        this.sendPlayerConnection(peer, player, true, false);
-      });
-
-    const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected
-    );
-
-    localEvent.setData({
-      player,
-      matchmaking: false,
-    });
-
-    this.eventProcessorService.addLocalEvent(localEvent);
-
-    void this.matchFinderService.advertiseMatch();
-  }
-
-  @PeerCommandHandler(WebRTCType.PlayerPing)
-  public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
-    if (this.gameState.getGamePlayer().isHost()) {
-      console.warn(
-        `Unexpected player ping information from player ${peer.getName()}`
-      );
-      return;
-    }
-
-    const playerId = binaryReader.fixedLengthString(32);
-    const playerPingTime = binaryReader.unsignedInt16();
-
-    this.gameState.getMatch()?.getPlayer(playerId)?.setPingTime(playerPingTime);
-  }
 
   public async savePlayerScore(): Promise<void> {
     const players = this.gameState.getMatch()?.getPlayers();
@@ -362,7 +121,7 @@ export class MatchmakingService
         .getPeers()
         .forEach((peer) => peer.disconnectGracefully());
 
-      this.removePingCheckInterval();
+      this.networkService.removePingCheckInterval();
 
       await this.apiService
         .removeMatch()
@@ -383,302 +142,4 @@ export class MatchmakingService
     DebugUtils.renderText(context, 24, 24, `State: ${MatchStateType[state]}`);
   }
 
-  private removePingCheckInterval(): void {
-    if (this.pingCheckInterval !== null) {
-      this.intervalManagerService.removeInterval(this.pingCheckInterval);
-    }
-  }
-
-  private handlePlayerIdentityAsHost(
-    token: string,
-    tokenBytes: Uint8Array
-  ): void {
-    console.log("Sending player identity to player", token);
-    const webSocketPayload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.PlayerIdentity)
-      .bytes(tokenBytes, 32)
-      .toArrayBuffer();
-
-    this.webSocketService.sendMessage(webSocketPayload);
-  }
-
-  private handlePlayerIdentityAsPlayer(token: string): void {
-    console.log("Received player identity for token", token);
-    this.pendingIdentities.set(token, true);
-
-    // Send the offer to the host
-    this.webrtcService.sendOffer(token);
-  }
-
-  private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
-    console.warn(
-      "Already joined a match, disconnecting peer...",
-      peer.getToken()
-    );
-
-    peer.disconnect(true);
-  }
-
-  private handlePlayerDisconnection(peer: WebRTCPeer): void {
-    const player = peer.getPlayer();
-
-    if (player === null) {
-      this.handleRemotePlayerNull(peer);
-      return;
-    }
-
-    console.log(`Player ${player.getName()} disconnected`);
-    this.gameState.getMatch()?.removePlayer(player);
-
-    this.webrtcService
-      .getPeers()
-      .filter((matchPeer) => matchPeer !== peer)
-      .forEach((peer) => {
-        this.sendPlayerConnection(peer, player, false, false);
-      });
-
-    const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected
-    );
-
-    playerDisconnectedEvent.setData({ player });
-
-    this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
-
-    void this.matchFinderService.advertiseMatch();
-  }
-
-  private handlePlayerDisconnectedById(playerId: string) {
-    const match = this.gameState.getMatch();
-
-    if (match === null) {
-      return console.warn("Game match is null");
-    }
-
-    const player = match.getPlayer(playerId);
-
-    if (player === null) {
-      return console.warn("Player not found", playerId);
-    }
-
-    console.log(`Player ${player.getName()} disconnected`);
-    match.removePlayer(player);
-
-    const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected
-    );
-
-    localEvent.setData({ player });
-
-    this.eventProcessorService.addLocalEvent(localEvent);
-  }
-
-  private handleHostDisconnected(peer: WebRTCPeer): void {
-    console.log(`Host ${peer.getName()} disconnected`);
-
-    this.gameState.setMatch(null);
-
-    const localEvent = new LocalEvent(EventType.HostDisconnected);
-    this.eventProcessorService.addLocalEvent(localEvent);
-  }
-
-
-  private sendJoinRequest(peer: WebRTCPeer): void {
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.JoinRequest)
-      .toArrayBuffer();
-
-    peer.sendReliableOrderedMessage(payload, true);
-  }
-
-  private handleGameMatchNull(peer: WebRTCPeer): void {
-    console.warn("Game match is null, disconnecting peer...", peer.getToken());
-    peer.disconnect(true);
-  }
-
-  private handleUnavailableSlots(peer: WebRTCPeer): void {
-    console.log(
-      "Received join request but the match is full, disconnecting peer...",
-      peer.getToken()
-    );
-
-    peer.disconnect(true);
-  }
-
-  private handleUnknownIdentity(peer: WebRTCPeer): void {
-    console.warn(
-      "Received join request but no identity was found, disconnecting peer...",
-      peer.getToken()
-    );
-
-    peer.disconnect(true);
-  }
-
-  private handleRemotePlayerNull(peer: WebRTCPeer): void {
-    console.warn("Remote player is null for peer", peer.getToken());
-    peer.disconnect(true);
-  }
-
-  private sendJoinResponse(peer: WebRTCPeer, match: Match): void {
-    const state = match.getState();
-    const totalSlots = match.getTotalSlots();
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.JoinResponse)
-      .unsignedInt8(state)
-      .unsignedInt8(totalSlots)
-      .toArrayBuffer();
-
-    console.log("Sending join response to", peer.getName());
-    peer.sendReliableOrderedMessage(payload, true);
-
-    this.sendPlayerList(peer);
-    this.sendSnapshotEnd(peer);
-  }
-
-  private sendPlayerList(peer: WebRTCPeer): void {
-    const match = this.gameState.getMatch();
-
-    if (match === null) {
-      this.handleGameMatchNull(peer);
-      return;
-    }
-
-    console.log("Sending player list to", peer.getName());
-
-    const players = match.getPlayers();
-
-    players
-      .filter((matchPlayer) => matchPlayer !== peer.getPlayer())
-      .forEach((player) => {
-        this.sendPlayerConnection(peer, player, true, true);
-      });
-  }
-
-  private sendPlayerConnection(
-    peer: WebRTCPeer,
-    player: GamePlayer,
-    isConnected: boolean,
-    skipQueue: boolean
-  ): void {
-    const isHost = player.isHost();
-    const playerId = player.getId();
-    const playerScore = player.getScore();
-    const playerName = player.getName();
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.PlayerConnection)
-      .boolean(isConnected)
-      .boolean(isHost)
-      .fixedLengthString(playerId, 32)
-      .fixedLengthString(playerName, 16)
-      .unsignedInt8(playerScore)
-      .toArrayBuffer();
-
-    peer.sendReliableOrderedMessage(payload, skipQueue);
-  }
-
-  private isHostIdentityUnverified(
-    peer: WebRTCPeer,
-    gamePlayer: GamePlayer
-  ): boolean {
-    const identity = this.receivedIdentities.get(peer.getToken()) ?? null;
-
-    if (identity === null) {
-      console.warn("Host identity not found for token", peer.getToken());
-      return true;
-    }
-
-    if (identity.playerId !== gamePlayer.getId()) {
-      console.warn(
-        `Host player ID mismatch: expected ${
-          identity.playerId
-        }, got ${gamePlayer.getId()} for ${peer.getName()}`
-      );
-
-      return true;
-    }
-
-    if (identity.playerName !== gamePlayer.getName()) {
-      console.warn(
-        `Host player name mismatch: expected ${
-          identity.playerName
-        }, got ${gamePlayer.getName()} for ${peer.getName()}`
-      );
-
-      return true;
-    }
-
-    return false;
-  }
-
-  private sendSnapshotEnd(peer: WebRTCPeer): void {
-    console.log("Sending snapshot end to", peer.getName());
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.SnapshotEnd)
-      .toArrayBuffer();
-
-    peer.sendReliableOrderedMessage(payload, true);
-  }
-
-  private sendSnapshotACK(peer: WebRTCPeer): void {
-    console.log("Sending snapshot ACK to", peer.getName());
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.SnapshotACK)
-      .toArrayBuffer();
-
-    peer.sendReliableOrderedMessage(payload, true);
-  }
-
-  private sendPingToJoinedPlayers(): void {
-    this.sendPingInformationToJoinedPlayers();
-
-    this.webrtcService
-      .getPeers()
-      .filter((peer) => peer.hasJoined())
-      .forEach((peer) => {
-        peer.sendPingRequest();
-      });
-  }
-
-  private sendPingInformationToJoinedPlayers(): void {
-    const players = this.gameState.getMatch()?.getPlayers() || [];
-
-    this.webrtcService
-      .getPeers()
-      .filter((peer) => peer.hasJoined())
-      .forEach((peer) => {
-        if (peer.getPlayer() === null) {
-          return console.warn("Peer has no player associated", peer);
-        }
-
-        players.forEach((player) => {
-          if (player.isHost()) {
-            return;
-          }
-
-          this.sendPlayerPingToPlayer(player, peer);
-        });
-      });
-  }
-
-  private sendPlayerPingToPlayer(player: GamePlayer, peer: WebRTCPeer): void {
-    const playerPing = player.getPingTime();
-
-    if (playerPing === null) {
-      return;
-    }
-
-    const playerId = player.getId();
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebRTCType.PlayerPing)
-      .fixedLengthString(playerId, 32)
-      .unsignedInt16(playerPing)
-      .toArrayBuffer();
-
-    peer.sendUnreliableUnorderedMessage(payload);
-  }
 }

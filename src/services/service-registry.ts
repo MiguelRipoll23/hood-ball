@@ -67,6 +67,6 @@ export class ServiceRegistry {
     const matchmakingService = ServiceLocator.get(MatchmakingService);
     ServiceLocator.get(ObjectOrchestratorService).initialize();
     ServiceLocator.get(EventProcessorService).initialize(webrtcService);
-    webrtcService.initialize(matchmakingService);
+    webrtcService.initialize(matchmakingService.getNetworkService());
   }
 }
