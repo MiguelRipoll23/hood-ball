@@ -7,6 +7,7 @@ import { EventConsumerService } from "./event-consumer-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { MatchmakingService } from "./matchmaking-service.js";
+import { MatchmakingControllerService } from "./matchmaking-controller-service.js";
 import { ObjectOrchestratorService } from "./object-orchestrator-service.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
 import { ServiceLocator } from "./service-locator.js";
@@ -53,6 +54,10 @@ export class ServiceRegistry {
     ServiceLocator.register(APIService, new APIService());
     ServiceLocator.register(CredentialService, new CredentialService());
     ServiceLocator.register(MatchmakingService, new MatchmakingService());
+    ServiceLocator.register(
+      MatchmakingControllerService,
+      new MatchmakingControllerService(),
+    );
   }
 
   private static registerCommunicationServices(): void {
