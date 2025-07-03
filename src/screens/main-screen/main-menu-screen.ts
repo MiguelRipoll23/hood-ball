@@ -193,7 +193,7 @@ export class MainMenuScreen extends BaseGameScreen {
 
     this.screenManagerService
       ?.getTransitionService()
-      .crossfade(loadingScreen, 0.2);
+      .crossfade(this.screenManagerService, loadingScreen, 0.2);
   }
 
   private transitionToScoreboardScreen(): void {
@@ -204,7 +204,7 @@ export class MainMenuScreen extends BaseGameScreen {
 
     this.screenManagerService
       ?.getTransitionService()
-      .crossfade(scoreboardScreen, 0.2);
+      .crossfade(this.screenManagerService, scoreboardScreen, 0.2);
   }
 
   private transitionToSettingsScreen(): void {
@@ -215,7 +215,7 @@ export class MainMenuScreen extends BaseGameScreen {
 
     this.screenManagerService
       ?.getTransitionService()
-      .crossfade(settingsScreen, 0.2);
+      .crossfade(this.screenManagerService, settingsScreen, 0.2);
   }
 
   private enableMenuButtons(): void {

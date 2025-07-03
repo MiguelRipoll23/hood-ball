@@ -14,9 +14,15 @@ export class ScreenTransitionService {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  constructor(private screenManager: GameFrame | ScreenManager) {}
+  private screenManager: GameFrame | ScreenManager | null = null;
+
+  constructor() {}
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.screenManager === null) {
+      return;
+    }
+
     if (this.isFadingOutAndIn) {
       this.handleFadingOutAndIn(deltaTimeStamp);
     } else if (this.isCrossfading) {
@@ -25,14 +31,20 @@ export class ScreenTransitionService {
   }
 
   public isTransitionActive(): boolean {
-    return this.isFadingOutAndIn || this.isCrossfading;
+    return (
+      this.screenManager !== null &&
+      (this.isFadingOutAndIn || this.isCrossfading)
+    );
   }
 
   public fadeOutAndIn(
+    screenManager: GameFrame | ScreenManager,
     nextScreen: GameScreen,
     fadeOutDurationSeconds: number,
     fadeInDurationSeconds: number
   ): void {
+    this.screenManager = screenManager;
+
     if (this.isNextScreenAlreadySet(nextScreen)) {
       console.warn("Ignoring duplicated transition to the same screen");
       return;
@@ -55,9 +67,12 @@ export class ScreenTransitionService {
   }
 
   public crossfade(
+    screenManager: GameFrame | ScreenManager,
     nextScreen: GameScreen,
     crossfadeDurationSeconds: number
   ): void {
+    this.screenManager = screenManager;
+
     if (this.isNextScreenAlreadySet(nextScreen)) {
       console.warn("Ignoring duplicated transition to the same screen");
       return;
@@ -79,12 +94,18 @@ export class ScreenTransitionService {
   }
 
   private isNextScreenAlreadySet(nextScreen: GameScreen): boolean {
+    if (this.screenManager === null) {
+      return false;
+    }
+
     const currentNextScreen = this.screenManager.getNextScreen();
 
     return currentNextScreen?.constructor === nextScreen.constructor;
   }
 
   private handleFadingOutAndIn(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.screenManager === null) return;
+
     this.elapsedTransitionMilliseconds += deltaTimeStamp;
 
     const currentScreen = this.screenManager.getCurrentScreen();
@@ -127,6 +148,8 @@ export class ScreenTransitionService {
   }
 
   private handleCrossfading(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.screenManager === null) return;
+
     const currentScreen = this.screenManager.getCurrentScreen();
     const nextScreen = this.screenManager.getNextScreen();
 
@@ -157,11 +180,15 @@ export class ScreenTransitionService {
   }
 
   private updateCurrentAndNextScreen(nextScreen: GameScreen): void {
+    if (this.screenManager === null) return;
+
     this.resetTransitionState();
 
     this.screenManager.setCurrentScreen(nextScreen);
     this.screenManager.setNextScreen(null);
 
     this.screenManager.getCurrentScreen()?.onTransitionEnd();
+
+    this.screenManager = null;
   }
 }

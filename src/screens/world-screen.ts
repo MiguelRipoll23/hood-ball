@@ -402,6 +402,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
     mainScreen.activateScreen(mainMenuScreen);
     mainScreen.load();
 
-    this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);
+    this.screenTransitionService.fadeOutAndIn(
+      this.gameState.getGameFrame(),
+      mainScreen,
+      1,
+      1
+    );
   }
 }
