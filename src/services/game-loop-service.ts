@@ -21,6 +21,7 @@ import { WebRTCService } from "./webrtc-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "./service-registry.js";
+import { LoadingIndicatorObject } from "../objects/common/loading-indicator-object.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -45,6 +46,7 @@ export class GameLoopService {
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
+  private loadingIndicatorObject: LoadingIndicatorObject | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
@@ -179,6 +181,7 @@ export class GameLoopService {
   private loadObjects(): void {
     this.loadNotificationObject();
     this.loadDebugObject();
+    this.loadLoadingIndicatorObject();
   }
 
   private loadNotificationObject(): void {
@@ -189,6 +192,11 @@ export class GameLoopService {
   private loadDebugObject(): void {
     const debugObject = new DebugObject(this.canvas);
     this.gameFrame.setDebugObject(debugObject);
+  }
+
+  private loadLoadingIndicatorObject(): void {
+    this.loadingIndicatorObject = new LoadingIndicatorObject(this.canvas);
+    this.gameFrame.setLoadingIndicatorObject(this.loadingIndicatorObject);
   }
 
   private setInitialScreen() {
@@ -236,6 +244,7 @@ export class GameLoopService {
     this.gameFrame.getCurrentScreen()?.update(deltaTimeStamp);
     this.gameFrame.getNextScreen()?.update(deltaTimeStamp);
     this.gameFrame.getNotificationObject()?.update(deltaTimeStamp);
+    this.gameFrame.getLoadingIndicatorObject()?.update(deltaTimeStamp);
 
     if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugObject()?.update(deltaTimeStamp);
@@ -248,6 +257,7 @@ export class GameLoopService {
     this.gameFrame.getCurrentScreen()?.render(this.context);
     this.gameFrame.getNextScreen()?.render(this.context);
     this.gameFrame.getNotificationObject()?.render(this.context);
+    this.gameFrame.getLoadingIndicatorObject()?.render(this.context);
 
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();

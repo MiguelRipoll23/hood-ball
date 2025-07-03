@@ -14,6 +14,7 @@ import { ServiceLocator } from "./service-locator.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
+import { LoadingIndicatorService } from "./loading-indicator-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -48,6 +49,7 @@ export class ServiceRegistry {
       ObjectOrchestratorService,
       new ObjectOrchestratorService()
     );
+    ServiceLocator.register(LoadingIndicatorService, new LoadingIndicatorService());
   }
 
   private static registerGameplayServices(): void {

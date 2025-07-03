@@ -1,12 +1,14 @@
 import { NotificationObject } from "../objects/common/notification-object.js";
 import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import { DebugObject } from "../debug/debug-object.js";
+import { LoadingIndicatorObject } from "../objects/common/loading-indicator-object.js";
 
 export class GameFrame {
   private currentScreen: GameScreen | null = null;
   private nextScreen: GameScreen | null = null;
   private notificationObject: NotificationObject | null = null;
   private debugObject: DebugObject | null = null;
+  private loadingIndicatorObject: LoadingIndicatorObject | null = null;
 
   public getCurrentScreen(): GameScreen | null {
     return this.currentScreen;
@@ -48,5 +50,13 @@ export class GameFrame {
 
   public setDebugObject(object: DebugObject | null): void {
     this.debugObject = object;
+  }
+
+  public getLoadingIndicatorObject(): LoadingIndicatorObject | null {
+    return this.loadingIndicatorObject;
+  }
+
+  public setLoadingIndicatorObject(object: LoadingIndicatorObject | null): void {
+    this.loadingIndicatorObject = object;
   }
 }
