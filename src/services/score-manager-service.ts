@@ -12,7 +12,7 @@ import { ScoreboardObject } from "../objects/scoreboard-object.js";
 import { AlertObject } from "../objects/alert-object.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { MatchmakingService } from "./matchmaking-service.js";
+import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
 
 export class ScoreManagerService {
   constructor(
@@ -23,7 +23,7 @@ export class ScoreManagerService {
     private readonly alertObject: AlertObject,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: MatchmakingService,
+    private readonly matchmakingService: IMatchmakingProvider,
     private readonly goalTimeEndCallback: () => void,
     private readonly gameOverEndCallback: () => void,
   ) {}
@@ -59,7 +59,7 @@ export class ScoreManagerService {
     }
     this.scoreboardObject.stopTimer();
     this.ballObject.handleGoalScored();
-    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
+    this.gameState.setMatchState(MatchStateType.GoalScored);
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
     const playerScore = binaryReader.unsignedInt8();
@@ -103,7 +103,7 @@ export class ScoreManagerService {
     }
     this.scoreboardObject.stopTimer();
     this.ballObject.handleGoalScored();
-    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
+    this.gameState.setMatchState(MatchStateType.GoalScored);
     player.sumScore(1);
     this.sendGoalEvent(player);
     const goalTeam =
@@ -174,7 +174,7 @@ export class ScoreManagerService {
   }
 
   private handleGameOverStart(winner: GamePlayer | null): void {
-    this.gameState.getMatch()?.setState(MatchStateType.GameOver);
+    this.gameState.endMatch();
     const playerName = winner?.getName().toUpperCase() ?? "UNKNOWN";
     const playerTeam = winner === this.gameState.getGamePlayer() ? "blue" : "red";
     this.alertObject.show([playerName, "WINS!"], playerTeam);

@@ -6,6 +6,7 @@ import { GamePointer } from "./game-pointer.js";
 import { DebugSettings } from "../debug/debug-settings.js";
 import { GameKeyboard } from "./game-keyboard.js";
 import { GameGamepad } from "./game-gamepad.js";
+import { MatchStateType } from "../enums/match-state-type.js";
 
 export class GameState {
   private debugSettings: DebugSettings;
@@ -82,5 +83,22 @@ export class GameState {
     } else {
       console.log("Match set in game state", match);
     }
+  }
+
+  public setMatchState(state: MatchStateType): void {
+    if (this.match === null) {
+      console.warn("Cannot set state, match is null");
+      return;
+    }
+
+    this.match.setState(state);
+  }
+
+  public startMatch(): void {
+    this.setMatchState(MatchStateType.InProgress);
+  }
+
+  public endMatch(): void {
+    this.setMatchState(MatchStateType.GameOver);
   }
 }
