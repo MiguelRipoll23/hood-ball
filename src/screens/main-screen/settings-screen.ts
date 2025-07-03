@@ -83,7 +83,7 @@ export class SettingsScreen extends BaseGameScreen {
 
     this.screenManagerService
       ?.getTransitionService()
-      .crossfade(previousScreen, 0.2);
+      .crossfade(this.screenManagerService, previousScreen, 0.2);
   }
 
   private handleSettingObjectPress(settingObject: SettingObject): void {

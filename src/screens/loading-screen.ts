@@ -29,7 +29,12 @@ export class LoadingScreen extends BaseGameScreen {
     this.worldScreen = new WorldScreen(this.gameState);
     this.worldScreen.load();
 
-    this.screenTransitionService.fadeOutAndIn(this.worldScreen, 1, 1);
+    this.screenTransitionService.fadeOutAndIn(
+      this.screenManagerService!,
+      this.worldScreen,
+      1,
+      1
+    );
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

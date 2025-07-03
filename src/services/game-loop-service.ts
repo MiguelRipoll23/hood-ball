@@ -168,7 +168,12 @@ export class GameLoopService {
     mainScreen.activateScreen(mainMenuScreen);
     mainScreen.load();
 
-    this.screenTransitionService.fadeOutAndIn(mainScreen, 1, 1);
+    this.screenTransitionService.fadeOutAndIn(
+      this.gameFrame,
+      mainScreen,
+      1,
+      1
+    );
   }
 
   private loadObjects(): void {
@@ -193,7 +198,7 @@ export class GameLoopService {
     mainScreen.activateScreen(loginScreen);
     mainScreen.load();
 
-    this.screenTransitionService.crossfade(mainScreen, 1);
+    this.screenTransitionService.crossfade(this.gameFrame, mainScreen, 1);
   }
 
   private loop(timeStamp: DOMHighResTimeStamp): void {

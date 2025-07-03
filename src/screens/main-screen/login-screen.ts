@@ -228,6 +228,6 @@ export class LoginScreen extends BaseGameScreen {
 
     this.screenManagerService
       ?.getTransitionService()
-      .crossfade(mainMenuScreen, 0.2);
+      .crossfade(this.screenManagerService, mainMenuScreen, 0.2);
   }
 }
