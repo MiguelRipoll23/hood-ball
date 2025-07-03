@@ -21,6 +21,7 @@ import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
 import { MatchmakingService } from "../services/matchmaking-service.js";
+import { MatchmakingControllerService } from "../services/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../services/score-manager-service.js";
 import { ServiceLocator } from "../services/service-locator.js";
 import { EventProcessorService } from "../services/event-processor-service.js";
@@ -36,6 +37,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private readonly screenTransitionService: ScreenTransitionService;
   private readonly timerManagerService: TimerManagerService;
   private readonly matchmakingService: IMatchmakingProvider;
+  private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly objectOrchestrator: ObjectOrchestratorService;
 
@@ -57,6 +59,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.matchmakingService = ServiceLocator.get(
       MatchmakingService
     ) as IMatchmakingProvider;
+    this.matchmakingController = ServiceLocator.get(MatchmakingControllerService);
     this.objectOrchestrator = ServiceLocator.get(ObjectOrchestratorService);
     this.eventProcessorService = ServiceLocator.get(EventProcessorService);
     this.addSyncableObjects();
@@ -94,9 +97,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     super.onTransitionEnd();
 
     this.scoreboardObject?.reset();
-    this.toastObject?.show("Finding sessions...");
-    this.matchmakingService
-      .findOrAdvertiseMatch()
+    this.matchmakingController
+      .startMatchmaking()
       .catch(this.handleMatchmakingError.bind(this));
   }
 
@@ -156,6 +158,10 @@ export class WorldScreen extends BaseCollidingGameScreen {
     if (this.gameState.getMatch()?.getPlayers().length === 1) {
       this.toastObject?.show("Waiting for players...");
     }
+  }
+
+  private handleMatchmakingStarted(): void {
+    this.toastObject?.show("Finding sessions...");
   }
 
   private handlePlayerConnection(payload: PlayerConnectedPayload): void {
@@ -264,6 +270,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.subscribeToLocalEvent(
       EventType.MatchAdvertised,
       this.handleMatchAdvertised.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.MatchmakingStarted,
+      this.handleMatchmakingStarted.bind(this)
     );
 
     this.subscribeToLocalEvent<PlayerConnectedPayload>(
