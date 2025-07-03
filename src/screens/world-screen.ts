@@ -19,6 +19,7 @@ import type { PlayerConnectedPayload } from "../interfaces/events/player-connect
 import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disconnected-payload.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
+import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
 import { MatchmakingService } from "../services/matchmaking-service.js";
 import { ScoreManagerService } from "../services/score-manager-service.js";
 import { ServiceLocator } from "../services/service-locator.js";
@@ -34,7 +35,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private readonly screenTransitionService: ScreenTransitionService;
   private readonly timerManagerService: TimerManagerService;
-  private readonly matchmakingService: MatchmakingService;
+  private readonly matchmakingService: IMatchmakingProvider;
   private readonly eventProcessorService: EventProcessorService;
   private readonly objectOrchestrator: ObjectOrchestratorService;
 
@@ -53,7 +54,9 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.gameState.getGamePlayer().reset();
     this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.timerManagerService = ServiceLocator.get(TimerManagerService);
-    this.matchmakingService = ServiceLocator.get(MatchmakingService);
+    this.matchmakingService = ServiceLocator.get(
+      MatchmakingService
+    ) as IMatchmakingProvider;
     this.objectOrchestrator = ServiceLocator.get(ObjectOrchestratorService);
     this.eventProcessorService = ServiceLocator.get(EventProcessorService);
     this.addSyncableObjects();
@@ -297,7 +300,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const match = this.gameState.getMatch();
     const isHost = match?.isHost();
 
-    match?.setState(MatchStateType.Countdown);
+    this.gameState.setMatchState(MatchStateType.Countdown);
     console.log("Countdown tick:", this.countdownCurrentNumber);
 
     // Reset game every countdown tick
@@ -351,7 +354,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   private handleCountdownEnd() {
     console.log("Countdown end");
-    this.gameState.getMatch()?.setState(MatchStateType.InProgress);
+    this.gameState.startMatch();
 
     this.alertObject?.hide();
     this.localCarObject?.reset();
@@ -371,7 +374,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private handleWaitingForPlayers(): void {
-    this.gameState.getMatch()?.setState(MatchStateType.WaitingPlayers);
+    this.gameState.setMatchState(MatchStateType.WaitingPlayers);
     this.scoreboardObject?.stopTimer();
   }
 

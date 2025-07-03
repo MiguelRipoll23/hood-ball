@@ -27,8 +27,11 @@ import { APIService } from "./api-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
+import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
 
-export class MatchmakingService implements PeerConnectionListener {
+export class MatchmakingService
+  implements PeerConnectionListener, IMatchmakingProvider
+{
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
