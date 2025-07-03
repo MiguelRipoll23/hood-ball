@@ -9,10 +9,8 @@ import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../constants/configuration-constants.js";
 import { AlertObject } from "../objects/alert-object.js";
 import { ToastObject } from "../objects/common/toast-object.js";
-import { TeamType } from "../enums/team-type.js";
 import { RemoteCarObject } from "../objects/remote-car-object.js";
 import { ObjectStateType } from "../enums/object-state-type.js";
-import { GamePlayer } from "../models/game-player.js";
 import { EventType } from "../enums/event-type.js";
 import { RemoteEvent } from "../models/remote-event.js";
 import { ScreenType } from "../enums/screen-type.js";
@@ -22,6 +20,7 @@ import type { PlayerDisconnectedPayload } from "../interfaces/events/player-disc
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
 import { MatchmakingService } from "../services/matchmaking-service.js";
+import { ScoreManagerService } from "../services/score-manager-service.js";
 import { ServiceLocator } from "../services/service-locator.js";
 import { EventProcessorService } from "../services/event-processor-service.js";
 import { ObjectOrchestratorService } from "../services/object-orchestrator-service.js";
@@ -45,6 +44,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private goalObject: GoalObject | null = null;
   private alertObject: AlertObject | null = null;
   private toastObject: ToastObject | null = null;
+  private scoreManagerService: ScoreManagerService | null = null;
 
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
@@ -68,6 +68,18 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.createGoalObject();
     this.createAlertObject();
     this.createToastObject();
+    this.scoreManagerService = new ScoreManagerService(
+      this.gameState,
+      this.ballObject!,
+      this.goalObject!,
+      this.scoreboardObject!,
+      this.alertObject!,
+      this.timerManagerService,
+      this.eventProcessorService,
+      this.matchmakingService,
+      this.handleGoalTimeEnd.bind(this),
+      this.handleGameOverEnd.bind(this),
+    );
     super.load();
   }
 
@@ -89,7 +101,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     super.update(deltaTimeStamp);
 
     this.handleMatchState();
-    this.detectScoresIfHost();
+    this.scoreManagerService?.detectScoresIfHost();
 
     this.objectOrchestrator.sendLocalData(this, deltaTimeStamp);
   }
@@ -150,7 +162,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
     if (matchmaking) {
       this.toastObject?.show(`Joined to <em>${player.getName()}</em>`, 2);
-      this.updateScoreboard();
+      this.scoreManagerService?.updateScoreboard();
     } else {
       this.toastObject?.show(`<em>${player.getName()}</em> joined`, 2);
 
@@ -177,7 +189,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       this.handleWaitingForPlayers();
     }
 
-    this.updateScoreboard();
+    this.scoreManagerService?.updateScoreboard();
   }
 
   private createScoreboardObject() {
@@ -270,12 +282,14 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
     this.subscribeToRemoteEvent(
       EventType.GoalScored,
-      this.handleRemoteGoal.bind(this)
+      (data: ArrayBuffer | null) =>
+        this.scoreManagerService?.handleRemoteGoal(data)
     );
 
     this.subscribeToRemoteEvent(
       EventType.GameOver,
-      this.handleRemoteGameOverStartEvent.bind(this)
+      (data: ArrayBuffer | null) =>
+        this.scoreManagerService?.handleRemoteGameOverStartEvent(data)
     );
   }
 
@@ -361,163 +375,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.scoreboardObject?.stopTimer();
   }
 
-  private detectScoresIfHost(): void {
-    const host = this.gameState.getMatch()?.isHost() ?? false;
-    const matchState = this.gameState.getMatch()?.getState();
-
-    if (host && matchState === MatchStateType.InProgress) {
-      this.detectScores();
-      this.detectGameEnd();
-    }
-  }
-
-  private detectScores(): void {
-    if (this.ballObject === null) {
-      return;
-    }
-
-    const playersCount = this.gameState.getMatch()?.getPlayers().length ?? 0;
-
-    if (playersCount < 2) {
-      return;
-    }
-
-    const goalScored = this.goalObject
-      ?.getCollidingObjects()
-      .includes(this.ballObject);
-
-    if (goalScored) {
-      this.handleGoalScored();
-    }
-  }
-
-  private handleGoalScored() {
-    const player = this.ballObject?.getLastPlayer() ?? null;
-
-    if (player === null) {
-      return console.warn("Player is null");
-    }
-
-    // Pause timer
-    this.scoreboardObject?.stopTimer();
-
-    // Mark ball as inactive
-    this.ballObject?.handleGoalScored();
-
-    // Update match state
-    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
-
-    // Score
-    player.sumScore(1);
-
-    // Event
-    this.sendGoalEvent(player);
-
-    // Scoreboard
-    const goalTeam =
-      player === this.gameState.getGamePlayer() ? TeamType.Blue : TeamType.Red;
-
-    if (goalTeam === TeamType.Blue) {
-      this.scoreboardObject?.incrementBlueScore();
-    } else if (goalTeam === TeamType.Red) {
-      this.scoreboardObject?.incrementRedScore();
-    }
-
-    // Alert
-    this.showGoalAlert(player, goalTeam);
-
-    // Timer
-    this.timerManagerService.createTimer(5, this.handleGoalTimeEnd.bind(this));
-  }
-
-  private sendGoalEvent(player: GamePlayer) {
-    const playerId: string = player.getId();
-    const playerScore: number = player.getScore();
-
-    const payload = BinaryWriter.build()
-      .fixedLengthString(playerId, 32)
-      .unsignedInt8(playerScore)
-      .toArrayBuffer();
-
-    const goalEvent = new RemoteEvent(EventType.GoalScored);
-    goalEvent.setData(payload);
-
-    this.eventProcessorService.sendEvent(goalEvent);
-  }
-
-  private updateScoreboard() {
-    const players = this.gameState.getMatch()?.getPlayers() ?? [];
-
-    let totalScore = 0;
-
-    players.forEach((player) => {
-      const score = player.getScore();
-      if (player === this.gameState.getGamePlayer()) {
-        return this.scoreboardObject?.setBlueScore(score);
-      }
-
-      totalScore += score;
-    });
-
-    this.scoreboardObject?.setRedScore(totalScore);
-  }
-
-  private showGoalAlert(
-    player: GamePlayer | null | undefined,
-    goalTeam: TeamType
-  ) {
-    const playerName = player?.getName().toUpperCase() || "UNKNOWN";
-
-    let color = "white";
-
-    if (goalTeam === TeamType.Blue) {
-      color = "blue";
-    } else if (goalTeam === TeamType.Red) {
-      color = "red";
-    }
-
-    this.alertObject?.show([playerName, "SCORED!"], color);
-  }
-
-  private handleRemoteGoal(arrayBuffer: ArrayBuffer | null) {
-    if (arrayBuffer === null) {
-      return console.warn("Array buffer is null");
-    }
-
-    // Check if we are receiving a goal event as host
-    if (this.gameState.getMatch()?.isHost()) {
-      return console.warn("Host should not receive goal event");
-    }
-
-    // Pause timer
-    this.scoreboardObject?.stopTimer();
-
-    // Mark ball as inactive
-    this.ballObject?.handleGoalScored();
-
-    // Update match state
-    this.gameState.getMatch()?.setState(MatchStateType.GoalScored);
-
-    // Score
-    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    const playerId = binaryReader.fixedLengthString(32);
-    const playerScore = binaryReader.unsignedInt8();
-
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
-    player?.setScore(playerScore);
-
-    // Score
-    this.updateScoreboard();
-
-    // Alert
-    let team: TeamType = TeamType.Red;
-
-    if (player === this.gameState.getGamePlayer()) {
-      team = TeamType.Blue;
-    }
-
-    this.showGoalAlert(player, team);
-  }
 
   private handleGoalTimeEnd() {
     if (this.scoreboardObject?.hasTimerFinished() === true) {
@@ -526,91 +383,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
     this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
     this.showCountdown();
-  }
-
-  private detectGameEnd() {
-    if (this.gameState.getMatch()?.getState() === MatchStateType.GameOver) {
-      return;
-    }
-
-    if (this.scoreboardObject?.hasTimerFinished() === true) {
-      this.handleTimerEnd();
-    }
-  }
-
-  private handleTimerEnd(): void {
-    // Get all players and find the best player
-    const players = this.gameState.getMatch()?.getPlayers() || [];
-
-    // Find the player with the highest score
-    let winner = this.gameState.getGamePlayer();
-
-    for (const player of players) {
-      if (player.getScore() > winner.getScore()) {
-        winner = player;
-      }
-    }
-
-    // Check for a tie among all players
-    const isTie = players.every(
-      (player) => player.getScore() === winner.getScore()
-    );
-
-    if (isTie) {
-      return;
-    }
-
-    this.sendGameOverStartEvent(winner);
-    this.handleGameOverStart(winner);
-  }
-
-  private sendGameOverStartEvent(winner: GamePlayer): void {
-    const playerId: string = winner.getId();
-    const payload = BinaryWriter.build()
-      .fixedLengthString(playerId, 32)
-      .toArrayBuffer();
-
-    const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
-    gameOverStartEvent.setData(payload);
-
-    this.eventProcessorService.sendEvent(gameOverStartEvent);
-  }
-
-  private handleRemoteGameOverStartEvent(
-    arrayBuffer: ArrayBuffer | null
-  ): void {
-    if (arrayBuffer === null) {
-      return console.warn("Array buffer is null");
-    }
-
-    // Check if we are receiving a game over event as host
-    if (this.gameState.getMatch()?.isHost()) {
-      return console.warn("Host should not receive game over event");
-    }
-
-    const playerId = new TextDecoder().decode(arrayBuffer);
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
-
-    this.handleGameOverStart(player);
-  }
-
-  private handleGameOverStart(winner: GamePlayer | null) {
-    this.gameState.getMatch()?.setState(MatchStateType.GameOver);
-
-    // Determine winner details and show alert
-    const playerName = winner?.getName().toUpperCase() ?? "UNKNOWN";
-    const playerTeam =
-      winner === this.gameState.getGamePlayer() ? "blue" : "red";
-
-    this.alertObject?.show([playerName, "WINS!"], playerTeam);
-
-    // Timer
-    this.timerManagerService.createTimer(5, this.handleGameOverEnd.bind(this));
-
-    // Save player scores if host
-    if (this.gameState.getMatch()?.isHost()) {
-      this.matchmakingService.savePlayerScore();
-    }
   }
 
   private handleGameOverEnd() {
