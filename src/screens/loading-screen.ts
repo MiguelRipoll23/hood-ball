@@ -30,7 +30,7 @@ export class LoadingScreen extends BaseGameScreen {
     this.worldScreen.load();
 
     this.screenTransitionService.fadeOutAndIn(
-      this.screenManagerService!,
+      this.gameState.getGameFrame(),
       this.worldScreen,
       1,
       1
