@@ -1,19 +1,19 @@
-import { TunnelType } from "../enums/tunnel-type.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
+import { TunnelType } from "../../enums/tunnel-type.js";
+import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
-import { DebugUtils } from "../debug/debug-utils.js";
-import { WebSocketType } from "../enums/websocket-type.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import type { BinaryReader } from "../utils/binary-reader-utils.js";
+import { DebugUtils } from "../../debug/debug-utils.js";
+import { WebSocketType } from "../../enums/websocket-type.js";
+import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import type { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
-import { WebRTCType } from "../enums/webrtc-type.js";
-import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
-import { ServerCommandHandler } from "../decorators/server-command-handler.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
+import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
+import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
-import { ServiceLocator } from "./service-locator.js";
-import { GameState } from "../models/game-state.js";
-import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
-import type { PeerConnectionListener } from "../interfaces/services/peer-connection-listener.js";
+import { ServiceLocator } from "../service-locator.js";
+import { GameState } from "../../models/game-state.js";
+import type { IWebRTCService } from "../../interfaces/services/webrtc-service-interface.js";
+import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
 
 export class WebRTCService implements IWebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();

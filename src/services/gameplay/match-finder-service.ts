@@ -1,20 +1,20 @@
-import type { FindMatchesResponse } from "../interfaces/responses/find-matches-response.js";
-import type { AdvertiseMatchRequest } from "../interfaces/requests/advertise-match-request.js";
-import type { FindMatchesRequest } from "../interfaces/requests/find-matches-request.js";
-import { LocalEvent } from "../models/local-event.js";
-import { Match } from "../models/match.js";
-import { MatchStateType } from "../enums/match-state-type.js";
-import { EventType } from "../enums/event-type.js";
-import { MATCH_ATTRIBUTES } from "../constants/matchmaking-constants.js";
-import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
-import { GAME_VERSION } from "../constants/game-constants.js";
-import { getConfigurationKey } from "../utils/configuration-utils.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import { WebSocketType } from "../enums/websocket-type.js";
-import type { FindMatchesResponse as MatchesResponse } from "../interfaces/responses/find-matches-response.js";
-import { APIService } from "./api-service.js";
-import { WebSocketService } from "./websocket-service.js";
-import { GameState } from "../models/game-state.js";
+import type { FindMatchesResponse } from "../../interfaces/responses/find-matches-response.js";
+import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
+import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
+import { LocalEvent } from "../../models/local-event.js";
+import { Match } from "../../models/match.js";
+import { MatchStateType } from "../../enums/match-state-type.js";
+import { EventType } from "../../enums/event-type.js";
+import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
+import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
+import { GAME_VERSION } from "../../constants/game-constants.js";
+import { getConfigurationKey } from "../../utils/configuration-utils.js";
+import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import { WebSocketType } from "../../enums/websocket-type.js";
+import type { FindMatchesResponse as MatchesResponse } from "../../interfaces/responses/find-matches-response.js";
+import { APIService } from "../network/api-service.js";
+import { WebSocketService } from "../network/websocket-service.js";
+import { GameState } from "../../models/game-state.js";
 import { EventProcessorService } from "./event-processor-service.js";
 
 export class MatchFinderService {

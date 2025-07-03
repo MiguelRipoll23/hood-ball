@@ -1,5 +1,5 @@
-import { AnimationType } from "../enums/animation-type.js";
-import type { AnimatableObject } from "../interfaces/objects/animatable-object.js";
+import { AnimationType } from "../../enums/animation-type.js";
+import type { AnimatableObject } from "../../interfaces/objects/animatable-object.js";
 
 export class ObjectAnimationService {
   private readonly object: AnimatableObject;

@@ -1,12 +1,12 @@
-import { GamePlayer } from "../models/game-player.js";
-import type { PeerConnectionListener } from "../interfaces/services/peer-connection-listener.js";
-import { WebRTCType } from "../enums/webrtc-type.js";
-import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
-import { BinaryReader } from "../utils/binary-reader-utils.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import { ServiceLocator } from "./service-locator.js";
-import { GameState } from "../models/game-state.js";
+import { GamePlayer } from "../../models/game-player.js";
+import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
+import type { IWebRTCService } from "../../interfaces/services/webrtc-service-interface.js";
+import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
+import { BinaryReader } from "../../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import { ServiceLocator } from "../service-locator.js";
+import { GameState } from "../../models/game-state.js";
 
 export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_MAXIMUM = 65535;

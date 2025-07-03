@@ -10,8 +10,8 @@ import { ServerError } from "../models/server-error.js";
 import { ServerRegistration } from "../models/server-registration.js";
 import { Base64Utils } from "../utils/base64-utils.js";
 import { WebAuthnUtils } from "../utils/webauthn-utils.js";
-import { APIService } from "./api-service.js";
-import { EventProcessorService } from "./event-processor-service.js";
+import { APIService } from "./network/api-service.js";
+import { EventProcessorService } from "./gameplay/event-processor-service.js";
 import { ServiceLocator } from "./service-locator.js";
 
 export class CredentialService {

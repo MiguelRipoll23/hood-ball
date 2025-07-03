@@ -1,10 +1,10 @@
-import type { GameState } from "../models/game-state.js";
-import { LoadingBackgroundObject } from "../objects/backgrounds/loading-background-object.js";
-import { ProgressBarObject } from "../objects/common/progress-bar-object.js";
-import { ScreenTransitionService } from "../services/screen-transition-service.js";
-import { ServiceLocator } from "../services/service-locator.js";
-import { BaseGameScreen } from "./base/base-game-screen.js";
-import { WorldScreen } from "./world-screen.js";
+import type { GameState } from "../../models/game-state.js";
+import { LoadingBackgroundObject } from "../../objects/backgrounds/loading-background-object.js";
+import { ProgressBarObject } from "../../objects/common/progress-bar-object.js";
+import { ScreenTransitionService } from "../../services/screen-transition-service.js";
+import { ServiceLocator } from "../../services/service-locator.js";
+import { BaseGameScreen } from "../base/base-game-screen.js";
+import { WorldScreen } from "../world/world-screen.js";
 
 export class LoadingScreen extends BaseGameScreen {
   private screenTransitionService: ScreenTransitionService;

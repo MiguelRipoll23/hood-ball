@@ -1,17 +1,17 @@
-import { GameState } from "../models/game-state.js";
-import { MatchStateType } from "../enums/match-state-type.js";
-import type { SavePlayerScoresRequest } from "../interfaces/requests/save-score-request.js";
-import { DebugUtils } from "../debug/debug-utils.js";
-import { ServiceLocator } from "./service-locator.js";
-import { WebSocketService } from "./websocket-service.js";
-import { WebRTCService } from "./webrtc-service.js";
+import { GameState } from "../../models/game-state.js";
+import { MatchStateType } from "../../enums/match-state-type.js";
+import type { SavePlayerScoresRequest } from "../../interfaces/requests/save-score-request.js";
+import { DebugUtils } from "../../debug/debug-utils.js";
+import { ServiceLocator } from "../service-locator.js";
+import { WebSocketService } from "../network/websocket-service.js";
+import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { APIService } from "./api-service.js";
+import { APIService } from "../network/api-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
-import { MatchmakingNetworkService } from "./matchmaking-network-service.js";
-import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
+import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
 
 export class MatchmakingService implements IMatchmakingProvider {
 

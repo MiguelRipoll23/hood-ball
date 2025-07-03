@@ -1,5 +1,5 @@
 import "./main.css";
-import { GameLoopService } from "./services/game-loop-service.js";
+import { GameLoopService } from "./services/gameplay/game-loop-service.js";
 
 const canvas = document.querySelector("#game") as HTMLCanvasElement;
 
