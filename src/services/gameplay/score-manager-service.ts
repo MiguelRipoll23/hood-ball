@@ -1,18 +1,18 @@
-import { MatchStateType } from "../enums/match-state-type.js";
-import { EventType } from "../enums/event-type.js";
-import { TeamType } from "../enums/team-type.js";
-import { RemoteEvent } from "../models/remote-event.js";
-import { GameState } from "../models/game-state.js";
-import { GamePlayer } from "../models/game-player.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import { BinaryReader } from "../utils/binary-reader-utils.js";
-import { BallObject } from "../objects/ball-object.js";
-import { GoalObject } from "../objects/goal-object.js";
-import { ScoreboardObject } from "../objects/scoreboard-object.js";
-import { AlertObject } from "../objects/alert-object.js";
+import { MatchStateType } from "../../enums/match-state-type.js";
+import { EventType } from "../../enums/event-type.js";
+import { TeamType } from "../../enums/team-type.js";
+import { RemoteEvent } from "../../models/remote-event.js";
+import { GameState } from "../../models/game-state.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import { BinaryReader } from "../../utils/binary-reader-utils.js";
+import { BallObject } from "../../objects/ball-object.js";
+import { GoalObject } from "../../objects/goal-object.js";
+import { ScoreboardObject } from "../../objects/scoreboard-object.js";
+import { AlertObject } from "../../objects/alert-object.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
 
 export class ScoreManagerService {
   constructor(

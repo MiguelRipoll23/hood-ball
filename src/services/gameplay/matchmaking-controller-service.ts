@@ -1,9 +1,9 @@
-import { ServiceLocator } from "./service-locator.js";
+import { ServiceLocator } from "../service-locator.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { LocalEvent } from "../models/local-event.js";
-import { EventType } from "../enums/event-type.js";
+import { LocalEvent } from "../../models/local-event.js";
+import { EventType } from "../../enums/event-type.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import type { IMatchmakingProvider } from "../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
 
 export class MatchmakingControllerService {
   private readonly matchmakingService: IMatchmakingProvider;

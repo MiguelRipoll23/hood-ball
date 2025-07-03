@@ -1,10 +1,10 @@
-import { EventType } from "../enums/event-type.js";
+import { EventType } from "../../enums/event-type.js";
 import { EventQueueService } from "./event-queue-service.js";
-import type { EventSubscription } from "../types/event-subscription.js";
-import { LocalEvent } from "../models/local-event.js";
-import { RemoteEvent } from "../models/remote-event.js";
+import type { EventSubscription } from "../../types/event-subscription.js";
+import { LocalEvent } from "../../models/local-event.js";
+import { RemoteEvent } from "../../models/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { ServiceLocator } from "./service-locator.js";
+import { ServiceLocator } from "../service-locator.js";
 
 export class EventConsumerService {
   private localQueue: EventQueueService<LocalEvent>;

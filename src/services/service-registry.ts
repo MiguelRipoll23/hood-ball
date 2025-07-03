@@ -1,19 +1,19 @@
 import { GameState } from "../models/game-state.js";
-import { APIService } from "./api-service.js";
+import { APIService } from "./network/api-service.js";
 import { CredentialService } from "./credential-service.js";
 import { CryptoService } from "./crypto-service.js";
 import { DebugService } from "../debug/debug-service.js";
-import { EventConsumerService } from "./event-consumer-service.js";
-import { EventProcessorService } from "./event-processor-service.js";
-import { IntervalManagerService } from "./interval-manager-service.js";
-import { MatchmakingService } from "./matchmaking-service.js";
-import { MatchmakingControllerService } from "./matchmaking-controller-service.js";
-import { ObjectOrchestratorService } from "./object-orchestrator-service.js";
+import { EventConsumerService } from "./gameplay/event-consumer-service.js";
+import { EventProcessorService } from "./gameplay/event-processor-service.js";
+import { IntervalManagerService } from "./gameplay/interval-manager-service.js";
+import { MatchmakingService } from "./gameplay/matchmaking-service.js";
+import { MatchmakingControllerService } from "./gameplay/matchmaking-controller-service.js";
+import { ObjectOrchestratorService } from "./gameplay/object-orchestrator-service.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
 import { ServiceLocator } from "./service-locator.js";
-import { TimerManagerService } from "./timer-manager-service.js";
-import { WebRTCService } from "./webrtc-service.js";
-import { WebSocketService } from "./websocket-service.js";
+import { TimerManagerService } from "./gameplay/timer-manager-service.js";
+import { WebRTCService } from "./network/webrtc-service.js";
+import { WebSocketService } from "./network/websocket-service.js";
 import { LoadingIndicatorService } from "./loading-indicator-service.js";
 
 export class ServiceRegistry {

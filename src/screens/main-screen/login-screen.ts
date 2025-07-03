@@ -1,7 +1,7 @@
 import { MessageObject } from "../../objects/common/message-object.js";
 import { CryptoService } from "../../services/crypto-service.js";
-import { WebSocketService } from "../../services/websocket-service.js";
-import { APIService } from "../../services/api-service.js";
+import { WebSocketService } from "../../services/network/websocket-service.js";
+import { APIService } from "../../services/network/api-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { MainMenuScreen } from "./main-menu-screen.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";

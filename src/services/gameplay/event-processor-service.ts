@@ -1,13 +1,13 @@
-import { EventType } from "../enums/event-type.js";
-import { RemoteEvent } from "../models/remote-event.js";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer.js";
-import { LocalEvent } from "../models/local-event.js";
-import { WebRTCType } from "../enums/webrtc-type.js";
+import { EventType } from "../../enums/event-type.js";
+import { RemoteEvent } from "../../models/remote-event.js";
+import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
+import { LocalEvent } from "../../models/local-event.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
 import { EventQueueService } from "./event-queue-service.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import type { BinaryReader } from "../utils/binary-reader-utils.js";
-import { PeerCommandHandler } from "../decorators/peer-command-handler-decorator.js";
-import type { IWebRTCService } from "../interfaces/services/webrtc-service-interface.js";
+import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import type { BinaryReader } from "../../utils/binary-reader-utils.js";
+import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
+import type { IWebRTCService } from "../../interfaces/services/webrtc-service-interface.js";
 
 export type EventSubscription = {
   eventType: EventType;

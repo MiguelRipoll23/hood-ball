@@ -1,8 +1,8 @@
-import { getPeerCommandHandlers } from "../decorators/peer-command-handler-decorator";
-import { WebRTCType } from "../enums/webrtc-type";
-import type { WebRTCPeer } from "../interfaces/webrtc-peer";
-import type { PeerCommandHandlerFunction } from "../types/peer-command-handler-function-type";
-import type { BinaryReader } from "../utils/binary-reader-utils";
+import { getPeerCommandHandlers } from "../../decorators/peer-command-handler-decorator.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
+import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
+import type { PeerCommandHandlerFunction } from "../../types/peer-command-handler-function-type.js";
+import type { BinaryReader } from "../../utils/binary-reader-utils.js";
 
 export class WebRTCDispatcherService {
   private commandHandlers = new Map<WebRTCType, PeerCommandHandlerFunction>();
