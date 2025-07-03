@@ -10,6 +10,7 @@ export class LoadingScreen extends BaseGameScreen {
   private screenTransitionService: ScreenTransitionService;
   private progressBarObject: ProgressBarObject | null = null;
   private worldScreen: WorldScreen | null = null;
+  private transitionStarted: boolean = false;
 
   constructor(gameState: GameState) {
     super(gameState);
@@ -28,13 +29,6 @@ export class LoadingScreen extends BaseGameScreen {
 
     this.worldScreen = new WorldScreen(this.gameState);
     this.worldScreen.load();
-
-    this.screenTransitionService.fadeOutAndIn(
-      this.gameState.getGameFrame(),
-      this.worldScreen,
-      1,
-      1
-    );
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -42,6 +36,20 @@ export class LoadingScreen extends BaseGameScreen {
     const loadedObjects = this.worldScreen?.getLoadedObjectsCount() || 0;
 
     this.progressBarObject?.setProgress(loadedObjects / totalObjects);
+
+    if (
+      !this.transitionStarted &&
+      totalObjects > 0 &&
+      loadedObjects === totalObjects
+    ) {
+      this.transitionStarted = true;
+      this.screenTransitionService.fadeOutAndIn(
+        this.gameState.getGameFrame(),
+        this.worldScreen!,
+        1,
+        1
+      );
+    }
 
     super.update(deltaTimeStamp);
   }
