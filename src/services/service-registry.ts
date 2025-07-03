@@ -2,7 +2,7 @@ import { GameState } from "../models/game-state.js";
 import { APIService } from "./api-service.js";
 import { CredentialService } from "./credential-service.js";
 import { CryptoService } from "./crypto-service.js";
-import { DebugService } from "./debug-service.js";
+import { DebugService } from "../debug/debug-service.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
@@ -14,14 +14,14 @@ import { TimerManagerService } from "./timer-manager-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
 
-export class ServiceManager {
+export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
     const gameState = new GameState(canvas, debugging);
-    ServiceManager.registerGameStates(gameState);
-    ServiceManager.registerCoreServices(gameState);
-    ServiceManager.registerCommunicationServices();
-    ServiceManager.registerGameplayServices();
-    ServiceManager.initializeServices();
+    ServiceRegistry.registerGameStates(gameState);
+    ServiceRegistry.registerCoreServices(gameState);
+    ServiceRegistry.registerCommunicationServices();
+    ServiceRegistry.registerGameplayServices();
+    ServiceRegistry.initializeServices();
   }
 
   private static registerGameStates(gameState: GameState): void {

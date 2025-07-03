@@ -1,11 +1,11 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { EventType } from "../enums/event-type.js";
-import type { GameEvent } from "../interfaces/events/game-event.js";
-import { LocalEvent } from "../models/local-event.js";
-import { RemoteEvent } from "../models/remote-event.js";
+import { EventType } from "../../enums/event-type.js";
+import type { GameEvent } from "../../interfaces/events/game-event.js";
+import { LocalEvent } from "../../models/local-event.js";
+import { RemoteEvent } from "../../models/remote-event.js";
 import { BaseWindow } from "./base-window.js";
-import { EventProcessorService } from "../services/event-processor-service.js";
-import { ServiceLocator } from "../services/service-locator.js";
+import { EventProcessorService } from "../../services/event-processor-service.js";
+import { ServiceLocator } from "../../services/service-locator.js";
 
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;

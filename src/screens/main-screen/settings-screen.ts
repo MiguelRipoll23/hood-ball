@@ -2,7 +2,7 @@ import type { GameState } from "../../models/game-state.js";
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
-import { DebugService } from "../../services/debug-service.js";
+import { DebugService } from "../../debug/debug-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 

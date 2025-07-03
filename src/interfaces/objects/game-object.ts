@@ -1,5 +1,5 @@
 import { ObjectStateType } from "../../enums/object-state-type.js";
-import type { DebugSettings } from "../../models/debug-settings.js";
+import type { DebugSettings } from "../../debug/debug-settings.js";
 
 export interface GameObject {
   load(): void;

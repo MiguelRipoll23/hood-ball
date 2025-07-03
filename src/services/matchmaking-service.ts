@@ -17,7 +17,7 @@ import type { SavePlayerScoresRequest } from "../interfaces/requests/save-score-
 import { MATCH_TOTAL_SLOTS } from "../constants/configuration-constants.js";
 import { getConfigurationKey } from "../utils/configuration-utils.js";
 import { IntervalService } from "./interval-service.js";
-import { DebugUtils } from "../utils/debug-utils.js";
+import { DebugUtils } from "../debug/debug-utils.js";
 import { WebSocketType } from "../enums/websocket-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";

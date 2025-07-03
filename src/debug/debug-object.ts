@@ -1,5 +1,5 @@
-import { TimerService } from "../../services/timer-service.js";
-import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
+import { TimerService } from "../services/timer-service.js";
+import { BaseAnimatedGameObject } from "../objects/base/base-animated-object.js";
 
 export class DebugObject extends BaseAnimatedGameObject {
   private text: string = "Unknown";

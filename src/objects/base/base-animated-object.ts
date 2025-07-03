@@ -1,5 +1,5 @@
 import { AnimationType } from "../../enums/animation-type.js";
-import { ObjectAnimationService } from "../../services/object-animator-service.js";
+import { ObjectAnimationService } from "../../services/object-animation-service.js";
 import { BaseMoveableGameObject } from "./base-moveable-game-object.js";
 
 export class BaseAnimatedGameObject extends BaseMoveableGameObject {

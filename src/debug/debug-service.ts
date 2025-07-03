@@ -1,7 +1,7 @@
 import { ImGui, ImGuiImplWeb } from "@mori2003/jsimgui";
-import { DebugWindow } from "../windows/debug-window";
-import { GameState } from "../models/game-state";
-import { ServiceLocator } from "./service-locator";
+import { DebugWindow } from "./windows/debug-window.js";
+import { GameState } from "../models/game-state.js";
+import { ServiceLocator } from "../services/service-locator.js";
 
 export class DebugService {
   private debugCanvas: HTMLCanvasElement;

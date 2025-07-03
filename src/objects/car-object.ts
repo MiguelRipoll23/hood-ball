@@ -9,7 +9,7 @@ import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
 } from "../constants/webrtc-constants.js";
-import { DebugUtils } from "../utils/debug-utils.js";
+import { DebugUtils } from "../debug/debug-utils.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 
 export class CarObject extends BaseDynamicCollidingGameObject {

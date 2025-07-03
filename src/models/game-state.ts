@@ -3,7 +3,7 @@ import { GamePlayer } from "./game-player.js";
 import { GameServer } from "./game-server.js";
 import { GameFrame } from "./game-frame.js";
 import { GamePointer } from "./game-pointer.js";
-import { DebugSettings } from "./debug-settings.js";
+import { DebugSettings } from "../debug/debug-settings.js";
 import { GameKeyboard } from "./game-keyboard.js";
 import { GameGamepad } from "./game-gamepad.js";
 
