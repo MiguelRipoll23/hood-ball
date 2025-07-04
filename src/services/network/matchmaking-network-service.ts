@@ -1,4 +1,4 @@
-import { TimerService } from "../gameplay/timer-service.js";
+import type { ITimerService } from "../../interfaces/services/gameplay/timer-service-interface.js";
 import { Match } from "../../models/match.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameState } from "../../models/game-state.js";
@@ -9,7 +9,7 @@ import { LocalEvent } from "../../models/local-event.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import { IntervalService } from "../gameplay/interval-service.js";
+import type { IIntervalService } from "../../interfaces/services/gameplay/interval-service-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
@@ -17,7 +17,8 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
-import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
+import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
+import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import { EventProcessorService } from "../gameplay/event-processor-service.js";
 import { TimerManagerService } from "../gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../gameplay/interval-manager-service.js";
@@ -29,9 +30,10 @@ import {
 } from "../gameplay/matchmaking-tokens.js";
 
 @injectable()
-export class MatchmakingNetworkService implements PeerConnectionListener {
-  private findMatchesTimerService: TimerService | null = null;
-  private pingCheckInterval: IntervalService | null = null;
+export class MatchmakingNetworkService
+  implements PeerConnectionListener, IMatchmakingNetworkService {
+  private findMatchesTimerService: ITimerService | null = null;
+  private pingCheckInterval: IIntervalService | null = null;
 
   constructor(
     private readonly gameState = inject(GameState),
