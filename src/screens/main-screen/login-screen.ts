@@ -8,7 +8,6 @@ import { CloseableMessageObject } from "../../objects/common/closeable-message-o
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/security/credential-service.js";
-import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
