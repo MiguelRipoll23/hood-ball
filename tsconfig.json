@@ -15,8 +15,8 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@gameplay/*": ["src/services/gameplay/*"],
-      "@network/*": ["src/services/network/*"]
+      "@gameplay/*": ["src/services/gameplay/*.js"],
+      "@network/*": ["src/services/network/*.js"]
     },
 
     /* Linting */
