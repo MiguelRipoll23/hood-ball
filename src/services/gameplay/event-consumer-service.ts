@@ -4,8 +4,10 @@ import type { EventSubscription } from "../../types/event-subscription.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { RemoteEvent } from "../../models/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { ServiceLocator } from "../service-locator.js";
+import { container } from "../di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class EventConsumerService {
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
@@ -14,7 +16,7 @@ export class EventConsumerService {
   private remoteSubscriptions: EventSubscription[] = [];
 
   constructor() {
-    const eventProcessorService = ServiceLocator.get(EventProcessorService);
+    const eventProcessorService = container.get(EventProcessorService);
     this.localQueue = eventProcessorService.getLocalQueue();
     this.remoteQueue = eventProcessorService.getRemoteQueue();
   }

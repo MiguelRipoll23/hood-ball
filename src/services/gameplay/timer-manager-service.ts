@@ -1,5 +1,7 @@
 import { TimerService } from "./timer-service.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class TimerManagerService {
   private timers: Set<TimerService> = new Set();
 

@@ -6,8 +6,10 @@ import { CloseableMessageObject } from "../../objects/common/closeable-message-o
 import { RankingTableObject } from "../../objects/ranking-table-object.js";
 import type { GameState } from "../../models/game-state.js";
 import { APIService } from "../../services/network/api-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { injectable, inject } from "@needle-di/core";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
+@injectable()
 export class ScoreboardScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
   private buttonObject: ButtonObject | null = null;
@@ -16,9 +18,13 @@ export class ScoreboardScreen extends BaseGameScreen {
 
   private apiService: APIService;
 
-  constructor(gameState: GameState) {
-    super(gameState);
-    this.apiService = ServiceLocator.get(APIService);
+  constructor(
+    gameState: GameState,
+    eventConsumerService: EventConsumerService,
+    apiService = inject(APIService)
+  ) {
+    super(gameState, eventConsumerService);
+    this.apiService = apiService;
   }
 
   public override load(): void {

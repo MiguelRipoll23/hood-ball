@@ -10,7 +10,8 @@ import { ScoreboardScreen } from "./scoreboard-screen.js";
 import { SettingsScreen } from "./settings-screen.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../models/game-state.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -22,10 +23,10 @@ export class MainMenuScreen extends BaseGameScreen {
   private serverMessageWindowObject: ServerMessageWindowObject | null = null;
   private closeableMessageObject: CloseableMessageObject | null = null;
 
-  constructor(gameState: GameState, private showNews: boolean) {
-    super(gameState);
+  constructor(gameState: GameState, eventConsumerService: EventConsumerService, private showNews: boolean) {
+    super(gameState, eventConsumerService);
     this.showNews = showNews;
-    this.apiService = ServiceLocator.get(APIService);
+    this.apiService = container.get(APIService);
     this.subscribeToEvents();
   }
 
@@ -188,7 +189,10 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToLoadingScreen(): void {
     this.disableMenuButtons();
 
-    const loadingScreen = new LoadingScreen(this.gameState);
+    const loadingScreen = new LoadingScreen(
+      this.gameState,
+      container.get(EventConsumerService)
+    );
     loadingScreen.load();
 
     this.screenManagerService
@@ -199,7 +203,10 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToScoreboardScreen(): void {
     this.disableMenuButtons();
 
-    const scoreboardScreen = new ScoreboardScreen(this.gameState);
+    const scoreboardScreen = new ScoreboardScreen(
+      this.gameState,
+      container.get(EventConsumerService)
+    );
     scoreboardScreen.load();
 
     this.screenManagerService
@@ -210,7 +217,10 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToSettingsScreen(): void {
     this.disableMenuButtons();
 
-    const settingsScreen = new SettingsScreen(this.gameState);
+    const settingsScreen = new SettingsScreen(
+      this.gameState,
+      container.get(EventConsumerService)
+    );
     settingsScreen.load();
 
     this.screenManagerService

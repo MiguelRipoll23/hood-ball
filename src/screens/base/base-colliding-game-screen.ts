@@ -3,10 +3,11 @@ import { BaseDynamicCollidingGameObject } from "../../objects/base/base-dynamic-
 import { HitboxObject } from "../../objects/common/hitbox-object.js";
 import { BaseMultiplayerScreen } from "./base-multiplayer-screen.js";
 import type { GameState } from "../../models/game-state.js";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
-  constructor(gameState: GameState) {
-    super(gameState);
+  constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
+    super(gameState, eventConsumerService);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {

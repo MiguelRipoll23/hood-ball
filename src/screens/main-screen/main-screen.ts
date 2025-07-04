@@ -3,12 +3,13 @@ import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { MainBackgroundObject } from "../../objects/backgrounds/main-background-object.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { GameState } from "../../models/game-state.js";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class MainScreen extends BaseGameScreen {
   private screen: GameScreen | null = null;
 
-  constructor(gameState: GameState) {
-    super(gameState);
+  constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
+    super(gameState, eventConsumerService);
     this.screenManagerService = new ScreenManagerService();
   }
 

@@ -15,7 +15,6 @@ import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { ServiceLocator } from "../service-locator.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
@@ -23,34 +22,27 @@ import { EventProcessorService } from "../gameplay/event-processor-service.js";
 import { TimerManagerService } from "../gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../gameplay/interval-manager-service.js";
 import { MatchFinderService } from "../gameplay/match-finder-service.js";
+import { injectable, inject } from "@needle-di/core";
+import {
+  PendingIdentitiesToken,
+  ReceivedIdentitiesToken,
+} from "../gameplay/matchmaking-tokens.js";
 
+@injectable()
 export class MatchmakingNetworkService implements PeerConnectionListener {
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
   constructor(
-    private readonly gameState: GameState = ServiceLocator.get(GameState),
-    private readonly timerManagerService: TimerManagerService = ServiceLocator.get(
-      TimerManagerService
-    ),
-    private readonly intervalManagerService: IntervalManagerService = ServiceLocator.get(
-      IntervalManagerService
-    ),
-    private readonly webSocketService: WebSocketService = ServiceLocator.get(
-      WebSocketService
-    ),
-    private readonly webrtcService: WebRTCService = ServiceLocator.get(
-      WebRTCService
-    ),
-    private readonly eventProcessorService: EventProcessorService = ServiceLocator.get(
-      EventProcessorService
-    ),
-    private readonly matchFinderService: MatchFinderService,
-    private readonly pendingIdentities: Map<string, boolean>,
-    private readonly receivedIdentities: Map<
-      string,
-      { playerId: string; playerName: string }
-    >
+    private readonly gameState = inject(GameState),
+    private readonly timerManagerService = inject(TimerManagerService),
+    private readonly intervalManagerService = inject(IntervalManagerService),
+    private readonly webSocketService = inject(WebSocketService),
+    private readonly webrtcService = inject(WebRTCService),
+    private readonly eventProcessorService = inject(EventProcessorService),
+    private readonly matchFinderService = inject(MatchFinderService),
+    private readonly pendingIdentities = inject(PendingIdentitiesToken),
+    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);

@@ -1,7 +1,9 @@
 import type { GameScreen } from "../interfaces/screens/game-screen.js";
 import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
 import type { GameFrame } from "../models/game-frame.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class ScreenTransitionService {
   private elapsedTransitionMilliseconds: number = 0;
 

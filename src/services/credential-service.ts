@@ -12,17 +12,19 @@ import { Base64Utils } from "../utils/base64-utils.js";
 import { WebAuthnUtils } from "../utils/webauthn-utils.js";
 import { APIService } from "./network/api-service.js";
 import { EventProcessorService } from "./gameplay/event-processor-service.js";
-import { ServiceLocator } from "./service-locator.js";
+import { container } from "./di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class CredentialService {
   private gameState: GameState;
   private readonly apiService: APIService;
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
-    this.gameState = ServiceLocator.get(GameState);
-    this.apiService = ServiceLocator.get(APIService);
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.gameState = container.get(GameState);
+    this.apiService = container.get(APIService);
+    this.eventProcessorService = container.get(EventProcessorService);
   }
 
   public async getCredential(): Promise<void> {

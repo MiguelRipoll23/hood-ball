@@ -8,7 +8,6 @@ import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../models/game-state.js";
-import { ServiceLocator } from "../../services/service-locator.js";
 
 export class BaseGameScreen implements GameScreen {
   protected eventConsumerService: EventConsumerService;
@@ -24,11 +23,14 @@ export class BaseGameScreen implements GameScreen {
 
   private gamePointer: GamePointer;
 
-  constructor(protected gameState: GameState) {
+  constructor(
+    protected gameState: GameState,
+    eventConsumerService: EventConsumerService
+  ) {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameState.getCanvas();
     this.gamePointer = gameState.getGamePointer();
-    this.eventConsumerService = ServiceLocator.get(EventConsumerService);
+    this.eventConsumerService = eventConsumerService;
   }
 
   public isActive(): boolean {

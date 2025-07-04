@@ -8,7 +8,8 @@ import { CloseableMessageObject } from "../../objects/common/closeable-message-o
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/credential-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class LoginScreen extends BaseGameScreen {
   private apiService: APIService;
@@ -23,12 +24,12 @@ export class LoginScreen extends BaseGameScreen {
   private registerButtonElement: HTMLElement | null = null;
   private signInButtonElement: HTMLElement | null = null;
 
-  constructor(gameState: GameState) {
-    super(gameState);
-    this.apiService = ServiceLocator.get(APIService);
-    this.cryptoService = ServiceLocator.get(CryptoService);
-    this.webSocketService = ServiceLocator.get(WebSocketService);
-    this.credentialService = ServiceLocator.get(CredentialService);
+  constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
+    super(gameState, eventConsumerService);
+    this.apiService = container.get(APIService);
+    this.cryptoService = container.get(CryptoService);
+    this.webSocketService = container.get(WebSocketService);
+    this.credentialService = container.get(CredentialService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"
@@ -223,7 +224,11 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private transitionToMainMenuScreen(): void {
-    const mainMenuScreen = new MainMenuScreen(this.gameState, true);
+    const mainMenuScreen = new MainMenuScreen(
+      this.gameState,
+      container.get(EventConsumerService),
+      true
+    );
     mainMenuScreen.load();
 
     this.screenManagerService

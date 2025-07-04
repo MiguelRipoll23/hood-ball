@@ -1,11 +1,13 @@
 import { GameServer } from "../models/game-server.js";
 import { GameState } from "../models/game-state.js";
-import { ServiceLocator } from "./service-locator.js";
+import { container } from "./di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class CryptoService {
   private gameServer: GameServer;
 
-  constructor(gameState = ServiceLocator.get(GameState)) {
+  constructor(gameState = container.get(GameState)) {
     this.gameServer = gameState.getGameServer();
   }
 
