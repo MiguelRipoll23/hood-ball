@@ -1,24 +1,18 @@
 import { LocalCarObject } from "../../objects/local-car-object.js";
-import { WorldBackgroundObject } from "../../objects/backgrounds/world-background-object.js";
 import { GoalObject } from "../../objects/goal-object.js";
 import { BallObject } from "../../objects/ball-object.js";
 import { ScoreboardObject } from "../../objects/scoreboard-object.js";
-import { BaseCollidingGameScreen } from "../base/base-colliding-game-screen.js";
-import { GameState } from "../../models/game-state.js";
-import { getConfigurationKey } from "../../utils/configuration-utils.js";
-import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
 import { AlertObject } from "../../objects/alert-object.js";
 import { ToastObject } from "../../objects/common/toast-object.js";
+import { BaseCollidingGameScreen } from "../base/base-colliding-game-screen.js";
+import { GameState } from "../../models/game-state.js";
 import { RemoteCarObject } from "../../objects/remote-car-object.js";
 import { ObjectStateType } from "../../enums/object-state-type.js";
 import { EventType } from "../../enums/event-type.js";
-import { RemoteEvent } from "../../models/remote-event.js";
 import { ScreenType } from "../../enums/screen-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
-import { BinaryWriter } from "../../utils/binary-writer-utils.js";
-import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
@@ -31,9 +25,10 @@ import { MainScreen } from "../main-screen/main-screen.js";
 import { MainMenuScreen } from "../main-screen/main-menu-screen.js";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { WorldObjectFactory } from "./world-object-factory.js";
+import { MatchFlowController } from "./match-flow-controller.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
-  private readonly COUNTDOWN_START_NUMBER = 4;
 
   private readonly screenTransitionService: ScreenTransitionService;
   private readonly timerManagerService: TimerManagerService;
@@ -49,8 +44,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private alertObject: AlertObject | null = null;
   private toastObject: ToastObject | null = null;
   private scoreManagerService: ScoreManagerService | null = null;
-
-  private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+  private matchFlowController: MatchFlowController | null = null;
 
   constructor(protected gameState: GameState, eventConsumerService: EventConsumerService) {
     super(gameState, eventConsumerService);
@@ -68,24 +62,42 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   public override load(): void {
-    this.createBackgroundObject();
-    this.createScoreboardObject();
-    this.createPlayerAndLocalCarObjects();
-    this.createBallObject();
-    this.createGoalObject();
-    this.createAlertObject();
-    this.createToastObject();
-    this.scoreManagerService = new ScoreManagerService(
+    const factory = new WorldObjectFactory(this.gameState, this.canvas);
+    factory.createBackground(this.sceneObjects);
+    const objects = factory.createWorldObjects(this.sceneObjects, this.uiObjects);
+
+    this.scoreboardObject = objects.scoreboard;
+    this.localCarObject = objects.localCar;
+    this.ballObject = objects.ball;
+    this.goalObject = objects.goal;
+    this.alertObject = objects.alert;
+    this.toastObject = objects.toast;
+
+    this.matchFlowController = new MatchFlowController(
       this.gameState,
-      this.ballObject!,
-      this.goalObject!,
-      this.scoreboardObject!,
-      this.alertObject!,
       this.timerManagerService,
       this.eventProcessorService,
       this.matchmakingService,
-      this.handleGoalTimeEnd.bind(this),
-      this.handleGameOverEnd.bind(this)
+      this.scoreboardObject,
+      this.ballObject,
+      this.localCarObject,
+      this.alertObject
+    );
+
+    this.scoreManagerService = new ScoreManagerService(
+      this.gameState,
+      this.ballObject,
+      this.goalObject,
+      this.scoreboardObject,
+      this.alertObject,
+      this.timerManagerService,
+      this.eventProcessorService,
+      this.matchmakingService,
+      this.matchFlowController.handleGoalTimeEnd.bind(this.matchFlowController),
+      () => {
+        this.matchFlowController?.handleGameOverEnd();
+        void this.returnToMainMenuScreen();
+      }
     );
     super.load();
   }
@@ -106,7 +118,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
 
-    this.handleMatchState();
+    this.matchFlowController?.handleMatchState();
     this.scoreManagerService?.detectScoresIfHost();
 
     this.objectOrchestrator.sendLocalData(this, deltaTimeStamp);
@@ -123,36 +135,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     void this.returnToMainMenuScreen();
   }
 
-  private handleMatchState(): void {
-    const matchState = this.gameState.getMatch()?.getState();
-
-    if (matchState === MatchStateType.InProgress) {
-      this.localCarObject?.setActive(true);
-      this.scoreboardObject?.setActive(true);
-      this.ballObject?.setInactive(false);
-    } else {
-      // Pause timer if not in progress
-      this.scoreboardObject?.setActive(false);
-    }
-
-    // Block local car and ball if countdown
-    if (matchState === MatchStateType.Countdown) {
-      this.ballObject?.setInactive(true);
-      this.localCarObject?.setActive(false);
-    }
-  }
-
   private addSyncableObjects(): void {
     this.addSyncableObject(RemoteCarObject);
-  }
-
-  private createBackgroundObject() {
-    const backgroundObject = new WorldBackgroundObject(this.canvas);
-    this.sceneObjects.push(backgroundObject);
-
-    backgroundObject.getCollisionHitboxes().forEach((object) => {
-      this.sceneObjects.push(object);
-    });
   }
 
   private handleMatchAdvertised(): void {
@@ -179,7 +163,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       const matchState = this.gameState.getMatch()?.getState();
 
       if (matchState === MatchStateType.WaitingPlayers) {
-        this.showCountdown();
+        this.matchFlowController?.showCountdown();
       }
     }
   }
@@ -202,65 +186,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.scoreManagerService?.updateScoreboard();
   }
 
-  private createScoreboardObject() {
-    const durationSeconds: number = getConfigurationKey<number>(
-      SCOREBOARD_SECONDS_DURATION,
-      60,
-      this.gameState
-    );
-
-    this.scoreboardObject = new ScoreboardObject(this.canvas);
-    this.scoreboardObject.setTimerDuration(durationSeconds);
-    this.sceneObjects.push(this.scoreboardObject);
-  }
-
-  private createBallObject() {
-    this.ballObject = new BallObject(0, 0, this.canvas);
-    this.ballObject.setCenterPosition();
-
-    this.sceneObjects.push(this.ballObject);
-  }
-
-  private createGoalObject() {
-    this.goalObject = new GoalObject(this.canvas);
-    this.sceneObjects.push(this.goalObject);
-  }
-
-  private createPlayerAndLocalCarObjects() {
-    const gamePointer = this.gameState.getGamePointer();
-    const gameKeyboard = this.gameState.getGameKeyboard();
-    const gameGamepad = this.gameState.getGameGamepad();
-
-    this.localCarObject = new LocalCarObject(
-      0,
-      0,
-      1.5708,
-      this.canvas,
-      gamePointer,
-      gameKeyboard,
-      gameGamepad
-    );
-
-    this.localCarObject.setOwner(this.gameState.getGamePlayer());
-    this.localCarObject.setCanvas(this.canvas);
-    this.localCarObject.setCenterPosition();
-
-    // Scene
-    this.sceneObjects.push(this.localCarObject);
-
-    // UI
-    this.uiObjects.push(this.localCarObject.getJoystickObject());
-  }
-
-  private createAlertObject() {
-    this.alertObject = new AlertObject(this.canvas);
-    this.uiObjects.push(this.alertObject);
-  }
-
-  private createToastObject() {
-    this.toastObject = new ToastObject(this.canvas);
-    this.sceneObjects.push(this.toastObject);
-  }
 
   private subscribeToEvents(): void {
     this.subscribeToLocalEvents();
@@ -292,7 +217,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private subscribeToRemoteEvents(): void {
     this.subscribeToRemoteEvent(
       EventType.Countdown,
-      this.handleRemoteCountdown.bind(this)
+      (data: ArrayBuffer | null) =>
+        this.matchFlowController?.handleRemoteCountdown(data)
     );
 
     this.subscribeToRemoteEvent(
@@ -308,102 +234,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     );
   }
 
-  private showCountdown() {
-    const match = this.gameState.getMatch();
-    const isHost = match?.isHost();
-
-    this.gameState.setMatchState(MatchStateType.Countdown);
-    console.log("Countdown tick:", this.countdownCurrentNumber);
-
-    // Reset game every countdown tick
-    this.resetForCountdown();
-
-    // Send event to other players
-    if (isHost) {
-      this.sendCountdownEvent();
-    }
-
-    // Show countdown text to players
-    if (this.countdownCurrentNumber >= 2) {
-      const displayNumber = this.countdownCurrentNumber - 1; // 4→3, 3→2, 2→1
-      this.alertObject?.show([displayNumber.toString()], "#FFFF00");
-    } else if (this.countdownCurrentNumber === 1) {
-      this.alertObject?.show(["GO!"], "#FFFF00");
-    } else {
-      // Reached 0 → Start the game
-      return this.handleCountdownEnd();
-    }
-
-    // Schedule next countdown tick
-    this.countdownCurrentNumber -= 1;
-
-    if (isHost) {
-      this.timerManagerService.createTimer(1, this.showCountdown.bind(this));
-    }
-  }
-
-  private resetForCountdown() {
-    this.ballObject?.reset();
-    this.localCarObject?.reset();
-  }
-
-  private handleRemoteCountdown(arrayBuffer: ArrayBuffer | null) {
-    if (arrayBuffer === null) {
-      return console.warn("Array buffer is null");
-    }
-
-    // Check if we are receiving a countdown event as host
-    if (this.gameState.getMatch()?.isHost()) {
-      return console.warn("Host should not receive countdown event");
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    const countdownNumber = binaryReader.unsignedInt8();
-
-    this.countdownCurrentNumber = countdownNumber;
-    this.showCountdown();
-  }
-
-  private handleCountdownEnd() {
-    console.log("Countdown end");
-    this.gameState.startMatch();
-
-    this.alertObject?.hide();
-    this.localCarObject?.reset();
-    this.ballObject?.reset();
-    this.scoreboardObject?.startTimer();
-  }
-
-  private sendCountdownEvent() {
-    const arrayBuffer = BinaryWriter.build()
-      .unsignedInt8(this.countdownCurrentNumber)
-      .toArrayBuffer();
-
-    const countdownEvent = new RemoteEvent(EventType.Countdown);
-    countdownEvent.setData(arrayBuffer);
-
-    this.eventProcessorService.sendEvent(countdownEvent);
-  }
-
   private handleWaitingForPlayers(): void {
-    this.gameState.setMatchState(MatchStateType.WaitingPlayers);
-    this.scoreboardObject?.stopTimer();
-  }
-
-  private handleGoalTimeEnd() {
-    if (this.scoreboardObject?.hasTimerFinished() === true) {
-      return;
-    }
-
-    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
-    this.showCountdown();
-  }
-
-  private handleGameOverEnd() {
-    console.log("Game over end");
-
-    this.matchmakingService.handleGameOver();
-    void this.returnToMainMenuScreen();
+    this.matchFlowController?.handleWaitingForPlayers();
   }
 
   private async returnToMainMenuScreen(): Promise<void> {
