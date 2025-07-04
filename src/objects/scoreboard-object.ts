@@ -7,10 +7,11 @@ import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-ga
 import { ObjectType } from "../enums/object-type.js";
 import { BinaryWriter } from "../utils/binary-writer-utils.js";
 import { BinaryReader } from "../utils/binary-reader-utils.js";
+import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui.js";
 
 export class ScoreboardObject
   extends BaseMultiplayerGameObject
-  implements MultiplayerGameObject
+  implements MultiplayerGameObject, ScoreboardUI
 {
   private readonly SQUARE_SIZE: number = 50;
   private readonly SPACE_BETWEEN: number = 10;
