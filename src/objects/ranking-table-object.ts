@@ -1,4 +1,4 @@
-import { BaseAnimatedGameObject } from "./base/base-animated-object.js";
+import { BaseAnimatedGameObject } from "../core/entities/base-animated-object.js";
 import type { RankingResponse } from "../interfaces/responses/ranking-response.js";
 
 export class RankingTableObject extends BaseAnimatedGameObject {

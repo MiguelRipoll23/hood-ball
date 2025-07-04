@@ -4,14 +4,14 @@ import type { RegistrationOptionsRequest } from "../../interfaces/requests/regis
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
 import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
 import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
-import { GameState } from "../../models/game-state.js";
-import { LocalEvent } from "../../models/local-event.js";
+import { GameState } from "../../core/services/game-state.js";
+import { LocalEvent } from "../../core/services/local-event.js";
 import { ServerError } from "../../models/server-error.js";
 import { ServerRegistration } from "../../models/server-registration.js";
-import { Base64Utils } from "../../utils/base64-utils.js";
+import { Base64Utils } from "../../core/utils/base64-utils.js";
 import { WebAuthnUtils } from "../../utils/webauthn-utils.js";
 import { APIService } from "../network/api-service.js";
-import { EventProcessorService } from "../gameplay/event-processor-service.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 
 @injectable()

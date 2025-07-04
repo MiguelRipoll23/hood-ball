@@ -1,17 +1,17 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
-import { EventProcessorService } from "../gameplay/event-processor-service.js";
-import { LocalEvent } from "../../models/local-event.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
+import { LocalEvent } from "../../core/services/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
-import { GameState } from "../../models/game-state.js";
-import { BinaryReader } from "../../utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import { GameState } from "../../core/services/game-state.js";
+import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { container } from "../di-container.js";
+import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

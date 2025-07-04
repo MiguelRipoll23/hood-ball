@@ -1,11 +1,11 @@
-import { BinaryReader } from "../../utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../utils/binary-writer-utils.js";
-import { RemoteEvent } from "../../models/remote-event.js";
+import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
+import { RemoteEvent } from "../../core/services/remote-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import type { GameState } from "../../models/game-state.js";
-import { TimerManagerService } from "../../services/gameplay/timer-manager-service.js";
-import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
+import type { GameState } from "../../core/services/game-state.js";
+import { TimerManagerService } from "../../core/services/timer-manager-service.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
 import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { ScoreboardObject } from "../../objects/scoreboard-object.js";
 import { BallObject } from "../../objects/ball-object.js";

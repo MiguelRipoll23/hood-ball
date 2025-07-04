@@ -1,5 +1,5 @@
-import { BaseStaticCollidingGameObject } from "../base/base-static-colliding-game-object.js";
-import { HitboxObject } from "../common/hitbox-object.js";
+import { BaseStaticCollidingGameObject } from "../../core/entities/base-static-colliding-game-object.js";
+import { HitboxObject } from "../../core/entities/hitbox-object.js";
 import type { GameObject } from "../../interfaces/objects/game-object.js";
 
 export class WorldBackgroundObject extends BaseStaticCollidingGameObject {

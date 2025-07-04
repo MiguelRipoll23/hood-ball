@@ -9,8 +9,8 @@ import { LoadingScreen } from "../loading/loading-screen.js";
 import { ScoreboardScreen } from "./scoreboard-screen.js";
 import { SettingsScreen } from "./settings-screen.js";
 import { EventType } from "../../enums/event-type.js";
-import type { GameState } from "../../models/game-state.js";
-import { container } from "../../services/di-container.js";
+import type { GameState } from "../../core/services/game-state.js";
+import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class MainMenuScreen extends BaseGameScreen {

@@ -1,5 +1,5 @@
-import { TimerService } from "../../services/gameplay/timer-service.js";
-import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
+import { TimerService } from "../../core/services/timer-service.js";
+import { BaseAnimatedGameObject } from "../../core/entities/base-animated-object.js";
 
 export class ToastObject extends BaseAnimatedGameObject {
   protected width: number = 0;

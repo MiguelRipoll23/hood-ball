@@ -1,5 +1,5 @@
-import { HitboxObject } from "./common/hitbox-object.js";
-import { BaseDynamicCollidingGameObject } from "./base/base-dynamic-colliding-game-object.js";
+import { HitboxObject } from "../core/entities/hitbox-object.js";
+import { BaseDynamicCollidingGameObject } from "../core/entities/base-dynamic-colliding-game-object.js";
 import { GamePlayer } from "../models/game-player.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
@@ -9,8 +9,8 @@ import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
 } from "../constants/webrtc-constants.js";
-import { DebugUtils } from "../debug/debug-utils.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
+import { DebugUtils } from "../core/utils/debug-utils.js";
+import { BinaryWriter } from "../core/utils/binary-writer-utils.js";
 
 export class CarObject extends BaseDynamicCollidingGameObject {
   protected readonly TOP_SPEED: number = 0.3;

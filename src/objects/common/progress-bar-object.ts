@@ -1,5 +1,5 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
-import { BaseGameObject } from "../base/base-game-object.js";
+import { BaseGameObject } from "../../core/entities/base-game-object.js";
 
 export class ProgressBarObject extends BaseGameObject {
   private readonly RECT_HEIGHT: number = 40;

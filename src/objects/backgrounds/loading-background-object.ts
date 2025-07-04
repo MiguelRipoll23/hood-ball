@@ -1,4 +1,4 @@
-import { BaseGameObject } from "../base/base-game-object.js";
+import { BaseGameObject } from "../../core/entities/base-game-object.js";
 
 export class LoadingBackgroundObject extends BaseGameObject {
   private gradientOffset = 0; // Offset for moving gradient

@@ -2,12 +2,12 @@ import { MatchStateType } from "../../enums/match-state-type.js";
 import { EventType } from "../../enums/event-type.js";
 import { TeamType } from "../../enums/team-type.js";
 
-import { RemoteEvent } from "../../models/remote-event.js";
-import { GameState } from "../../models/game-state.js";
+import { RemoteEvent } from "../../core/services/remote-event.js";
+import { GameState } from "../../core/services/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
 
-import { BinaryWriter } from "../../utils/binary-writer-utils.js";
-import { BinaryReader } from "../../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 
 import { BallObject } from "../../objects/ball-object.js";
 import { GoalObject } from "../../objects/goal-object.js";
