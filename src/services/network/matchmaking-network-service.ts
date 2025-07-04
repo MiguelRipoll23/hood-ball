@@ -15,7 +15,6 @@ import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { ServiceLocator } from "../service-locator.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
@@ -23,26 +22,27 @@ import { EventProcessorService } from "../gameplay/event-processor-service.js";
 import { TimerManagerService } from "../gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../gameplay/interval-manager-service.js";
 import { MatchFinderService } from "../gameplay/match-finder-service.js";
+import { container } from "../di-container.js";
 
 export class MatchmakingNetworkService implements PeerConnectionListener {
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
 
   constructor(
-    private readonly gameState: GameState = ServiceLocator.get(GameState),
-    private readonly timerManagerService: TimerManagerService = ServiceLocator.get(
+    private readonly gameState: GameState = container.get(GameState),
+    private readonly timerManagerService: TimerManagerService = container.get(
       TimerManagerService
     ),
-    private readonly intervalManagerService: IntervalManagerService = ServiceLocator.get(
+    private readonly intervalManagerService: IntervalManagerService = container.get(
       IntervalManagerService
     ),
-    private readonly webSocketService: WebSocketService = ServiceLocator.get(
+    private readonly webSocketService: WebSocketService = container.get(
       WebSocketService
     ),
-    private readonly webrtcService: WebRTCService = ServiceLocator.get(
+    private readonly webrtcService: WebRTCService = container.get(
       WebRTCService
     ),
-    private readonly eventProcessorService: EventProcessorService = ServiceLocator.get(
+    private readonly eventProcessorService: EventProcessorService = container.get(
       EventProcessorService
     ),
     private readonly matchFinderService: MatchFinderService,

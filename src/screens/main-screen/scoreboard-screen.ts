@@ -6,7 +6,7 @@ import { CloseableMessageObject } from "../../objects/common/closeable-message-o
 import { RankingTableObject } from "../../objects/ranking-table-object.js";
 import type { GameState } from "../../models/game-state.js";
 import { APIService } from "../../services/network/api-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
 
 export class ScoreboardScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
@@ -18,7 +18,7 @@ export class ScoreboardScreen extends BaseGameScreen {
 
   constructor(gameState: GameState) {
     super(gameState);
-    this.apiService = ServiceLocator.get(APIService);
+    this.apiService = container.get(APIService);
   }
 
   public override load(): void {

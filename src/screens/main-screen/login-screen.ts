@@ -8,7 +8,7 @@ import { CloseableMessageObject } from "../../objects/common/closeable-message-o
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/credential-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
 
 export class LoginScreen extends BaseGameScreen {
   private apiService: APIService;
@@ -25,10 +25,10 @@ export class LoginScreen extends BaseGameScreen {
 
   constructor(gameState: GameState) {
     super(gameState);
-    this.apiService = ServiceLocator.get(APIService);
-    this.cryptoService = ServiceLocator.get(CryptoService);
-    this.webSocketService = ServiceLocator.get(WebSocketService);
-    this.credentialService = ServiceLocator.get(CredentialService);
+    this.apiService = container.get(APIService);
+    this.cryptoService = container.get(CryptoService);
+    this.webSocketService = container.get(WebSocketService);
+    this.credentialService = container.get(CredentialService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"

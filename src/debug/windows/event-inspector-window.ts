@@ -5,15 +5,17 @@ import { LocalEvent } from "../../models/local-event.js";
 import { RemoteEvent } from "../../models/remote-event.js";
 import { BaseWindow } from "./base-window.js";
 import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
     super("Event inspector", new ImVec2(195, 230));
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.eventProcessorService = container.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
 

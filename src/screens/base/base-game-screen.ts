@@ -6,9 +6,9 @@ import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
 import { ScreenManagerService } from "../../services/screen-manager-service.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { container } from "../../services/di-container.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../models/game-state.js";
-import { ServiceLocator } from "../../services/service-locator.js";
 
 export class BaseGameScreen implements GameScreen {
   protected eventConsumerService: EventConsumerService;
@@ -28,7 +28,7 @@ export class BaseGameScreen implements GameScreen {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameState.getCanvas();
     this.gamePointer = gameState.getGamePointer();
-    this.eventConsumerService = ServiceLocator.get(EventConsumerService);
+    this.eventConsumerService = container.get(EventConsumerService);
   }
 
   public isActive(): boolean {

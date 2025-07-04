@@ -23,13 +23,13 @@ import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
 import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
 import { ObjectOrchestratorService } from "../../services/gameplay/object-orchestrator-service.js";
 import { ScreenTransitionService } from "../../services/screen-transition-service.js";
 import { TimerManagerService } from "../../services/gameplay/timer-manager-service.js";
 import { MainScreen } from "../main-screen/main-screen.js";
 import { MainMenuScreen } from "../main-screen/main-menu-screen.js";
+import { container } from "../../services/di-container.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -54,14 +54,14 @@ export class WorldScreen extends BaseCollidingGameScreen {
   constructor(protected gameState: GameState) {
     super(gameState);
     this.gameState.getGamePlayer().reset();
-    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
-    this.timerManagerService = ServiceLocator.get(TimerManagerService);
-    this.matchmakingService = ServiceLocator.get(MatchmakingService);
-    this.matchmakingController = ServiceLocator.get(
+    this.screenTransitionService = container.get(ScreenTransitionService);
+    this.timerManagerService = container.get(TimerManagerService);
+    this.matchmakingService = container.get(MatchmakingService);
+    this.matchmakingController = container.get(
       MatchmakingControllerService
     );
-    this.objectOrchestrator = ServiceLocator.get(ObjectOrchestratorService);
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.objectOrchestrator = container.get(ObjectOrchestratorService);
+    this.eventProcessorService = container.get(EventProcessorService);
     this.addSyncableObjects();
     this.subscribeToEvents();
   }

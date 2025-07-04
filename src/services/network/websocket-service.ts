@@ -11,8 +11,10 @@ import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { ServiceLocator } from "../service-locator.js";
+import { container } from "../di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class WebSocketService {
   private baseURL: string;
   private webSocket: WebSocket | null = null;
@@ -20,9 +22,9 @@ export class WebSocketService {
   private eventProcessorService: EventProcessorService;
   private dispatcherService: WebSocketDispatcherService;
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {
+  constructor(private gameState = container.get(GameState)) {
     this.baseURL = APIUtils.getWSBaseURL();
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.eventProcessorService = container.get(EventProcessorService);
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
   }

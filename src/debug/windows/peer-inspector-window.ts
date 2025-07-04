@@ -1,8 +1,10 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "./base-window.js";
 import { WebRTCService } from "../../services/network/webrtc-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class PeerInspectorWindow extends BaseWindow {
   private static readonly COLOR_CONNECTED_STATE = 0xff00ff00;
   private static readonly COLOR_OTHER_STATE = 0xffffffff;
@@ -11,7 +13,7 @@ export class PeerInspectorWindow extends BaseWindow {
 
   constructor() {
     super("Peer inspector", new ImVec2(500, 300));
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcService = container.get(WebRTCService);
     console.log(`${this.constructor.name} created`);
   }
 

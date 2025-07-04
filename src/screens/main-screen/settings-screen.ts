@@ -3,8 +3,8 @@ import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
 import { DebugService } from "../../debug/debug-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
+import { container } from "../../services/di-container.js";
 
 export class SettingsScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
@@ -111,7 +111,7 @@ export class SettingsScreen extends BaseGameScreen {
     }
 
     // Initialize debug service if not already initialized
-    const debugService = ServiceLocator.get(DebugService);
+    const debugService = container.get(DebugService);
 
     if (debugService.isInitialized() === false) {
       debugService.init();

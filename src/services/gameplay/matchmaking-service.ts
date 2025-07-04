@@ -2,7 +2,6 @@ import { GameState } from "../../models/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { SavePlayerScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import { DebugUtils } from "../../debug/debug-utils.js";
-import { ServiceLocator } from "../service-locator.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
@@ -12,7 +11,10 @@ import { IntervalManagerService } from "./interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
+import { injectable } from "@needle-di/core";
+import { container } from "../di-container.js";
 
+@injectable()
 export class MatchmakingService implements IMatchmakingProvider {
 
   private pendingIdentities: Map<string, boolean>;
@@ -31,15 +33,15 @@ export class MatchmakingService implements IMatchmakingProvider {
   private readonly matchFinderService: MatchFinderService;
   private readonly networkService: MatchmakingNetworkService;
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {
+  constructor(private gameState = container.get(GameState)) {
     this.pendingIdentities = new Map();
     this.receivedIdentities = new Map();
-    this.timerManagerService = ServiceLocator.get(TimerManagerService);
-    this.intervalManagerService = ServiceLocator.get(IntervalManagerService);
-    this.apiService = ServiceLocator.get(APIService);
-    this.webSocketService = ServiceLocator.get(WebSocketService);
-    this.webrtcService = ServiceLocator.get(WebRTCService);
-    this.eventProcessorService = ServiceLocator.get(EventProcessorService);
+    this.timerManagerService = container.get(TimerManagerService);
+    this.intervalManagerService = container.get(IntervalManagerService);
+    this.apiService = container.get(APIService);
+    this.webSocketService = container.get(WebSocketService);
+    this.webrtcService = container.get(WebRTCService);
+    this.eventProcessorService = container.get(EventProcessorService);
     this.matchFinderService = new MatchFinderService(
       this.gameState,
       this.apiService,

@@ -27,9 +27,11 @@ import type { VerifyAuthenticationRequest } from "../../interfaces/requests/veri
 import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response.js";
 import { CryptoService } from "../crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
-import { ServiceLocator } from "../service-locator.js";
 import { LoadingIndicatorService } from "../loading-indicator-service.js";
+import { container } from "../di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class APIService {
   private baseURL: string;
   private authenticationToken: string | null = null;
@@ -38,8 +40,8 @@ export class APIService {
 
   constructor() {
     this.baseURL = APIUtils.getBaseURL();
-    this.cryptoService = ServiceLocator.get(CryptoService);
-    this.loadingIndicatorService = ServiceLocator.get(LoadingIndicatorService);
+    this.cryptoService = container.get(CryptoService);
+    this.loadingIndicatorService = container.get(LoadingIndicatorService);
   }
 
   private async fetchWithLoading(

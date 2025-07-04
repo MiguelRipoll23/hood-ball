@@ -10,11 +10,13 @@ import { WebRTCType } from "../../enums/webrtc-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
-import { ServiceLocator } from "../service-locator.js";
 import { GameState } from "../../models/game-state.js";
 import type { IWebRTCService } from "../../interfaces/services/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
+import { container } from "../di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class WebRTCService implements IWebRTCService {
   private peers: Map<string, WebRTCPeer> = new Map();
 
@@ -26,13 +28,13 @@ export class WebRTCService implements IWebRTCService {
   private webSocketService: WebSocketService | null = null;
   private connectionListener: PeerConnectionListener | null = null;
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {
+  constructor(private gameState = container.get(GameState)) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
   }
 
   public initialize(listener: PeerConnectionListener): void {
-    this.webSocketService = ServiceLocator.get(WebSocketService);
+    this.webSocketService = container.get(WebSocketService);
     this.webSocketService.registerCommandHandlers(this);
     this.connectionListener = listener;
     console.log("WebRTC service initialized");

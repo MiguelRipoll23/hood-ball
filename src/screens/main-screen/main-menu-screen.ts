@@ -10,7 +10,7 @@ import { ScoreboardScreen } from "./scoreboard-screen.js";
 import { SettingsScreen } from "./settings-screen.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../models/game-state.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { container } from "../../services/di-container.js";
 
 export class MainMenuScreen extends BaseGameScreen {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -25,7 +25,7 @@ export class MainMenuScreen extends BaseGameScreen {
   constructor(gameState: GameState, private showNews: boolean) {
     super(gameState);
     this.showNews = showNews;
-    this.apiService = ServiceLocator.get(APIService);
+    this.apiService = container.get(APIService);
     this.subscribeToEvents();
   }
 
