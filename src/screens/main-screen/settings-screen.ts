@@ -73,18 +73,7 @@ export class SettingsScreen extends BaseGameScreen {
   }
 
   private returnMainMenu(): void {
-    const previousScreen =
-      this.screenManagerService?.getPreviousScreen() ?? null;
-
-    if (previousScreen === null) {
-      return;
-    }
-
-    console.log("Returning to", previousScreen.constructor.name);
-
-    this.screenManagerService
-      ?.getTransitionService()
-      .crossfade(this.screenManagerService, previousScreen, 0.2);
+    this.returnToPreviousScreen();
   }
 
   private handleSettingObjectPress(settingObject: SettingObject): void {

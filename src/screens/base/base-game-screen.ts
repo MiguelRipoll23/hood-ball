@@ -221,4 +221,21 @@ export class BaseGameScreen implements GameScreen {
       }
     });
   }
+
+  protected returnToPreviousScreen(
+    crossfadeDurationSeconds: number = 0.2
+  ): void {
+    const previousScreen =
+      this.screenManagerService?.getPreviousScreen() ?? null;
+
+    if (previousScreen === null) {
+      return;
+    }
+
+    console.log("Returning to", previousScreen.constructor.name);
+
+    this.screenManagerService
+      ?.getTransitionService()
+      .crossfade(this.screenManagerService, previousScreen, crossfadeDurationSeconds);
+  }
 }
