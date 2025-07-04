@@ -1,8 +1,10 @@
 import { ImGui, ImGuiImplWeb } from "@mori2003/jsimgui";
 import { DebugWindow } from "./windows/debug-window.js";
 import { GameState } from "../models/game-state.js";
-import { ServiceLocator } from "../services/service-locator.js";
+import { container } from "../services/di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class DebugService {
   private debugCanvas: HTMLCanvasElement;
   private gameCanvas: HTMLCanvasElement;
@@ -12,7 +14,7 @@ export class DebugService {
   private debugWindow: DebugWindow | null = null;
   private readonly knownEvents = new Set<string>();
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {
+  constructor(private gameState = container.get(GameState)) {
     console.log(`${this.constructor.name} created`);
     this.debugCanvas = this.getDebugCanvas();
     this.gameCanvas = this.gameState.getCanvas();

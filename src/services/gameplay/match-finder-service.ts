@@ -15,14 +15,17 @@ import { APIService } from "../network/api-service.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { GameState } from "../../models/game-state.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import { injectable, inject } from "@needle-di/core";
+import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
 
+@injectable()
 export class MatchFinderService {
   constructor(
-    private readonly gameState: GameState,
-    private readonly apiService: APIService,
-    private readonly webSocketService: WebSocketService,
-    private readonly pendingIdentities: Map<string, boolean>,
-    private readonly eventProcessorService: EventProcessorService
+    private readonly gameState = inject(GameState),
+    private readonly apiService = inject(APIService),
+    private readonly webSocketService = inject(WebSocketService),
+    private readonly pendingIdentities = inject(PendingIdentitiesToken),
+    private readonly eventProcessorService = inject(EventProcessorService)
   ) {}
 
   public async findMatches(): Promise<FindMatchesResponse[]> {

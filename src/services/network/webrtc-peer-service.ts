@@ -5,9 +5,11 @@ import type { IWebRTCService } from "../../interfaces/services/webrtc-service-in
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
-import { ServiceLocator } from "../service-locator.js";
 import { GameState } from "../../models/game-state.js";
+import { container } from "../di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_MAXIMUM = 65535;
   private SEQUENCE_PAST_WINDOW = (this.SEQUENCE_MAXIMUM + 1) / 2;
@@ -44,7 +46,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     private token: string,
     webrtcDelegate: IWebRTCService,
     connectionListener: PeerConnectionListener,
-    private gameState = ServiceLocator.get(GameState)
+    private gameState = container.get(GameState)
   ) {
     this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;

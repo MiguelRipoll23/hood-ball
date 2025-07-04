@@ -11,8 +11,10 @@ import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { ObjectType } from "../../enums/object-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import { ServiceLocator } from "../service-locator.js";
+import { container } from "../di-container.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class ObjectOrchestratorService {
   private readonly PERIODIC_MILLISECONDS = 500;
 
@@ -20,10 +22,10 @@ export class ObjectOrchestratorService {
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
-  constructor(private gameState = ServiceLocator.get(GameState)) {}
+  constructor(private gameState = container.get(GameState)) {}
 
   public initialize(): void {
-    this.webrtcService = ServiceLocator.get(WebRTCService);
+    this.webrtcService = container.get(WebRTCService);
     this.webrtcService.registerCommandHandlers(this);
     console.log("Object orchestrator service initialized");
   }

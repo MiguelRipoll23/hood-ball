@@ -1,80 +1,52 @@
 import { GameState } from "../models/game-state.js";
-import { APIService } from "./network/api-service.js";
-import { CredentialService } from "./credential-service.js";
-import { CryptoService } from "./crypto-service.js";
-import { DebugService } from "../debug/debug-service.js";
-import { EventConsumerService } from "./gameplay/event-consumer-service.js";
+import { container } from "./di-container.js";
 import { EventProcessorService } from "./gameplay/event-processor-service.js";
-import { IntervalManagerService } from "./gameplay/interval-manager-service.js";
-import { MatchmakingControllerService } from "./gameplay/matchmaking-controller-service.js";
-import { ObjectOrchestratorService } from "./gameplay/object-orchestrator-service.js";
-import { ScreenTransitionService } from "./screen-transition-service.js";
-import { ServiceLocator } from "./service-locator.js";
-import { TimerManagerService } from "./gameplay/timer-manager-service.js";
-import { WebRTCService } from "./network/webrtc-service.js";
-import { WebSocketService } from "./network/websocket-service.js";
-import { LoadingIndicatorService } from "./loading-indicator-service.js";
 import { MatchmakingService } from "./gameplay/matchmaking-service.js";
+import { ObjectOrchestratorService } from "./gameplay/object-orchestrator-service.js";
+import { WebRTCService } from "./network/webrtc-service.js";
+import { APIService } from "./network/api-service.js";
+import { CryptoService } from "./crypto-service.js";
+import { LoadingIndicatorService } from "./loading-indicator-service.js";
+import { MatchFinderService } from "./gameplay/match-finder-service.js";
+import { MatchmakingNetworkService } from "./network/matchmaking-network-service.js";
+import { PendingIdentitiesToken, ReceivedIdentitiesToken } from "./gameplay/matchmaking-tokens.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
     const gameState = new GameState(canvas, debugging);
-    ServiceRegistry.registerGameStates(gameState);
-    ServiceRegistry.registerCoreServices();
-    ServiceRegistry.registerCommunicationServices();
-    ServiceRegistry.registerGameplayServices();
+    container.bind({ provide: GameState, useValue: gameState });
+    container.bind({ provide: APIService, useClass: APIService });
+    container.bind({ provide: EventProcessorService, useClass: EventProcessorService });
+    container.bind({ provide: CryptoService, useClass: CryptoService });
+    container.bind({ provide: LoadingIndicatorService, useClass: LoadingIndicatorService });
+    container.bind({ provide: MatchFinderService, useClass: MatchFinderService });
+    container.bind({ provide: MatchmakingNetworkService, useClass: MatchmakingNetworkService });
+    container.bind({ provide: MatchmakingService, useClass: MatchmakingService });
+    container.bind({ provide: PendingIdentitiesToken, useValue: new Map<string, boolean>() });
+    container.bind({
+      provide: ReceivedIdentitiesToken,
+      useValue: new Map<string, { playerId: string; playerName: string }>(),
+    });
     ServiceRegistry.initializeServices();
   }
 
-  private static registerGameStates(gameState: GameState): void {
-    ServiceLocator.register(GameState, gameState);
-  }
-
-  private static registerCoreServices(): void {
-    ServiceLocator.register(DebugService, new DebugService());
-    ServiceLocator.register(CryptoService, new CryptoService());
-    ServiceLocator.register(
-      ScreenTransitionService,
-      new ScreenTransitionService()
-    );
-    ServiceLocator.register(TimerManagerService, new TimerManagerService());
-    ServiceLocator.register(
-      IntervalManagerService,
-      new IntervalManagerService()
-    );
-
-    ServiceLocator.register(EventProcessorService, new EventProcessorService());
-    ServiceLocator.register(EventConsumerService, new EventConsumerService());
-    ServiceLocator.register(
-      ObjectOrchestratorService,
-      new ObjectOrchestratorService()
-    );
-    ServiceLocator.register(
-      LoadingIndicatorService,
-      new LoadingIndicatorService()
-    );
-  }
-
-  private static registerGameplayServices(): void {
-    ServiceLocator.register(APIService, new APIService());
-    ServiceLocator.register(CredentialService, new CredentialService());
-    ServiceLocator.register(MatchmakingService, new MatchmakingService());
-    ServiceLocator.register(
-      MatchmakingControllerService,
-      new MatchmakingControllerService()
-    );
-  }
-
-  private static registerCommunicationServices(): void {
-    ServiceLocator.register(WebSocketService, new WebSocketService());
-    ServiceLocator.register(WebRTCService, new WebRTCService());
-  }
 
   private static initializeServices() {
-    const webrtcService = ServiceLocator.get(WebRTCService);
-    const matchmakingService = ServiceLocator.get(MatchmakingService);
-    ServiceLocator.get(ObjectOrchestratorService).initialize();
-    ServiceLocator.get(EventProcessorService).initialize(webrtcService);
-    webrtcService.initialize(matchmakingService.getNetworkService());
+    try {
+      const webrtcService: WebRTCService = container.get(WebRTCService);
+      const matchmakingService: MatchmakingService = container.get(MatchmakingService);
+      const orchestratorService: ObjectOrchestratorService = container.get(ObjectOrchestratorService);
+      const eventProcessorService: EventProcessorService = container.get(EventProcessorService);
+
+      if (!webrtcService || !matchmakingService || !orchestratorService || !eventProcessorService) {
+        throw new Error("Failed to resolve core services");
+      }
+
+      orchestratorService.initialize();
+      eventProcessorService.initialize(webrtcService);
+      webrtcService.initialize(matchmakingService.getNetworkService());
+    } catch (error) {
+      console.error("Error initializing services", error);
+    }
   }
 }

@@ -3,15 +3,16 @@ import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
 import { DebugService } from "../../debug/debug-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
+import { container } from "../../services/di-container.js";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class SettingsScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;
   private buttonObject: ButtonObject | null = null;
 
-  constructor(gameState: GameState) {
-    super(gameState);
+  constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
+    super(gameState, eventConsumerService);
   }
 
   public override load(): void {
@@ -111,7 +112,7 @@ export class SettingsScreen extends BaseGameScreen {
     }
 
     // Initialize debug service if not already initialized
-    const debugService = ServiceLocator.get(DebugService);
+    const debugService = container.get(DebugService);
 
     if (debugService.isInitialized() === false) {
       debugService.init();

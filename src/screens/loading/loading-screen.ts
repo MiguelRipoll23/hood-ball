@@ -2,19 +2,26 @@ import type { GameState } from "../../models/game-state.js";
 import { LoadingBackgroundObject } from "../../objects/backgrounds/loading-background-object.js";
 import { ProgressBarObject } from "../../objects/common/progress-bar-object.js";
 import { ScreenTransitionService } from "../../services/screen-transition-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { injectable, inject } from "@needle-di/core";
+import { container } from "../../services/di-container.js";
+import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { WorldScreen } from "../world/world-screen.js";
 
+@injectable()
 export class LoadingScreen extends BaseGameScreen {
   private screenTransitionService: ScreenTransitionService;
   private progressBarObject: ProgressBarObject | null = null;
   private worldScreen: WorldScreen | null = null;
   private transitionStarted: boolean = false;
 
-  constructor(gameState: GameState) {
-    super(gameState);
-    this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
+  constructor(
+    gameState: GameState,
+    eventConsumerService: EventConsumerService,
+    screenTransitionService = inject(ScreenTransitionService)
+  ) {
+    super(gameState, eventConsumerService);
+    this.screenTransitionService = screenTransitionService;
   }
 
   public override load(): void {
@@ -27,7 +34,10 @@ export class LoadingScreen extends BaseGameScreen {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
-    this.worldScreen = new WorldScreen(this.gameState);
+    this.worldScreen = new WorldScreen(
+      this.gameState,
+      container.get(EventConsumerService)
+    );
     this.worldScreen.load();
   }
 

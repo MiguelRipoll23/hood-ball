@@ -1,5 +1,7 @@
 import { IntervalService } from "./interval-service.js";
+import { injectable } from "@needle-di/core";
 
+@injectable()
 export class IntervalManagerService {
   private intervals: Set<IntervalService> = new Set();
 
