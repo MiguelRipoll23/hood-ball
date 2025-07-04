@@ -6,7 +6,8 @@ import { CloseableMessageObject } from "../../objects/common/closeable-message-o
 import { RankingTableObject } from "../../objects/ranking-table-object.js";
 import type { GameState } from "../../models/game-state.js";
 import { APIService } from "../../services/network/api-service.js";
-import { injectable, inject } from "@needle-di/core";
+import { injectable } from "@needle-di/core";
+import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 @injectable()
@@ -21,7 +22,7 @@ export class ScoreboardScreen extends BaseGameScreen {
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    apiService = inject(APIService)
+    apiService: APIService = container.get(APIService)
   ) {
     super(gameState, eventConsumerService);
     this.apiService = apiService;

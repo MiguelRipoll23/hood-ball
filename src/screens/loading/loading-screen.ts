@@ -2,7 +2,7 @@ import type { GameState } from "../../models/game-state.js";
 import { LoadingBackgroundObject } from "../../objects/backgrounds/loading-background-object.js";
 import { ProgressBarObject } from "../../objects/common/progress-bar-object.js";
 import { ScreenTransitionService } from "../../services/screen-transition-service.js";
-import { injectable, inject } from "@needle-di/core";
+import { injectable } from "@needle-di/core";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
@@ -18,7 +18,9 @@ export class LoadingScreen extends BaseGameScreen {
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    screenTransitionService = inject(ScreenTransitionService)
+    screenTransitionService: ScreenTransitionService = container.get(
+      ScreenTransitionService
+    )
   ) {
     super(gameState, eventConsumerService);
     this.screenTransitionService = screenTransitionService;
