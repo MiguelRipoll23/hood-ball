@@ -30,21 +30,37 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
   constructor(
     private readonly gameState: GameState = ServiceLocator.get(GameState),
-    private readonly timerManagerService: TimerManagerService = ServiceLocator.get(TimerManagerService),
-    private readonly intervalManagerService: IntervalManagerService = ServiceLocator.get(IntervalManagerService),
-    private readonly webSocketService: WebSocketService = ServiceLocator.get(WebSocketService),
-    private readonly webrtcService: WebRTCService = ServiceLocator.get(WebRTCService),
-    private readonly eventProcessorService: EventProcessorService = ServiceLocator.get(EventProcessorService),
+    private readonly timerManagerService: TimerManagerService = ServiceLocator.get(
+      TimerManagerService
+    ),
+    private readonly intervalManagerService: IntervalManagerService = ServiceLocator.get(
+      IntervalManagerService
+    ),
+    private readonly webSocketService: WebSocketService = ServiceLocator.get(
+      WebSocketService
+    ),
+    private readonly webrtcService: WebRTCService = ServiceLocator.get(
+      WebRTCService
+    ),
+    private readonly eventProcessorService: EventProcessorService = ServiceLocator.get(
+      EventProcessorService
+    ),
     private readonly matchFinderService: MatchFinderService,
     private readonly pendingIdentities: Map<string, boolean>,
-    private readonly receivedIdentities: Map<string, { playerId: string; playerName: string }>,
+    private readonly receivedIdentities: Map<
+      string,
+      { playerId: string; playerName: string }
+    >
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
   }
 
   public startFindMatchesTimer(resolve: () => void): void {
-    this.findMatchesTimerService = this.timerManagerService.createTimer(10, resolve);
+    this.findMatchesTimerService = this.timerManagerService.createTimer(
+      10,
+      resolve
+    );
   }
 
   public stopFindMatchesTimer(): void {
@@ -54,7 +70,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   public startPingCheckInterval(): void {
     this.pingCheckInterval = this.intervalManagerService.createInterval(
       1,
-      this.sendPingToJoinedPlayers.bind(this),
+      this.sendPingToJoinedPlayers.bind(this)
     );
   }
 
@@ -73,7 +89,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
     const token = btoa(String.fromCharCode(...tokenBytes));
 
     console.log(
-      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`,
+      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
     );
 
     this.receivedIdentities.set(token, { playerId, playerName });
@@ -87,7 +103,8 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
   public onPeerConnected(peer: WebRTCPeer): void {
     if (this.gameState.getMatch()?.isHost()) {
-      return console.log("Peer connected", peer);
+      console.log("Peer connected", peer);
+      return;
     }
 
     console.log("Connected to host", peer);
@@ -97,13 +114,15 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
   public onPeerDisconnected(peer: WebRTCPeer): void {
     if (peer.hasJoined() === false) {
-      return console.warn("Ignoring disconnection from non-joined peer", peer);
+      console.warn("Ignoring disconnection from non-joined peer", peer);
+      return;
     }
 
     const playerId = peer.getPlayer()?.getId() ?? null;
 
     if (playerId === null) {
-      return console.warn("Unknown peer disconnected", peer);
+      console.warn("Unknown peer disconnected", peer);
+      return;
     }
 
     if (this.gameState.getMatch()?.isHost()) {
@@ -151,7 +170,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   @PeerCommandHandler(WebRTCType.JoinResponse)
   public handleJoinResponse(
     peer: WebRTCPeer,
-    binaryReader: BinaryReader,
+    binaryReader: BinaryReader
   ): void {
     if (this.gameState.getMatch() !== null) {
       return this.handleAlreadyJoinedMatch(peer);
@@ -166,7 +185,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
       false,
       matchState,
       matchTotalSlots,
-      MATCH_ATTRIBUTES,
+      MATCH_ATTRIBUTES
     );
 
     this.gameState.setMatch(match);
@@ -178,7 +197,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   @PeerCommandHandler(WebRTCType.PlayerConnection)
   public handlePlayerConnection(
     peer: WebRTCPeer,
-    binaryReader: BinaryReader,
+    binaryReader: BinaryReader
   ): void {
     const isConnected = binaryReader.boolean();
     const isHost = binaryReader.boolean();
@@ -194,7 +213,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
       playerId,
       playerName,
       isHost,
-      playerScore,
+      playerScore
     );
 
     if (isHost) {
@@ -225,7 +244,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
     }
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
+      EventType.PlayerConnected
     );
 
     localEvent.setData({
@@ -260,7 +279,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
       });
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
+      EventType.PlayerConnected
     );
 
     localEvent.setData({
@@ -277,7 +296,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gameState.getGamePlayer().isHost()) {
       console.warn(
-        `Unexpected player ping information from player ${peer.getName()}`,
+        `Unexpected player ping information from player ${peer.getName()}`
       );
       return;
     }
@@ -290,7 +309,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
   private handlePlayerIdentityAsHost(
     token: string,
-    tokenBytes: Uint8Array,
+    tokenBytes: Uint8Array
   ): void {
     console.log("Sending player identity to player", token);
     const webSocketPayload = BinaryWriter.build()
@@ -311,7 +330,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
     console.warn(
       "Already joined a match, disconnecting peer...",
-      peer.getToken(),
+      peer.getToken()
     );
 
     peer.disconnect(true);
@@ -336,7 +355,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
       });
 
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
+      EventType.PlayerDisconnected
     );
 
     playerDisconnectedEvent.setData({ player });
@@ -350,20 +369,22 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
     const match = this.gameState.getMatch();
 
     if (match === null) {
-      return console.warn("Game match is null");
+      console.warn("Game match is null");
+      return;
     }
 
     const player = match.getPlayer(playerId);
 
     if (player === null) {
-      return console.warn("Player not found", playerId);
+      console.warn("Player not found", playerId);
+      return;
     }
 
     console.log(`Player ${player.getName()} disconnected`);
     match.removePlayer(player);
 
     const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
+      EventType.PlayerDisconnected
     );
 
     localEvent.setData({ player });
@@ -396,7 +417,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   private handleUnavailableSlots(peer: WebRTCPeer): void {
     console.log(
       "Received join request but the match is full, disconnecting peer...",
-      peer.getToken(),
+      peer.getToken()
     );
 
     peer.disconnect(true);
@@ -405,7 +426,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
   private handleUnknownIdentity(peer: WebRTCPeer): void {
     console.warn(
       "Received join request but no identity was found, disconnecting peer...",
-      peer.getToken(),
+      peer.getToken()
     );
 
     peer.disconnect(true);
@@ -456,7 +477,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
     peer: WebRTCPeer,
     player: GamePlayer,
     isConnected: boolean,
-    skipQueue: boolean,
+    skipQueue: boolean
   ): void {
     const isHost = player.isHost();
     const playerId = player.getId();
@@ -477,7 +498,7 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
   private isHostIdentityUnverified(
     peer: WebRTCPeer,
-    gamePlayer: GamePlayer,
+    gamePlayer: GamePlayer
   ): boolean {
     const identity = this.receivedIdentities.get(peer.getToken()) ?? null;
 
@@ -488,7 +509,9 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
     if (identity.playerId !== gamePlayer.getId()) {
       console.warn(
-        `Host player ID mismatch: expected ${identity.playerId}, got ${gamePlayer.getId()} for ${peer.getName()}`,
+        `Host player ID mismatch: expected ${
+          identity.playerId
+        }, got ${gamePlayer.getId()} for ${peer.getName()}`
       );
 
       return true;
@@ -496,7 +519,9 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
 
     if (identity.playerName !== gamePlayer.getName()) {
       console.warn(
-        `Host player name mismatch: expected ${identity.playerName}, got ${gamePlayer.getName()} for ${peer.getName()}`,
+        `Host player name mismatch: expected ${
+          identity.playerName
+        }, got ${gamePlayer.getName()} for ${peer.getName()}`
       );
 
       return true;
@@ -544,7 +569,8 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
       .filter((peer) => peer.hasJoined())
       .forEach((p) => {
         if (p.getPlayer() === null) {
-          return console.warn("Peer has no player associated", p);
+          console.warn("Peer has no player associated", p);
+          return;
         }
 
         players.forEach((player) => {

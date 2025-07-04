@@ -1,4 +1,4 @@
-import { TimerService } from "./timer-service.ts";
+import { TimerService } from "./timer-service.js";
 
 export class TimerManagerService {
   private timers: Set<TimerService> = new Set();
