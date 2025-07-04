@@ -1,7 +1,7 @@
-import type { GameScreen } from "../interfaces/screens/game-screen.js";
-import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
+import type { GameScreen } from "../../interfaces/screens/game-screen.js";
+import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
-import { container } from "./di-container.js";
+import { container } from "../di-container.js";
 
 export class ScreenManagerService implements ScreenManager {
   private stack: GameScreen[] = [];

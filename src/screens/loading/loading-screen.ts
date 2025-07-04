@@ -1,7 +1,7 @@
 import type { GameState } from "../../models/game-state.js";
 import { LoadingBackgroundObject } from "../../objects/backgrounds/loading-background-object.js";
 import { ProgressBarObject } from "../../objects/common/progress-bar-object.js";
-import { ScreenTransitionService } from "../../services/screen-transition-service.js";
+import { ScreenTransitionService } from "../../services/ui/screen-transition-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";

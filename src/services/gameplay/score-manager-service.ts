@@ -11,7 +11,7 @@ import { BinaryReader } from "../../utils/binary-reader-utils.js";
 
 import { BallObject } from "../../objects/ball-object.js";
 import { GoalObject } from "../../objects/goal-object.js";
-import { ScoreboardObject } from "../../objects/scoreboard-object.js";
+import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui.js";
 import { AlertObject } from "../../objects/alert-object.js";
 
 import { TimerManagerService } from "./timer-manager-service.js";
@@ -24,7 +24,7 @@ export class ScoreManagerService {
     private readonly gameState: GameState,
     private readonly ballObject: BallObject,
     private readonly goalObject: GoalObject,
-    private readonly scoreboardObject: ScoreboardObject,
+    private readonly scoreboardUI: ScoreboardUI,
     private readonly alertObject: AlertObject,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
@@ -41,14 +41,14 @@ export class ScoreManagerService {
       const score = player.getScore();
 
       if (player === this.gameState.getGamePlayer()) {
-        this.scoreboardObject.setBlueScore(score);
+        this.scoreboardUI.setBlueScore(score);
         return;
       }
 
       totalScore += score;
     });
 
-    this.scoreboardObject.setRedScore(totalScore);
+    this.scoreboardUI.setRedScore(totalScore);
   }
 
   public detectScoresIfHost(): void {
@@ -72,7 +72,7 @@ export class ScoreManagerService {
       return;
     }
 
-    this.scoreboardObject.stopTimer();
+    this.scoreboardUI.stopTimer();
     this.ballObject.handleGoalScored();
     this.gameState.setMatchState(MatchStateType.GoalScored);
 
@@ -135,7 +135,7 @@ export class ScoreManagerService {
       return;
     }
 
-    this.scoreboardObject.stopTimer();
+    this.scoreboardUI.stopTimer();
     this.ballObject.handleGoalScored();
     this.gameState.setMatchState(MatchStateType.GoalScored);
 
@@ -146,9 +146,9 @@ export class ScoreManagerService {
       player === this.gameState.getGamePlayer() ? TeamType.Blue : TeamType.Red;
 
     if (goalTeam === TeamType.Blue) {
-      this.scoreboardObject.incrementBlueScore();
+      this.scoreboardUI.incrementBlueScore();
     } else {
-      this.scoreboardObject.incrementRedScore();
+      this.scoreboardUI.incrementRedScore();
     }
 
     this.showGoalAlert(player, goalTeam);
@@ -192,7 +192,7 @@ export class ScoreManagerService {
       return;
     }
 
-    if (this.scoreboardObject.hasTimerFinished()) {
+    if (this.scoreboardUI.hasTimerFinished()) {
       this.handleTimerEnd();
     }
   }

@@ -25,7 +25,7 @@ import { MatchmakingControllerService } from "../../services/gameplay/matchmakin
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
 import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
 import { ObjectOrchestratorService } from "../../services/gameplay/object-orchestrator-service.js";
-import { ScreenTransitionService } from "../../services/screen-transition-service.js";
+import { ScreenTransitionService } from "../../services/ui/screen-transition-service.js";
 import { TimerManagerService } from "../../services/gameplay/timer-manager-service.js";
 import { MainScreen } from "../main-screen/main-screen.js";
 import { MainMenuScreen } from "../main-screen/main-menu-screen.js";

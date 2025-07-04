@@ -1,31 +1,26 @@
-import { EventType } from "../enums/event-type.js";
-import type { AuthenticationOptionsRequest } from "../interfaces/requests/authentication-options.js";
-import type { RegistrationOptionsRequest } from "../interfaces/requests/registration-options-request.js";
-import type { VerifyAuthenticationRequest } from "../interfaces/requests/verify-authentication-request.js";
-import type { VerifyRegistrationRequest } from "../interfaces/requests/verify-registration-request.js";
-import type { AuthenticationResponse } from "../interfaces/responses/authentication-response.js";
-import { GameState } from "../models/game-state.js";
-import { LocalEvent } from "../models/local-event.js";
-import { ServerError } from "../models/server-error.js";
-import { ServerRegistration } from "../models/server-registration.js";
-import { Base64Utils } from "../utils/base64-utils.js";
-import { WebAuthnUtils } from "../utils/webauthn-utils.js";
-import { APIService } from "./network/api-service.js";
-import { EventProcessorService } from "./gameplay/event-processor-service.js";
-import { container } from "./di-container.js";
+import { EventType } from "../../enums/event-type.js";
+import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options.js";
+import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request.js";
+import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
+import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
+import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
+import { GameState } from "../../models/game-state.js";
+import { LocalEvent } from "../../models/local-event.js";
+import { ServerError } from "../../models/server-error.js";
+import { ServerRegistration } from "../../models/server-registration.js";
+import { Base64Utils } from "../../utils/base64-utils.js";
+import { WebAuthnUtils } from "../../utils/webauthn-utils.js";
+import { APIService } from "../network/api-service.js";
+import { EventProcessorService } from "../gameplay/event-processor-service.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
 export class CredentialService {
-  private gameState: GameState;
-  private readonly apiService: APIService;
-  private readonly eventProcessorService: EventProcessorService;
-
-  constructor() {
-    this.gameState = container.get(GameState);
-    this.apiService = container.get(APIService);
-    this.eventProcessorService = container.get(EventProcessorService);
-  }
+  constructor(
+    private readonly gameState: GameState,
+    private readonly apiService: APIService,
+    private readonly eventProcessorService: EventProcessorService
+  ) {}
 
   public async getCredential(): Promise<void> {
     const transactionId = crypto.randomUUID();

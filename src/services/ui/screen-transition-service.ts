@@ -1,6 +1,5 @@
-import type { GameScreen } from "../interfaces/screens/game-screen.js";
-import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
-import type { GameFrame } from "../models/game-frame.js";
+import type { GameScreen } from "../../interfaces/screens/game-screen.js";
+import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -16,7 +15,7 @@ export class ScreenTransitionService {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  private screenManager: GameFrame | ScreenManager | null = null;
+  private screenManager: ScreenManager | null = null;
 
   constructor() {}
 
@@ -40,7 +39,7 @@ export class ScreenTransitionService {
   }
 
   public fadeOutAndIn(
-    screenManager: GameFrame | ScreenManager,
+    screenManager: ScreenManager,
     nextScreen: GameScreen,
     fadeOutDurationSeconds: number,
     fadeInDurationSeconds: number
@@ -69,7 +68,7 @@ export class ScreenTransitionService {
   }
 
   public crossfade(
-    screenManager: GameFrame | ScreenManager,
+    screenManager: ScreenManager,
     nextScreen: GameScreen,
     crossfadeDurationSeconds: number
   ): void {

@@ -13,7 +13,7 @@ import { GAME_VERSION } from "../../constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugObject } from "../../debug/debug-object.js";
 import { GameState } from "../../models/game-state.js";
-import { ScreenTransitionService } from "../screen-transition-service.js";
+import { ScreenTransitionService } from "../ui/screen-transition-service.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 import { DebugService } from "../../debug/debug-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";

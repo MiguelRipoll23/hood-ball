@@ -1,9 +1,10 @@
 import { NotificationObject } from "../objects/common/notification-object.js";
 import type { GameScreen } from "../interfaces/screens/game-screen.js";
+import type { ScreenManager } from "../interfaces/screens/screen-manager.js";
 import { DebugObject } from "../debug/debug-object.js";
 import { LoadingIndicatorObject } from "../objects/common/loading-indicator-object.js";
 
-export class GameFrame {
+export class GameFrame implements ScreenManager {
   private currentScreen: GameScreen | null = null;
   private nextScreen: GameScreen | null = null;
   private notificationObject: NotificationObject | null = null;
@@ -12,6 +13,10 @@ export class GameFrame {
 
   public getCurrentScreen(): GameScreen | null {
     return this.currentScreen;
+  }
+
+  public getPreviousScreen(): GameScreen | null {
+    return null;
   }
 
   public setCurrentScreen(screen: GameScreen): void {
