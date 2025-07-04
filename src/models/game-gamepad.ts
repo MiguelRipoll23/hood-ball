@@ -1,7 +1,8 @@
 import { GamepadButton } from "../enums/gamepad-button.js";
 import { GameFrame } from "./game-frame.js";
+import type { IGameGamepad } from "../interfaces/input/game-gamepad.js";
 
-export class GameGamepad {
+export class GameGamepad implements IGameGamepad {
   private gamepadIndex: number | null = null;
 
   constructor(private gameFrame: GameFrame) {

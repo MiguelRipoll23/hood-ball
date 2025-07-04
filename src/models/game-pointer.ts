@@ -1,6 +1,9 @@
-export type PointerType = "mouse" | "touch" | "pen";
+import type {
+  IGamePointer,
+  PointerType,
+} from "../interfaces/input/game-pointer.js";
 
-export class GamePointer {
+export class GamePointer implements IGamePointer {
   private x: number = 0;
   private y: number = 0;
   private initialX: number = 0;
