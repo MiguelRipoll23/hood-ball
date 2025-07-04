@@ -23,15 +23,17 @@ import { TimerManagerService } from "../gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../gameplay/interval-manager-service.js";
 import { MatchFinderService } from "../gameplay/match-finder-service.js";
 import { injectable, inject } from "@needle-di/core";
-import {
-  PendingIdentitiesToken,
-  ReceivedIdentitiesToken,
-} from "../gameplay/matchmaking-tokens.js";
 
 @injectable()
 export class MatchmakingNetworkService implements PeerConnectionListener {
   private findMatchesTimerService: TimerService | null = null;
   private pingCheckInterval: IntervalService | null = null;
+
+  private readonly pendingIdentities: Map<string, boolean>;
+  private readonly receivedIdentities: Map<
+    string,
+    { playerId: string; playerName: string }
+  >;
 
   constructor(
     private readonly gameState = inject(GameState),
@@ -40,12 +42,12 @@ export class MatchmakingNetworkService implements PeerConnectionListener {
     private readonly webSocketService = inject(WebSocketService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly eventProcessorService = inject(EventProcessorService),
-    private readonly matchFinderService = inject(MatchFinderService),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
+    private readonly matchFinderService = inject(MatchFinderService)
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
+    this.pendingIdentities = new Map();
+    this.receivedIdentities = new Map();
   }
 
   public startFindMatchesTimer(resolve: () => void): void {
