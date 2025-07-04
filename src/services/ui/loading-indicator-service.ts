@@ -1,5 +1,5 @@
-import { GameState } from "../../models/game-state.js";
-import { container } from "../di-container.js";
+import { GameState } from "../../core/services/game-state.js";
+import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

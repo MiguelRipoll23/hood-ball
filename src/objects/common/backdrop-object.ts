@@ -1,4 +1,4 @@
-import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
+import { BaseAnimatedGameObject } from "../../core/entities/base-animated-object.js";
 
 export class BackdropObject extends BaseAnimatedGameObject {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";

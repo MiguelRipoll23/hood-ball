@@ -7,7 +7,7 @@ import { AlertObject } from "../../objects/alert-object.js";
 import { ToastObject } from "../../objects/common/toast-object.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
-import type { GameState } from "../../models/game-state.js";
+import type { GameState } from "../../core/services/game-state.js";
 
 export interface WorldObjects {
   scoreboard: ScoreboardObject;

@@ -1,10 +1,10 @@
-import type { GameState } from "../../models/game-state.js";
+import type { GameState } from "../../core/services/game-state.js";
 import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
 import { DebugService } from "../../debug/debug-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
-import { container } from "../../services/di-container.js";
+import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 
 export class SettingsScreen extends BaseGameScreen {

@@ -5,8 +5,8 @@ import {
 import { BaseMultiplayerGameObject } from "./base/base-multiplayer-object.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import { ObjectType } from "../enums/object-type.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../core/utils/binary-writer-utils.js";
+import { BinaryReader } from "../core/utils/binary-reader-utils.js";
 import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui.js";
 
 export class ScoreboardObject

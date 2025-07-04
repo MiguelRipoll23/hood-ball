@@ -2,8 +2,8 @@ import {
   BLUE_TEAM_COLOR,
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
-import { TimerService } from "../services/gameplay/timer-service.js";
-import { BaseAnimatedGameObject } from "./base/base-animated-object.js";
+import { TimerService } from "../core/services/timer-service.js";
+import { BaseAnimatedGameObject } from "../core/entities/base-animated-object.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 
 export class AlertObject

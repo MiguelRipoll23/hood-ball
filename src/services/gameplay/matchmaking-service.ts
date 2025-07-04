@@ -1,13 +1,13 @@
-import { GameState } from "../../models/game-state.js";
+import { GameState } from "../../core/services/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { SavePlayerScoresRequest } from "../../interfaces/requests/save-score-request.js";
-import { DebugUtils } from "../../debug/debug-utils.js";
+import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
-import { EventProcessorService } from "./event-processor-service.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
 import { APIService } from "../network/api-service.js";
-import { TimerManagerService } from "./timer-manager-service.js";
-import { IntervalManagerService } from "./interval-manager-service.js";
+import { TimerManagerService } from "../../core/services/timer-manager-service.js";
+import { IntervalManagerService } from "../../core/services/interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";

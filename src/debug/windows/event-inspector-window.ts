@@ -1,11 +1,11 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { EventType } from "../../enums/event-type.js";
 import type { GameEvent } from "../../interfaces/events/game-event.js";
-import { LocalEvent } from "../../models/local-event.js";
-import { RemoteEvent } from "../../models/remote-event.js";
+import { LocalEvent } from "../../core/services/local-event.js";
+import { RemoteEvent } from "../../core/services/remote-event.js";
 import { BaseWindow } from "./base-window.js";
-import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
-import { container } from "../../services/di-container.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
+import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

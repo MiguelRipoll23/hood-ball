@@ -1,19 +1,19 @@
 import { TunnelType } from "../../enums/tunnel-type.js";
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
-import { DebugUtils } from "../../debug/debug-utils.js";
+import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
-import { BinaryWriter } from "../../utils/binary-writer-utils.js";
-import type { BinaryReader } from "../../utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
+import type { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
-import { GameState } from "../../models/game-state.js";
+import { GameState } from "../../core/services/game-state.js";
 import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import { container } from "../di-container.js";
+import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

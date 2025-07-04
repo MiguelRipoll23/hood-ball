@@ -1,4 +1,4 @@
-import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
+import { BaseAnimatedGameObject } from "../../core/entities/base-animated-object.js";
 
 export class ToggleObject extends BaseAnimatedGameObject {
   protected width: number = 55; // Incremented width to 55

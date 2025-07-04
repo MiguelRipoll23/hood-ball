@@ -1,7 +1,7 @@
-import type { GameState } from "../../models/game-state.js";
+import type { GameState } from "../../core/services/game-state.js";
 import { ScreenTransitionService } from "../../services/ui/screen-transition-service.js";
 import { injectable } from "@needle-di/core";
-import { container } from "../../services/di-container.js";
+import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { WorldScreen } from "../world/world-screen.js";

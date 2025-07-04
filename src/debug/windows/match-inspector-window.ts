@@ -2,7 +2,7 @@ import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "./base-window.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { GamePlayer } from "../../models/game-player.js";
-import type { GameState } from "../../models/game-state.js";
+import type { GameState } from "../../core/services/game-state.js";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;

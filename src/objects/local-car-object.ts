@@ -1,10 +1,10 @@
-import { GamePointer } from "../models/game-pointer.js";
+import { GamePointer } from "../core/services/game-pointer.js";
 import { ObjectType } from "../enums/object-type.js";
 import { CarObject } from "./car-object.js";
 import { JoystickObject } from "./joystick-object.js";
-import { GameKeyboard } from "../models/game-keyboard.js";
-import { ObjectUtils } from "../utils/object-utils.js";
-import { GameGamepad } from "../models/game-gamepad.js";
+import { GameKeyboard } from "../core/services/game-keyboard.js";
+import { ObjectUtils } from "../core/utils/object-utils.js";
+import { GameGamepad } from "../core/services/game-gamepad.js";
 import { GamepadButton } from "../enums/gamepad-button.js";
 
 export class LocalCarObject extends CarObject {

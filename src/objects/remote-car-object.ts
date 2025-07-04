@@ -5,7 +5,7 @@ import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
 } from "../constants/webrtc-constants.js";
-import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { BinaryReader } from "../core/utils/binary-reader-utils.js";
 
 export class RemoteCarObject extends CarObject {
   constructor(

@@ -1,13 +1,13 @@
-import { HitboxObject } from "./common/hitbox-object.js";
-import { BaseDynamicCollidingGameObject } from "./base/base-dynamic-colliding-game-object.js";
+import { HitboxObject } from "../core/entities/hitbox-object.js";
+import { BaseDynamicCollidingGameObject } from "../core/entities/base-dynamic-colliding-game-object.js";
 import { CarObject } from "./car-object.js";
 import type { MultiplayerGameObject } from "../interfaces/objects/multiplayer-game-object.js";
 import { ObjectType } from "../enums/object-type.js";
 import { GamePlayer } from "../models/game-player.js";
-import { ObjectUtils } from "../utils/object-utils.js";
-import { DebugUtils } from "../debug/debug-utils.js";
-import { BinaryWriter } from "../utils/binary-writer-utils.js";
-import { BinaryReader } from "../utils/binary-reader-utils.js";
+import { ObjectUtils } from "../core/utils/object-utils.js";
+import { DebugUtils } from "../core/utils/debug-utils.js";
+import { BinaryWriter } from "../core/utils/binary-writer-utils.js";
+import { BinaryReader } from "../core/utils/binary-reader-utils.js";
 
 export class BallObject
   extends BaseDynamicCollidingGameObject
