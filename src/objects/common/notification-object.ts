@@ -66,7 +66,7 @@ export class NotificationObject extends BaseAnimatedGameObject {
   }
 
   private updateTextPosition(): void {
-    if (this.animations.length > 0) {
+    if (this.animationTasks.length > 0) {
       return;
     }
 

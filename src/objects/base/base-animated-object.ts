@@ -5,7 +5,7 @@ import { BaseMoveableGameObject } from "./base-moveable-game-object.js";
 export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   protected scale: number = 1;
 
-  protected animations: ObjectAnimationService[] = [];
+  protected animationTasks: ObjectAnimationService[] = [];
 
   constructor() {
     super();
@@ -20,19 +20,19 @@ export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   }
 
   public fadeIn(seconds: number): void {
-    this.animations.push(
+    this.animationTasks.push(
       new ObjectAnimationService(this, AnimationType.FadeIn, 0, 1, seconds)
     );
   }
 
   public fadeOut(seconds: number): void {
-    this.animations.push(
+    this.animationTasks.push(
       new ObjectAnimationService(this, AnimationType.FadeOut, 1, 0, seconds)
     );
   }
 
   public moveToX(newX: number, seconds: number) {
-    this.animations.push(
+    this.animationTasks.push(
       new ObjectAnimationService(
         this,
         AnimationType.MoveX,
@@ -44,7 +44,7 @@ export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   }
 
   public moveToY(newY: number, seconds: number) {
-    this.animations.push(
+    this.animationTasks.push(
       new ObjectAnimationService(
         this,
         AnimationType.MoveY,
@@ -56,7 +56,7 @@ export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   }
 
   public rotateTo(newAngle: number, seconds: number) {
-    this.animations.push(
+    this.animationTasks.push(
       new ObjectAnimationService(
         this,
         AnimationType.Rotate,
@@ -68,7 +68,7 @@ export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   }
 
   public scaleTo(newScale: number, seconds: number) {
-    this.animations.push(
+    this.animationTasks.push(
       new ObjectAnimationService(
         this,
         AnimationType.Scale,
@@ -80,18 +80,18 @@ export class BaseAnimatedGameObject extends BaseMoveableGameObject {
   }
 
   public reset(): void {
-    this.animations.length = 0;
+    this.animationTasks.length = 0;
     super.reset();
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.animations.forEach((animation) => {
+    this.animationTasks.forEach((animation) => {
       animation.update(deltaTimeStamp);
 
       // Remove completed animations
       if (animation.isCompleted()) {
-        const index = this.animations.indexOf(animation);
-        this.animations.splice(index, 1);
+        const index = this.animationTasks.indexOf(animation);
+        this.animationTasks.splice(index, 1);
       }
     });
 

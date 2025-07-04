@@ -11,7 +11,6 @@ import { GAME_VERSION } from "../../constants/game-constants.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
-import type { FindMatchesResponse as MatchesResponse } from "../../interfaces/responses/find-matches-response.js";
 import { APIService } from "../network/api-service.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { GameState } from "../../models/game-state.js";
@@ -23,10 +22,10 @@ export class MatchFinderService {
     private readonly apiService: APIService,
     private readonly webSocketService: WebSocketService,
     private readonly pendingIdentities: Map<string, boolean>,
-    private readonly eventProcessorService: EventProcessorService,
+    private readonly eventProcessorService: EventProcessorService
   ) {}
 
-  public async findMatches(): Promise<MatchesResponse[]> {
+  public async findMatches(): Promise<FindMatchesResponse[]> {
     const body: FindMatchesRequest = {
       version: GAME_VERSION,
       totalSlots: 1,
@@ -40,14 +39,14 @@ export class MatchFinderService {
     const totalSlots: number = getConfigurationKey<number>(
       MATCH_TOTAL_SLOTS,
       4,
-      this.gameState,
+      this.gameState
     );
 
     const match = new Match(
       true,
       MatchStateType.WaitingPlayers,
       totalSlots,
-      MATCH_ATTRIBUTES,
+      MATCH_ATTRIBUTES
     );
 
     this.gameState.setMatch(match);
@@ -64,6 +63,7 @@ export class MatchFinderService {
 
   public async advertiseMatch(): Promise<void> {
     const match = this.gameState.getMatch();
+
     if (match === null) {
       return console.warn("Game match is null");
     }

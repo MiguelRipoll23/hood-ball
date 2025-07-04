@@ -56,10 +56,10 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.gameState.getGamePlayer().reset();
     this.screenTransitionService = ServiceLocator.get(ScreenTransitionService);
     this.timerManagerService = ServiceLocator.get(TimerManagerService);
-    this.matchmakingService = ServiceLocator.get(
-      MatchmakingService
-    ) as IMatchmakingProvider;
-    this.matchmakingController = ServiceLocator.get(MatchmakingControllerService);
+    this.matchmakingService = ServiceLocator.get(MatchmakingService);
+    this.matchmakingController = ServiceLocator.get(
+      MatchmakingControllerService
+    );
     this.objectOrchestrator = ServiceLocator.get(ObjectOrchestratorService);
     this.eventProcessorService = ServiceLocator.get(EventProcessorService);
     this.addSyncableObjects();
@@ -84,7 +84,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       this.eventProcessorService,
       this.matchmakingService,
       this.handleGoalTimeEnd.bind(this),
-      this.handleGameOverEnd.bind(this),
+      this.handleGameOverEnd.bind(this)
     );
     super.load();
   }
@@ -388,7 +388,6 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.gameState.setMatchState(MatchStateType.WaitingPlayers);
     this.scoreboardObject?.stopTimer();
   }
-
 
   private handleGoalTimeEnd() {
     if (this.scoreboardObject?.hasTimerFinished() === true) {

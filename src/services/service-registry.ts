@@ -6,7 +6,6 @@ import { DebugService } from "../debug/debug-service.js";
 import { EventConsumerService } from "./gameplay/event-consumer-service.js";
 import { EventProcessorService } from "./gameplay/event-processor-service.js";
 import { IntervalManagerService } from "./gameplay/interval-manager-service.js";
-import { MatchmakingService } from "./gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "./gameplay/matchmaking-controller-service.js";
 import { ObjectOrchestratorService } from "./gameplay/object-orchestrator-service.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
@@ -15,6 +14,7 @@ import { TimerManagerService } from "./gameplay/timer-manager-service.js";
 import { WebRTCService } from "./network/webrtc-service.js";
 import { WebSocketService } from "./network/websocket-service.js";
 import { LoadingIndicatorService } from "./loading-indicator-service.js";
+import { MatchmakingService } from "./gameplay/matchmaking-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -49,7 +49,10 @@ export class ServiceRegistry {
       ObjectOrchestratorService,
       new ObjectOrchestratorService()
     );
-    ServiceLocator.register(LoadingIndicatorService, new LoadingIndicatorService());
+    ServiceLocator.register(
+      LoadingIndicatorService,
+      new LoadingIndicatorService()
+    );
   }
 
   private static registerGameplayServices(): void {
@@ -58,7 +61,7 @@ export class ServiceRegistry {
     ServiceLocator.register(MatchmakingService, new MatchmakingService());
     ServiceLocator.register(
       MatchmakingControllerService,
-      new MatchmakingControllerService(),
+      new MatchmakingControllerService()
     );
   }
 
