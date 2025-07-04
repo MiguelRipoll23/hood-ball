@@ -1,21 +1,23 @@
 import { IntervalService } from "./interval-service.js";
+import type { IIntervalManagerService } from "../../interfaces/services/gameplay/interval-manager-service-interface.js";
+import type { IIntervalService } from "../../interfaces/services/gameplay/interval-service-interface.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
-export class IntervalManagerService {
-  private intervals: Set<IntervalService> = new Set();
+export class IntervalManagerService implements IIntervalManagerService {
+  private intervals: Set<IIntervalService> = new Set();
 
   public createInterval(
     durationSeconds: number,
     callback: () => void,
     autoStart: boolean = true
-  ): IntervalService {
+  ): IIntervalService {
     const interval = new IntervalService(durationSeconds, callback, autoStart);
     this.intervals.add(interval);
     return interval;
   }
 
-  public removeInterval(interval: IntervalService): void {
+  public removeInterval(interval: IIntervalService): void {
     this.intervals.delete(interval);
   }
 

@@ -2,7 +2,7 @@ import { EventProcessorService } from "./event-processor-service.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { container } from "../di-container.js";
 import { injectable } from "@needle-di/core";
 

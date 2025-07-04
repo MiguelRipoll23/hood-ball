@@ -10,18 +10,19 @@ import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../di-container.js";
 
 @injectable()
-export class MatchmakingService implements IMatchmakingProvider {
+export class MatchmakingService implements IMatchmakingService {
 
   private readonly apiService: APIService;
   private readonly webSocketService: WebSocketService;
   private readonly webrtcService: WebRTCService;
   private readonly matchFinderService: MatchFinderService;
-  private readonly networkService: MatchmakingNetworkService;
+  private readonly networkService: IMatchmakingNetworkService;
 
   constructor(private gameState = container.get(GameState)) {
     container.get(TimerManagerService);
@@ -35,7 +36,7 @@ export class MatchmakingService implements IMatchmakingProvider {
     this.registerCommandHandlers();
   }
 
-  public getNetworkService(): MatchmakingNetworkService {
+  public getNetworkService(): IMatchmakingNetworkService {
     return this.networkService;
   }
 

@@ -1,27 +1,29 @@
 import { TimerService } from "./timer-service.js";
+import type { ITimerManagerService } from "../../interfaces/services/gameplay/timer-manager-service-interface.js";
+import type { ITimerService } from "../../interfaces/services/gameplay/timer-service-interface.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
-export class TimerManagerService {
-  private timers: Set<TimerService> = new Set();
+export class TimerManagerService implements ITimerManagerService {
+  private timers: Set<ITimerService> = new Set();
 
   public createTimer(
     durationSeconds: number,
     callback: () => void,
     autoStart: boolean = true
-  ): TimerService {
+  ): ITimerService {
     const timer = new TimerService(durationSeconds, callback, autoStart);
     this.timers.add(timer);
 
     return timer;
   }
 
-  public removeTimer(timer: TimerService): void {
+  public removeTimer(timer: ITimerService): void {
     this.timers.delete(timer);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    const completedTimers: TimerService[] = [];
+    const completedTimers: ITimerService[] = [];
 
     for (const timer of this.timers) {
       if (timer.hasCompleted()) {

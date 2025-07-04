@@ -1,20 +1,21 @@
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
-import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
+import type { IScreenManagerService } from "../../interfaces/services/ui/screen-manager-service-interface.js";
+import type { IScreenTransitionService } from "../../interfaces/services/ui/screen-transition-service-interface.js";
 import { container } from "../di-container.js";
 
-export class ScreenManagerService implements ScreenManager {
+export class ScreenManagerService implements IScreenManagerService {
   private stack: GameScreen[] = [];
   private currentScreen: GameScreen | null = null;
   private nextScreen: GameScreen | null = null;
 
-  private transitionService: ScreenTransitionService;
+  private transitionService: IScreenTransitionService;
 
   constructor() {
     this.transitionService = container.get(ScreenTransitionService);
   }
 
-  public getTransitionService(): ScreenTransitionService {
+  public getTransitionService(): IScreenTransitionService {
     return this.transitionService;
   }
 
