@@ -4,8 +4,8 @@ import type { GameEvent } from "../../interfaces/events/game-event.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { RemoteEvent } from "../../models/remote-event.js";
 import { BaseWindow } from "./base-window.js";
-import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { EventProcessorService } from "@gameplay/event-processor-service.js";
+import { ServiceLocator } from "@services/service-locator.js";
 
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;

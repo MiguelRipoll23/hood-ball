@@ -3,7 +3,7 @@ import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
 import { DebugService } from "../../debug/debug-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { ServiceLocator } from "@services/service-locator.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 
 export class SettingsScreen extends BaseGameScreen {

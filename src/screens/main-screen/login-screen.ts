@@ -1,14 +1,14 @@
 import { MessageObject } from "../../objects/common/message-object.js";
-import { CryptoService } from "../../services/crypto-service.js";
-import { WebSocketService } from "../../services/network/websocket-service.js";
-import { APIService } from "../../services/network/api-service.js";
+import { CryptoService } from "@services/crypto-service.js";
+import { WebSocketService } from "@network/websocket-service.js";
+import { APIService } from "@network/api-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { MainMenuScreen } from "./main-menu-screen.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
-import { CredentialService } from "../../services/credential-service.js";
-import { ServiceLocator } from "../../services/service-locator.js";
+import { CredentialService } from "@services/credential-service.js";
+import { ServiceLocator } from "@services/service-locator.js";
 
 export class LoginScreen extends BaseGameScreen {
   private apiService: APIService;

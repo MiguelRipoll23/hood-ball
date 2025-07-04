@@ -13,6 +13,12 @@
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@gameplay/*": ["src/services/gameplay/*"],
+      "@network/*": ["src/services/network/*"],
+      "@services/*": ["src/services/*"]
+    },
 
     /* Linting */
     "strict": true,

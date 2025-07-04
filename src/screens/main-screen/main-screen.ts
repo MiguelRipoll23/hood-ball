@@ -1,5 +1,5 @@
 import { BaseGameScreen } from "../base/base-game-screen.js";
-import { ScreenManagerService } from "../../services/screen-manager-service.js";
+import { ScreenManagerService } from "@services/screen-manager-service.js";
 import { MainBackgroundObject } from "../../objects/backgrounds/main-background-object.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { GameState } from "../../models/game-state.js";
