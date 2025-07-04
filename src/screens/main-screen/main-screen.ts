@@ -1,9 +1,9 @@
-import { BaseGameScreen } from "../base/base-game-screen.js";
-import { ScreenManagerService } from "../../services/ui/screen-manager-service.js";
+import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
+import { ScreenManagerService } from "../../core/services/screen-manager-service.js";
 import { MainBackgroundObject } from "../../objects/backgrounds/main-background-object.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { GameState } from "../../core/services/game-state.js";
-import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 
 export class MainScreen extends BaseGameScreen {
   private screen: GameScreen | null = null;

@@ -7,7 +7,7 @@ import { MatchStateType } from "../../enums/match-state-type.js";
 import { EventType } from "../../enums/event-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
-import { GAME_VERSION } from "../../constants/game-constants.js";
+import { GAME_VERSION } from "../../core/constants/game-constants.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";

@@ -102,7 +102,7 @@ export class CredentialService {
         name,
         displayName,
       },
-      pubKeyCredParams: pubKeyCredParams.map((pkcp) => ({
+      pubKeyCredParams: pubKeyCredParams.map((pkcp: PublicKeyCredentialParameters) => ({
         type: pkcp.type,
         alg: pkcp.alg,
       })),

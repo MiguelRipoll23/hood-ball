@@ -1,4 +1,4 @@
-import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
+import { BaseTappableGameObject } from "../../core/entities/base-tappable-game-object.js";
 
 export class ButtonObject extends BaseTappableGameObject {
   private text: string = "Unknown";

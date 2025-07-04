@@ -4,7 +4,7 @@ import { BallObject } from "../../objects/ball-object.js";
 import { ScoreboardObject } from "../../objects/scoreboard-object.js";
 import { AlertObject } from "../../objects/alert-object.js";
 import { ToastObject } from "../../objects/common/toast-object.js";
-import { BaseCollidingGameScreen } from "../base/base-colliding-game-screen.js";
+import { BaseCollidingGameScreen } from "../../core/scenes/base-colliding-game-screen.js";
 import { GameState } from "../../core/services/game-state.js";
 import { RemoteCarObject } from "../../objects/remote-car-object.js";
 import { ObjectStateType } from "../../core/constants/object-state-type.js";
@@ -24,7 +24,7 @@ import { TimerManagerService } from "../../core/services/timer-manager-service.j
 import { MainScreen } from "../main-screen/main-screen.js";
 import { MainMenuScreen } from "../main-screen/main-menu-screen.js";
 import { container } from "../../core/services/di-container.js";
-import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 import { WorldObjectFactory } from "./world-object-factory.js";
 import { MatchFlowController } from "./match-flow-controller.js";
 

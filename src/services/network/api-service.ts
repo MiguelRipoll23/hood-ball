@@ -28,7 +28,7 @@ import type { RegistrationOptionsResponse } from "../../interfaces/responses/reg
 import { CryptoService } from "../security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
-import { container } from "../di-container.js";
+import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

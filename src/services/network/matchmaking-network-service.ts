@@ -19,9 +19,9 @@ import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
-import { EventProcessorService } from "../gameplay/event-processor-service.js";
-import { TimerManagerService } from "../gameplay/timer-manager-service.js";
-import { IntervalManagerService } from "../gameplay/interval-manager-service.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
+import { TimerManagerService } from "../../core/services/timer-manager-service.js";
+import { IntervalManagerService } from "../../core/services/interval-manager-service.js";
 import { MatchFinderService } from "../gameplay/match-finder-service.js";
 import { injectable, inject } from "@needle-di/core";
 import {
@@ -266,8 +266,8 @@ export class MatchmakingNetworkService
 
     this.webrtcService
       .getPeers()
-      .filter((matchPeer) => matchPeer !== peer)
-      .forEach((p) => {
+      .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
+      .forEach((p: WebRTCPeer) => {
         console.log("Sending player connection to", p.getName());
         this.sendPlayerConnection(p, player, true, false);
       });
@@ -343,8 +343,8 @@ export class MatchmakingNetworkService
 
     this.webrtcService
       .getPeers()
-      .filter((matchPeer) => matchPeer !== peer)
-      .forEach((p) => {
+      .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
+      .forEach((p: WebRTCPeer) => {
         this.sendPlayerConnection(p, player, false, false);
       });
 
@@ -461,8 +461,8 @@ export class MatchmakingNetworkService
     const players = match.getPlayers();
 
     players
-      .filter((matchPlayer) => matchPlayer !== peer.getPlayer())
-      .forEach((player) => {
+      .filter((matchPlayer: GamePlayer) => matchPlayer !== peer.getPlayer())
+      .forEach((player: GamePlayer) => {
         this.sendPlayerConnection(peer, player, true, true);
       });
   }
@@ -549,8 +549,8 @@ export class MatchmakingNetworkService
 
     this.webrtcService
       .getPeers()
-      .filter((peer) => peer.hasJoined())
-      .forEach((p) => {
+      .filter((peer: WebRTCPeer) => peer.hasJoined())
+      .forEach((p: WebRTCPeer) => {
         p.sendPingRequest();
       });
   }
@@ -560,14 +560,14 @@ export class MatchmakingNetworkService
 
     this.webrtcService
       .getPeers()
-      .filter((peer) => peer.hasJoined())
-      .forEach((p) => {
+      .filter((peer: WebRTCPeer) => peer.hasJoined())
+      .forEach((p: WebRTCPeer) => {
         if (p.getPlayer() === null) {
           console.warn("Peer has no player associated", p);
           return;
         }
 
-        players.forEach((player) => {
+        players.forEach((player: GamePlayer) => {
           if (player.isHost()) {
             return;
           }

@@ -1,4 +1,4 @@
-import { BaseGameScreen } from "../base/base-game-screen.js";
+import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
 import { MainMenuScreen } from "./main-menu-screen.js";
 import { CryptoService } from "../../services/security/crypto-service.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
@@ -7,7 +7,7 @@ import { GameState } from "../../core/services/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/security/credential-service.js";
 import { container } from "../../core/services/di-container.js";
-import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 import { LoginObjectFactory } from "./login-object-factory.js";
 import type { LoginObjects } from "./login-object-factory.js";
 import { LoginController } from "./login-controller.js";
