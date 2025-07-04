@@ -17,7 +17,7 @@ import { AlertObject } from "../../objects/alert-object.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { EventProcessorService } from "./event-processor-service.js";
 
-import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 
 export class ScoreManagerService {
   constructor(

@@ -17,7 +17,7 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
-import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
+import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { EventProcessorService } from "../gameplay/event-processor-service.js";
 import { TimerManagerService } from "../gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../gameplay/interval-manager-service.js";

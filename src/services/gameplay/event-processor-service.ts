@@ -7,7 +7,7 @@ import { EventQueueService } from "./event-queue-service.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import type { IWebRTCService } from "../../interfaces/services/webrtc-service-interface.js";
+import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
 import { injectable } from "@needle-di/core";
 
 export type EventSubscription = {

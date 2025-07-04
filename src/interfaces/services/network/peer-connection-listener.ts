@@ -1,4 +1,4 @@
-import type { WebRTCPeer } from "../webrtc-peer";
+import type { WebRTCPeer } from "../../webrtc-peer.js";
 
 export interface PeerConnectionListener {
   onPeerConnected(peer: WebRTCPeer): void;

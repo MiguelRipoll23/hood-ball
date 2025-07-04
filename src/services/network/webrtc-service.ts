@@ -11,8 +11,8 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../models/game-state.js";
-import type { IWebRTCService } from "../../interfaces/services/webrtc-service-interface.js";
-import type { PeerConnectionListener } from "../../interfaces/services/peer-connection-listener.js";
+import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
+import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { container } from "../di-container.js";
 import { injectable } from "@needle-di/core";
 

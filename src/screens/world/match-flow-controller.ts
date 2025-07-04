@@ -6,7 +6,7 @@ import { MatchStateType } from "../../enums/match-state-type.js";
 import type { GameState } from "../../models/game-state.js";
 import { TimerManagerService } from "../../services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { ScoreboardObject } from "../../objects/scoreboard-object.js";
 import { BallObject } from "../../objects/ball-object.js";
 import { LocalCarObject } from "../../objects/local-car-object.js";
