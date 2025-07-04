@@ -7,11 +7,11 @@ import type { MultiplayerScreen } from "../../interfaces/screens/multiplayer-scr
 import { ObjectStateType } from "../../core/constants/object-state-type.js";
 import { ScreenUtils } from "../../core/scenes/screen-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import { BinaryReader } from "../../utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../utils/binary-writer-utils.js";
+import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import type { ObjectType } from "../../enums/object-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import { container } from "../di-container.js";
+import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -26,7 +26,7 @@ export class ObjectOrchestratorService {
 
   public initialize(): void {
     this.webrtcService = container.get(WebRTCService);
-    this.webrtcService.registerCommandHandlers(this);
+    this.webrtcService!.registerCommandHandlers(this);
     console.log("Object orchestrator service initialized");
   }
 

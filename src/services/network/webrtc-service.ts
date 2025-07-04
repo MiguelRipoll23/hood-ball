@@ -35,7 +35,7 @@ export class WebRTCService implements IWebRTCService {
 
   public initialize(listener: PeerConnectionListener): void {
     this.webSocketService = container.get(WebSocketService);
-    this.webSocketService.registerCommandHandlers(this);
+    this.webSocketService!.registerCommandHandlers(this);
     this.connectionListener = listener;
     console.log("WebRTC service initialized");
   }

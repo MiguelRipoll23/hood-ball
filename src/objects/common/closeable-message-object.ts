@@ -1,4 +1,4 @@
-import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
+import { BaseTappableGameObject } from "../../core/entities/base-tappable-game-object.js";
 
 export class CloseableMessageObject extends BaseTappableGameObject {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";

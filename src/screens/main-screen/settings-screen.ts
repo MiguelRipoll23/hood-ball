@@ -3,9 +3,9 @@ import { ButtonObject } from "../../objects/common/button-object.js";
 import { TitleObject } from "../../objects/common/title-object.js";
 import { SettingObject } from "../../objects/setting-object.js";
 import { DebugService } from "../../debug/debug-service.js";
-import { BaseGameScreen } from "../base/base-game-screen.js";
+import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
 import { container } from "../../core/services/di-container.js";
-import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 
 export class SettingsScreen extends BaseGameScreen {
   private titleObject: TitleObject | null = null;

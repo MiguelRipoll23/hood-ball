@@ -14,8 +14,8 @@ import { GoalObject } from "../../objects/goal-object.js";
 import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui.js";
 import { AlertObject } from "../../objects/alert-object.js";
 
-import { TimerManagerService } from "./timer-manager-service.js";
-import { EventProcessorService } from "./event-processor-service.js";
+import { TimerManagerService } from "../../core/services/timer-manager-service.js";
+import { EventProcessorService } from "../../core/services/event-processor-service.js";
 
 import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 

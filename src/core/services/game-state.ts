@@ -6,7 +6,7 @@ import { GamePointer } from "./game-pointer.js";
 import { DebugSettings } from "../constants/debug-settings.js";
 import { GameKeyboard } from "./game-keyboard.js";
 import { GameGamepad } from "./game-gamepad.js";
-import { MatchStateType } from "../enums/match-state-type.js";
+import { MatchStateType } from "../../enums/match-state-type.js";
 
 export class GameState {
   private debugSettings: DebugSettings;

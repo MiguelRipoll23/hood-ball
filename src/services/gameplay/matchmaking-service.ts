@@ -10,10 +10,11 @@ import { TimerManagerService } from "../../core/services/timer-manager-service.j
 import { IntervalManagerService } from "../../core/services/interval-manager-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
+import { GamePlayer } from "../../models/game-player.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import { injectable } from "@needle-di/core";
-import { container } from "../di-container.js";
+import { container } from "../../core/services/di-container.js";
 
 @injectable()
 export class MatchmakingService implements IMatchmakingService {
@@ -75,7 +76,7 @@ export class MatchmakingService implements IMatchmakingService {
 
     const savePlayerScoresRequest: SavePlayerScoresRequest[] = [];
 
-    players.forEach((player) => {
+    players.forEach((player: GamePlayer) => {
       const playerId = player.getId();
       const playerName = player.getName();
       const score = player.getScore();

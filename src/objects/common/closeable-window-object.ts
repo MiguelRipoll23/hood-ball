@@ -1,5 +1,5 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
-import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
+import { BaseTappableGameObject } from "../../core/entities/base-tappable-game-object.js";
 import { BackdropObject } from "./backdrop-object.js";
 
 export class CloseableWindowObject extends BaseTappableGameObject {

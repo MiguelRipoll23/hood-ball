@@ -1,4 +1,4 @@
-import { BaseMoveableGameObject } from "../base/base-moveable-game-object.js";
+import { BaseMoveableGameObject } from "../../core/entities/base-moveable-game-object.js";
 
 export class TitleObject extends BaseMoveableGameObject {
   private text: string = "Unknown";

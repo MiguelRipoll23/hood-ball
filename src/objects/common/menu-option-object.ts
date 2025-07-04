@@ -1,4 +1,4 @@
-import { BaseTappableGameObject } from "../base/base-tappable-game-object.js";
+import { BaseTappableGameObject } from "../../core/entities/base-tappable-game-object.js";
 
 export class MenuOptionObject extends BaseTappableGameObject {
   private index: number = 0;
