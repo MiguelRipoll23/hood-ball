@@ -30,11 +30,7 @@ export class LoginScreen extends BaseGameScreen {
     this.apiService = container.get(APIService);
     this.cryptoService = container.get(CryptoService);
     this.webSocketService = container.get(WebSocketService);
-    this.credentialService = new CredentialService(
-      this.gameState,
-      this.apiService,
-      container.get(EventProcessorService)
-    );
+    this.credentialService = container.get(CredentialService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"

@@ -10,6 +10,7 @@ import { LoadingIndicatorService } from "./ui/loading-indicator-service.js";
 import { MatchFinderService } from "./gameplay/match-finder-service.js";
 import { MatchmakingNetworkService } from "./network/matchmaking-network-service.js";
 import { PendingIdentitiesToken, ReceivedIdentitiesToken } from "./gameplay/matchmaking-tokens.js";
+import { CredentialService } from "./security/credential-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -18,6 +19,7 @@ export class ServiceRegistry {
     container.bind({ provide: APIService, useClass: APIService });
     container.bind({ provide: EventProcessorService, useClass: EventProcessorService });
     container.bind({ provide: CryptoService, useClass: CryptoService });
+    container.bind({ provide: CredentialService, useClass: CredentialService });
     container.bind({ provide: LoadingIndicatorService, useClass: LoadingIndicatorService });
     container.bind({ provide: MatchFinderService, useClass: MatchFinderService });
     container.bind({ provide: MatchmakingNetworkService, useClass: MatchmakingNetworkService });
