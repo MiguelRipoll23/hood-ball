@@ -1,6 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "./base-window.js";
-import { WebRTCService } from "../../services/network/webrtc-service.js";
+import { WebRTCService } from "@network/webrtc-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
 
 export class PeerInspectorWindow extends BaseWindow {

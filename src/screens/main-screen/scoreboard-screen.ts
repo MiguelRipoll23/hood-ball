@@ -5,7 +5,7 @@ import { BaseGameScreen } from "../base/base-game-screen.js";
 import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { RankingTableObject } from "../../objects/ranking-table-object.js";
 import type { GameState } from "../../models/game-state.js";
-import { APIService } from "../../services/network/api-service.js";
+import { APIService } from "@network/api-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
 
 export class ScoreboardScreen extends BaseGameScreen {

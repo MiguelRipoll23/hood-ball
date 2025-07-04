@@ -20,14 +20,14 @@ import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-d
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
-import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
-import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
-import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
+import { MatchmakingService } from "@gameplay/matchmaking-service.js";
+import { MatchmakingControllerService } from "@gameplay/matchmaking-controller-service.js";
+import { ScoreManagerService } from "@gameplay/score-manager-service.js";
 import { ServiceLocator } from "../../services/service-locator.js";
-import { EventProcessorService } from "../../services/gameplay/event-processor-service.js";
-import { ObjectOrchestratorService } from "../../services/gameplay/object-orchestrator-service.js";
+import { EventProcessorService } from "@gameplay/event-processor-service.js";
+import { ObjectOrchestratorService } from "@gameplay/object-orchestrator-service.js";
 import { ScreenTransitionService } from "../../services/screen-transition-service.js";
-import { TimerManagerService } from "../../services/gameplay/timer-manager-service.js";
+import { TimerManagerService } from "@gameplay/timer-manager-service.js";
 import { MainScreen } from "../main-screen/main-screen.js";
 import { MainMenuScreen } from "../main-screen/main-menu-screen.js";
 

@@ -1,4 +1,4 @@
-import { TimerService } from "../../services/gameplay/timer-service.js";
+import { TimerService } from "@gameplay/timer-service.js";
 import { BaseAnimatedGameObject } from "../base/base-animated-object.js";
 
 export class ToastObject extends BaseAnimatedGameObject {
