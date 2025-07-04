@@ -13,7 +13,7 @@ import { ScreenType } from "../../enums/screen-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/matchmaking-provider.js";
+import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
