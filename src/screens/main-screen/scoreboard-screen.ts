@@ -1,23 +1,18 @@
-import { ButtonObject } from "../../objects/common/button-object.js";
-import { TitleObject } from "../../objects/common/title-object.js";
 import type { RankingResponse } from "../../interfaces/responses/ranking-response.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
-import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
-import { RankingTableObject } from "../../objects/ranking-table-object.js";
 import type { GameState } from "../../models/game-state.js";
 import { APIService } from "../../services/network/api-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { ScoreboardObjectFactory } from "./scoreboard-object-factory.js";
+import type { ScoreboardObjects } from "./scoreboard-object-factory.js";
+import { ScoreboardController } from "./scoreboard-controller.js";
 
 @injectable()
 export class ScoreboardScreen extends BaseGameScreen {
-  private titleObject: TitleObject | null = null;
-  private buttonObject: ButtonObject | null = null;
-  private rankingTableObject: RankingTableObject | null = null;
-  private closeableMessageObject: CloseableMessageObject | null = null;
-
-  private apiService: APIService;
+  private objects: ScoreboardObjects | null = null;
+  private controller: ScoreboardController;
 
   constructor(
     gameState: GameState,
@@ -25,14 +20,15 @@ export class ScoreboardScreen extends BaseGameScreen {
     apiService: APIService = container.get(APIService)
   ) {
     super(gameState, eventConsumerService);
-    this.apiService = apiService;
+    this.controller = new ScoreboardController(apiService);
   }
 
   public override load(): void {
-    this.loadTitleObject();
-    this.loadButtonObject();
-    this.loadRankingTableObject();
-    this.loadCloseableMessageObject();
+    const factory = new ScoreboardObjectFactory(this.canvas);
+    this.objects = factory.createObjects();
+
+    const { title, button, rankingTable, closeableMessage } = this.objects;
+    this.uiObjects.push(title, button, rankingTable, closeableMessage);
     super.load();
   }
 
@@ -41,50 +37,26 @@ export class ScoreboardScreen extends BaseGameScreen {
     this.fetchRanking();
   }
 
-  private loadTitleObject(): void {
-    this.titleObject = new TitleObject();
-    this.titleObject.setText("SCOREBOARD");
-    this.uiObjects.push(this.titleObject);
-  }
-
-  public loadButtonObject(): void {
-    this.buttonObject = new ButtonObject(this.canvas, "Back");
-    this.buttonObject.setPosition(
-      this.canvas.width / 2,
-      this.canvas.height - 60 - 20
-    );
-    this.uiObjects.push(this.buttonObject);
-  }
-
-  private loadRankingTableObject(): void {
-    this.rankingTableObject = new RankingTableObject();
-    this.uiObjects.push(this.rankingTableObject);
-  }
-
-  private loadCloseableMessageObject(): void {
-    this.closeableMessageObject = new CloseableMessageObject(this.canvas);
-    this.uiObjects.push(this.closeableMessageObject);
-  }
 
   private fetchRanking(): void {
-    this.apiService
-      .getRanking()
+    this.controller
+      .fetchRanking()
       .then((ranking) => {
         this.setRankingData(ranking);
-        this.rankingTableObject?.fadeIn(0.2);
+        this.objects?.rankingTable.fadeIn(0.2);
       })
       .catch((error) => {
         console.error("Failed to fetch ranking", error);
-        this.closeableMessageObject?.show("Failed to fetch ranking");
+        this.objects?.closeableMessage.show("Failed to fetch ranking");
       });
   }
 
   private setRankingData(ranking: RankingResponse[]): void {
-    this.rankingTableObject?.setRanking(ranking);
+    this.objects?.rankingTable.setRanking(ranking);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.buttonObject?.isPressed()) {
+    if (this.objects?.button.isPressed()) {
       this.returnMainMenu();
     }
 

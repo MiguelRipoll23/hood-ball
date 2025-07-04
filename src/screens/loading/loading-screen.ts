@@ -1,18 +1,20 @@
 import type { GameState } from "../../models/game-state.js";
-import { LoadingBackgroundObject } from "../../objects/backgrounds/loading-background-object.js";
-import { ProgressBarObject } from "../../objects/common/progress-bar-object.js";
 import { ScreenTransitionService } from "../../services/ui/screen-transition-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
 import { BaseGameScreen } from "../base/base-game-screen.js";
 import { WorldScreen } from "../world/world-screen.js";
+import { LoadingObjectFactory } from "./loading-object-factory.js";
+import type { LoadingObjects } from "./loading-object-factory.js";
+import { LoadingController } from "./loading-controller.js";
 
 @injectable()
 export class LoadingScreen extends BaseGameScreen {
   private screenTransitionService: ScreenTransitionService;
-  private progressBarObject: ProgressBarObject | null = null;
+  private objects: LoadingObjects | null = null;
   private worldScreen: WorldScreen | null = null;
+  private controller: LoadingController;
   private transitionStarted: boolean = false;
 
   constructor(
@@ -24,11 +26,15 @@ export class LoadingScreen extends BaseGameScreen {
   ) {
     super(gameState, eventConsumerService);
     this.screenTransitionService = screenTransitionService;
+    this.controller = new LoadingController(gameState);
   }
 
   public override load(): void {
-    this.createBackgroundObject();
-    this.loadProgressBarObject();
+    const factory = new LoadingObjectFactory(this.canvas);
+    this.objects = factory.createObjects();
+    const { background, progressBar } = this.objects;
+    this.sceneObjects.push(background);
+    this.uiObjects.push(progressBar);
 
     super.load();
   }
@@ -36,18 +42,14 @@ export class LoadingScreen extends BaseGameScreen {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
-    this.worldScreen = new WorldScreen(
-      this.gameState,
-      container.get(EventConsumerService)
-    );
-    this.worldScreen.load();
+    this.worldScreen = this.controller.createWorldScreen();
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     const totalObjects = this.worldScreen?.getTotalObjectsCount() || 1;
     const loadedObjects = this.worldScreen?.getLoadedObjectsCount() || 0;
 
-    this.progressBarObject?.setProgress(loadedObjects / totalObjects);
+    this.objects?.progressBar.setProgress(loadedObjects / totalObjects);
 
     if (
       !this.transitionStarted &&
@@ -66,14 +68,4 @@ export class LoadingScreen extends BaseGameScreen {
     super.update(deltaTimeStamp);
   }
 
-  private createBackgroundObject() {
-    const loadingBackgroundObject = new LoadingBackgroundObject(this.canvas);
-    this.sceneObjects.push(loadingBackgroundObject);
-  }
-
-  private loadProgressBarObject(): void {
-    this.progressBarObject = new ProgressBarObject(this.canvas);
-    this.progressBarObject?.setText("Loading world screen....");
-    this.uiObjects.push(this.progressBarObject);
-  }
 }

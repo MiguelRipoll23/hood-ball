@@ -1,24 +1,21 @@
-import { MessageObject } from "../../objects/common/message-object.js";
+import { BaseGameScreen } from "../base/base-game-screen.js";
+import { MainMenuScreen } from "./main-menu-screen.js";
 import { CryptoService } from "../../services/security/crypto-service.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import { APIService } from "../../services/network/api-service.js";
-import { BaseGameScreen } from "../base/base-game-screen.js";
-import { MainMenuScreen } from "./main-menu-screen.js";
-import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
 import { GameState } from "../../models/game-state.js";
 import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/security/credential-service.js";
 import { container } from "../../services/di-container.js";
 import { EventConsumerService } from "../../services/gameplay/event-consumer-service.js";
+import { LoginObjectFactory } from "./login-object-factory.js";
+import type { LoginObjects } from "./login-object-factory.js";
+import { LoginController } from "./login-controller.js";
 
 export class LoginScreen extends BaseGameScreen {
-  private apiService: APIService;
-  private cryptoService: CryptoService;
-  private webSocketService: WebSocketService;
+  private controller: LoginController;
   private credentialService: CredentialService;
-
-  private messageObject: MessageObject | null = null;
-  private errorCloseableMessageObject: CloseableMessageObject | null = null;
+  private objects: LoginObjects | null = null;
   private dialogElement: HTMLDialogElement | null = null;
   private displayNameInputElement: HTMLInputElement | null = null;
   private registerButtonElement: HTMLElement | null = null;
@@ -26,9 +23,14 @@ export class LoginScreen extends BaseGameScreen {
 
   constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
     super(gameState, eventConsumerService);
-    this.apiService = container.get(APIService);
-    this.cryptoService = container.get(CryptoService);
-    this.webSocketService = container.get(WebSocketService);
+    const apiService = container.get(APIService);
+    const cryptoService = container.get(CryptoService);
+    const webSocketService = container.get(WebSocketService);
+    this.controller = new LoginController(
+      apiService,
+      cryptoService,
+      webSocketService
+    );
     this.credentialService = container.get(CredentialService);
     this.dialogElement = document.querySelector("dialog");
     this.displayNameInputElement = document.querySelector(
@@ -40,8 +42,10 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   public override load(): void {
-    this.loadMessageObject();
-    this.loadCloseableMessageObject();
+    const factory = new LoginObjectFactory(this.canvas);
+    this.objects = factory.createObjects();
+
+    this.uiObjects.push(this.objects.message, this.objects.closeableMessage);
 
     super.load();
   }
@@ -73,42 +77,32 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private handleServerConnectedEvent(): void {
-    this.messageObject?.hide();
+    this.objects?.message.hide();
     this.transitionToMainMenuScreen();
   }
 
-  private loadMessageObject(): void {
-    this.messageObject = new MessageObject(this.canvas);
-    this.uiObjects.push(this.messageObject);
-  }
-
-  private loadCloseableMessageObject(): void {
-    this.errorCloseableMessageObject = new CloseableMessageObject(this.canvas);
-    this.uiObjects.push(this.errorCloseableMessageObject);
-  }
-
   private showError(message: string): void {
-    this.messageObject?.setOpacity(0);
-    this.errorCloseableMessageObject?.show(message);
+    this.objects?.message.setOpacity(0);
+    this.objects?.closeableMessage.show(message);
   }
 
   private handleErrorCloseableMessageObject(): void {
-    if (this.errorCloseableMessageObject?.isPressed()) {
+    if (this.objects?.closeableMessage.isPressed()) {
       window.location.reload();
     }
   }
 
   private checkForUpdates(): void {
-    this.messageObject?.show("Checking for updates...");
+    this.objects?.message.show("Checking for updates...");
 
-    this.apiService
+    this.controller
       .checkForUpdates()
       .then((requiresUpdate) => {
         if (requiresUpdate) {
           return this.showError("An update is required to play the game");
         }
 
-        this.messageObject?.hide();
+        this.objects?.message.hide();
         this.showDialog();
       })
       .catch((error) => {
@@ -190,12 +184,12 @@ export class LoginScreen extends BaseGameScreen {
     this.gameState.getGamePointer().setPreventDefault(true);
 
     this.dialogElement?.close();
-    this.messageObject?.show("Downloading configuration...");
+    this.objects?.message.show("Downloading configuration...");
 
-    this.apiService
-      .getConfiguration()
-      .then(async (configurationResponse: ArrayBuffer) => {
-        await this.applyConfiguration(configurationResponse);
+    this.controller
+      .downloadConfiguration()
+      .then(async (configuration) => {
+        await this.applyConfiguration(configuration);
       })
       .catch((error) => {
         console.error(error);
@@ -203,14 +197,7 @@ export class LoginScreen extends BaseGameScreen {
       });
   }
 
-  private async applyConfiguration(
-    configurationResponse: ArrayBuffer
-  ): Promise<void> {
-    const decryptedResponse = await this.cryptoService.decryptResponse(
-      configurationResponse
-    );
-
-    const configuration = JSON.parse(decryptedResponse);
+  private async applyConfiguration(configuration: any): Promise<void> {
     this.gameState.getGameServer().setConfiguration(configuration);
 
     console.log("Configuration response (decrypted)", configuration);
@@ -219,8 +206,8 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private connectToServer(): void {
-    this.messageObject?.show("Connecting to the server...");
-    this.webSocketService.connectToServer();
+    this.objects?.message.show("Connecting to the server...");
+    this.controller.connectToServer();
   }
 
   private transitionToMainMenuScreen(): void {
