@@ -16,6 +16,7 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
   private readonly duration = 2000; // ms
   private shockwaveRadius = 0;
   private distortionRadius = 0;
+  private distortionOpacity = 1;
   private flashOpacity = 1;
   private readonly color: string;
 
@@ -48,10 +49,11 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
 
   public override update(delta: DOMHighResTimeStamp): void {
     this.elapsed += delta;
-    const t = this.elapsed / this.duration;
+    const t = Math.min(this.elapsed / this.duration, 1);
     this.shockwaveRadius = 120 * t;
     this.distortionRadius = 80 * t;
     this.flashOpacity = 1 - Math.min(this.elapsed / 200, 1);
+    this.distortionOpacity = 1 - t;
     this.particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
@@ -93,7 +95,7 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
       this.y,
       this.distortionRadius
     );
-    grad.addColorStop(0, "rgba(255,255,255,0.3)");
+    grad.addColorStop(0, `rgba(255,255,255,${0.3 * this.distortionOpacity})`);
     grad.addColorStop(1, "rgba(255,255,255,0)");
     context.fillStyle = grad;
     context.beginPath();
