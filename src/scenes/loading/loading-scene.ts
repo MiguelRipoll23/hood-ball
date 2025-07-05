@@ -1,27 +1,27 @@
 import type { GameState } from "../../core/services/game-state.js";
-import { ScreenTransitionService } from "../../core/services/screen-transition-service.js";
+import { SceneTransitionService } from "../../core/services/scene-transition-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
-import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
-import { WorldScreen } from "../world/world-screen.js";
+import { BaseGameScene } from "../../core/scenes/base-game-scene.js";
+import { WorldScene } from "../world/world-scene.js";
 import { LoadingEntityFactory } from "./loading-entity-factory.js";
 import type { LoadingObjects } from "./loading-entity-factory.js";
 import { LoadingController } from "./loading-controller.js";
 
 @injectable()
-export class LoadingScreen extends BaseGameScreen {
-  private screenTransitionService: ScreenTransitionService;
+export class LoadingScene extends BaseGameScene {
+  private screenTransitionService: SceneTransitionService;
   private objects: LoadingObjects | null = null;
-  private worldScreen: WorldScreen | null = null;
+  private worldScreen: WorldScene | null = null;
   private controller: LoadingController;
   private transitionStarted: boolean = false;
 
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    screenTransitionService: ScreenTransitionService = container.get(
-      ScreenTransitionService
+    screenTransitionService: SceneTransitionService = container.get(
+      SceneTransitionService
     )
   ) {
     super(gameState, eventConsumerService);

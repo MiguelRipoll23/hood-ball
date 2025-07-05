@@ -1,5 +1,5 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { ScreenInspectorWindow } from "./screen-inspector-window.js";
+import { SceneInspectorWindow } from "./scene-inspector-window.js";
 import { EventInspectorWindow } from "./event-inspector-window.js";
 import { MatchInspectorWindow } from "./match-inspector-window.js";
 import { BaseWindow } from "./base-window.js";
@@ -8,14 +8,14 @@ import type { GameState } from "../../core/services/game-state.js";
 
 export class DebugWindow extends BaseWindow {
   private eventInspectorWindow: EventInspectorWindow;
-  private screenInspectorWindow: ScreenInspectorWindow;
+  private screenInspectorWindow: SceneInspectorWindow;
   private matchInspectorWindow: MatchInspectorWindow;
   private peerInspectorWindow: PeerInspectorWindow;
 
   constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
     this.eventInspectorWindow = new EventInspectorWindow();
-    this.screenInspectorWindow = new ScreenInspectorWindow(gameState);
+    this.screenInspectorWindow = new SceneInspectorWindow(gameState);
     this.matchInspectorWindow = new MatchInspectorWindow(gameState);
     this.peerInspectorWindow = new PeerInspectorWindow();
     this.open();

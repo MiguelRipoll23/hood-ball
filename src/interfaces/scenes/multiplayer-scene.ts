@@ -2,12 +2,12 @@ import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
 } from "../entities/multiplayer-game-entity.js";
-import { ScreenType } from "../../enums/screen-type.js";
-import type { GameScreen } from "./game-screen.js";
+import { SceneType } from "../../enums/scene-type.js";
+import type { GameScene } from "./game-scene.js";
 import type { EntityType } from "../../enums/entity-type.js";
 
-export interface MultiplayerScreen extends GameScreen {
-  getTypeId(): ScreenType;
+export interface MultiplayerScene extends GameScene {
+  getTypeId(): SceneType;
   getSyncableObjects(): MultiplayerGameEntity[];
   getSyncableObjectClass(
     typeId: EntityType

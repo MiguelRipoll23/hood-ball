@@ -4,16 +4,16 @@ import { TitleEntity } from "../../entities/common/title-entity.js";
 import { ServerMessageWindowEntity } from "../../entities/server-message-window-entity.js";
 import { APIService } from "../../services/network/api-service.js";
 import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
-import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
-import { LoadingScreen } from "../loading/loading-screen.js";
-import { ScoreboardScreen } from "./scoreboard-screen.js";
-import { SettingsScreen } from "./settings-screen.js";
+import { BaseGameScene } from "../../core/scenes/base-game-scene.js";
+import { LoadingScene } from "../loading/loading-scene.js";
+import { ScoreboardScene } from "./scoreboard-scene.js";
+import { SettingsScene } from "./settings-scene.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../core/services/game-state.js";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 
-export class MainMenuScreen extends BaseGameScreen {
+export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
 
   private apiService: APIService;
@@ -189,7 +189,7 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToLoadingScreen(): void {
     this.disableMenuButtons();
 
-    const loadingScreen = new LoadingScreen(
+    const loadingScreen = new LoadingScene(
       this.gameState,
       container.get(EventConsumerService)
     );
@@ -203,7 +203,7 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToScoreboardScreen(): void {
     this.disableMenuButtons();
 
-    const scoreboardScreen = new ScoreboardScreen(
+    const scoreboardScreen = new ScoreboardScene(
       this.gameState,
       container.get(EventConsumerService)
     );
@@ -217,7 +217,7 @@ export class MainMenuScreen extends BaseGameScreen {
   private transitionToSettingsScreen(): void {
     this.disableMenuButtons();
 
-    const settingsScreen = new SettingsScreen(
+    const settingsScreen = new SettingsScene(
       this.gameState,
       container.get(EventConsumerService)
     );

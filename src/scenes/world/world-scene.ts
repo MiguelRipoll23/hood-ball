@@ -4,12 +4,12 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
-import { BaseCollidingGameScreen } from "../../core/scenes/base-colliding-game-screen.js";
+import { BaseCollidingGameScene } from "../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../core/services/game-state.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { EntityStateType } from "../../core/constants/entity-state-type.js";
 import { EventType } from "../../enums/event-type.js";
-import { ScreenType } from "../../enums/screen-type.js";
+import { SceneType } from "../../enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
@@ -19,18 +19,18 @@ import { MatchmakingControllerService } from "../../services/gameplay/matchmakin
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
 import { EventProcessorService } from "../../core/services/event-processor-service.js";
 import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
-import { ScreenTransitionService } from "../../core/services/screen-transition-service.js";
+import { SceneTransitionService } from "../../core/services/scene-transition-service.js";
 import { TimerManagerService } from "../../core/services/timer-manager-service.js";
-import { MainScreen } from "../main-screen/main-screen.js";
-import { MainMenuScreen } from "../main-screen/main-menu-screen.js";
+import { MainScene } from "../main-screen/main-scene.js";
+import { MainMenuScene } from "../main-screen/main-menu-scene.js";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { MatchFlowController } from "./match-flow-controller.js";
 
-export class WorldScreen extends BaseCollidingGameScreen {
+export class WorldScene extends BaseCollidingGameScene {
 
-  private readonly screenTransitionService: ScreenTransitionService;
+  private readonly screenTransitionService: SceneTransitionService;
   private readonly timerManagerService: TimerManagerService;
   private readonly matchmakingService: IMatchmakingProvider;
   private readonly matchmakingController: MatchmakingControllerService;
@@ -49,7 +49,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   constructor(protected gameState: GameState, eventConsumerService: EventConsumerService) {
     super(gameState, eventConsumerService);
     this.gameState.getGamePlayer().reset();
-    this.screenTransitionService = container.get(ScreenTransitionService);
+    this.screenTransitionService = container.get(SceneTransitionService);
     this.timerManagerService = container.get(TimerManagerService);
     this.matchmakingService = container.get(MatchmakingService);
     this.matchmakingController = container.get(
@@ -102,8 +102,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
     super.load();
   }
 
-  public override getTypeId(): ScreenType {
-    return ScreenType.World;
+  public override getTypeId(): SceneType {
+    return SceneType.World;
   }
 
   public override onTransitionEnd(): void {
@@ -239,11 +239,11 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private async returnToMainMenuScreen(): Promise<void> {
-    const mainScreen = new MainScreen(
+    const mainScreen = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
     );
-    const mainMenuScreen = new MainMenuScreen(
+    const mainMenuScreen = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
       false

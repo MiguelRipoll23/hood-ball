@@ -1,13 +1,13 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameEntity } from "../../interfaces/entities/game-entity.js";
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
 import { BallEntity } from "../../entities/ball-entity.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { BaseWindow } from "./base-window.js";
 import type { GameState } from "../../core/services/game-state.js";
 
-export class ScreenInspectorWindow extends BaseWindow {
+export class SceneInspectorWindow extends BaseWindow {
   constructor(private gameState: GameState) {
     super("Screen inspector", new ImVec2(300, 350));
     console.log(`${this.constructor.name} created`);
@@ -43,8 +43,8 @@ export class ScreenInspectorWindow extends BaseWindow {
   }
 
   private renderScreenSections(
-    screen: GameScreen | null,
-    subScreen: GameScreen | null,
+    screen: GameScene | null,
+    subScreen: GameScene | null,
     mainObjects: GameEntity[],
     subObjects: GameEntity[],
     idPrefix: string

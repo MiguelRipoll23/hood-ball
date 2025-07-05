@@ -3,9 +3,9 @@ import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../core/services/game-state.js";
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import { EntityUtils } from "../../core/utils/entity-utils.js";
-import type { MultiplayerScreen } from "../../interfaces/screens/multiplayer-screen.js";
+import type { MultiplayerScene } from "../../interfaces/scenes/multiplayer-scene.js";
 import { EntityStateType } from "../../core/constants/entity-state-type.js";
-import { ScreenUtils } from "../../core/scenes/screen-utils.js";
+import { SceneUtils } from "../../core/scenes/scene-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
@@ -31,7 +31,7 @@ export class EntityOrchestratorService {
   }
 
   public sendLocalData(
-    multiplayerScreen: MultiplayerScreen,
+    multiplayerScene: MultiplayerScene,
     deltaTimeStamp: number
   ): void {
     if (this.gameState.getMatch() === null) {
@@ -43,12 +43,12 @@ export class EntityOrchestratorService {
     this.periodicUpdate =
       this.elapsedMilliseconds >= this.PERIODIC_MILLISECONDS;
 
-    multiplayerScreen.getSyncableObjects().forEach((multiplayerObject) => {
+    multiplayerScene.getSyncableObjects().forEach((multiplayerObject) => {
       const mustSync = multiplayerObject.mustSync();
       const mustSyncReliably = multiplayerObject.mustSyncReliably();
 
       if (mustSync || mustSyncReliably || this.periodicUpdate) {
-        this.sendLocalObjectData(multiplayerScreen, multiplayerObject);
+        this.sendLocalObjectData(multiplayerScene, multiplayerObject);
       }
     });
 
@@ -78,19 +78,19 @@ export class EntityOrchestratorService {
     }
 
     // Check for screen
-    const objectMultiplayerScreen = ScreenUtils.getScreenById(
+    const objectMultiplayerScene = SceneUtils.getScreenById(
       this.gameState.getGameFrame(),
       screenId
     );
 
-    if (objectMultiplayerScreen === null) {
+    if (objectMultiplayerScene === null) {
       return console.warn(`Screen not found with id ${screenId}`);
     }
 
     switch (objectStateId) {
       case EntityStateType.Active:
         return this.createOrSynchronizeObject(
-          objectMultiplayerScreen,
+          objectMultiplayerScene,
           objectTypeId,
           objectOwnerId,
           objectId,
@@ -98,7 +98,7 @@ export class EntityOrchestratorService {
         );
 
       case EntityStateType.Inactive:
-        return this.removeObject(objectMultiplayerScreen, objectId);
+        return this.removeObject(objectMultiplayerScene, objectId);
 
       default:
         console.warn(`Unknown object state: ${objectStateId}`);
@@ -115,7 +115,7 @@ export class EntityOrchestratorService {
 
   // Local
   private sendLocalObjectData(
-    multiplayerScreen: MultiplayerScreen,
+    multiplayerScene: MultiplayerScene,
     multiplayerObject: MultiplayerGameEntity
   ): void {
     this.updateOwnerToSharedObjects(multiplayerObject);
@@ -127,7 +127,7 @@ export class EntityOrchestratorService {
     this.markAsRemovedIfObjectInactive(multiplayerObject);
 
     const arrayBuffer = this.getObjectDataArrayBuffer(
-      multiplayerScreen,
+      multiplayerScene,
       multiplayerObject
     );
 
@@ -179,10 +179,10 @@ export class EntityOrchestratorService {
   }
 
   private getObjectDataArrayBuffer(
-    multiplayerScreen: MultiplayerScreen,
+    multiplayerScene: MultiplayerScene,
     multiplayerObject: MultiplayerGameEntity
   ): ArrayBuffer {
-    const screenTypeId = multiplayerScreen.getTypeId();
+    const screenTypeId = multiplayerScene.getTypeId();
     const objectStateId = multiplayerObject.getState();
     const objectTypeId = multiplayerObject.getTypeId();
     const objectOwnerId = multiplayerObject.getOwner()?.getId() ?? null;
@@ -230,18 +230,18 @@ export class EntityOrchestratorService {
 
   // Remote
   private createOrSynchronizeObject(
-    multiplayerScreen: MultiplayerScreen,
+    multiplayerScene: MultiplayerScene,
     entityTypeId: EntityType,
     objectOwnerId: string,
     objectId: string,
     objectData: ArrayBuffer
   ) {
     // Try to find object
-    const object = multiplayerScreen.getSyncableObject(objectId);
+    const object = multiplayerScene.getSyncableObject(objectId);
 
     if (object === null) {
       return this.createObject(
-        multiplayerScreen,
+        multiplayerScene,
         entityTypeId,
         objectOwnerId,
         objectId,
@@ -253,13 +253,13 @@ export class EntityOrchestratorService {
   }
 
   private createObject(
-    multiplayerScreen: MultiplayerScreen,
+    multiplayerScene: MultiplayerScene,
     entityTypeId: EntityType,
     objectOwnerId: string,
     objectId: string,
     objectData: ArrayBuffer
   ) {
-    const objectClass = multiplayerScreen.getSyncableObjectClass(entityTypeId);
+    const objectClass = multiplayerScene.getSyncableObjectClass(entityTypeId);
 
     if (objectClass === null) {
       return console.warn(`Object class not found for type ${entityTypeId}`);
@@ -282,15 +282,15 @@ export class EntityOrchestratorService {
     }
 
     objectInstance.setOwner(player);
-    multiplayerScreen?.addObjectToSceneLayer(objectInstance);
+    multiplayerScene?.addObjectToSceneLayer(objectInstance);
     console.log("Added object to scene layer", objectInstance);
   }
 
   private removeObject(
-    multiplayerScreen: MultiplayerScreen,
+    multiplayerScene: MultiplayerScene,
     objectId: string
   ): void {
-    const object = multiplayerScreen.getSyncableObject(objectId);
+    const object = multiplayerScene.getSyncableObject(objectId);
 
     if (object === null) {
       return console.warn(`Object not found with id ${objectId}`);

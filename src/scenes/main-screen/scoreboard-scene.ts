@@ -1,5 +1,5 @@
 import type { RankingResponse } from "../../interfaces/responses/ranking-response.js";
-import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
+import { BaseGameScene } from "../../core/scenes/base-game-scene.js";
 import type { GameState } from "../../core/services/game-state.js";
 import { APIService } from "../../services/network/api-service.js";
 import { injectable } from "@needle-di/core";
@@ -10,7 +10,7 @@ import type { ScoreboardEntities } from "./scoreboard-entity-factory.js";
 import { ScoreboardController } from "./scoreboard-controller.js";
 
 @injectable()
-export class ScoreboardScreen extends BaseGameScreen {
+export class ScoreboardScene extends BaseGameScene {
   private objects: ScoreboardEntities | null = null;
   private controller: ScoreboardController;
 

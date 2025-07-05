@@ -1,19 +1,19 @@
 import { GameFrame } from "../scenes/game-frame.js";
 import { NotificationEntity } from "../entities/notification-entity.js";
-import { MainScreen } from "../../screens/main-screen/main-screen.js";
-import { LoginScreen } from "../../screens/main-screen/login-screen.js";
-import { MainMenuScreen } from "../../screens/main-screen/main-menu-screen.js";
+import { MainScene } from "../../scenes/main-screen/main-scene.js";
+import { LoginScene } from "../../scenes/main-screen/login-scene.js";
+import { MainMenuScene } from "../../scenes/main-screen/main-menu-scene.js";
 import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
 import { DebugUtils } from "../utils/debug-utils.js";
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugEntity } from "../entities/debug-entity.js";
 import { GameState } from "./game-state.js";
-import { ScreenTransitionService } from "./screen-transition-service.js";
+import { SceneTransitionService } from "./scene-transition-service.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { DebugService } from "../../debug/debug-service.js";
 import { WebRTCService } from "../../services/network/webrtc-service.js";
@@ -40,7 +40,7 @@ export class GameLoopService {
 
   // Services
   private debugService: DebugService;
-  private screenTransitionService: ScreenTransitionService;
+  private screenTransitionService: SceneTransitionService;
   private timerManagerService: TimerManagerService;
   private intervalManagerService: IntervalManagerService;
   private eventConsumerService: EventConsumerService;
@@ -55,7 +55,7 @@ export class GameLoopService {
     this.gameState = container.get(GameState);
     this.gameFrame = this.gameState.getGameFrame();
     this.debugService = container.get(DebugService);
-    this.screenTransitionService = container.get(ScreenTransitionService);
+    this.screenTransitionService = container.get(SceneTransitionService);
     this.timerManagerService = container.get(TimerManagerService);
     this.intervalManagerService = container.get(IntervalManagerService);
     this.eventConsumerService = container.get(EventConsumerService);
@@ -164,11 +164,11 @@ export class GameLoopService {
   private handleHostDisconnectedEvent(): void {
     alert("Host has disconnected");
 
-    const mainScreen = new MainScreen(
+    const mainScreen = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
     );
-    const mainMenuScreen = new MainMenuScreen(
+    const mainMenuScreen = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
       false
@@ -207,11 +207,11 @@ export class GameLoopService {
   }
 
   private setInitialScreen() {
-    const mainScreen = new MainScreen(
+    const mainScreen = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
     );
-    const loginScreen = new LoginScreen(
+    const loginScreen = new LoginScene(
       this.gameState,
       container.get(EventConsumerService)
     );
@@ -326,13 +326,13 @@ export class GameLoopService {
       true
     );
 
-    this.renderDebugSubScreenInformation(currentScreen);
+    this.renderDebugSubSceneInformation(currentScreen);
   }
 
-  private renderDebugSubScreenInformation(
-    currentScreen: GameScreen | null
+  private renderDebugSubSceneInformation(
+    currentScene: GameScene | null
   ): void {
-    const screenManagerService = currentScreen?.getScreenManagerService();
+    const screenManagerService = currentScene?.getScreenManagerService();
     const currentSubScreen = screenManagerService?.getCurrentScreen() ?? null;
     const currentSubScreenName = currentSubScreen?.constructor.name ?? null;
 

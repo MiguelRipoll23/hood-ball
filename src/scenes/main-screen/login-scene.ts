@@ -1,5 +1,5 @@
-import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
-import { MainMenuScreen } from "./main-menu-screen.js";
+import { BaseGameScene } from "../../core/scenes/base-game-scene.js";
+import { MainMenuScene } from "./main-menu-scene.js";
 import { CryptoService } from "../../services/security/crypto-service.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import { APIService } from "../../services/network/api-service.js";
@@ -12,7 +12,7 @@ import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginObjects } from "./login-entity-factory.js";
 import { LoginController } from "./login-controller.js";
 
-export class LoginScreen extends BaseGameScreen {
+export class LoginScene extends BaseGameScene {
   private controller: LoginController;
   private credentialService: CredentialService;
   private objects: LoginObjects | null = null;
@@ -211,7 +211,7 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   private transitionToMainMenuScreen(): void {
-    const mainMenuScreen = new MainMenuScreen(
+    const mainMenuScreen = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
       true

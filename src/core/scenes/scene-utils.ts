@@ -1,21 +1,21 @@
 import { GameFrame } from "./game-frame.js";
-import { BaseMultiplayerScreen } from "./base-multiplayer-screen.js";
-import type { MultiplayerScreen } from "../../interfaces/screens/multiplayer-screen.js";
+import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
+import type { MultiplayerScene } from "../../interfaces/scenes/multiplayer-scene.js";
 
-export class ScreenUtils {
+export class SceneUtils {
   public static getScreenById(
     gameFrame: GameFrame,
     screenId: number
-  ): MultiplayerScreen | null {
+  ): MultiplayerScene | null {
     const currentScreen = gameFrame.getCurrentScreen();
 
-    if (currentScreen instanceof BaseMultiplayerScreen) {
+    if (currentScreen instanceof BaseMultiplayerScene) {
       return currentScreen.getTypeId() === screenId ? currentScreen : null;
     }
 
     const nextScreen = gameFrame.getNextScreen();
 
-    if (nextScreen instanceof BaseMultiplayerScreen) {
+    if (nextScreen instanceof BaseMultiplayerScene) {
       return nextScreen.getTypeId() === screenId ? nextScreen : null;
     }
 

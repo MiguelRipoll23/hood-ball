@@ -12,7 +12,7 @@ export class LoadingEntityFactory {
   public createObjects(): LoadingObjects {
     const background = new LoadingBackgroundEntity(this.canvas);
     const progressBar = new ProgressBarEntity(this.canvas);
-    progressBar.setText("Loading world screen....");
+    progressBar.setText("Loading world scene....");
     return { background, progressBar };
   }
 }
