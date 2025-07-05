@@ -1,10 +1,10 @@
 import { GamePlayer } from "../../models/game-player.js";
-import { ObjectType } from "../../enums/object-type.js";
+import { EntityType } from "../../enums/entity-type.js";
 import type { GameEntity } from "./game-entity.js";
 
 export interface MultiplayerGameEntity extends GameEntity {
   getId(): string | null;
-  getTypeId(): ObjectType | null;
+  getTypeId(): EntityType | null;
   getOwner(): GamePlayer | null;
   setOwner(player: GamePlayer | null): void;
   isSyncableByHost(): boolean;
@@ -18,6 +18,6 @@ export interface MultiplayerGameEntity extends GameEntity {
 
 export interface StaticMultiplayerGameEntity {
   new (...args: never[]): MultiplayerGameEntity;
-  getTypeId(): ObjectType;
+  getTypeId(): EntityType;
   deserialize(id: string, arrayBuffer: ArrayBuffer): MultiplayerGameEntity;
 }

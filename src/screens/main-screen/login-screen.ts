@@ -8,8 +8,8 @@ import { EventType } from "../../enums/event-type.js";
 import { CredentialService } from "../../services/security/credential-service.js";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
-import { LoginObjectFactory } from "./login-object-factory.js";
-import type { LoginObjects } from "./login-object-factory.js";
+import { LoginEntityFactory } from "./login-entity-factory.js";
+import type { LoginObjects } from "./login-entity-factory.js";
 import { LoginController } from "./login-controller.js";
 
 export class LoginScreen extends BaseGameScreen {
@@ -42,7 +42,7 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   public override load(): void {
-    const factory = new LoginObjectFactory(this.canvas);
+    const factory = new LoginEntityFactory(this.canvas);
     this.objects = factory.createObjects();
 
     this.uiObjects.push(this.objects.message, this.objects.closeableMessage);

@@ -1,5 +1,5 @@
 import { GamePlayer } from "../../models/game-player.js";
-import { ObjectType } from "../../enums/object-type.js";
+import { EntityType } from "../../enums/entity-type.js";
 import type { MultiplayerGameEntity } from "../../interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameEntity } from "../../core/entities/base-game-entity.js";
 
@@ -8,14 +8,14 @@ export class BaseMultiplayerGameEntity
   implements MultiplayerGameEntity
 {
   protected id: string | null = null;
-  protected typeId: ObjectType | null = null;
+  protected typeId: EntityType | null = null;
   protected syncableByHost: boolean = false;
   protected owner: GamePlayer | null = null;
 
   protected sync: boolean = false;
   protected syncReliably: boolean = false;
 
-  public static getTypeId(): ObjectType {
+  public static getTypeId(): EntityType {
     throw new Error("Method not implemented.");
   }
 
@@ -34,11 +34,11 @@ export class BaseMultiplayerGameEntity
     this.id = id;
   }
 
-  public getTypeId(): ObjectType | null {
+  public getTypeId(): EntityType | null {
     return this.typeId;
   }
 
-  public setTypeId(objectTypeId: ObjectType): void {
+  public setTypeId(objectTypeId: EntityType): void {
     this.typeId = objectTypeId;
   }
 

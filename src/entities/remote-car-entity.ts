@@ -1,4 +1,4 @@
-import { ObjectType } from "../enums/object-type.js";
+import { EntityType } from "../enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity.js";
 import {
@@ -20,8 +20,8 @@ export class RemoteCarEntity extends CarEntity {
     this.setSyncableValues(syncableId);
   }
 
-  public static override getTypeId(): ObjectType {
-    return ObjectType.RemoteCar;
+  public static override getTypeId(): EntityType {
+    return EntityType.RemoteCar;
   }
 
   public static deserialize(
@@ -51,7 +51,7 @@ export class RemoteCarEntity extends CarEntity {
 
   private setSyncableValues(syncableId: string) {
     this.id = syncableId;
-    this.typeId = ObjectType.RemoteCar;
+    this.typeId = EntityType.RemoteCar;
     this.syncableByHost = true;
   }
 }

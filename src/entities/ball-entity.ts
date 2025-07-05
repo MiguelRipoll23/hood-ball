@@ -2,9 +2,9 @@ import { HitboxEntity } from "../core/entities/hitbox-entity.js";
 import { BaseDynamicCollidingGameEntity } from "../core/entities/base-dynamic-colliding-game-entity.js";
 import { CarEntity } from "./car-entity.js";
 import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity.js";
-import { ObjectType } from "../enums/object-type.js";
+import { EntityType } from "../enums/entity-type.js";
 import { GamePlayer } from "../models/game-player.js";
-import { ObjectUtils } from "../core/utils/object-utils.js";
+import { EntityUtils } from "../core/utils/entity-utils.js";
 import { DebugUtils } from "../core/utils/debug-utils.js";
 import { BinaryWriter } from "../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../core/utils/binary-reader-utils.js";
@@ -38,8 +38,8 @@ export class BallEntity
     this.setSyncableValues();
   }
 
-  public static override getTypeId(): ObjectType {
-    return ObjectType.Ball;
+  public static override getTypeId(): EntityType {
+    return EntityType.Ball;
   }
 
   public override load(): void {
@@ -83,7 +83,7 @@ export class BallEntity
     this.updateHitbox();
     this.handlePlayerCollision();
 
-    ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
+    EntityUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
   }
 
   public override render(context: CanvasRenderingContext2D): void {
@@ -133,7 +133,7 @@ export class BallEntity
 
   private setSyncableValues() {
     this.setId("94c58aa041c34b22825a15a3834be240");
-    this.setTypeId(ObjectType.Ball);
+    this.setTypeId(EntityType.Ball);
     this.setSyncableByHost(true);
   }
 

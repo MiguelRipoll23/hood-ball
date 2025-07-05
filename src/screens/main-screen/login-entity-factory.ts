@@ -6,7 +6,7 @@ export interface LoginObjects {
   closeableMessage: CloseableMessageEntity;
 }
 
-export class LoginObjectFactory {
+export class LoginEntityFactory {
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
   public createObjects(): LoginObjects {

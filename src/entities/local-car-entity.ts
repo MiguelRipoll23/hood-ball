@@ -1,9 +1,9 @@
 import { GamePointer } from "../core/services/game-pointer.js";
-import { ObjectType } from "../enums/object-type.js";
+import { EntityType } from "../enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
 import { GameKeyboard } from "../core/services/game-keyboard.js";
-import { ObjectUtils } from "../core/utils/object-utils.js";
+import { EntityUtils } from "../core/utils/entity-utils.js";
 import { GameGamepad } from "../core/services/game-gamepad.js";
 import { GamepadButton } from "../enums/gamepad-button.js";
 
@@ -57,7 +57,7 @@ export class LocalCarEntity extends CarEntity {
     }
 
     if (this.canvas) {
-      ObjectUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
+      EntityUtils.fixObjectPositionIfOutOfBounds(this, this.canvas);
     }
 
     super.update(deltaTimeStamp);
@@ -65,7 +65,7 @@ export class LocalCarEntity extends CarEntity {
 
   private setSyncableValues(): void {
     this.setId(crypto.randomUUID().replaceAll("-", ""));
-    this.setTypeId(ObjectType.RemoteCar);
+    this.setTypeId(EntityType.RemoteCar);
   }
 
   private handleTouchControls(deltaTimeStamp: DOMHighResTimeStamp): void {

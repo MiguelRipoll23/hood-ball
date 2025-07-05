@@ -7,7 +7,7 @@ import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { BaseCollidingGameScreen } from "../../core/scenes/base-colliding-game-screen.js";
 import { GameState } from "../../core/services/game-state.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
-import { ObjectStateType } from "../../core/constants/object-state-type.js";
+import { EntityStateType } from "../../core/constants/entity-state-type.js";
 import { EventType } from "../../enums/event-type.js";
 import { ScreenType } from "../../enums/screen-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
@@ -18,14 +18,14 @@ import { MatchmakingService } from "../../services/gameplay/matchmaking-service.
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
 import { EventProcessorService } from "../../core/services/event-processor-service.js";
-import { ObjectOrchestratorService } from "../../services/gameplay/object-orchestrator-service.js";
+import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
 import { ScreenTransitionService } from "../../core/services/screen-transition-service.js";
 import { TimerManagerService } from "../../core/services/timer-manager-service.js";
 import { MainScreen } from "../main-screen/main-screen.js";
 import { MainMenuScreen } from "../main-screen/main-menu-screen.js";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
-import { WorldObjectFactory } from "./world-object-factory.js";
+import { WorldEntityFactory } from "./world-entity-factory.js";
 import { MatchFlowController } from "./match-flow-controller.js";
 
 export class WorldScreen extends BaseCollidingGameScreen {
@@ -35,7 +35,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private readonly matchmakingService: IMatchmakingProvider;
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
-  private readonly objectOrchestrator: ObjectOrchestratorService;
+  private readonly objectOrchestrator: EntityOrchestratorService;
 
   private scoreboardObject: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -55,14 +55,14 @@ export class WorldScreen extends BaseCollidingGameScreen {
     this.matchmakingController = container.get(
       MatchmakingControllerService
     );
-    this.objectOrchestrator = container.get(ObjectOrchestratorService);
+    this.objectOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
     this.addSyncableObjects();
     this.subscribeToEvents();
   }
 
   public override load(): void {
-    const factory = new WorldObjectFactory(this.gameState, this.canvas);
+    const factory = new WorldEntityFactory(this.gameState, this.canvas);
     factory.createBackground(this.sceneObjects);
     const objects = factory.createWorldObjects(this.sceneObjects, this.uiObjects);
 
@@ -172,7 +172,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const { player } = payload;
 
     this.getObjectsByOwner(player).forEach((object) => {
-      object.setState(ObjectStateType.Inactive);
+      object.setState(EntityStateType.Inactive);
     });
 
     this.toastObject?.show(`<em>${player.getName()}</em> left`, 2);

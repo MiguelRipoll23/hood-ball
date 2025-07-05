@@ -1,5 +1,5 @@
 import { GamePlayer } from "../../models/game-player.js";
-import { ObjectType } from "../../enums/object-type.js";
+import { EntityType } from "../../enums/entity-type.js";
 import { BaseMultiplayerGameEntity } from "../../entities/base/base-multiplayer-entity.js";
 import type {
   MultiplayerGameEntity,
@@ -13,7 +13,7 @@ export class BaseMultiplayerScreen
   extends BaseGameScreen
   implements MultiplayerScreen
 {
-  protected syncableObjectTypes: Map<ObjectType, StaticMultiplayerGameEntity> =
+  protected syncableObjectTypes: Map<EntityType, StaticMultiplayerGameEntity> =
     new Map();
 
   public getTypeId(): ScreenType {
@@ -26,7 +26,7 @@ export class BaseMultiplayerScreen
   }
 
   public getSyncableObjectClass(
-    typeId: ObjectType
+    typeId: EntityType
   ): StaticMultiplayerGameEntity | null {
     return this.syncableObjectTypes.get(typeId) ?? null;
   }
