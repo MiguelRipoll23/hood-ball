@@ -11,6 +11,7 @@ import {
 } from "../constants/webrtc-constants.js";
 import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
+import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected readonly TOP_SPEED: number = 0.3;
@@ -23,6 +24,12 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private readonly MASS: number = 1000;
   private readonly DISTANCE_CENTER: number = 220;
   private readonly FRICTION: number = 0.001;
+
+  // Boost related constants
+  protected readonly MAX_BOOST: number = 100;
+  protected readonly BOOST_DRAIN_RATE: number = 30; // units per second
+  protected readonly BOOST_TOP_SPEED_MULTIPLIER: number = 2;
+  protected readonly BOOST_ACCELERATION_MULTIPLIER: number = 2;
 
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
@@ -37,6 +44,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected height: number = 50;
   protected canvas: HTMLCanvasElement | null = null;
   protected speed: number = 0;
+
+  protected boost: number = this.MAX_BOOST;
+  protected boosting: boolean = false;
 
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
@@ -83,11 +93,15 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    this.handleBoostPads();
+
     if (this.isCollidingWithStatic()) {
       this.speed = 0;
     } else {
       this.applyFriction(deltaTimeStamp);
     }
+
+    this.applyBoost(deltaTimeStamp);
 
     this.calculateMovement(deltaTimeStamp);
     this.updateHitbox();
@@ -128,6 +142,28 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   public getPlayer(): GamePlayer | null {
     return this.owner;
+  }
+
+  public getBoost(): number {
+    return this.boost;
+  }
+
+  public isBoosting(): boolean {
+    return this.boosting;
+  }
+
+  public activateBoost(): void {
+    if (this.boost > 0) {
+      this.boosting = true;
+    }
+  }
+
+  public deactivateBoost(): void {
+    this.boosting = false;
+  }
+
+  public refillBoost(): void {
+    this.boost = this.MAX_BOOST;
   }
 
   public setCanvas(canvas: HTMLCanvasElement): void {
@@ -180,6 +216,33 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
         this.speed += -Math.sign(this.speed) * friction;
       }
     }
+  }
+
+  private applyBoost(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (!this.boosting || this.boost <= 0) {
+      this.boosting = false;
+      return;
+    }
+
+    this.boost -= (this.BOOST_DRAIN_RATE * deltaTimeStamp) / 1000;
+
+    if (this.speed < this.TOP_SPEED * this.BOOST_TOP_SPEED_MULTIPLIER) {
+      this.speed +=
+        this.ACCELERATION * this.BOOST_ACCELERATION_MULTIPLIER * deltaTimeStamp;
+    }
+
+    if (this.boost <= 0) {
+      this.boost = 0;
+      this.boosting = false;
+    }
+  }
+
+  private handleBoostPads(): void {
+    this.getCollidingEntities().forEach((entity) => {
+      if (entity instanceof BoostPadEntity) {
+        this.refillBoost();
+      }
+    });
   }
 
   private calculateMovement(deltaTimeStamp: DOMHighResTimeStamp): void {
