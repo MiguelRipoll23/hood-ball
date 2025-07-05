@@ -4,7 +4,7 @@ import {
 } from "../constants/colors-constants.js";
 import { TimerService } from "../../core/services/gameplay/timer-service.js";
 import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
-import type { MultiplayerGameEntity } from "../../core/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../core/interfaces/entities/multiplayer-game-entity.js";
 
 export class AlertEntity
   extends BaseAnimatedGameEntity

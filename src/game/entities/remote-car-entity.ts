@@ -1,6 +1,6 @@
 import { EntityType } from "../enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
-import type { MultiplayerGameEntity } from "../../core/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../core/interfaces/entities/multiplayer-game-entity.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,

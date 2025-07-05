@@ -1,6 +1,6 @@
-import { GamePlayer } from "../../game/models/game-player.js";
-import { EntityType } from "../../game/enums/entity-type.js";
-import type { GameEntity } from "../models/game-entity.js";
+import { GamePlayer } from "../../../game/models/game-player.js";
+import { EntityType } from "../../../game/enums/entity-type.js";
+import type { GameEntity } from "../../models/game-entity.js";
 
 export interface MultiplayerGameEntity extends GameEntity {
   getId(): string | null;

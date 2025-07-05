@@ -1,7 +1,7 @@
 import { HitboxEntity } from "../../core/entities/hitbox-entity.js";
 import { BaseDynamicCollidingGameEntity } from "../../core/entities/base-dynamic-colliding-game-entity.js";
 import { CarEntity } from "./car-entity.js";
-import type { MultiplayerGameEntity } from "../../core/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../core/interfaces/entities/multiplayer-game-entity.js";
 import { EntityType } from "../enums/entity-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { EntityUtils } from "../../core/utils/entity-utils.js";

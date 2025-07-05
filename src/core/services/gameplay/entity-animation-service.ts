@@ -1,5 +1,5 @@
 import { AnimationType } from "../../../game/enums/animation-type.js";
-import type { AnimatableEntity } from "../../entities/animatable-entity.js";
+import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity.js";
 
 export class EntityAnimationService {
   private readonly entity: AnimatableEntity;

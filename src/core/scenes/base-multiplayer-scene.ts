@@ -3,7 +3,7 @@ import { EntityType } from "../../game/enums/entity-type.js";
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
-} from "../entities/multiplayer-game-entity.js";
+} from "../interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameScene } from "./base-game-scene.js";
 import type { MultiplayerScene } from "../../game/interfaces/scenes/multiplayer-scene.js";
 import { SceneType } from "../../game/enums/scene-type.js";

@@ -1,7 +1,7 @@
 import type { EntityType } from "../../game/enums/entity-type";
 import type { GamePlayer } from "../../game/models/game-player";
 import { BaseGameEntity } from "./base-game-entity";
-import type { MultiplayerGameEntity } from "./multiplayer-game-entity";
+import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity";
 
 export class BaseMultiplayerGameEntity
   extends BaseGameEntity

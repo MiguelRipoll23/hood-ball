@@ -1,4 +1,4 @@
-import type { MultiplayerGameEntity } from "../../../core/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../../core/interfaces/entities/multiplayer-game-entity.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityUtils } from "../../../core/utils/entity-utils.js";
@@ -25,8 +25,13 @@ export class EntityOrchestratorService {
   constructor(private gameState = container.get(GameState)) {}
 
   public initialize(): void {
-    this.webrtcService = container.get(WebRTCService);
-    this.webrtcService!.registerCommandHandlers(this);
+    if (!this.webrtcService) {
+      throw new Error(
+        "WebRTCService must be initialized before registering handlers"
+      );
+    }
+
+    this.webrtcService.registerCommandHandlers(this);
     console.log("Entity orchestrator service initialized");
   }
 
@@ -164,7 +169,7 @@ export class EntityOrchestratorService {
   }
 
   private skipUnownedEntity(multiplayerEntity: MultiplayerGameEntity): boolean {
-    // If host, don't skip entitys from other players
+    // If host, don't skip entities from other players
     if (this.gameState.getMatch()?.isHost()) {
       return false;
     }
