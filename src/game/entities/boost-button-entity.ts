@@ -1,4 +1,4 @@
-import { BaseTappableGameEntity } from "../..//core/entities/base-tappable-game-entity.js";
+import { BaseTappableGameEntity } from "../../core/entities/base-tappable-game-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class BoostButtonEntity extends BaseTappableGameEntity {
@@ -80,11 +80,11 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
       context.fill();
     }
 
-    context.font = `${this.RADIUS * 1.2}px system-ui`;
+    context.font = `${this.RADIUS * 1.0}px system-ui`;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillStyle = '#000';
-    context.fillText('🚀', cx, cy + 2);
+    context.fillText('🚀', cx, cy + 1);
 
     context.restore();
     super.render(context);

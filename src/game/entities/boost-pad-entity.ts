@@ -102,7 +102,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       gradient.addColorStop(1, LIGHT_GREEN_COLOR);
       const pulse = (Math.sin(this.glowTimer / 200) + 1) / 2;
       context.shadowColor = LIGHT_GREEN_COLOR;
-      context.shadowBlur = 15 + pulse * 10;
+      context.shadowBlur = 20 + pulse * 20;
       context.fillStyle = gradient;
     } else {
       const ratio = 1 - this.cooldownRemaining / PAD_COOLDOWN_MS;
@@ -113,6 +113,12 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     context.arc(this.x, this.y, this.RADIUS, 0, Math.PI * 2);
     context.fill();
     context.closePath();
+
+    context.font = `${this.RADIUS * 1.2}px system-ui`;
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillStyle = '#000';
+    context.fillText('⚡', this.x, this.y + 1);
     context.restore();
     super.render(context);
   }
