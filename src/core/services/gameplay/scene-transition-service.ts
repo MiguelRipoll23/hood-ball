@@ -17,8 +17,6 @@ export class SceneTransitionService {
 
   private sceneManager: SceneManager | null = null;
 
-  constructor() {}
-
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.sceneManager === null) {
       return;
