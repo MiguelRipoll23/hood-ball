@@ -56,7 +56,7 @@ export class LoginScreen extends BaseGameScreen {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.handleErrorCloseableMessageObject();
+    this.handleErrorCloseableMessageEntity();
     super.update(deltaTimeStamp);
   }
 
@@ -86,7 +86,7 @@ export class LoginScreen extends BaseGameScreen {
     this.objects?.closeableMessage.show(message);
   }
 
-  private handleErrorCloseableMessageObject(): void {
+  private handleErrorCloseableMessageEntity(): void {
     if (this.objects?.closeableMessage.isPressed()) {
       window.location.reload();
     }

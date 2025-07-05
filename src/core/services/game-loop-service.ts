@@ -1,5 +1,5 @@
 import { GameFrame } from "../scenes/game-frame.js";
-import { NotificationObject } from "../entities/notification-object.js";
+import { NotificationEntity } from "../entities/notification-entity.js";
 import { MainScreen } from "../../screens/main-screen/main-screen.js";
 import { LoginScreen } from "../../screens/main-screen/login-screen.js";
 import { MainMenuScreen } from "../../screens/main-screen/main-menu-screen.js";
@@ -11,7 +11,7 @@ import { DebugUtils } from "../utils/debug-utils.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import { GAME_VERSION } from "../constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
-import { DebugObject } from "../entities/debug-object.js";
+import { DebugEntity } from "../entities/debug-entity.js";
 import { GameState } from "./game-state.js";
 import { ScreenTransitionService } from "./screen-transition-service.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
@@ -20,7 +20,7 @@ import { WebRTCService } from "../../services/network/webrtc-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "./service-registry.js";
-import { LoadingIndicatorObject } from "../entities/loading-indicator-object.js";
+import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity.js";
 import { container } from "./di-container.js";
 
 export class GameLoopService {
@@ -46,7 +46,7 @@ export class GameLoopService {
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
-  private loadingIndicatorObject: LoadingIndicatorObject | null = null;
+  private loadingIndicatorObject: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.logDebugInfo();
@@ -158,7 +158,7 @@ export class GameLoopService {
   private handleServerNotificationEvent(
     payload: ServerNotificationPayload
   ): void {
-    this.gameFrame.getNotificationObject()?.show(payload.message);
+    this.gameFrame.getNotificationEntity()?.show(payload.message);
   }
 
   private handleHostDisconnectedEvent(): void {
@@ -186,24 +186,24 @@ export class GameLoopService {
   }
 
   private loadObjects(): void {
-    this.loadNotificationObject();
-    this.loadDebugObject();
-    this.loadLoadingIndicatorObject();
+    this.loadNotificationEntity();
+    this.loadDebugEntity();
+    this.loadLoadingIndicatorEntity();
   }
 
-  private loadNotificationObject(): void {
-    const notificationObject = new NotificationObject(this.canvas);
-    this.gameFrame.setNotificationObject(notificationObject);
+  private loadNotificationEntity(): void {
+    const notificationObject = new NotificationEntity(this.canvas);
+    this.gameFrame.setNotificationEntity(notificationObject);
   }
 
-  private loadDebugObject(): void {
-    const debugObject = new DebugObject(this.canvas);
-    this.gameFrame.setDebugObject(debugObject);
+  private loadDebugEntity(): void {
+    const debugObject = new DebugEntity(this.canvas);
+    this.gameFrame.setDebugEntity(debugObject);
   }
 
-  private loadLoadingIndicatorObject(): void {
-    this.loadingIndicatorObject = new LoadingIndicatorObject(this.canvas);
-    this.gameFrame.setLoadingIndicatorObject(this.loadingIndicatorObject);
+  private loadLoadingIndicatorEntity(): void {
+    this.loadingIndicatorObject = new LoadingIndicatorEntity(this.canvas);
+    this.gameFrame.setLoadingIndicatorEntity(this.loadingIndicatorObject);
   }
 
   private setInitialScreen() {
@@ -256,11 +256,11 @@ export class GameLoopService {
 
     this.gameFrame.getCurrentScreen()?.update(deltaTimeStamp);
     this.gameFrame.getNextScreen()?.update(deltaTimeStamp);
-    this.gameFrame.getNotificationObject()?.update(deltaTimeStamp);
-    this.gameFrame.getLoadingIndicatorObject()?.update(deltaTimeStamp);
+    this.gameFrame.getNotificationEntity()?.update(deltaTimeStamp);
+    this.gameFrame.getLoadingIndicatorEntity()?.update(deltaTimeStamp);
 
     if (this.gameState.isDebugging()) {
-      this.gameFrame.getDebugObject()?.update(deltaTimeStamp);
+      this.gameFrame.getDebugEntity()?.update(deltaTimeStamp);
     }
   }
 
@@ -269,8 +269,8 @@ export class GameLoopService {
 
     this.gameFrame.getCurrentScreen()?.render(this.context);
     this.gameFrame.getNextScreen()?.render(this.context);
-    this.gameFrame.getNotificationObject()?.render(this.context);
-    this.gameFrame.getLoadingIndicatorObject()?.render(this.context);
+    this.gameFrame.getNotificationEntity()?.render(this.context);
+    this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
 
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();
@@ -286,7 +286,7 @@ export class GameLoopService {
     this.matchmakingService.renderDebugInformation(this.context);
 
     this.webrtcService.renderDebugInformation(this.context);
-    this.gameFrame.getDebugObject()?.render(this.context);
+    this.gameFrame.getDebugEntity()?.render(this.context);
 
     this.renderDebugGameInformation();
     this.renderDebugScreenInformation();

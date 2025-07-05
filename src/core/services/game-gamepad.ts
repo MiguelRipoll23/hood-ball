@@ -48,7 +48,7 @@ export class GameGamepad implements IGameGamepad {
   private handleConnected(event: GamepadEvent): void {
     this.gamepadIndex = event.gamepad.index;
     console.log(`Gamepad connected at index ${this.gamepadIndex}`);
-    this.gameFrame.getDebugObject()?.show("Gamepad connected", 1);
+    this.gameFrame.getDebugEntity()?.show("Gamepad connected", 1);
   }
 
   private handleDisconnected(event: GamepadEvent): void {
@@ -56,7 +56,7 @@ export class GameGamepad implements IGameGamepad {
 
     if (this.gamepadIndex === event.gamepad.index) {
       this.gamepadIndex = null;
-      this.gameFrame.getDebugObject()?.show("Gamepad disconnected", 1);
+      this.gameFrame.getDebugEntity()?.show("Gamepad disconnected", 1);
     }
   }
 }

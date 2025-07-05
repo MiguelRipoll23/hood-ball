@@ -1,24 +1,24 @@
 import type { GameState } from "../../core/services/game-state.js";
-import { ButtonObject } from "../../objects/common/button-object.js";
-import { TitleObject } from "../../objects/common/title-object.js";
-import { SettingObject } from "../../objects/setting-object.js";
+import { ButtonEntity } from "../../entities/common/button-entity.js";
+import { TitleEntity } from "../../entities/common/title-entity.js";
+import { SettingEntity } from "../../entities/setting-entity.js";
 import { DebugService } from "../../debug/debug-service.js";
 import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 
 export class SettingsScreen extends BaseGameScreen {
-  private titleObject: TitleObject | null = null;
-  private buttonObject: ButtonObject | null = null;
+  private titleObject: TitleEntity | null = null;
+  private buttonObject: ButtonEntity | null = null;
 
   constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
     super(gameState, eventConsumerService);
   }
 
   public override load(): void {
-    this.loadTitleObject();
-    this.loadButtonObject();
-    this.loadSettingObjects();
+    this.loadTitleEntity();
+    this.loadButtonEntity();
+    this.loadSettingEntities();
     super.load();
   }
 
@@ -26,14 +26,14 @@ export class SettingsScreen extends BaseGameScreen {
     super.onTransitionEnd();
   }
 
-  private loadTitleObject(): void {
-    this.titleObject = new TitleObject();
+  private loadTitleEntity(): void {
+    this.titleObject = new TitleEntity();
     this.titleObject.setText("SETTINGS");
     this.uiObjects.push(this.titleObject);
   }
 
-  public loadButtonObject(): void {
-    this.buttonObject = new ButtonObject(this.canvas, "Back");
+  public loadButtonEntity(): void {
+    this.buttonObject = new ButtonEntity(this.canvas, "Back");
     this.buttonObject.setPosition(
       this.canvas.width / 2,
       this.canvas.height - 60 - 20
@@ -41,13 +41,13 @@ export class SettingsScreen extends BaseGameScreen {
     this.uiObjects.push(this.buttonObject);
   }
 
-  private loadSettingObjects(): void {
-    this.loadDebugSettingObject();
+  private loadSettingEntities(): void {
+    this.loadDebugSettingEntity();
   }
 
-  private loadDebugSettingObject(): void {
+  private loadDebugSettingEntity(): void {
     const debugging = this.gameState.isDebugging();
-    const settingObject = new SettingObject("debug", "Debug", debugging);
+    const settingObject = new SettingEntity("debug", "Debug", debugging);
 
     settingObject.setY(75);
     settingObject.load();
@@ -63,9 +63,9 @@ export class SettingsScreen extends BaseGameScreen {
     }
 
     this.uiObjects.forEach((object) => {
-      if (object instanceof SettingObject) {
+      if (object instanceof SettingEntity) {
         if (object.getUpdated()) {
-          this.handleSettingObjectPress(object);
+          this.handleSettingEntityPress(object);
           object.setUpdated(false);
         }
       }
@@ -76,7 +76,7 @@ export class SettingsScreen extends BaseGameScreen {
     this.returnToPreviousScreen();
   }
 
-  private handleSettingObjectPress(settingObject: SettingObject): void {
+  private handleSettingEntityPress(settingObject: SettingEntity): void {
     const id = settingObject.getSettingId();
 
     switch (id) {
@@ -89,7 +89,7 @@ export class SettingsScreen extends BaseGameScreen {
     }
   }
 
-  private handleDebugSettingPress(settingObject: SettingObject): void {
+  private handleDebugSettingPress(settingObject: SettingEntity): void {
     const state = settingObject.getSettingState();
     this.gameState.getDebugSettings().setDebugging(state);
 

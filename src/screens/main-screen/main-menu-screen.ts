@@ -1,7 +1,7 @@
-import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
-import { MenuOptionObject } from "../../objects/common/menu-option-object.js";
-import { TitleObject } from "../../objects/common/title-object.js";
-import { ServerMessageWindowObject } from "../../objects/server-message-window-object.js";
+import { CloseableMessageEntity } from "../../entities/common/closeable-message-entity.js";
+import { MenuOptionEntity } from "../../entities/common/menu-option-entity.js";
+import { TitleEntity } from "../../entities/common/title-entity.js";
+import { ServerMessageWindowEntity } from "../../entities/server-message-window-entity.js";
 import { APIService } from "../../services/network/api-service.js";
 import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
 import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
@@ -20,8 +20,8 @@ export class MainMenuScreen extends BaseGameScreen {
 
   private messagesResponse: MessagesResponse[] | null = null;
 
-  private serverMessageWindowObject: ServerMessageWindowObject | null = null;
-  private closeableMessageObject: CloseableMessageObject | null = null;
+  private serverMessageWindowObject: ServerMessageWindowEntity | null = null;
+  private closeableMessageEntity: CloseableMessageEntity | null = null;
 
   constructor(gameState: GameState, eventConsumerService: EventConsumerService, private showNews: boolean) {
     super(gameState, eventConsumerService);
@@ -31,10 +31,10 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   public override load(): void {
-    this.loadTitleObject();
-    this.loadMenuOptionObjects();
+    this.loadTitleEntity();
+    this.loadMenuOptionEntities();
     this.loadServerMessageWindow();
-    this.loadCloseableMessageObject();
+    this.loadCloseableMessageEntity();
 
     super.load();
   }
@@ -49,8 +49,8 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.handleMenuOptionObjects();
-    this.handleServerMessageWindowObject();
+    this.handleMenuOptionEntities();
+    this.handleServerMessageWindowEntity();
 
     super.update(deltaTimeStamp);
   }
@@ -73,19 +73,19 @@ export class MainMenuScreen extends BaseGameScreen {
     );
   }
 
-  private loadTitleObject(): void {
-    const titleObject = new TitleObject();
+  private loadTitleEntity(): void {
+    const titleObject = new TitleEntity();
     titleObject.setText("MAIN MENU");
     this.uiObjects.push(titleObject);
   }
 
-  private loadMenuOptionObjects(): void {
+  private loadMenuOptionEntities(): void {
     let y = 100;
 
     for (let index = 0; index < this.MENU_OPTIONS_TEXT.length; index++) {
       const text = this.MENU_OPTIONS_TEXT[index];
 
-      const menuOptionObject = new MenuOptionObject(this.canvas, index, text);
+      const menuOptionObject = new MenuOptionEntity(this.canvas, index, text);
       menuOptionObject.setPosition(30, y);
 
       this.uiObjects.push(menuOptionObject);
@@ -94,13 +94,13 @@ export class MainMenuScreen extends BaseGameScreen {
     }
   }
 
-  private loadCloseableMessageObject(): void {
-    this.closeableMessageObject = new CloseableMessageObject(this.canvas);
-    this.uiObjects.push(this.closeableMessageObject);
+  private loadCloseableMessageEntity(): void {
+    this.closeableMessageEntity = new CloseableMessageEntity(this.canvas);
+    this.uiObjects.push(this.closeableMessageEntity);
   }
 
   private loadServerMessageWindow(): void {
-    this.serverMessageWindowObject = new ServerMessageWindowObject(this.canvas);
+    this.serverMessageWindowObject = new ServerMessageWindowEntity(this.canvas);
     this.serverMessageWindowObject.load();
 
     this.uiObjects.push(this.serverMessageWindowObject);
@@ -114,7 +114,7 @@ export class MainMenuScreen extends BaseGameScreen {
       })
       .catch((error) => {
         console.error(error);
-        this.closeableMessageObject?.show("Failed to download server messages");
+        this.closeableMessageEntity?.show("Failed to download server messages");
       });
   }
 
@@ -152,22 +152,22 @@ export class MainMenuScreen extends BaseGameScreen {
     );
   }
 
-  private handleServerMessageWindowObject() {
+  private handleServerMessageWindowEntity() {
     if (this.serverMessageWindowObject?.getNext()) {
       const index = this.serverMessageWindowObject.getIndex() + 1;
       this.showMessage(index);
     }
   }
 
-  private handleMenuOptionObjects(): void {
+  private handleMenuOptionEntities(): void {
     this.uiObjects.forEach((uiObject) => {
-      if (uiObject instanceof MenuOptionObject && uiObject.isPressed()) {
+      if (uiObject instanceof MenuOptionEntity && uiObject.isPressed()) {
         this.handleMenuOption(uiObject);
       }
     });
   }
 
-  private handleMenuOption(menuOptionObject: MenuOptionObject): void {
+  private handleMenuOption(menuOptionObject: MenuOptionEntity): void {
     const index = menuOptionObject.getIndex();
 
     switch (index) {
@@ -182,7 +182,7 @@ export class MainMenuScreen extends BaseGameScreen {
         return this.transitionToSettingsScreen();
 
       default:
-        return this.closeableMessageObject?.show("Invalid menu option");
+        return this.closeableMessageEntity?.show("Invalid menu option");
     }
   }
 
@@ -230,7 +230,7 @@ export class MainMenuScreen extends BaseGameScreen {
 
   private enableMenuButtons(): void {
     this.uiObjects.forEach((uiObject) => {
-      if (uiObject instanceof MenuOptionObject) {
+      if (uiObject instanceof MenuOptionEntity) {
         uiObject.setActive(true);
       }
     });
@@ -238,7 +238,7 @@ export class MainMenuScreen extends BaseGameScreen {
 
   private disableMenuButtons(): void {
     this.uiObjects.forEach((uiObject) => {
-      if (uiObject instanceof MenuOptionObject) {
+      if (uiObject instanceof MenuOptionEntity) {
         uiObject.setActive(false);
       }
     });

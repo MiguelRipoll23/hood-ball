@@ -1,12 +1,12 @@
-import { LocalCarObject } from "../../objects/local-car-object.js";
-import { GoalObject } from "../../objects/goal-object.js";
-import { BallObject } from "../../objects/ball-object.js";
-import { ScoreboardObject } from "../../objects/scoreboard-object.js";
-import { AlertObject } from "../../objects/alert-object.js";
-import { ToastObject } from "../../objects/common/toast-object.js";
+import { LocalCarEntity } from "../../entities/local-car-entity.js";
+import { GoalEntity } from "../../entities/goal-entity.js";
+import { BallEntity } from "../../entities/ball-entity.js";
+import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
+import { AlertEntity } from "../../entities/alert-entity.js";
+import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { BaseCollidingGameScreen } from "../../core/scenes/base-colliding-game-screen.js";
 import { GameState } from "../../core/services/game-state.js";
-import { RemoteCarObject } from "../../objects/remote-car-object.js";
+import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { ObjectStateType } from "../../core/constants/object-state-type.js";
 import { EventType } from "../../enums/event-type.js";
 import { ScreenType } from "../../enums/screen-type.js";
@@ -37,12 +37,12 @@ export class WorldScreen extends BaseCollidingGameScreen {
   private readonly eventProcessorService: EventProcessorService;
   private readonly objectOrchestrator: ObjectOrchestratorService;
 
-  private scoreboardObject: ScoreboardObject | null = null;
-  private localCarObject: LocalCarObject | null = null;
-  private ballObject: BallObject | null = null;
-  private goalObject: GoalObject | null = null;
-  private alertObject: AlertObject | null = null;
-  private toastObject: ToastObject | null = null;
+  private scoreboardObject: ScoreboardEntity | null = null;
+  private localCarEntity: LocalCarEntity | null = null;
+  private ballObject: BallEntity | null = null;
+  private goalObject: GoalEntity | null = null;
+  private alertObject: AlertEntity | null = null;
+  private toastObject: ToastEntity | null = null;
   private scoreManagerService: ScoreManagerService | null = null;
   private matchFlowController: MatchFlowController | null = null;
 
@@ -67,7 +67,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
     const objects = factory.createWorldObjects(this.sceneObjects, this.uiObjects);
 
     this.scoreboardObject = objects.scoreboard;
-    this.localCarObject = objects.localCar;
+    this.localCarEntity = objects.localCar;
     this.ballObject = objects.ball;
     this.goalObject = objects.goal;
     this.alertObject = objects.alert;
@@ -80,7 +80,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
       this.matchmakingService,
       this.scoreboardObject,
       this.ballObject,
-      this.localCarObject,
+      this.localCarEntity,
       this.alertObject
     );
 
@@ -136,7 +136,7 @@ export class WorldScreen extends BaseCollidingGameScreen {
   }
 
   private addSyncableObjects(): void {
-    this.addSyncableObject(RemoteCarObject);
+    this.addSyncableObject(RemoteCarEntity);
   }
 
   private handleMatchAdvertised(): void {

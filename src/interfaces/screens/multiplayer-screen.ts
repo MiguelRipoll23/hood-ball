@@ -1,16 +1,16 @@
 import type {
-  MultiplayerGameObject,
-  StaticMultiplayerGameObject,
-} from "../objects/multiplayer-game-object.js";
+  MultiplayerGameEntity,
+  StaticMultiplayerGameEntity,
+} from "../entities/multiplayer-game-entity.js";
 import { ScreenType } from "../../enums/screen-type.js";
 import type { GameScreen } from "./game-screen.js";
 import type { ObjectType } from "../../enums/object-type.js";
 
 export interface MultiplayerScreen extends GameScreen {
   getTypeId(): ScreenType;
-  getSyncableObjects(): MultiplayerGameObject[];
+  getSyncableObjects(): MultiplayerGameEntity[];
   getSyncableObjectClass(
     typeId: ObjectType
-  ): StaticMultiplayerGameObject | null;
-  getSyncableObject(objectId: string): MultiplayerGameObject | null;
+  ): StaticMultiplayerGameEntity | null;
+  getSyncableObject(objectId: string): MultiplayerGameEntity | null;
 }
