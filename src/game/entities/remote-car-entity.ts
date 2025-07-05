@@ -13,10 +13,12 @@ export class RemoteCarEntity extends CarEntity {
     x: number,
     y: number,
     angle: number,
-    speed: number
+    speed: number,
+    boost: number
   ) {
     super(x, y, angle, true);
     this.speed = speed;
+    this.boost = boost;
     this.setSyncableValues(syncableId);
   }
 
@@ -34,8 +36,9 @@ export class RemoteCarEntity extends CarEntity {
     const y = binaryReader.unsignedInt16();
     const angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
     const speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
+    const boost = binaryReader.unsignedInt8();
 
-    return new RemoteCarEntity(syncableId, x, y, angle, speed);
+    return new RemoteCarEntity(syncableId, x, y, angle, speed, boost);
   }
 
   public override synchronize(arrayBuffer: ArrayBuffer): void {
@@ -45,6 +48,7 @@ export class RemoteCarEntity extends CarEntity {
     this.y = binaryReader.unsignedInt16();
     this.angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
     this.speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
+    this.boost = binaryReader.unsignedInt8();
 
     this.updateHitbox();
   }

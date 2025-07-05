@@ -161,7 +161,8 @@ export class SceneInspectorWindow extends BaseWindow {
         x,
         y,
         angle,
-        0
+        0,
+        100
       );
 
       remoteCarEntity.setDebugSettings(this.gameState.getDebugSettings());
