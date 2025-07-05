@@ -37,17 +37,25 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
   }
 
   public handlePointerEvent(gamePointer: GamePointer): void {
-    if (this.stealFocus || this.isPointerWithinBounds(gamePointer)) {
-      const pressing = gamePointer.isPressing();
-      const mouse = gamePointer.getType() === "mouse";
+    const touches = gamePointer.getTouchPoints();
 
-      if (pressing || mouse) {
-        this.hovering = true;
-      }
+    for (const touch of touches) {
+      if (this.stealFocus || this.isPointerWithinBounds(touch.x, touch.y)) {
+        const pressing = touch.pressing;
+        const mouse = touch.type === "mouse";
 
-      if (gamePointer.isPressed()) {
-        console.log(this.constructor.name + " pressed");
-        this.pressed = true;
+        if (pressing || mouse) {
+          this.hovering = true;
+        }
+
+        if (touch.pressed) {
+          console.log(this.constructor.name + " pressed");
+          this.pressed = true;
+        }
+
+        if (this.hovering || this.pressed) {
+          break;
+        }
       }
     }
   }
@@ -76,15 +84,12 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
     }
   }
 
-  private isPointerWithinBounds(gamePointer: GamePointer): boolean {
-    const pointerX = gamePointer.getX();
-    const pointerY = gamePointer.getY();
-
+  private isPointerWithinBounds(x: number, y: number): boolean {
     return (
-      pointerX >= this.x &&
-      pointerX <= this.x + this.width &&
-      pointerY >= this.y &&
-      pointerY <= this.y + this.height
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
     );
   }
 
