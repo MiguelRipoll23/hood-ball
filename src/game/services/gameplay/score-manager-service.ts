@@ -35,7 +35,8 @@ export class ScoreManagerService {
       x: number,
       y: number,
       team: TeamType
-    ) => void
+    ) => void,
+    private readonly gameOverEffectCallback: (won: boolean) => void
   ) {}
 
   public updateScoreboard(): void {
@@ -247,6 +248,7 @@ export class ScoreManagerService {
       winner === this.gameState.getGamePlayer() ? "blue" : "red";
 
     this.alertEntity.show([playerName, "WINS!"], playerTeam);
+    this.gameOverEffectCallback(winner === this.gameState.getGamePlayer());
     this.timerManagerService.createTimer(5, this.gameOverEndCallback);
 
     if (this.gameState.getMatch()?.isHost()) {
