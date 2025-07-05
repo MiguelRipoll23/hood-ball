@@ -7,10 +7,10 @@ import type { GameState } from "../../core/services/game-state.js";
 import { TimerManagerService } from "../../core/services/timer-manager-service.js";
 import { EventProcessorService } from "../../core/services/event-processor-service.js";
 import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
-import { ScoreboardObject } from "../../objects/scoreboard-object.js";
-import { BallObject } from "../../objects/ball-object.js";
-import { LocalCarObject } from "../../objects/local-car-object.js";
-import { AlertObject } from "../../objects/alert-object.js";
+import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
+import { BallEntity } from "../../entities/ball-entity.js";
+import { LocalCarEntity } from "../../entities/local-car-entity.js";
+import { AlertEntity } from "../../entities/alert-entity.js";
 
 export class MatchFlowController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -21,17 +21,17 @@ export class MatchFlowController {
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
     private readonly matchmakingService: IMatchmakingProvider,
-    private readonly scoreboardObject: ScoreboardObject,
-    private readonly ballObject: BallObject,
-    private readonly localCarObject: LocalCarObject,
-    private readonly alertObject: AlertObject
+    private readonly scoreboardObject: ScoreboardEntity,
+    private readonly ballObject: BallEntity,
+    private readonly localCarEntity: LocalCarEntity,
+    private readonly alertObject: AlertEntity
   ) {}
 
   public handleMatchState(): void {
     const matchState = this.gameState.getMatch()?.getState();
 
     if (matchState === MatchStateType.InProgress) {
-      this.localCarObject.setActive(true);
+      this.localCarEntity.setActive(true);
       this.scoreboardObject.setActive(true);
       this.ballObject.setInactive(false);
     } else {
@@ -40,7 +40,7 @@ export class MatchFlowController {
 
     if (matchState === MatchStateType.Countdown) {
       this.ballObject.setInactive(true);
-      this.localCarObject.setActive(false);
+      this.localCarEntity.setActive(false);
     }
   }
 
@@ -107,7 +107,7 @@ export class MatchFlowController {
 
   private resetForCountdown(): void {
     this.ballObject.reset();
-    this.localCarObject.reset();
+    this.localCarEntity.reset();
   }
 
   private handleCountdownEnd(): void {
@@ -115,7 +115,7 @@ export class MatchFlowController {
     this.gameState.startMatch();
 
     this.alertObject.hide();
-    this.localCarObject.reset();
+    this.localCarEntity.reset();
     this.ballObject.reset();
     this.scoreboardObject.startTimer();
   }

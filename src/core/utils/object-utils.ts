@@ -3,7 +3,7 @@ import {
   CANVAS_MARGIN,
 } from "../constants/canvas-constants.js";
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
-import { BaseMoveableGameObject } from "../entities/base-moveable-game-object.js";
+import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.js";
 
 export class ObjectUtils {
   public static hasInvalidOwner(
@@ -18,7 +18,7 @@ export class ObjectUtils {
   }
 
   public static fixObjectPositionIfOutOfBounds(
-    moveableObject: BaseMoveableGameObject,
+    moveableObject: BaseMoveableGameEntity,
     canvas: HTMLCanvasElement
   ) {
     let hasChanged = false;

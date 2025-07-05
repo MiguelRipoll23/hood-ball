@@ -1,17 +1,17 @@
-import { LoadingBackgroundObject } from "../../objects/backgrounds/loading-background-object.js";
-import { ProgressBarObject } from "../../objects/common/progress-bar-object.js";
+import { LoadingBackgroundEntity } from "../../entities/backgrounds/loading-background-entity.js";
+import { ProgressBarEntity } from "../../entities/common/progress-bar-entity.js";
 
 export interface LoadingObjects {
-  background: LoadingBackgroundObject;
-  progressBar: ProgressBarObject;
+  background: LoadingBackgroundEntity;
+  progressBar: ProgressBarEntity;
 }
 
 export class LoadingObjectFactory {
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
   public createObjects(): LoadingObjects {
-    const background = new LoadingBackgroundObject(this.canvas);
-    const progressBar = new ProgressBarObject(this.canvas);
+    const background = new LoadingBackgroundEntity(this.canvas);
+    const progressBar = new ProgressBarEntity(this.canvas);
     progressBar.setText("Loading world screen....");
     return { background, progressBar };
   }

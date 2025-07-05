@@ -10,7 +10,7 @@ export class LoadingIndicatorService {
 
   public startLoading(): void {
     this.activeRequests++;
-    this.gameState.getGameFrame().getLoadingIndicatorObject()?.show();
+    this.gameState.getGameFrame().getLoadingIndicatorEntity()?.show();
   }
 
   public stopLoading(): void {
@@ -19,7 +19,7 @@ export class LoadingIndicatorService {
     }
 
     if (this.activeRequests === 0) {
-      this.gameState.getGameFrame().getLoadingIndicatorObject()?.hide();
+      this.gameState.getGameFrame().getLoadingIndicatorEntity()?.hide();
     }
   }
 }

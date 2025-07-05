@@ -1,33 +1,33 @@
-import { TitleObject } from "../../objects/common/title-object.js";
-import { ButtonObject } from "../../objects/common/button-object.js";
-import { RankingTableObject } from "../../objects/ranking-table-object.js";
-import { CloseableMessageObject } from "../../objects/common/closeable-message-object.js";
+import { TitleEntity } from "../../entities/common/title-entity.js";
+import { ButtonEntity } from "../../entities/common/button-entity.js";
+import { RankingTableEntity } from "../../entities/ranking-table-entity.js";
+import { CloseableMessageEntity } from "../../entities/common/closeable-message-entity.js";
 
-export interface ScoreboardObjects {
-  title: TitleObject;
-  button: ButtonObject;
-  rankingTable: RankingTableObject;
-  closeableMessage: CloseableMessageObject;
+export interface ScoreboardEntities {
+  title: TitleEntity;
+  button: ButtonEntity;
+  rankingTable: RankingTableEntity;
+  closeableMessage: CloseableMessageEntity;
 }
 
-export class ScoreboardObjectFactory {
+export class ScoreboardEntityFactory {
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
-  public createObjects(): ScoreboardObjects {
-    const titleObject = new TitleObject();
+  public createObjects(): ScoreboardEntities {
+    const titleObject = new TitleEntity();
     titleObject.setText("SCOREBOARD");
 
-    const buttonObject = new ButtonObject(this.canvas, "Back");
+    const buttonObject = new ButtonEntity(this.canvas, "Back");
     buttonObject.setPosition(this.canvas.width / 2, this.canvas.height - 60 - 20);
 
-    const rankingTableObject = new RankingTableObject();
-    const closeableMessageObject = new CloseableMessageObject(this.canvas);
+    const rankingTableObject = new RankingTableEntity();
+    const closeableMessageEntity = new CloseableMessageEntity(this.canvas);
 
     return {
       title: titleObject,
       button: buttonObject,
       rankingTable: rankingTableObject,
-      closeableMessage: closeableMessageObject,
+      closeableMessage: closeableMessageEntity,
     };
   }
 }

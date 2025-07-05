@@ -5,13 +5,13 @@ import { APIService } from "../../services/network/api-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
-import { ScoreboardObjectFactory } from "./scoreboard-object-factory.js";
-import type { ScoreboardObjects } from "./scoreboard-object-factory.js";
+import { ScoreboardEntityFactory } from "./scoreboard-object-factory.js";
+import type { ScoreboardEntities } from "./scoreboard-object-factory.js";
 import { ScoreboardController } from "./scoreboard-controller.js";
 
 @injectable()
 export class ScoreboardScreen extends BaseGameScreen {
-  private objects: ScoreboardObjects | null = null;
+  private objects: ScoreboardEntities | null = null;
   private controller: ScoreboardController;
 
   constructor(
@@ -24,7 +24,7 @@ export class ScoreboardScreen extends BaseGameScreen {
   }
 
   public override load(): void {
-    const factory = new ScoreboardObjectFactory(this.canvas);
+    const factory = new ScoreboardEntityFactory(this.canvas);
     this.objects = factory.createObjects();
 
     const { title, button, rankingTable, closeableMessage } = this.objects;

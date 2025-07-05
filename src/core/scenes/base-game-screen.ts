@@ -1,7 +1,7 @@
 import { GamePointer } from "../services/game-pointer.js";
 import { LayerType } from "../constants/layer-type.js";
-import { BaseTappableGameObject } from "../entities/base-tappable-game-object.js";
-import type { GameObject } from "../../interfaces/objects/game-object.js";
+import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
+import type { GameEntity } from "../../interfaces/entities/game-entity.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
 import { ScreenManagerService } from "../services/screen-manager-service.js";
@@ -18,8 +18,8 @@ export class BaseGameScreen implements GameScreen {
   protected loaded: boolean = false;
   protected opacity: number = 0;
 
-  protected sceneObjects: GameObject[] = [];
-  protected uiObjects: GameObject[] = [];
+  protected sceneObjects: GameEntity[] = [];
+  protected uiObjects: GameEntity[] = [];
 
   private gamePointer: GamePointer;
 
@@ -70,11 +70,11 @@ export class BaseGameScreen implements GameScreen {
     this.opacity = opacity;
   }
 
-  public getUIObjects(): GameObject[] {
+  public getUIObjects(): GameEntity[] {
     return this.uiObjects;
   }
 
-  public getSceneObjects(): GameObject[] {
+  public getSceneObjects(): GameEntity[] {
     return this.sceneObjects;
   }
 
@@ -98,7 +98,7 @@ export class BaseGameScreen implements GameScreen {
     );
   }
 
-  public getObjectLayer(object: GameObject): LayerType {
+  public getObjectLayer(object: GameEntity): LayerType {
     if (this.sceneObjects.includes(object)) {
       return LayerType.Scene;
     }
@@ -110,7 +110,7 @@ export class BaseGameScreen implements GameScreen {
     throw new Error("Object not found in any layer");
   }
 
-  public addObjectToSceneLayer(object: GameObject): void {
+  public addObjectToSceneLayer(object: GameEntity): void {
     object.setDebugSettings(this.gameState.getDebugSettings());
     object.load();
 
@@ -173,7 +173,7 @@ export class BaseGameScreen implements GameScreen {
     );
   }
 
-  private deleteObjectIfRemoved(layer: GameObject[], object: GameObject): void {
+  private deleteObjectIfRemoved(layer: GameEntity[], object: GameEntity): void {
     if (object.isRemoved()) {
       const index = layer.indexOf(object);
       layer.splice(index, 1);
@@ -183,8 +183,8 @@ export class BaseGameScreen implements GameScreen {
   private handlePointerEvent(): void {
     const tappableObjects = this.uiObjects
       .filter(
-        (object): object is BaseTappableGameObject =>
-          object instanceof BaseTappableGameObject
+        (object): object is BaseTappableGameEntity =>
+          object instanceof BaseTappableGameEntity
       )
       .filter((object) => object.isActive())
       .reverse();
@@ -201,7 +201,7 @@ export class BaseGameScreen implements GameScreen {
   }
 
   private updateObjects(
-    objects: GameObject[],
+    objects: GameEntity[],
     deltaTimeStamp: DOMHighResTimeStamp
   ): void {
     objects.forEach((object) => {
@@ -212,7 +212,7 @@ export class BaseGameScreen implements GameScreen {
   }
 
   private renderObjects(
-    objects: GameObject[],
+    objects: GameEntity[],
     context: CanvasRenderingContext2D
   ): void {
     objects.forEach((object) => {

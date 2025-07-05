@@ -1,6 +1,6 @@
-import { BaseStaticCollidingGameObject } from "../entities/base-static-colliding-game-object.js";
-import { BaseDynamicCollidingGameObject } from "../entities/base-dynamic-colliding-game-object.js";
-import { HitboxObject } from "../entities/hitbox-object.js";
+import { BaseStaticCollidingGameEntity } from "../entities/base-static-colliding-game-entity.js";
+import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-colliding-game-entity.js";
+import { HitboxEntity } from "../entities/hitbox-entity.js";
 import { BaseMultiplayerScreen } from "./base-multiplayer-screen.js";
 import type { GameState } from "../services/game-state.js";
 import { EventConsumerService } from "../services/event-consumer-service.js";
@@ -16,16 +16,16 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
   }
 
   public detectCollisions(): void {
-    const collidingObjects: BaseStaticCollidingGameObject[] =
+    const collidingObjects: BaseStaticCollidingGameEntity[] =
       this.sceneObjects.filter(
         (sceneObject) =>
-          sceneObject instanceof BaseStaticCollidingGameObject ||
-          sceneObject instanceof BaseDynamicCollidingGameObject
-      ) as unknown as BaseStaticCollidingGameObject[];
+          sceneObject instanceof BaseStaticCollidingGameEntity ||
+          sceneObject instanceof BaseDynamicCollidingGameEntity
+      ) as unknown as BaseStaticCollidingGameEntity[];
 
     collidingObjects.forEach((collidingObject) => {
       // Reset colliding state for hitboxes
-      collidingObject.getHitboxObjects().forEach((hitbox) => {
+      collidingObject.getHitboxEntities().forEach((hitbox) => {
         hitbox.setColliding(false);
       });
 
@@ -48,23 +48,23 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
 
   private detectStaticAndDynamicCollisions(
     collidingObject:
-      | BaseStaticCollidingGameObject
-      | BaseDynamicCollidingGameObject,
+      | BaseStaticCollidingGameEntity
+      | BaseDynamicCollidingGameEntity,
     otherCollidingObject:
-      | BaseStaticCollidingGameObject
-      | BaseDynamicCollidingGameObject
+      | BaseStaticCollidingGameEntity
+      | BaseDynamicCollidingGameEntity
   ): void {
-    const hitboxes = collidingObject.getHitboxObjects();
-    const otherHitboxes = otherCollidingObject.getHitboxObjects();
+    const hitboxes = collidingObject.getHitboxEntities();
+    const otherHitboxes = otherCollidingObject.getHitboxEntities();
 
     if (this.doesHitboxesIntersect(hitboxes, otherHitboxes) === false) {
-      collidingObject.removeCollidingObject(otherCollidingObject);
-      otherCollidingObject.removeCollidingObject(collidingObject);
+      collidingObject.removeCollidingEntity(otherCollidingObject);
+      otherCollidingObject.removeCollidingEntity(collidingObject);
       return;
     }
 
-    collidingObject.addCollidingObject(otherCollidingObject);
-    otherCollidingObject.addCollidingObject(collidingObject);
+    collidingObject.addCollidingEntity(otherCollidingObject);
+    otherCollidingObject.addCollidingEntity(collidingObject);
 
     if (
       collidingObject.hasRigidBody() === false ||
@@ -74,12 +74,12 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
     }
 
     const areDynamicObjectsColliding =
-      collidingObject instanceof BaseDynamicCollidingGameObject &&
-      otherCollidingObject instanceof BaseDynamicCollidingGameObject;
+      collidingObject instanceof BaseDynamicCollidingGameEntity &&
+      otherCollidingObject instanceof BaseDynamicCollidingGameEntity;
 
     const isDynamicObjectCollidingWithStatic =
-      collidingObject instanceof BaseDynamicCollidingGameObject &&
-      otherCollidingObject instanceof BaseStaticCollidingGameObject;
+      collidingObject instanceof BaseDynamicCollidingGameEntity &&
+      otherCollidingObject instanceof BaseStaticCollidingGameEntity;
 
     if (areDynamicObjectsColliding) {
       this.simulateCollisionBetweenDynamicObjects(
@@ -96,13 +96,13 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
   }
 
   private doesHitboxesIntersect(
-    hitboxObjects: HitboxObject[],
-    otherHitboxObjects: HitboxObject[]
+    hitboxObjects: HitboxEntity[],
+    otherHitboxEntities: HitboxEntity[]
   ) {
     let intersecting = false;
 
     hitboxObjects.forEach((hitbox) => {
-      otherHitboxObjects.forEach((otherHitbox) => {
+      otherHitboxEntities.forEach((otherHitbox) => {
         if (
           hitbox.getX() < otherHitbox.getX() + otherHitbox.getWidth() &&
           hitbox.getX() + hitbox.getWidth() > otherHitbox.getX() &&
@@ -120,7 +120,7 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
   }
 
   private simulateCollisionBetweenDynamicAndStaticObjects(
-    dynamicCollidingObject: BaseDynamicCollidingGameObject
+    dynamicCollidingObject: BaseDynamicCollidingGameEntity
   ) {
     let vx = -dynamicCollidingObject.getVX();
     let vy = -dynamicCollidingObject.getVY();
@@ -140,8 +140,8 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
   }
 
   private simulateCollisionBetweenDynamicObjects(
-    dynamicCollidingObject: BaseDynamicCollidingGameObject,
-    otherDynamicCollidingObject: BaseDynamicCollidingGameObject
+    dynamicCollidingObject: BaseDynamicCollidingGameEntity,
+    otherDynamicCollidingObject: BaseDynamicCollidingGameEntity
   ) {
     // Calculate collision vector
     const vCollision = {

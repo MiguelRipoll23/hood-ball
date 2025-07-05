@@ -1,10 +1,10 @@
 import { GamePlayer } from "../../models/game-player.js";
 import { ObjectType } from "../../enums/object-type.js";
-import { BaseMultiplayerGameObject } from "../../objects/base/base-multiplayer-object.js";
+import { BaseMultiplayerGameEntity } from "../../entities/base/base-multiplayer-entity.js";
 import type {
-  MultiplayerGameObject,
-  StaticMultiplayerGameObject,
-} from "../../interfaces/objects/multiplayer-game-object.js";
+  MultiplayerGameEntity,
+  StaticMultiplayerGameEntity,
+} from "../../interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameScreen } from "./base-game-screen.js";
 import type { MultiplayerScreen } from "../../interfaces/screens/multiplayer-screen.js";
 import { ScreenType } from "../../enums/screen-type.js";
@@ -13,30 +13,30 @@ export class BaseMultiplayerScreen
   extends BaseGameScreen
   implements MultiplayerScreen
 {
-  protected syncableObjectTypes: Map<ObjectType, StaticMultiplayerGameObject> =
+  protected syncableObjectTypes: Map<ObjectType, StaticMultiplayerGameEntity> =
     new Map();
 
   public getTypeId(): ScreenType {
     return ScreenType.Unknown;
   }
 
-  public addSyncableObject(objectClass: StaticMultiplayerGameObject): void {
+  public addSyncableObject(objectClass: StaticMultiplayerGameEntity): void {
     const typeId = objectClass.getTypeId();
     this.syncableObjectTypes.set(typeId, objectClass);
   }
 
   public getSyncableObjectClass(
     typeId: ObjectType
-  ): StaticMultiplayerGameObject | null {
+  ): StaticMultiplayerGameEntity | null {
     return this.syncableObjectTypes.get(typeId) ?? null;
   }
 
-  public getSyncableObjects(): MultiplayerGameObject[] {
-    const result: MultiplayerGameObject[] = [];
+  public getSyncableObjects(): MultiplayerGameEntity[] {
+    const result: MultiplayerGameEntity[] = [];
 
     for (const object of this.uiObjects) {
       if (
-        object instanceof BaseMultiplayerGameObject &&
+        object instanceof BaseMultiplayerGameEntity &&
         object.getId() !== null
       ) {
         result.push(object);
@@ -45,7 +45,7 @@ export class BaseMultiplayerScreen
 
     for (const object of this.sceneObjects) {
       if (
-        object instanceof BaseMultiplayerGameObject &&
+        object instanceof BaseMultiplayerGameEntity &&
         object.getId() !== null
       ) {
         result.push(object);
@@ -55,10 +55,10 @@ export class BaseMultiplayerScreen
     return result;
   }
 
-  public getSyncableObject(id: string): BaseMultiplayerGameObject | null {
+  public getSyncableObject(id: string): BaseMultiplayerGameEntity | null {
     for (const object of this.uiObjects) {
       if (
-        object instanceof BaseMultiplayerGameObject &&
+        object instanceof BaseMultiplayerGameEntity &&
         object.getId() === id
       ) {
         return object;
@@ -67,7 +67,7 @@ export class BaseMultiplayerScreen
 
     for (const object of this.sceneObjects) {
       if (
-        object instanceof BaseMultiplayerGameObject &&
+        object instanceof BaseMultiplayerGameEntity &&
         object.getId() === id
       ) {
         return object;
@@ -77,12 +77,12 @@ export class BaseMultiplayerScreen
     return null;
   }
 
-  public getObjectsByOwner(player: GamePlayer): BaseMultiplayerGameObject[] {
-    const result: BaseMultiplayerGameObject[] = [];
+  public getObjectsByOwner(player: GamePlayer): BaseMultiplayerGameEntity[] {
+    const result: BaseMultiplayerGameEntity[] = [];
 
     this.uiObjects.forEach((object) => {
       if (
-        object instanceof BaseMultiplayerGameObject &&
+        object instanceof BaseMultiplayerGameEntity &&
         object.getOwner() === player
       ) {
         result.push(object);
@@ -91,7 +91,7 @@ export class BaseMultiplayerScreen
 
     this.sceneObjects.forEach((object) => {
       if (
-        object instanceof BaseMultiplayerGameObject &&
+        object instanceof BaseMultiplayerGameEntity &&
         object.getOwner() === player
       ) {
         result.push(object);

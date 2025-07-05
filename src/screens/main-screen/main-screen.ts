@@ -1,6 +1,6 @@
 import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
 import { ScreenManagerService } from "../../core/services/screen-manager-service.js";
-import { MainBackgroundObject } from "../../objects/backgrounds/main-background-object.js";
+import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { GameState } from "../../core/services/game-state.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
@@ -20,7 +20,7 @@ export class MainScreen extends BaseGameScreen {
   }
 
   public override load(): void {
-    this.createMainBackgroundObject();
+    this.createMainBackgroundEntity();
 
     if (this.screen === null) {
       console.warn("MainScreen: No screen has been set");
@@ -48,8 +48,8 @@ export class MainScreen extends BaseGameScreen {
     this.screenManagerService?.render(context);
   }
 
-  private createMainBackgroundObject() {
-    const mainBackgroundObject = new MainBackgroundObject(this.canvas);
+  private createMainBackgroundEntity() {
+    const mainBackgroundObject = new MainBackgroundEntity(this.canvas);
     this.sceneObjects.push(mainBackgroundObject);
   }
 }

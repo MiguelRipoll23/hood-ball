@@ -9,10 +9,10 @@ import { GamePlayer } from "../../models/game-player.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 
-import { BallObject } from "../../objects/ball-object.js";
-import { GoalObject } from "../../objects/goal-object.js";
+import { BallEntity } from "../../entities/ball-entity.js";
+import { GoalEntity } from "../../entities/goal-entity.js";
 import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui.js";
-import { AlertObject } from "../../objects/alert-object.js";
+import { AlertEntity } from "../../entities/alert-entity.js";
 
 import { TimerManagerService } from "../../core/services/timer-manager-service.js";
 import { EventProcessorService } from "../../core/services/event-processor-service.js";
@@ -22,10 +22,10 @@ import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/ma
 export class ScoreManagerService {
   constructor(
     private readonly gameState: GameState,
-    private readonly ballObject: BallObject,
-    private readonly goalObject: GoalObject,
+    private readonly ballObject: BallEntity,
+    private readonly goalObject: GoalEntity,
     private readonly scoreboardUI: ScoreboardUI,
-    private readonly alertObject: AlertObject,
+    private readonly alertObject: AlertEntity,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
     private readonly matchmakingService: IMatchmakingProvider,

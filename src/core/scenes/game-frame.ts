@@ -1,15 +1,15 @@
-import { NotificationObject } from "../entities/notification-object.js";
+import { NotificationEntity } from "../entities/notification-entity.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
 import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
-import { DebugObject } from "../entities/debug-object.js";
-import { LoadingIndicatorObject } from "../entities/loading-indicator-object.js";
+import { DebugEntity } from "../entities/debug-entity.js";
+import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity.js";
 
 export class GameFrame implements ScreenManager {
   private currentScreen: GameScreen | null = null;
   private nextScreen: GameScreen | null = null;
-  private notificationObject: NotificationObject | null = null;
-  private debugObject: DebugObject | null = null;
-  private loadingIndicatorObject: LoadingIndicatorObject | null = null;
+  private notificationObject: NotificationEntity | null = null;
+  private debugObject: DebugEntity | null = null;
+  private loadingIndicatorObject: LoadingIndicatorEntity | null = null;
 
   public getCurrentScreen(): GameScreen | null {
     return this.currentScreen;
@@ -41,27 +41,27 @@ export class GameFrame implements ScreenManager {
     this.nextScreen?.render(context);
   }
 
-  public getNotificationObject(): NotificationObject | null {
+  public getNotificationEntity(): NotificationEntity | null {
     return this.notificationObject;
   }
 
-  public setNotificationObject(object: NotificationObject | null): void {
+  public setNotificationEntity(object: NotificationEntity | null): void {
     this.notificationObject = object;
   }
 
-  public getDebugObject(): DebugObject | null {
+  public getDebugEntity(): DebugEntity | null {
     return this.debugObject;
   }
 
-  public setDebugObject(object: DebugObject | null): void {
+  public setDebugEntity(object: DebugEntity | null): void {
     this.debugObject = object;
   }
 
-  public getLoadingIndicatorObject(): LoadingIndicatorObject | null {
+  public getLoadingIndicatorEntity(): LoadingIndicatorEntity | null {
     return this.loadingIndicatorObject;
   }
 
-  public setLoadingIndicatorObject(object: LoadingIndicatorObject | null): void {
+  public setLoadingIndicatorEntity(object: LoadingIndicatorEntity | null): void {
     this.loadingIndicatorObject = object;
   }
 }

@@ -1,9 +1,9 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameObject } from "../../interfaces/objects/game-object.js";
+import type { GameEntity } from "../../interfaces/entities/game-entity.js";
 import type { GameScreen } from "../../interfaces/screens/game-screen.js";
-import { BaseAnimatedGameObject } from "../../core/entities/base-animated-object.js";
-import { BallObject } from "../../objects/ball-object.js";
-import { RemoteCarObject } from "../../objects/remote-car-object.js";
+import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
+import { BallEntity } from "../../entities/ball-entity.js";
+import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { BaseWindow } from "./base-window.js";
 import type { GameState } from "../../core/services/game-state.js";
 
@@ -45,8 +45,8 @@ export class ScreenInspectorWindow extends BaseWindow {
   private renderScreenSections(
     screen: GameScreen | null,
     subScreen: GameScreen | null,
-    mainObjects: GameObject[],
-    subObjects: GameObject[],
+    mainObjects: GameEntity[],
+    subObjects: GameEntity[],
     idPrefix: string
   ): void {
     ImGui.SeparatorText(screen ? screen.constructor.name : "No screen");
@@ -59,7 +59,7 @@ export class ScreenInspectorWindow extends BaseWindow {
     this.renderObjectList(subObjects, `${idPrefix}_sub`);
   }
 
-  private renderObjectList(objects: GameObject[], idPrefix: string): void {
+  private renderObjectList(objects: GameEntity[], idPrefix: string): void {
     if (objects.length === 0) {
       ImGui.Text("No objects found in this screen.");
       return;
@@ -70,7 +70,7 @@ export class ScreenInspectorWindow extends BaseWindow {
     });
   }
 
-  private renderObjectDetails(object: GameObject, uniqueId: string): void {
+  private renderObjectDetails(object: GameEntity, uniqueId: string): void {
     const headerId = `${object.constructor.name}##${uniqueId}`;
     if (!ImGui.CollapsingHeader(headerId)) return;
 
@@ -90,8 +90,8 @@ export class ScreenInspectorWindow extends BaseWindow {
       });
   }
 
-  private renderObjectActions(object: GameObject, uniqueId: string): void {
-    if (object instanceof BaseAnimatedGameObject) {
+  private renderObjectActions(object: GameEntity, uniqueId: string): void {
+    if (object instanceof BaseAnimatedGameEntity) {
       if (ImGui.Button(`Teleport##${uniqueId}`)) {
         const canvasWidth = this.gameState.getCanvas().width;
         const canvasHeight = this.gameState.getCanvas().height;
@@ -117,20 +117,20 @@ export class ScreenInspectorWindow extends BaseWindow {
     this.renderCustomObjectActions(object, uniqueId);
   }
 
-  private renderCustomObjectActions(object: GameObject, uniqueId: string) {
-    if (object instanceof BallObject) {
-      this.renderBallObjectActions(object, uniqueId);
-    } else if (object instanceof RemoteCarObject) {
-      this.renderRemoteCarObjectActions(object, uniqueId);
+  private renderCustomObjectActions(object: GameEntity, uniqueId: string) {
+    if (object instanceof BallEntity) {
+      this.renderBallEntityActions(object, uniqueId);
+    } else if (object instanceof RemoteCarEntity) {
+      this.renderRemoteCarEntityActions(object, uniqueId);
     }
   }
 
-  private renderBallObjectActions(object: BallObject, uniqueId: string): void {
+  private renderBallEntityActions(object: BallEntity, uniqueId: string): void {
     if (ImGui.Button(`Duplicate##${uniqueId}`)) {
       const x = object.getX();
       const y = object.getY() - object.getHeight() * 2;
 
-      const ballObject = new BallObject(x, y, this.gameState.getCanvas());
+      const ballObject = new BallEntity(x, y, this.gameState.getCanvas());
       ballObject.setId(crypto.randomUUID().replaceAll("-", ""));
       ballObject.setDebugSettings(this.gameState.getDebugSettings());
       ballObject.setVY(5);
@@ -144,8 +144,8 @@ export class ScreenInspectorWindow extends BaseWindow {
     }
   }
 
-  private renderRemoteCarObjectActions(
-    object: RemoteCarObject,
+  private renderRemoteCarEntityActions(
+    object: RemoteCarEntity,
     uniqueId: string
   ): void {
     if (ImGui.Button(`Duplicate##${uniqueId}`)) {
@@ -153,7 +153,7 @@ export class ScreenInspectorWindow extends BaseWindow {
       const y = object.getY() - object.getHeight() * 2;
       const angle = object.getAngle();
 
-      const remoteCarObject = new RemoteCarObject(
+      const remoteCarEntity = new RemoteCarEntity(
         crypto.randomUUID().replaceAll("-", ""),
         x,
         y,
@@ -161,15 +161,15 @@ export class ScreenInspectorWindow extends BaseWindow {
         0
       );
 
-      remoteCarObject.setDebugSettings(this.gameState.getDebugSettings());
-      remoteCarObject.setOwner(this.gameState.getGamePlayer());
+      remoteCarEntity.setDebugSettings(this.gameState.getDebugSettings());
+      remoteCarEntity.setOwner(this.gameState.getGamePlayer());
 
-      remoteCarObject.setVY(5);
+      remoteCarEntity.setVY(5);
 
       const currentScreen = this.gameState.getGameFrame().getCurrentScreen();
 
       if (currentScreen) {
-        currentScreen.getSceneObjects().push(remoteCarObject);
+        currentScreen.getSceneObjects().push(remoteCarEntity);
       }
     }
   }

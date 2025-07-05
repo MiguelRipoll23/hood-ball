@@ -1,4 +1,4 @@
-import type { MultiplayerGameObject } from "../../interfaces/objects/multiplayer-game-object.js";
+import type { MultiplayerGameEntity } from "../../interfaces/entities/multiplayer-game-entity.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../core/services/game-state.js";
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
@@ -116,7 +116,7 @@ export class ObjectOrchestratorService {
   // Local
   private sendLocalObjectData(
     multiplayerScreen: MultiplayerScreen,
-    multiplayerObject: MultiplayerGameObject
+    multiplayerObject: MultiplayerGameEntity
   ): void {
     this.updateOwnerToSharedObjects(multiplayerObject);
 
@@ -147,7 +147,7 @@ export class ObjectOrchestratorService {
     multiplayerObject.setSyncReliably(false);
   }
 
-  private updateOwnerToSharedObjects(multiplayerObject: MultiplayerGameObject) {
+  private updateOwnerToSharedObjects(multiplayerObject: MultiplayerGameEntity) {
     const syncableByHost = multiplayerObject.isSyncableByHost();
     const unowned = multiplayerObject.getOwner() === null;
 
@@ -157,7 +157,7 @@ export class ObjectOrchestratorService {
     }
   }
 
-  private skipUnownedObject(multiplayerObject: MultiplayerGameObject): boolean {
+  private skipUnownedObject(multiplayerObject: MultiplayerGameEntity): boolean {
     // If host, don't skip objects from other players
     if (this.gameState.getMatch()?.isHost()) {
       return false;
@@ -171,7 +171,7 @@ export class ObjectOrchestratorService {
   }
 
   private markAsRemovedIfObjectInactive(
-    multiplayerObject: MultiplayerGameObject
+    multiplayerObject: MultiplayerGameEntity
   ): void {
     if (multiplayerObject.getState() === ObjectStateType.Inactive) {
       multiplayerObject.setRemoved(true);
@@ -180,7 +180,7 @@ export class ObjectOrchestratorService {
 
   private getObjectDataArrayBuffer(
     multiplayerScreen: MultiplayerScreen,
-    multiplayerObject: MultiplayerGameObject
+    multiplayerObject: MultiplayerGameEntity
   ): ArrayBuffer {
     const screenTypeId = multiplayerScreen.getTypeId();
     const objectStateId = multiplayerObject.getState();
@@ -206,7 +206,7 @@ export class ObjectOrchestratorService {
   }
 
   private sendLocalObjectDataToPeer(
-    multiplayerObject: MultiplayerGameObject,
+    multiplayerObject: MultiplayerGameEntity,
     webrtcPeer: WebRTCPeer,
     dataBuffer: ArrayBuffer
   ): void {
@@ -273,7 +273,7 @@ export class ObjectOrchestratorService {
     }
 
     // Try to create object instance
-    let objectInstance: MultiplayerGameObject;
+    let objectInstance: MultiplayerGameEntity;
 
     try {
       objectInstance = objectClass.deserialize(objectId, objectData);
