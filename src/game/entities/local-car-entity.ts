@@ -66,7 +66,11 @@ export class LocalCarEntity extends CarEntity {
       }
     }
 
-    this.handleBoostInput();
+    if (this.active) {
+      this.handleBoostInput();
+    } else {
+      this.deactivateBoost();
+    }
     this.boostButtonEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
 
     if (this.canvas) {
