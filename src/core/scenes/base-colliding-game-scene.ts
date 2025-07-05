@@ -1,11 +1,11 @@
 import { BaseStaticCollidingGameEntity } from "../entities/base-static-colliding-game-entity.js";
 import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-colliding-game-entity.js";
 import { HitboxEntity } from "../entities/hitbox-entity.js";
-import { BaseMultiplayerScreen } from "./base-multiplayer-screen.js";
+import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
 import type { GameState } from "../services/game-state.js";
 import { EventConsumerService } from "../services/event-consumer-service.js";
 
-export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
+export class BaseCollidingGameScene extends BaseMultiplayerScene {
   constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
     super(gameState, eventConsumerService);
   }

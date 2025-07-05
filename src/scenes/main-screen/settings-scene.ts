@@ -3,11 +3,11 @@ import { ButtonEntity } from "../../entities/common/button-entity.js";
 import { TitleEntity } from "../../entities/common/title-entity.js";
 import { SettingEntity } from "../../entities/setting-entity.js";
 import { DebugService } from "../../debug/debug-service.js";
-import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
+import { BaseGameScene } from "../../core/scenes/base-game-scene.js";
 import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 
-export class SettingsScreen extends BaseGameScreen {
+export class SettingsScene extends BaseGameScene {
   private titleObject: TitleEntity | null = null;
   private buttonObject: ButtonEntity | null = null;
 

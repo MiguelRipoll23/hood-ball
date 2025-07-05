@@ -2,18 +2,18 @@ import { GamePointer } from "../services/game-pointer.js";
 import { LayerType } from "../constants/layer-type.js";
 import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
 import type { GameEntity } from "../../interfaces/entities/game-entity.js";
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
-import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
-import { ScreenManagerService } from "../services/screen-manager-service.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import type { SceneManager } from "../../interfaces/scenes/scene-manager.js";
+import { SceneManagerService } from "../services/scene-manager-service.js";
 import { EventConsumerService } from "../services/event-consumer-service.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../services/game-state.js";
 
-export class BaseGameScreen implements GameScreen {
+export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerService;
 
   protected canvas: HTMLCanvasElement;
-  protected screenManagerService: ScreenManagerService | null = null;
+  protected screenManagerService: SceneManagerService | null = null;
 
   protected loaded: boolean = false;
   protected opacity: number = 0;
@@ -37,12 +37,12 @@ export class BaseGameScreen implements GameScreen {
     return this.opacity > 0;
   }
 
-  public getScreenManagerService(): ScreenManager | null {
+  public getScreenManagerService(): SceneManager | null {
     return this.screenManagerService;
   }
 
   public setScreenManagerService(
-    screenManagerService: ScreenManagerService
+    screenManagerService: SceneManagerService
   ): void {
     this.screenManagerService = screenManagerService;
   }

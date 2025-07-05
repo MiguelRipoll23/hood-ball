@@ -1,33 +1,33 @@
 import { NotificationEntity } from "../entities/notification-entity.js";
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
-import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import type { SceneManager } from "../../interfaces/scenes/scene-manager.js";
 import { DebugEntity } from "../entities/debug-entity.js";
 import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity.js";
 
-export class GameFrame implements ScreenManager {
-  private currentScreen: GameScreen | null = null;
-  private nextScreen: GameScreen | null = null;
+export class GameFrame implements SceneManager {
+  private currentScreen: GameScene | null = null;
+  private nextScreen: GameScene | null = null;
   private notificationObject: NotificationEntity | null = null;
   private debugObject: DebugEntity | null = null;
   private loadingIndicatorObject: LoadingIndicatorEntity | null = null;
 
-  public getCurrentScreen(): GameScreen | null {
+  public getCurrentScreen(): GameScene | null {
     return this.currentScreen;
   }
 
-  public getPreviousScreen(): GameScreen | null {
+  public getPreviousScreen(): GameScene | null {
     return null;
   }
 
-  public setCurrentScreen(screen: GameScreen): void {
+  public setCurrentScreen(screen: GameScene): void {
     this.currentScreen = screen;
   }
 
-  public getNextScreen(): GameScreen | null {
+  public getNextScreen(): GameScene | null {
     return this.nextScreen;
   }
 
-  public setNextScreen(screen: GameScreen | null): void {
+  public setNextScreen(screen: GameScene | null): void {
     this.nextScreen = screen;
   }
 

@@ -1,9 +1,9 @@
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
-import type { ScreenManager } from "../../interfaces/screens/screen-manager.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import type { SceneManager } from "../../interfaces/scenes/scene-manager.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
-export class ScreenTransitionService {
+export class SceneTransitionService {
   private elapsedTransitionMilliseconds: number = 0;
 
   // Transition state flags
@@ -15,7 +15,7 @@ export class ScreenTransitionService {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  private screenManager: ScreenManager | null = null;
+  private screenManager: SceneManager | null = null;
 
   constructor() {}
 
@@ -39,8 +39,8 @@ export class ScreenTransitionService {
   }
 
   public fadeOutAndIn(
-    screenManager: ScreenManager,
-    nextScreen: GameScreen,
+    screenManager: SceneManager,
+    nextScreen: GameScene,
     fadeOutDurationSeconds: number,
     fadeInDurationSeconds: number
   ): void {
@@ -68,8 +68,8 @@ export class ScreenTransitionService {
   }
 
   public crossfade(
-    screenManager: ScreenManager,
-    nextScreen: GameScreen,
+    screenManager: SceneManager,
+    nextScreen: GameScene,
     crossfadeDurationSeconds: number
   ): void {
     this.screenManager = screenManager;
@@ -94,7 +94,7 @@ export class ScreenTransitionService {
     this.isCrossfading = true;
   }
 
-  private isNextScreenAlreadySet(nextScreen: GameScreen): boolean {
+  private isNextScreenAlreadySet(nextScreen: GameScene): boolean {
     if (this.screenManager === null) {
       return false;
     }
@@ -121,7 +121,7 @@ export class ScreenTransitionService {
     }
   }
 
-  private fadeOutCurrentScreen(currentScreen: GameScreen): void {
+  private fadeOutCurrentScreen(currentScreen: GameScene): void {
     const fadeOutOpacity = Math.min(
       1,
       this.elapsedTransitionMilliseconds / this.fadeOutDurationMilliseconds
@@ -135,7 +135,7 @@ export class ScreenTransitionService {
     currentScreen.setOpacity(1 - fadeOutOpacity);
   }
 
-  private fadeInNextScreen(nextScreen: GameScreen): void {
+  private fadeInNextScreen(nextScreen: GameScene): void {
     const fadeInOpacity = Math.min(
       1,
       this.elapsedTransitionMilliseconds / this.fadeInDurationMilliseconds
@@ -180,7 +180,7 @@ export class ScreenTransitionService {
     this.elapsedTransitionMilliseconds = 0;
   }
 
-  private updateCurrentAndNextScreen(nextScreen: GameScreen): void {
+  private updateCurrentAndNextScreen(nextScreen: GameScene): void {
     if (this.screenManager === null) return;
 
     this.resetTransitionState();

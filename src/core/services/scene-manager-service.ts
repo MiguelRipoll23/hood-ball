@@ -1,31 +1,31 @@
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
-import { ScreenTransitionService } from "./screen-transition-service.js";
-import type { IScreenManagerService } from "../../interfaces/services/ui/screen-manager-service-interface.js";
-import type { IScreenTransitionService } from "../../interfaces/services/ui/screen-transition-service-interface.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import { SceneTransitionService } from "./scene-transition-service.js";
+import type { ISceneManagerService } from "../../interfaces/services/ui/scene-manager-service-interface.js";
+import type { ISceneTransitionService } from "../../interfaces/services/ui/scene-transition-service-interface.js";
 import { container } from "./di-container.js";
 
-export class ScreenManagerService implements IScreenManagerService {
-  private stack: GameScreen[] = [];
-  private currentScreen: GameScreen | null = null;
-  private nextScreen: GameScreen | null = null;
+export class SceneManagerService implements ISceneManagerService {
+  private stack: GameScene[] = [];
+  private currentScreen: GameScene | null = null;
+  private nextScreen: GameScene | null = null;
 
-  private transitionService: IScreenTransitionService;
+  private transitionService: ISceneTransitionService;
 
   constructor() {
-    this.transitionService = container.get(ScreenTransitionService);
+    this.transitionService = container.get(SceneTransitionService);
   }
 
-  public getTransitionService(): IScreenTransitionService {
+  public getTransitionService(): ISceneTransitionService {
     return this.transitionService;
   }
 
-  public setInitialScreen(screen: GameScreen): void {
+  public setInitialScreen(screen: GameScene): void {
     this.currentScreen = screen;
     this.currentScreen.setScreenManagerService(this);
     this.stack.push(screen);
   }
 
-  public getPreviousScreen(): GameScreen | null {
+  public getPreviousScreen(): GameScene | null {
     if (this.currentScreen === null) {
       return null;
     }
@@ -35,19 +35,19 @@ export class ScreenManagerService implements IScreenManagerService {
     return this.stack[index - 1] || null;
   }
 
-  public getCurrentScreen(): GameScreen | null {
+  public getCurrentScreen(): GameScene | null {
     return this.currentScreen;
   }
 
-  public getNextScreen(): GameScreen | null {
+  public getNextScreen(): GameScene | null {
     return this.nextScreen;
   }
 
-  public setCurrentScreen(currentScreen: GameScreen): void {
+  public setCurrentScreen(currentScreen: GameScene): void {
     this.currentScreen = currentScreen;
   }
 
-  public setNextScreen(nextScreen: GameScreen | null): void {
+  public setNextScreen(nextScreen: GameScene | null): void {
     this.nextScreen = nextScreen;
     this.nextScreen?.setScreenManagerService(this);
 
@@ -70,7 +70,7 @@ export class ScreenManagerService implements IScreenManagerService {
     this.nextScreen?.render(context);
   }
 
-  private handleStack(nextScreen: GameScreen): void {
+  private handleStack(nextScreen: GameScene): void {
     if (this.stack.includes(nextScreen)) {
       // back to previous screen
       this.stack.pop();

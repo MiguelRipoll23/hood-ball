@@ -5,19 +5,19 @@ import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
 } from "../../interfaces/entities/multiplayer-game-entity.js";
-import { BaseGameScreen } from "./base-game-screen.js";
-import type { MultiplayerScreen } from "../../interfaces/screens/multiplayer-screen.js";
-import { ScreenType } from "../../enums/screen-type.js";
+import { BaseGameScene } from "./base-game-scene.js";
+import type { MultiplayerScene } from "../../interfaces/scenes/multiplayer-scene.js";
+import { SceneType } from "../../enums/scene-type.js";
 
-export class BaseMultiplayerScreen
-  extends BaseGameScreen
-  implements MultiplayerScreen
+export class BaseMultiplayerScene
+  extends BaseGameScene
+  implements MultiplayerScene
 {
   protected syncableObjectTypes: Map<EntityType, StaticMultiplayerGameEntity> =
     new Map();
 
-  public getTypeId(): ScreenType {
-    return ScreenType.Unknown;
+  public getTypeId(): SceneType {
+    return SceneType.Unknown;
   }
 
   public addSyncableObject(objectClass: StaticMultiplayerGameEntity): void {

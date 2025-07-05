@@ -1,19 +1,19 @@
-import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
-import { ScreenManagerService } from "../../core/services/screen-manager-service.js";
+import { BaseGameScene } from "../../core/scenes/base-game-scene.js";
+import { SceneManagerService } from "../../core/services/scene-manager-service.js";
 import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
-import type { GameScreen } from "../../interfaces/screens/game-screen.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import type { GameState } from "../../core/services/game-state.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 
-export class MainScreen extends BaseGameScreen {
-  private screen: GameScreen | null = null;
+export class MainScene extends BaseGameScene {
+  private screen: GameScene | null = null;
 
   constructor(gameState: GameState, eventConsumerService: EventConsumerService) {
     super(gameState, eventConsumerService);
-    this.screenManagerService = new ScreenManagerService();
+    this.screenManagerService = new SceneManagerService();
   }
 
-  public activateScreen(screen: GameScreen): void {
+  public activateScreen(screen: GameScene): void {
     this.screen = screen;
     this.screen?.setOpacity(1);
     this.screenManagerService?.setInitialScreen(screen);
