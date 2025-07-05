@@ -33,9 +33,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected readonly BOOST_ACCELERATION_MULTIPLIER: number = 2;
 
   // Turbo rendering constants
-  private readonly TURBO_MIN_LENGTH = 10;
-  private readonly TURBO_MAX_LENGTH = 20;
-  private readonly TURBO_WIDTH = 10;
+  // Make turbo effect bigger
+  private readonly TURBO_MIN_LENGTH = 20;
+  private readonly TURBO_MAX_LENGTH = 40;
+  private readonly TURBO_WIDTH = 20;
 
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
@@ -418,10 +419,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       this.TURBO_MIN_LENGTH +
       Math.random() * (this.TURBO_MAX_LENGTH - this.TURBO_MIN_LENGTH);
     const gradient = context.createLinearGradient(
-      -this.width / 2,
       0,
-      -this.width / 2 - length,
-      0
+      this.height / 2,
+      0,
+      this.height / 2 + length
     );
     gradient.addColorStop(0, "#ffe066");
     gradient.addColorStop(1, "#ff5722");
@@ -429,9 +430,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     context.globalAlpha = 0.7 + Math.random() * 0.3;
     context.fillStyle = gradient;
     context.beginPath();
-    context.moveTo(-this.width / 2, 0);
-    context.lineTo(-this.width / 2 - length, -this.TURBO_WIDTH / 2);
-    context.lineTo(-this.width / 2 - length, this.TURBO_WIDTH / 2);
+    context.moveTo(0, this.height / 2 + length);
+    context.lineTo(-this.TURBO_WIDTH / 2, this.height / 2);
+    context.lineTo(this.TURBO_WIDTH / 2, this.height / 2);
     context.closePath();
     context.fill();
 
