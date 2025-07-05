@@ -24,18 +24,18 @@ export class WorldEntityFactory {
     private readonly canvas: HTMLCanvasElement
   ) {}
 
-  public createBackground(sceneObjects: any[]): void {
+  public createBackground(worldEntities: any[]): void {
     const backgroundObject = new WorldBackgroundEntity(this.canvas);
-    sceneObjects.push(backgroundObject);
+    worldEntities.push(backgroundObject);
 
     backgroundObject.getCollisionHitboxes().forEach((obj) => {
-      sceneObjects.push(obj);
+      worldEntities.push(obj);
     });
   }
 
   public createWorldObjects(
-    sceneObjects: any[],
-    uiObjects: any[]
+    worldEntities: any[],
+    uiEntities: any[]
   ): WorldObjects {
     const durationSeconds: number = getConfigurationKey<number>(
       SCOREBOARD_SECONDS_DURATION,
@@ -71,14 +71,14 @@ export class WorldEntityFactory {
     const alertObject = new AlertEntity(this.canvas);
     const toastObject = new ToastEntity(this.canvas);
 
-    sceneObjects.push(
+    worldEntities.push(
       scoreboardObject,
       ballObject,
       goalObject,
       localCarEntity,
       toastObject
     );
-    uiObjects.push(alertObject, localCarEntity.getJoystickEntity());
+    uiEntities.push(alertObject, localCarEntity.getJoystickEntity());
 
     return {
       scoreboard: scoreboardObject,

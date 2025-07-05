@@ -34,7 +34,7 @@ export class BaseMultiplayerScreen
   public getSyncableObjects(): MultiplayerGameEntity[] {
     const result: MultiplayerGameEntity[] = [];
 
-    for (const object of this.uiObjects) {
+    for (const object of this.uiEntities) {
       if (
         object instanceof BaseMultiplayerGameEntity &&
         object.getId() !== null
@@ -43,7 +43,7 @@ export class BaseMultiplayerScreen
       }
     }
 
-    for (const object of this.sceneObjects) {
+    for (const object of this.worldEntities) {
       if (
         object instanceof BaseMultiplayerGameEntity &&
         object.getId() !== null
@@ -56,7 +56,7 @@ export class BaseMultiplayerScreen
   }
 
   public getSyncableObject(id: string): BaseMultiplayerGameEntity | null {
-    for (const object of this.uiObjects) {
+    for (const object of this.uiEntities) {
       if (
         object instanceof BaseMultiplayerGameEntity &&
         object.getId() === id
@@ -65,7 +65,7 @@ export class BaseMultiplayerScreen
       }
     }
 
-    for (const object of this.sceneObjects) {
+    for (const object of this.worldEntities) {
       if (
         object instanceof BaseMultiplayerGameEntity &&
         object.getId() === id
@@ -80,7 +80,7 @@ export class BaseMultiplayerScreen
   public getObjectsByOwner(player: GamePlayer): BaseMultiplayerGameEntity[] {
     const result: BaseMultiplayerGameEntity[] = [];
 
-    this.uiObjects.forEach((object) => {
+    this.uiEntities.forEach((object) => {
       if (
         object instanceof BaseMultiplayerGameEntity &&
         object.getOwner() === player
@@ -89,7 +89,7 @@ export class BaseMultiplayerScreen
       }
     });
 
-    this.sceneObjects.forEach((object) => {
+    this.worldEntities.forEach((object) => {
       if (
         object instanceof BaseMultiplayerGameEntity &&
         object.getOwner() === player

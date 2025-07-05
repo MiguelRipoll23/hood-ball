@@ -63,8 +63,8 @@ export class WorldScreen extends BaseCollidingGameScreen {
 
   public override load(): void {
     const factory = new WorldEntityFactory(this.gameState, this.canvas);
-    factory.createBackground(this.sceneObjects);
-    const objects = factory.createWorldObjects(this.sceneObjects, this.uiObjects);
+    factory.createBackground(this.worldEntities);
+    const objects = factory.createWorldObjects(this.worldEntities, this.uiEntities);
 
     this.scoreboardObject = objects.scoreboard;
     this.localCarEntity = objects.localCar;

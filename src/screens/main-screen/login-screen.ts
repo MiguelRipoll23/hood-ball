@@ -45,7 +45,7 @@ export class LoginScreen extends BaseGameScreen {
     const factory = new LoginEntityFactory(this.canvas);
     this.objects = factory.createObjects();
 
-    this.uiObjects.push(this.objects.message, this.objects.closeableMessage);
+    this.uiEntities.push(this.objects.message, this.objects.closeableMessage);
 
     super.load();
   }
