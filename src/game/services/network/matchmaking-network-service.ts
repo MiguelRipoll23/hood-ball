@@ -168,7 +168,8 @@ export class MatchmakingNetworkService
     binaryReader: BinaryReader
   ): void {
     if (this.gameState.getMatch() !== null) {
-      return this.handleAlreadyJoinedMatch(peer);
+      this.handleAlreadyJoinedMatch(peer);
+      return;
     }
 
     console.log("Received join response from", peer.getToken());
@@ -201,7 +202,8 @@ export class MatchmakingNetworkService
     const playerScore = binaryReader.unsignedInt8();
 
     if (isConnected === false) {
-      return this.handlePlayerDisconnectedById(playerId);
+      this.handlePlayerDisconnectedById(playerId);
+      return;
     }
 
     const gamePlayer = new GamePlayer(

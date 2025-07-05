@@ -124,7 +124,8 @@ export class MainMenuScene extends BaseGameScene {
 
   private showMessages(messages: MessagesResponse[]): void {
     if (messages.length === 0) {
-      return console.log("No server messages to show");
+      console.log("No server messages to show");
+      return;
     }
 
     this.messagesResponse = messages;
@@ -180,13 +181,15 @@ export class MainMenuScene extends BaseGameScene {
         break;
 
       case 1:
-        return this.transitionToScoreboardScene();
+        this.transitionToScoreboardScene();
+        break;
 
       case 2:
-        return this.transitionToSettingsScene();
+        this.transitionToSettingsScene();
+        break;
 
       default:
-        return this.closeableMessageEntity?.show("Invalid menu option");
+        this.closeableMessageEntity?.show("Invalid menu option");
     }
   }
 

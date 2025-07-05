@@ -4,6 +4,7 @@ import { HitboxEntity } from "../entities/hitbox-entity.js";
 import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
 import type { GameState } from "../models/game-state.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
+import type { GameEntity } from "../models/game-entity.js";
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   constructor(
@@ -20,11 +21,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
   public detectCollisions(): void {
     const collidingEntities: BaseStaticCollidingGameEntity[] =
-      this.worldEntities.filter(
-        (sceneEntity) =>
-          sceneEntity instanceof BaseStaticCollidingGameEntity ||
-          sceneEntity instanceof BaseDynamicCollidingGameEntity
-      ) as unknown as BaseStaticCollidingGameEntity[];
+      this.worldEntities.filter(this.isCollidingEntity);
 
     collidingEntities.forEach((collidingEntity) => {
       // Reset colliding state for hitboxes
@@ -47,6 +44,17 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
         collidingEntity.setAvoidingCollision(false);
       }
     });
+  }
+
+  private isCollidingEntity(
+    gameEntity: GameEntity
+  ): gameEntity is
+    | BaseStaticCollidingGameEntity
+    | BaseDynamicCollidingGameEntity {
+    return (
+      gameEntity instanceof BaseStaticCollidingGameEntity ||
+      gameEntity instanceof BaseDynamicCollidingGameEntity
+    );
   }
 
   private detectStaticAndDynamicCollisions(

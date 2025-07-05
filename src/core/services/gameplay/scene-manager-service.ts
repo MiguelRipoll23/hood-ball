@@ -72,10 +72,12 @@ export class SceneManagerService implements ISceneManagerService {
 
   private handleStack(nextScene: GameScene): void {
     if (this.stack.includes(nextScene)) {
-      // back to previous scene
-      this.stack.pop();
+      // Back to previous scene
+      const nextSceneIndex = this.stack.indexOf(nextScene);
+      // Remove all scenes after the target scene
+      this.stack.splice(nextSceneIndex + 1);
     } else {
-      // new scene
+      // New scene
       this.stack.push(nextScene);
     }
 

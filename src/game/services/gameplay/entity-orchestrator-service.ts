@@ -71,10 +71,11 @@ export class EntityOrchestratorService {
 
     // Check for owner
     if (EntityUtils.hasInvalidOwner(webrtcPeer, entityOwnerId)) {
-      return console.warn(
+      console.warn(
         "Received entity data from unauthorized player",
         entityOwnerId
       );
+      return;
     }
 
     // Check for scene
@@ -84,21 +85,24 @@ export class EntityOrchestratorService {
     );
 
     if (entityMultiplayerScene === null) {
-      return console.warn(`Scene not found with id ${sceneId}`);
+      console.warn(`Scene not found with id ${sceneId}`);
+      return;
     }
 
     switch (entityStateId) {
       case EntityStateType.Active:
-        return this.createOrSynchronizeEntity(
+        this.createOrSynchronizeEntity(
           entityMultiplayerScene,
           entityTypeId,
           entityOwnerId,
           entityId,
           entityData
         );
+        break;
 
       case EntityStateType.Inactive:
-        return this.removeEntity(entityMultiplayerScene, entityId);
+        this.removeEntity(entityMultiplayerScene, entityId);
+        break;
 
       default:
         console.warn(`Unknown entity state: ${entityStateId}`);
@@ -219,12 +223,14 @@ export class EntityOrchestratorService {
 
     // Send reliable message if entity is removed
     if (multiplayerEntity.isRemoved()) {
-      return webrtcPeer.sendReliableUnorderedMessage(dataBuffer);
+      webrtcPeer.sendReliableUnorderedMessage(dataBuffer);
+      return;
     }
 
     // Send reliable message if entity must sync
     if (multiplayerEntity.mustSyncReliably()) {
-      return webrtcPeer.sendReliableOrderedMessage(dataBuffer);
+      webrtcPeer.sendReliableOrderedMessage(dataBuffer);
+      return;
     }
 
     webrtcPeer.sendUnreliableUnorderedMessage(dataBuffer);
@@ -242,13 +248,14 @@ export class EntityOrchestratorService {
     const entity = multiplayerScene.getSyncableEntity(entityId);
 
     if (entity === null) {
-      return this.createEntity(
+      this.createEntity(
         multiplayerScene,
         entityTypeId,
         entityOwnerId,
         entityId,
         entityData
       );
+      return;
     }
 
     entity.synchronize(entityData);
@@ -264,14 +271,16 @@ export class EntityOrchestratorService {
     const entityClass = multiplayerScene.getSyncableEntityClass(entityTypeId);
 
     if (entityClass === null) {
-      return console.warn(`Entity class not found for type ${entityTypeId}`);
+      console.warn(`Entity class not found for type ${entityTypeId}`);
+      return;
     }
 
     // Try to find owner
     const player = this.gameState.getMatch()?.getPlayer(entityOwnerId) ?? null;
 
     if (player === null) {
-      return console.warn("Cannot find player with id", entityOwnerId);
+      console.warn("Cannot find player with id", entityOwnerId);
+      return;
     }
 
     // Try to create entity instance
@@ -280,7 +289,8 @@ export class EntityOrchestratorService {
     try {
       entityInstance = entityClass.deserialize(entityId, entityData);
     } catch (error) {
-      return console.warn("Cannot deserialize entity with id", entityId, error);
+      console.warn("Cannot deserialize entity with id", entityId, error);
+      return;
     }
 
     entityInstance.setOwner(player);
@@ -295,7 +305,8 @@ export class EntityOrchestratorService {
     const entity = multiplayerScene.getSyncableEntity(entityId);
 
     if (entity === null) {
-      return console.warn(`Entity not found with id ${entityId}`);
+      console.warn(`Entity not found with id ${entityId}`);
+      return;
     }
 
     entity.setState(EntityStateType.Inactive);

@@ -121,13 +121,13 @@ export class BaseGameScene implements GameScene {
     this.updateEntities(this.worldEntities, deltaTimeStamp);
     this.updateEntities(this.uiEntities, deltaTimeStamp);
 
-    this.uiEntities.forEach((entity) => {
-      this.deleteEntityIfRemoved(this.uiEntities, entity);
-    });
+    for (let i = this.uiEntities.length - 1; i >= 0; i--) {
+      this.deleteEntityIfRemoved(this.uiEntities, this.uiEntities[i]);
+    }
 
-    this.worldEntities.forEach((entity) => {
-      this.deleteEntityIfRemoved(this.worldEntities, entity);
-    });
+    for (let i = this.worldEntities.length - 1; i >= 0; i--) {
+      this.deleteEntityIfRemoved(this.worldEntities, this.worldEntities[i]);
+    }
 
     this.handlePointerEvent();
   }
