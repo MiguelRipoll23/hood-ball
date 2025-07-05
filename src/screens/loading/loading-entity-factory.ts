@@ -6,7 +6,7 @@ export interface LoadingObjects {
   progressBar: ProgressBarEntity;
 }
 
-export class LoadingObjectFactory {
+export class LoadingEntityFactory {
   constructor(private readonly canvas: HTMLCanvasElement) {}
 
   public createObjects(): LoadingObjects {

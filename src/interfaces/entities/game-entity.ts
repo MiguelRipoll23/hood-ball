@@ -1,12 +1,12 @@
-import { ObjectStateType } from "../../core/constants/object-state-type.js";
+import { EntityStateType } from "../../core/constants/entity-state-type.js";
 import type { DebugSettings } from "../../core/constants/debug-settings.js";
 
 export interface GameEntity {
   load(): void;
   hasLoaded(): boolean;
 
-  getState(): ObjectStateType;
-  setState(state: ObjectStateType): void;
+  getState(): EntityStateType;
+  setState(state: EntityStateType): void;
 
   isRemoved(): boolean;
   setRemoved(removed: boolean): void;

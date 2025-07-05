@@ -5,8 +5,8 @@ import { container } from "../../core/services/di-container.js";
 import { EventConsumerService } from "../../core/services/event-consumer-service.js";
 import { BaseGameScreen } from "../../core/scenes/base-game-screen.js";
 import { WorldScreen } from "../world/world-screen.js";
-import { LoadingObjectFactory } from "./loading-object-factory.js";
-import type { LoadingObjects } from "./loading-object-factory.js";
+import { LoadingEntityFactory } from "./loading-entity-factory.js";
+import type { LoadingObjects } from "./loading-entity-factory.js";
 import { LoadingController } from "./loading-controller.js";
 
 @injectable()
@@ -30,9 +30,9 @@ export class LoadingScreen extends BaseGameScreen {
   }
 
   public override load(): void {
-    const factory = new LoadingObjectFactory(this.canvas);
+    const factory = new LoadingEntityFactory(this.canvas);
     this.objects = factory.createObjects();
-    const { background, progressBar } = this.objects;
+    const { background, progressBar } = this.objects!;
     this.sceneObjects.push(background);
     this.uiObjects.push(progressBar);
 

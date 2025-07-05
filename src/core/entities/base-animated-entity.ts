@@ -1,11 +1,11 @@
 import { AnimationType } from "../../enums/animation-type.js";
-import { ObjectAnimationService } from "../services/object-animation-service.js";
+import { EntityAnimationService } from "../services/entity-animation-service.js";
 import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
 
 export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
   protected scale: number = 1;
 
-  protected animationTasks: ObjectAnimationService[] = [];
+  protected animationTasks: EntityAnimationService[] = [];
 
   constructor() {
     super();
@@ -21,19 +21,19 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
 
   public fadeIn(seconds: number): void {
     this.animationTasks.push(
-      new ObjectAnimationService(this, AnimationType.FadeIn, 0, 1, seconds)
+      new EntityAnimationService(this, AnimationType.FadeIn, 0, 1, seconds)
     );
   }
 
   public fadeOut(seconds: number): void {
     this.animationTasks.push(
-      new ObjectAnimationService(this, AnimationType.FadeOut, 1, 0, seconds)
+      new EntityAnimationService(this, AnimationType.FadeOut, 1, 0, seconds)
     );
   }
 
   public moveToX(newX: number, seconds: number) {
     this.animationTasks.push(
-      new ObjectAnimationService(
+      new EntityAnimationService(
         this,
         AnimationType.MoveX,
         this.x,
@@ -45,7 +45,7 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
 
   public moveToY(newY: number, seconds: number) {
     this.animationTasks.push(
-      new ObjectAnimationService(
+      new EntityAnimationService(
         this,
         AnimationType.MoveY,
         this.y,
@@ -57,7 +57,7 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
 
   public rotateTo(newAngle: number, seconds: number) {
     this.animationTasks.push(
-      new ObjectAnimationService(
+      new EntityAnimationService(
         this,
         AnimationType.Rotate,
         this.angle,
@@ -69,7 +69,7 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
 
   public scaleTo(newScale: number, seconds: number) {
     this.animationTasks.push(
-      new ObjectAnimationService(
+      new EntityAnimationService(
         this,
         AnimationType.Scale,
         this.scale,

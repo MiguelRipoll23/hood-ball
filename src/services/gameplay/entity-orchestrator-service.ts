@@ -2,20 +2,20 @@ import type { MultiplayerGameEntity } from "../../interfaces/entities/multiplaye
 import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../core/services/game-state.js";
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
-import { ObjectUtils } from "../../core/utils/object-utils.js";
+import { EntityUtils } from "../../core/utils/entity-utils.js";
 import type { MultiplayerScreen } from "../../interfaces/screens/multiplayer-screen.js";
-import { ObjectStateType } from "../../core/constants/object-state-type.js";
+import { EntityStateType } from "../../core/constants/entity-state-type.js";
 import { ScreenUtils } from "../../core/scenes/screen-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
-import type { ObjectType } from "../../enums/object-type.js";
+import type { EntityType } from "../../enums/entity-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
-export class ObjectOrchestratorService {
+export class EntityOrchestratorService {
   private readonly PERIODIC_MILLISECONDS = 500;
 
   private webrtcService: WebRTCService | null = null;
@@ -70,7 +70,7 @@ export class ObjectOrchestratorService {
     const objectData = binaryReader.bytesAsArrayBuffer();
 
     // Check for owner
-    if (ObjectUtils.hasInvalidOwner(webrtcPeer, objectOwnerId)) {
+    if (EntityUtils.hasInvalidOwner(webrtcPeer, objectOwnerId)) {
       return console.warn(
         "Received object data from unauthorized player",
         objectOwnerId
@@ -88,7 +88,7 @@ export class ObjectOrchestratorService {
     }
 
     switch (objectStateId) {
-      case ObjectStateType.Active:
+      case EntityStateType.Active:
         return this.createOrSynchronizeObject(
           objectMultiplayerScreen,
           objectTypeId,
@@ -97,7 +97,7 @@ export class ObjectOrchestratorService {
           objectData
         );
 
-      case ObjectStateType.Inactive:
+      case EntityStateType.Inactive:
         return this.removeObject(objectMultiplayerScreen, objectId);
 
       default:
@@ -173,7 +173,7 @@ export class ObjectOrchestratorService {
   private markAsRemovedIfObjectInactive(
     multiplayerObject: MultiplayerGameEntity
   ): void {
-    if (multiplayerObject.getState() === ObjectStateType.Inactive) {
+    if (multiplayerObject.getState() === EntityStateType.Inactive) {
       multiplayerObject.setRemoved(true);
     }
   }
@@ -231,7 +231,7 @@ export class ObjectOrchestratorService {
   // Remote
   private createOrSynchronizeObject(
     multiplayerScreen: MultiplayerScreen,
-    objectTypeId: ObjectType,
+    entityTypeId: EntityType,
     objectOwnerId: string,
     objectId: string,
     objectData: ArrayBuffer
@@ -242,7 +242,7 @@ export class ObjectOrchestratorService {
     if (object === null) {
       return this.createObject(
         multiplayerScreen,
-        objectTypeId,
+        entityTypeId,
         objectOwnerId,
         objectId,
         objectData
@@ -254,15 +254,15 @@ export class ObjectOrchestratorService {
 
   private createObject(
     multiplayerScreen: MultiplayerScreen,
-    objectTypeId: ObjectType,
+    entityTypeId: EntityType,
     objectOwnerId: string,
     objectId: string,
     objectData: ArrayBuffer
   ) {
-    const objectClass = multiplayerScreen.getSyncableObjectClass(objectTypeId);
+    const objectClass = multiplayerScreen.getSyncableObjectClass(entityTypeId);
 
     if (objectClass === null) {
-      return console.warn(`Object class not found for type ${objectTypeId}`);
+      return console.warn(`Object class not found for type ${entityTypeId}`);
     }
 
     // Try to find owner
@@ -296,7 +296,7 @@ export class ObjectOrchestratorService {
       return console.warn(`Object not found with id ${objectId}`);
     }
 
-    object.setState(ObjectStateType.Inactive);
+    object.setState(EntityStateType.Inactive);
     object.setRemoved(true);
   }
 }

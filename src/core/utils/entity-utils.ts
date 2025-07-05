@@ -5,7 +5,7 @@ import {
 import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.js";
 
-export class ObjectUtils {
+export class EntityUtils {
   public static hasInvalidOwner(
     webrtcPeer: WebRTCPeer,
     ownerId: string

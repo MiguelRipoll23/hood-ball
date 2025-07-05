@@ -18,7 +18,7 @@ export interface WorldObjects {
   toast: ToastEntity;
 }
 
-export class WorldObjectFactory {
+export class WorldEntityFactory {
   constructor(
     private readonly gameState: GameState,
     private readonly canvas: HTMLCanvasElement

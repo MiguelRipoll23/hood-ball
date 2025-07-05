@@ -1,8 +1,8 @@
 import { AnimationType } from "../../enums/animation-type.js";
 import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity.js";
 
-export class ObjectAnimationService {
-  private readonly object: AnimatableEntity;
+export class EntityAnimationService {
+  private readonly entity: AnimatableEntity;
 
   private completed: boolean = false;
 
@@ -15,20 +15,20 @@ export class ObjectAnimationService {
   private animationType: AnimationType;
 
   constructor(
-    object: AnimatableEntity,
+    entity: AnimatableEntity,
     animationType: AnimationType,
     startValue: number,
     endValue: number,
     durationSeconds: number
   ) {
-    this.object = object;
+    this.entity = entity;
     this.startValue = startValue;
     this.endValue = endValue;
     this.durationMilliseconds = durationSeconds * 1000;
     this.animationType = animationType;
 
     console.log(
-      `${this.constructor.name} [${AnimationType[animationType]}] created for ${object.constructor.name}`
+      `${this.constructor.name} [${AnimationType[animationType]}] created for ${entity.constructor.name}`
     );
   }
 
@@ -46,23 +46,23 @@ export class ObjectAnimationService {
     switch (this.animationType) {
       case AnimationType.FadeIn:
       case AnimationType.FadeOut:
-        this.object.setOpacity(newValue);
+        this.entity.setOpacity(newValue);
         break;
 
       case AnimationType.MoveX:
-        this.object.setX(newValue);
+        this.entity.setX(newValue);
         break;
 
       case AnimationType.MoveY:
-        this.object.setY(newValue);
+        this.entity.setY(newValue);
         break;
 
       case AnimationType.Rotate:
-        this.object.setAngle(newValue);
+        this.entity.setAngle(newValue);
         break;
 
       case AnimationType.Scale:
-        this.object.setScale(newValue);
+        this.entity.setScale(newValue);
         break;
     }
 

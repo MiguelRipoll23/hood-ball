@@ -1,10 +1,10 @@
-import { ObjectStateType } from "../constants/object-state-type.js";
+import { EntityStateType } from "../constants/entity-state-type.js";
 import type { GameEntity } from "../../interfaces/entities/game-entity.js";
 import type { DebugSettings } from "../constants/debug-settings.js";
 
 export class BaseGameEntity implements GameEntity {
   protected loaded: boolean = false;
-  protected state: ObjectStateType = ObjectStateType.Active;
+  protected state: EntityStateType = EntityStateType.Active;
   protected removed: boolean = false;
   protected opacity: number = 1;
 
@@ -23,14 +23,14 @@ export class BaseGameEntity implements GameEntity {
     return this.loaded;
   }
 
-  public getState(): ObjectStateType {
+  public getState(): EntityStateType {
     return this.state;
   }
 
-  public setState(state: ObjectStateType): void {
+  public setState(state: EntityStateType): void {
     this.state = state;
 
-    if (this.state === ObjectStateType.Inactive) {
+    if (this.state === EntityStateType.Inactive) {
       console.log(`${this.constructor.name} set to inactive`);
     }
   }

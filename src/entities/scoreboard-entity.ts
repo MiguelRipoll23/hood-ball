@@ -4,7 +4,7 @@ import {
 } from "../constants/colors-constants.js";
 import { BaseMultiplayerGameEntity } from "./base/base-multiplayer-entity.js";
 import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity.js";
-import { ObjectType } from "../enums/object-type.js";
+import { EntityType } from "../enums/entity-type.js";
 import { BinaryWriter } from "../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../core/utils/binary-reader-utils.js";
 import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui.js";
@@ -44,8 +44,8 @@ export class ScoreboardEntity
     this.setSyncableValues();
   }
 
-  public static getTypeId(): ObjectType {
-    return ObjectType.Scoreboard;
+  public static getTypeId(): EntityType {
+    return EntityType.Scoreboard;
   }
 
   public isActive(): boolean {
@@ -150,7 +150,7 @@ export class ScoreboardEntity
 
   private setSyncableValues() {
     this.setId("d4e5f6a78b9c0d1e2f3a4b5c6d7e8f9a");
-    this.setTypeId(ObjectType.Scoreboard);
+    this.setTypeId(EntityType.Scoreboard);
     this.setSyncableByHost(true);
   }
 

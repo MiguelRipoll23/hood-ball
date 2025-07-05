@@ -2,7 +2,7 @@ import { GameState } from "./game-state.js";
 import { container } from "./di-container.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
-import { ObjectOrchestratorService } from "../../services/gameplay/object-orchestrator-service.js";
+import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
 import { WebRTCService } from "../../services/network/webrtc-service.js";
 import { APIService } from "../../services/network/api-service.js";
 import { CryptoService } from "../../services/security/crypto-service.js";
@@ -37,7 +37,7 @@ export class ServiceRegistry {
     try {
       const webrtcService: WebRTCService = container.get(WebRTCService);
       const matchmakingService: MatchmakingService = container.get(MatchmakingService);
-      const orchestratorService: ObjectOrchestratorService = container.get(ObjectOrchestratorService);
+      const orchestratorService: EntityOrchestratorService = container.get(EntityOrchestratorService);
       const eventProcessorService: EventProcessorService = container.get(EventProcessorService);
 
       if (!webrtcService || !matchmakingService || !orchestratorService || !eventProcessorService) {
