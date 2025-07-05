@@ -11,5 +11,6 @@ export enum EventType {
   Countdown,
   GoalScored,
   GameOver,
+  BoostPadConsumed,
   MatchmakingStarted,
 }

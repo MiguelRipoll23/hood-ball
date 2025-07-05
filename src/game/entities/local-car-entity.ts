@@ -6,10 +6,14 @@ import { GameKeyboard } from "../../core/models/game-keyboard.js";
 import { EntityUtils } from "../../core/utils/entity-utils.js";
 import { GameGamepad } from "../../core/models/game-gamepad.js";
 import { GamepadButton } from "../../core/enums/gamepad-button.js";
+import { BoostButtonEntity } from "./boost-button-entity.js";
+import { BoostMeterEntity } from "./boost-meter-entity.js";
 
 export class LocalCarEntity extends CarEntity {
   private readonly joystickEntity: JoystickEntity;
   private active = true;
+  private boostButtonEntity: BoostButtonEntity | null = null;
+  private boostMeterEntity: BoostMeterEntity | null = null;
 
   constructor(
     x: number,
@@ -45,6 +49,22 @@ export class LocalCarEntity extends CarEntity {
     return this.joystickEntity;
   }
 
+  public setBoostButtonEntity(button: BoostButtonEntity): void {
+    this.boostButtonEntity = button;
+  }
+
+  public setBoostMeterEntity(meter: BoostMeterEntity): void {
+    this.boostMeterEntity = meter;
+  }
+
+  public getBoostButtonEntity(): BoostButtonEntity | null {
+    return this.boostButtonEntity;
+  }
+
+  public getBoostMeterEntity(): BoostMeterEntity | null {
+    return this.boostMeterEntity;
+  }
+
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
       if (this.gameGamepad.get()) {
@@ -55,6 +75,9 @@ export class LocalCarEntity extends CarEntity {
         this.handleKeyboardControls(deltaTimeStamp);
       }
     }
+
+    this.handleBoostInput();
+    this.boostMeterEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
 
     if (this.canvas) {
       EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
@@ -179,5 +202,38 @@ export class LocalCarEntity extends CarEntity {
       Math.sign(angleDifference) *
         Math.min(Math.abs(angleDifference), this.HANDLING * deltaTimeStamp)
     );
+  }
+
+  private handleBoostInput(): void {
+    let activating = false;
+
+    const pressedKeys = this.gameKeyboard.getPressedKeys();
+    if (pressedKeys.has("Shift")) {
+      activating = true;
+    }
+
+    if (this.boostButtonEntity) {
+      const x = this.gamePointer.getX();
+      const y = this.gamePointer.getY();
+      if (
+        this.gamePointer.isPressing() &&
+        x >= this.boostButtonEntity.getX() &&
+        x <= this.boostButtonEntity.getX() + this.boostButtonEntity.getWidth() &&
+        y >= this.boostButtonEntity.getY() &&
+        y <= this.boostButtonEntity.getY() + this.boostButtonEntity.getHeight()
+      ) {
+        activating = true;
+      }
+    }
+
+    if (this.gameGamepad.isButtonPressed(GamepadButton.R1)) {
+      activating = true;
+    }
+
+    if (activating) {
+      this.activateBoost();
+    } else {
+      this.deactivateBoost();
+    }
   }
 }
