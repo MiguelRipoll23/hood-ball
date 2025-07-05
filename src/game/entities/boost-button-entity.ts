@@ -5,7 +5,6 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
   private readonly RADIUS = 32;
   private boostLevel = 1; // 0..1
 
-
   constructor(canvas: HTMLCanvasElement) {
     super();
     this.width = this.RADIUS * 2;
@@ -38,6 +37,15 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
     this.y = y - this.height / 2;
   }
 
+  public containsPoint(x: number, y: number): boolean {
+    return (
+      x >= this.x &&
+      x <= this.x + this.width &&
+      y >= this.y &&
+      y <= this.y + this.height
+    );
+  }
+
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
     this.applyOpacity(context);
@@ -50,14 +58,15 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
       0,
       this.y
     );
-    gradient.addColorStop(0, '#ffe066');
+    gradient.addColorStop(0, "#ffe066");
     gradient.addColorStop(1, LIGHT_GREEN_COLOR);
 
     // base background when empty
     context.beginPath();
     context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
     context.closePath();
-    context.fillStyle = this.boostLevel === 0 ? 'rgba(255,0,0,0.3)' : 'rgba(0,0,0,0.2)';
+    context.fillStyle =
+      this.boostLevel === 0 ? "rgba(255,0,0,0.3)" : "rgba(0,0,0,0.2)";
     context.fill();
 
     if (this.boostLevel > 0) {
@@ -68,7 +77,12 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
       context.closePath();
       context.clip();
       context.fillStyle = gradient;
-      context.fillRect(this.x, this.y + this.height - fillHeight, this.width, fillHeight);
+      context.fillRect(
+        this.x,
+        this.y + this.height - fillHeight,
+        this.width,
+        fillHeight
+      );
       context.restore();
     }
 
@@ -76,15 +90,15 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
       context.beginPath();
       context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
       context.closePath();
-      context.fillStyle = 'rgba(100,100,100,0.4)';
+      context.fillStyle = "rgba(100,100,100,0.4)";
       context.fill();
     }
 
     context.font = `${this.RADIUS * 1.0}px system-ui`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = '#000';
-    context.fillText('🚀', cx, cy + 1);
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillStyle = "#000";
+    context.fillText("🚀", cx, cy + 1);
 
     context.restore();
     super.render(context);

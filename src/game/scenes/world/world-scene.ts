@@ -247,7 +247,6 @@ export class WorldScene extends BaseCollidingGameScene {
   private handleWaitingForPlayers(): void {
     this.matchFlowController?.handleWaitingForPlayers();
   }
-
   private handleRemoteBoostPadConsumed(data: ArrayBuffer | null): void {
     if (data === null) {
       console.warn("Array buffer is null");
@@ -261,8 +260,14 @@ export class WorldScene extends BaseCollidingGameScene {
 
     const binaryReader = BinaryReader.fromArrayBuffer(data);
     const index = binaryReader.unsignedInt8();
+
+    if (index < 0 || index >= this.boostPads.length) {
+      console.warn(`Invalid boost pad index: ${index}`);
+      return;
+    }
+
     const pad = this.boostPads[index];
-    pad?.forceConsume();
+    pad.forceConsume();
   }
 
   private async returnToMainMenuScene(): Promise<void> {

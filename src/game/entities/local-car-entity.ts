@@ -202,6 +202,7 @@ export class LocalCarEntity extends CarEntity {
     let activating = false;
 
     const pressedKeys = this.gameKeyboard.getPressedKeys();
+
     if (pressedKeys.has("Shift") || pressedKeys.has(" ")) {
       activating = true;
     }
@@ -211,10 +212,7 @@ export class LocalCarEntity extends CarEntity {
       const y = this.gamePointer.getY();
       if (
         this.gamePointer.isPressing() &&
-        x >= this.boostButtonEntity.getX() &&
-        x <= this.boostButtonEntity.getX() + this.boostButtonEntity.getWidth() &&
-        y >= this.boostButtonEntity.getY() &&
-        y <= this.boostButtonEntity.getY() + this.boostButtonEntity.getHeight()
+        this.boostButtonEntity.containsPoint(x, y)
       ) {
         activating = true;
       }
