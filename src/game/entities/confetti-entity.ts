@@ -14,32 +14,41 @@ interface ConfettiParticle {
 export class ConfettiEntity extends BaseMoveableGameEntity {
   private particles: ConfettiParticle[] = [];
   private elapsed = 0;
-  // Keep particles alive for at least three seconds so the celebration is visible
+  private spawnElapsed = 0;
+  // Keep spawning particles for three seconds so the celebration is visible
   private readonly duration = 3000; // ms
+  private readonly spawnRate = 50; // particles per second
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.createParticles();
   }
 
-  private createParticles(): void {
-    const count = 200;
-    for (let i = 0; i < count; i++) {
-      this.particles.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * -50,
-        vx: (Math.random() - 0.5) * 3,
-        vy: Math.random() * -2,
-        rotation: Math.random() * Math.PI * 2,
-        size: 4 + Math.random() * 4,
-        color: `hsl(${Math.random() * 360},100%,50%)`,
-        life: 1,
-      });
-    }
+  private createParticle(): void {
+    this.particles.push({
+      x: Math.random() * this.canvas.width,
+      y: Math.random() * -10,
+      vx: (Math.random() - 0.5) * 3,
+      vy: Math.random() * 2 + 1,
+      rotation: Math.random() * Math.PI * 2,
+      size: 4 + Math.random() * 4,
+      color: `hsl(${Math.random() * 360},100%,50%)`,
+      life: 1,
+    });
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
     this.elapsed += delta;
+    if (this.elapsed < this.duration) {
+      this.spawnElapsed += delta;
+      const toSpawn = Math.floor((this.spawnElapsed / 1000) * this.spawnRate);
+      if (toSpawn > 0) {
+        this.spawnElapsed -= (toSpawn / this.spawnRate) * 1000;
+        for (let i = 0; i < toSpawn; i++) {
+          this.createParticle();
+        }
+      }
+    }
+
     this.particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
