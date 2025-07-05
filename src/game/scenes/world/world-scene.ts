@@ -30,7 +30,6 @@ import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
-import { CameraService } from "../../../core/services/gameplay/camera-service.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 
 export class WorldScene extends BaseCollidingGameScene {
@@ -40,7 +39,6 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
-  private readonly cameraService: CameraService;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -64,7 +62,6 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchmakingController = container.get(MatchmakingControllerService);
     this.entityOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
-    this.cameraService = container.get(CameraService);
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
