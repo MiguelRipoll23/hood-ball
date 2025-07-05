@@ -1,4 +1,4 @@
-import { BaseMultiplayerGameEntity } from "../../entities/base/base-multiplayer-entity.js";
+import { BaseMultiplayerGameEntity } from "./base-multiplayer-entity";
 
 export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
   protected x: number = 0;

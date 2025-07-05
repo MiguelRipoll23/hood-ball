@@ -1,8 +1,8 @@
+import type { WebRTCPeer } from "../../game/interfaces/services/network/webrtc-peer.js";
 import {
   CANVAS_EXTRA_MARGIN,
   CANVAS_MARGIN,
 } from "../constants/canvas-constants.js";
-import type { WebRTCPeer } from "../../interfaces/webrtc-peer.js";
 import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.js";
 
 export class EntityUtils {
@@ -17,45 +17,45 @@ export class EntityUtils {
     return webrtcPeer.getPlayer()?.getId() !== ownerId;
   }
 
-  public static fixObjectPositionIfOutOfBounds(
-    moveableObject: BaseMoveableGameEntity,
+  public static fixEntityPositionIfOutOfBounds(
+    moveableEntity: BaseMoveableGameEntity,
     canvas: HTMLCanvasElement
   ) {
     let hasChanged = false;
 
-    const objectX = moveableObject.getX();
-    const objectY = moveableObject.getY();
-    const objectWidth = moveableObject.getWidth();
-    const objectHeight = moveableObject.getHeight();
+    const entityX = moveableEntity.getX();
+    const entityY = moveableEntity.getY();
+    const entityWidth = moveableEntity.getWidth();
+    const entityHeight = moveableEntity.getHeight();
 
-    const objectLeft = objectX - objectWidth / 2;
-    const objectRight = objectX + objectWidth / 2;
-    const objectTop = objectY - objectHeight / 2;
-    const objectBottom = objectY + objectHeight / 2;
+    const entityLeft = entityX - entityWidth / 2;
+    const entityRight = entityX + entityWidth / 2;
+    const entityTop = entityY - entityHeight / 2;
+    const entityBottom = entityY + entityHeight / 2;
 
     // Get the canvas dimensions
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    if (objectLeft < CANVAS_MARGIN) {
-      moveableObject.setX(objectX + CANVAS_EXTRA_MARGIN); // Prevent going out of the left boundary
+    if (entityLeft < CANVAS_MARGIN) {
+      moveableEntity.setX(entityX + CANVAS_EXTRA_MARGIN); // Prevent going out of the left boundary
       hasChanged = true;
-    } else if (objectRight > canvasWidth - CANVAS_MARGIN) {
-      moveableObject.setX(objectX - CANVAS_EXTRA_MARGIN); // Prevent going out of the right boundary
+    } else if (entityRight > canvasWidth - CANVAS_MARGIN) {
+      moveableEntity.setX(entityX - CANVAS_EXTRA_MARGIN); // Prevent going out of the right boundary
       hasChanged = true;
     }
 
     // Adjust Y position if out of bounds
-    if (objectTop < CANVAS_MARGIN) {
-      moveableObject.setY(objectY + CANVAS_EXTRA_MARGIN); // Prevent going out of the top boundary
+    if (entityTop < CANVAS_MARGIN) {
+      moveableEntity.setY(entityY + CANVAS_EXTRA_MARGIN); // Prevent going out of the top boundary
       hasChanged = true;
-    } else if (objectBottom > canvasHeight - CANVAS_MARGIN) {
-      moveableObject.setY(objectY - CANVAS_EXTRA_MARGIN); // Prevent going out of the bottom boundary
+    } else if (entityBottom > canvasHeight - CANVAS_MARGIN) {
+      moveableEntity.setY(entityY - CANVAS_EXTRA_MARGIN); // Prevent going out of the bottom boundary
       hasChanged = true;
     }
 
     if (hasChanged) {
-      moveableObject.setSync(true);
+      moveableEntity.setSync(true);
     }
   }
 }

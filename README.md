@@ -19,7 +19,7 @@ https://github.com/user-attachments/assets/8634a9e5-b85c-43ca-a130-4412aed5753c
 
 ### Debug UI
 
-![Screenshot showing debug menu using Dear imgui](https://github.com/user-attachments/assets/85af22e7-4b85-4d1f-b68c-bc8eb4476b82)
+![Sceneshot showing debug menu using Dear imgui](https://github.com/user-attachments/assets/85af22e7-4b85-4d1f-b68c-bc8eb4476b82)
 
 ## Contributions
 

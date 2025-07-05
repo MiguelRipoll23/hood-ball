@@ -7,9 +7,9 @@ type CollidingGameEntityConstructor = new (
 
 export class BaseStaticCollidingGameEntity extends BaseAnimatedGameEntity {
   protected rigidBody = true;
-  protected hitboxObjects: HitboxEntity[] = [];
+  protected hitboxEntities: HitboxEntity[] = [];
 
-  private collidingObjects: BaseStaticCollidingGameEntity[] = [];
+  private collidingEntities: BaseStaticCollidingGameEntity[] = [];
   private avoidingCollision = false;
   private excludedCollisionClasses: CollidingGameEntityConstructor[] = [];
 
@@ -18,8 +18,8 @@ export class BaseStaticCollidingGameEntity extends BaseAnimatedGameEntity {
   }
 
   public override load(): void {
-    this.hitboxObjects.forEach((object) =>
-      object.setDebugSettings(this.debugSettings)
+    this.hitboxEntities.forEach((entity) =>
+      entity.setDebugSettings(this.debugSettings)
     );
 
     super.load();
@@ -30,50 +30,50 @@ export class BaseStaticCollidingGameEntity extends BaseAnimatedGameEntity {
   }
 
   public isColliding(): boolean {
-    return this.collidingObjects.some(
-      (object) =>
+    return this.collidingEntities.some(
+      (entity) =>
         this.isCollisionClassIncluded(
-          object.constructor as CollidingGameEntityConstructor
-        ) && object.hasRigidBody()
+          entity.constructor as CollidingGameEntityConstructor
+        ) && entity.hasRigidBody()
     );
   }
 
   public isCollidingWithStatic(): boolean {
-    return this.collidingObjects.some(
-      (object) =>
+    return this.collidingEntities.some(
+      (entity) =>
         this.isCollisionClassIncluded(
-          object.constructor as CollidingGameEntityConstructor
+          entity.constructor as CollidingGameEntityConstructor
         ) &&
-        !object.isDynamic() &&
-        object.hasRigidBody()
+        !entity.isDynamic() &&
+        entity.hasRigidBody()
     );
   }
 
   public getHitboxEntities(): HitboxEntity[] {
-    return this.hitboxObjects;
+    return this.hitboxEntities;
   }
 
-  public setHitboxEntities(hitboxObjects: HitboxEntity[]): void {
-    this.hitboxObjects = hitboxObjects;
+  public setHitboxEntities(hitboxEntities: HitboxEntity[]): void {
+    this.hitboxEntities = hitboxEntities;
   }
 
-  public getCollidingObjects(): BaseStaticCollidingGameEntity[] {
-    return this.collidingObjects;
+  public getCollidingEntities(): BaseStaticCollidingGameEntity[] {
+    return this.collidingEntities;
   }
 
   public addCollidingEntity(
     collidingEntity: BaseStaticCollidingGameEntity
   ): void {
-    if (this.collidingObjects.includes(collidingEntity) === false) {
-      this.collidingObjects.push(collidingEntity);
+    if (this.collidingEntities.includes(collidingEntity) === false) {
+      this.collidingEntities.push(collidingEntity);
     }
   }
 
   public removeCollidingEntity(
     collidingEntity: BaseStaticCollidingGameEntity
   ): void {
-    this.collidingObjects = this.collidingObjects.filter(
-      (object) => object !== collidingEntity
+    this.collidingEntities = this.collidingEntities.filter(
+      (entity) => entity !== collidingEntity
     );
   }
 
@@ -102,7 +102,7 @@ export class BaseStaticCollidingGameEntity extends BaseAnimatedGameEntity {
   }
 
   public render(context: CanvasRenderingContext2D): void {
-    this.hitboxObjects.forEach((object) => object.render(context));
+    this.hitboxEntities.forEach((entity) => entity.render(context));
   }
 
   private isCollisionClassIncluded(
