@@ -5,6 +5,9 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
+import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
+import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
+import { ButtonEntity } from "../../entities/common/button-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
 import type { GameState } from "../../../core/models/game-state.js";
@@ -71,14 +74,38 @@ export class WorldEntityFactory {
     const alertEntity = new AlertEntity(this.canvas);
     const toastEntity = new ToastEntity(this.canvas);
 
+    // Boost related entities
+    const boostMeterEntity = new BoostMeterEntity(this.canvas);
+    const boostButtonEntity = new ButtonEntity(this.canvas, "Boost");
+    boostButtonEntity.setPosition(
+      this.canvas.width - 80,
+      this.canvas.height - 80
+    );
+    localCarEntity.setBoostButtonEntity(boostButtonEntity);
+    localCarEntity.setBoostMeterEntity(boostMeterEntity);
+
+    const padOffset = 60;
+    const boostPads = [
+      new BoostPadEntity(padOffset, padOffset),
+      new BoostPadEntity(this.canvas.width - padOffset, padOffset),
+      new BoostPadEntity(padOffset, this.canvas.height - padOffset),
+      new BoostPadEntity(this.canvas.width - padOffset, this.canvas.height - padOffset),
+    ];
+
     worldEntities.push(
       scoreboardEntity,
       ballEntity,
       goalEntity,
       localCarEntity,
-      toastEntity
+      toastEntity,
+      ...boostPads
     );
-    uiEntities.push(alertEntity, localCarEntity.getJoystickEntity());
+    uiEntities.push(
+      alertEntity,
+      localCarEntity.getJoystickEntity(),
+      boostButtonEntity,
+      boostMeterEntity
+    );
 
     return {
       scoreboardEntity,
