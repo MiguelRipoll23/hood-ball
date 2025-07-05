@@ -31,6 +31,8 @@ import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
+import { ConfettiEntity } from "../../entities/confetti-entity.js";
+import { ThumbsDownCloudEntity } from "../../entities/thumbs-down-cloud-entity.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -109,7 +111,8 @@ export class WorldScene extends BaseCollidingGameScene {
         void this.returnToMainMenuScene();
       },
       (x: number, y: number, team: TeamType) =>
-        this.triggerGoalExplosion(x, y, team)
+        this.triggerGoalExplosion(x, y, team),
+      (won: boolean) => this.handleGameOverEffect(won)
     );
     super.load();
   }
@@ -279,6 +282,16 @@ export class WorldScene extends BaseCollidingGameScene {
     this.addEntityToSceneLayer(explosion);
     // Make the shake last a bit longer for added impact
     this.cameraService.shake(3, 8);
+  }
+
+  private handleGameOverEffect(won: boolean): void {
+    if (won) {
+      const confetti = new ConfettiEntity(this.canvas);
+      this.addEntityToSceneLayer(confetti);
+    } else {
+      const cloud = new ThumbsDownCloudEntity(this.canvas);
+      this.addEntityToSceneLayer(cloud);
+    }
   }
 
   private async returnToMainMenuScene(): Promise<void> {
