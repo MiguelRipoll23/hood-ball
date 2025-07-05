@@ -11,7 +11,7 @@ import { container } from "../../core/services/di-container.js";
 const PAD_COOLDOWN_MS = 15000;
 
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
-  private readonly SIZE = 40;
+  private readonly RADIUS = 25;
   private active = true;
   private cooldownRemaining = 0;
 
@@ -23,8 +23,8 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     super();
     this.x = this.startX;
     this.y = this.startY;
-    this.width = this.SIZE;
-    this.height = this.SIZE;
+    this.width = this.RADIUS * 2;
+    this.height = this.RADIUS * 2;
     this.rigidBody = false;
   }
 
@@ -80,6 +80,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
+
     if (this.active) {
       const gradient = context.createRadialGradient(
         this.x,
@@ -87,21 +88,22 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
         0,
         this.x,
         this.y,
-        this.width / 2
+        this.RADIUS
       );
       gradient.addColorStop(0, '#ffe066');
       gradient.addColorStop(1, LIGHT_GREEN_COLOR);
+      context.shadowColor = LIGHT_GREEN_COLOR;
+      context.shadowBlur = 20;
       context.fillStyle = gradient;
     } else {
       const ratio = 1 - this.cooldownRemaining / PAD_COOLDOWN_MS;
       context.fillStyle = `rgba(100,100,100,${0.3 + 0.7 * ratio})`;
     }
-    context.fillRect(
-      this.x - this.width / 2,
-      this.y - this.height / 2,
-      this.width,
-      this.height
-    );
+
+    context.beginPath();
+    context.arc(this.x, this.y, this.RADIUS, 0, Math.PI * 2);
+    context.fill();
+    context.closePath();
     context.restore();
     super.render(context);
   }

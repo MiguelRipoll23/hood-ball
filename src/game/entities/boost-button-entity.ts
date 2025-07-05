@@ -2,7 +2,7 @@ import { BaseTappableGameEntity } from "../..//core/entities/base-tappable-game-
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class BoostButtonEntity extends BaseTappableGameEntity {
-  private readonly RADIUS = 35;
+  private readonly RADIUS = 28;
   private boostLevel = 1; // 0..1
 
 
