@@ -11,12 +11,14 @@ interface EmojiParticle {
 export class ThumbsDownCloudEntity extends BaseMoveableGameEntity {
   private particles: EmojiParticle[] = [];
   private elapsed = 0;
-  private readonly duration = 4000; // ms, extended so players notice the effect
+  private readonly duration = 3000; // ms
+  private readonly fadeInDuration = 500; // ms
   private readonly centerX: number;
   private readonly centerY: number;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.opacity = 0;
     this.centerX = this.canvas.width / 2;
     this.centerY = this.canvas.height / 2;
     this.createParticles();
@@ -38,6 +40,13 @@ export class ThumbsDownCloudEntity extends BaseMoveableGameEntity {
 
   public override update(delta: DOMHighResTimeStamp): void {
     this.elapsed += delta;
+
+    if (this.elapsed < this.fadeInDuration) {
+      this.opacity = this.elapsed / this.fadeInDuration;
+    } else {
+      this.opacity = 1;
+    }
+
     this.particles.forEach((p) => {
       p.angle += p.angularVelocity;
       p.life -= delta / this.duration;
@@ -51,6 +60,7 @@ export class ThumbsDownCloudEntity extends BaseMoveableGameEntity {
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
+    context.globalAlpha = this.opacity;
     context.textAlign = "center";
     context.textBaseline = "middle";
     this.particles.forEach((p) => {
@@ -58,7 +68,7 @@ export class ThumbsDownCloudEntity extends BaseMoveableGameEntity {
       const y = this.centerY + Math.sin(p.angle) * p.radius;
       context.save();
       context.translate(x, y);
-      context.globalAlpha = Math.max(p.life, 0);
+      context.globalAlpha = Math.max(p.life, 0) * this.opacity;
       context.font = `${p.size}px system-ui`;
       context.fillText("\uD83D\uDC4E", 0, 0); // thumbs down emoji
       context.restore();

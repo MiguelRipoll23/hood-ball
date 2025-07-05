@@ -125,6 +125,9 @@ export class ScoreboardEntity
   }
 
   public render(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.applyOpacity(context);
+
     const totalWidth =
       2 * this.SQUARE_SIZE + this.SPACE_BETWEEN + this.TIME_BOX_WIDTH;
     const startX = this.x - totalWidth / 2;
@@ -149,6 +152,8 @@ export class ScoreboardEntity
       this.TIME_BOX_WIDTH +
       this.SPACE_BETWEEN;
     this.renderSquare(context, redScoreX, this.RED_SHAPE_COLOR, this.redScore);
+
+    context.restore();
   }
 
   private setSyncableValues() {
@@ -206,7 +211,8 @@ export class ScoreboardEntity
     }
 
     context.save();
-    context.globalAlpha = flashing ? alpha : 1;
+    const baseAlpha = context.globalAlpha;
+    context.globalAlpha = baseAlpha * (flashing ? alpha : 1);
     const color = atZero || underFive ? this.FLASH_COLOR : this.TEXT_COLOR;
     this.renderText(context, text, x + width / 2, y + 12.5 + height / 2, color);
     context.restore();
