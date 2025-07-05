@@ -28,7 +28,7 @@ export class SceneInspectorWindow extends BaseWindow {
           scene,
           subScene,
           mainSceneUIEntities,
-          mainSceneWorldEntities,
+          subSceneUIEntities,
           "ui"
         );
         ImGui.EndTabItem();
@@ -37,7 +37,7 @@ export class SceneInspectorWindow extends BaseWindow {
         this.renderSceneSections(
           scene,
           subScene,
-          subSceneUIEntities,
+          mainSceneWorldEntities,
           subSceneWorldEntities,
           "world"
         );
