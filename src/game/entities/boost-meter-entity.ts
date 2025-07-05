@@ -5,7 +5,8 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   private readonly RADIUS = 32;
   private boostLevel = 1; // target level 0..1
   private displayLevel = 1; // rendered level 0..1
-  private readonly FILL_RATE = 0.05; // units/ms, super fast
+  // Fill or drain the meter in roughly 0.2 seconds
+  private readonly FILL_RATE = 0.005; // units/ms
 
   constructor(canvas: HTMLCanvasElement) {
     super();
