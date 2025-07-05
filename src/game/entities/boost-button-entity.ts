@@ -3,7 +3,9 @@ import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class BoostButtonEntity extends BaseTappableGameEntity {
   private readonly RADIUS = 32;
-  private boostLevel = 1; // 0..1
+  private boostLevel = 1; // target level 0..1
+  private displayLevel = 1; // rendered level 0..1
+  private readonly FILL_RATE = 0.003; // units/ms
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -14,6 +16,20 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
 
   public setBoostLevel(level: number): void {
     this.boostLevel = Math.max(0, Math.min(1, level));
+  }
+
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    const diff = this.boostLevel - this.displayLevel;
+    if (diff !== 0) {
+      const step = this.FILL_RATE * deltaTimeStamp;
+      if (Math.abs(diff) <= step) {
+        this.displayLevel = this.boostLevel;
+      } else {
+        this.displayLevel += Math.sign(diff) * step;
+      }
+    }
+
+    super.update(deltaTimeStamp);
   }
 
   public getX(): number {
@@ -66,11 +82,11 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
     context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
     context.closePath();
     context.fillStyle =
-      this.boostLevel === 0 ? "rgba(255,0,0,0.3)" : "rgba(0,0,0,0.2)";
+      this.displayLevel === 0 ? "rgba(255,0,0,0.3)" : "rgba(0,0,0,0.2)";
     context.fill();
 
-    if (this.boostLevel > 0) {
-      const fillHeight = this.height * this.boostLevel;
+    if (this.displayLevel > 0) {
+      const fillHeight = this.height * this.displayLevel;
       context.save();
       context.beginPath();
       context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
