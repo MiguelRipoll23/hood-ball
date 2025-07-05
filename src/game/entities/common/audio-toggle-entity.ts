@@ -3,7 +3,8 @@ import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
 import { AudioService } from "../../services/audio/audio-service.js";
 
 export class AudioToggleEntity extends BaseTappableGameEntity {
-  private radius = 30;
+  private readonly radius = 30;
+  private readonly margin = 20;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -33,45 +34,30 @@ export class AudioToggleEntity extends BaseTappableGameEntity {
     if (this.audioService.isEnabled()) {
       context.fillStyle = LIGHT_GREEN_COLOR;
     } else {
-      context.fillStyle = "rgba(0,0,0,0)";
+      context.fillStyle = "rgba(0,0,0,0.5)";
     }
     context.strokeStyle = "#fff";
     context.lineWidth = 3;
     context.fill();
     context.stroke();
 
-    this.drawSpeakerIcon(context);
+    this.drawSpeakerEmoji(context);
 
     context.restore();
     super.render(context);
   }
 
-  private drawSpeakerIcon(context: CanvasRenderingContext2D): void {
+  private drawSpeakerEmoji(context: CanvasRenderingContext2D): void {
     context.fillStyle = "#fff";
-    context.beginPath();
-    context.moveTo(-12, -10);
-    context.lineTo(-2, -10);
-    context.lineTo(8, -18);
-    context.lineTo(8, 18);
-    context.lineTo(-2, 10);
-    context.lineTo(-12, 10);
-    context.closePath();
-    context.fill();
-
-    if (this.audioService.isEnabled()) {
-      context.strokeStyle = "#fff";
-      context.lineWidth = 3;
-      context.beginPath();
-      context.arc(12, 0, 10, -Math.PI / 4, Math.PI / 4);
-      context.stroke();
-      context.beginPath();
-      context.arc(12, 0, 16, -Math.PI / 4, Math.PI / 4);
-      context.stroke();
-    }
+    context.font = `${this.radius}px serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    const emoji = this.audioService.isEnabled() ? "\uD83D\uDD0A" : "\uD83D\uDD08";
+    context.fillText(emoji, 0, 0);
   }
 
   private setPosition(): void {
     this.x = this.canvas.width / 2 - this.radius;
-    this.y = this.canvas.height - this.radius * 2 - 20;
+    this.y = this.canvas.height - this.radius * 2 - this.margin;
   }
 }
