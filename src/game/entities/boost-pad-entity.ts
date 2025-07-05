@@ -88,6 +88,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
+    this.applyOpacity(context);
 
     if (this.active) {
       const pulse = (Math.sin(this.glowTimer / 200) + 1) / 2;
