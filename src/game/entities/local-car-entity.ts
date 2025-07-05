@@ -216,6 +216,9 @@ export class LocalCarEntity extends CarEntity {
       ) {
         activating = true;
       }
+      if (!activating && touches.filter((t) => t.pressing).length >= 2) {
+        activating = true;
+      }
     }
 
     if (this.gameGamepad.isButtonPressed(GamepadButton.R1)) {
