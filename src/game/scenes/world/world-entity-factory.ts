@@ -6,7 +6,6 @@ import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
-import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { BoostButtonEntity } from "../../entities/boost-button-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
@@ -76,10 +75,8 @@ export class WorldEntityFactory {
     const toastEntity = new ToastEntity(this.canvas);
 
     // Boost related entities
-    const boostMeterEntity = new BoostMeterEntity(this.canvas);
     const boostButtonEntity = new BoostButtonEntity(this.canvas);
     localCarEntity.setBoostButtonEntity(boostButtonEntity);
-    localCarEntity.setBoostMeterEntity(boostMeterEntity);
 
     const padOffset = 60;
     const boostPads = [
@@ -104,8 +101,7 @@ export class WorldEntityFactory {
     uiEntities.push(
       alertEntity,
       localCarEntity.getJoystickEntity(),
-      boostButtonEntity,
-      boostMeterEntity
+      boostButtonEntity
     );
 
     return {

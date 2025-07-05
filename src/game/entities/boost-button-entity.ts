@@ -2,7 +2,8 @@ import { BaseTappableGameEntity } from "../..//core/entities/base-tappable-game-
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class BoostButtonEntity extends BaseTappableGameEntity {
-  private readonly RADIUS = 40;
+  private readonly RADIUS = 35;
+  private boostLevel = 1; // 0..1
 
 
   constructor(canvas: HTMLCanvasElement) {
@@ -10,6 +11,10 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
     this.width = this.RADIUS * 2;
     this.height = this.RADIUS * 2;
     this.setPosition(canvas.width / 2, canvas.height - this.RADIUS - 20);
+  }
+
+  public setBoostLevel(level: number): void {
+    this.boostLevel = Math.max(0, Math.min(1, level));
   }
 
   public getX(): number {
@@ -39,15 +44,42 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
 
     const cx = this.x + this.RADIUS;
     const cy = this.y + this.RADIUS;
-    const gradient = context.createRadialGradient(cx, cy, this.RADIUS / 4, cx, cy, this.RADIUS);
+    const gradient = context.createRadialGradient(
+      cx,
+      cy,
+      this.RADIUS / 4,
+      cx,
+      cy,
+      this.RADIUS
+    );
     gradient.addColorStop(0, '#ffe066');
     gradient.addColorStop(1, LIGHT_GREEN_COLOR);
 
+    // base background when empty
     context.beginPath();
     context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
-    context.fillStyle = this.pressed ? 'rgba(100,100,100,0.8)' : gradient;
-    context.fill();
     context.closePath();
+    context.fillStyle = this.boostLevel === 0 ? 'rgba(255,0,0,0.3)' : 'rgba(0,0,0,0.2)';
+    context.fill();
+
+    if (this.boostLevel > 0) {
+      const start = -Math.PI / 2;
+      const end = start + Math.PI * 2 * this.boostLevel;
+      context.beginPath();
+      context.moveTo(cx, cy);
+      context.arc(cx, cy, this.RADIUS, start, end);
+      context.closePath();
+      context.fillStyle = gradient;
+      context.fill();
+    }
+
+    if (this.pressed) {
+      context.beginPath();
+      context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
+      context.closePath();
+      context.fillStyle = 'rgba(100,100,100,0.4)';
+      context.fill();
+    }
 
     context.font = `${this.RADIUS * 1.2}px system-ui`;
     context.textAlign = 'center';

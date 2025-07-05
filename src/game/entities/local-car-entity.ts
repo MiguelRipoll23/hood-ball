@@ -7,13 +7,11 @@ import { EntityUtils } from "../../core/utils/entity-utils.js";
 import { GameGamepad } from "../../core/models/game-gamepad.js";
 import { GamepadButton } from "../../core/enums/gamepad-button.js";
 import { BoostButtonEntity } from "./boost-button-entity.js";
-import { BoostMeterEntity } from "./boost-meter-entity.js";
 
 export class LocalCarEntity extends CarEntity {
   private readonly joystickEntity: JoystickEntity;
   private active = true;
   private boostButtonEntity: BoostButtonEntity | null = null;
-  private boostMeterEntity: BoostMeterEntity | null = null;
 
   constructor(
     x: number,
@@ -53,16 +51,8 @@ export class LocalCarEntity extends CarEntity {
     this.boostButtonEntity = button;
   }
 
-  public setBoostMeterEntity(meter: BoostMeterEntity): void {
-    this.boostMeterEntity = meter;
-  }
-
   public getBoostButtonEntity(): BoostButtonEntity | null {
     return this.boostButtonEntity;
-  }
-
-  public getBoostMeterEntity(): BoostMeterEntity | null {
-    return this.boostMeterEntity;
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -77,7 +67,7 @@ export class LocalCarEntity extends CarEntity {
     }
 
     this.handleBoostInput();
-    this.boostMeterEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
+    this.boostButtonEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
 
     if (this.canvas) {
       EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
@@ -208,7 +198,7 @@ export class LocalCarEntity extends CarEntity {
     let activating = false;
 
     const pressedKeys = this.gameKeyboard.getPressedKeys();
-    if (pressedKeys.has("Shift")) {
+    if (pressedKeys.has("Shift") || pressedKeys.has(" ")) {
       activating = true;
     }
 
