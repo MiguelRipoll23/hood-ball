@@ -274,14 +274,15 @@ export class GameLoopService {
 
     this.gameFrame.getCurrentScene()?.render(this.context);
     this.gameFrame.getNextScene()?.render(this.context);
+
+    this.context.restore();
+
     this.gameFrame.getNotificationEntity()?.render(this.context);
     this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
 
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();
     }
-
-    this.context.restore();
 
     // Dear ImGui rendering
     this.debugService.render();
