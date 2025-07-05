@@ -26,6 +26,15 @@ import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { container } from "../di-container.js";
 import { CameraService } from "./camera-service.js";
+import { AudioService } from "../../../game/services/audio/audio-service.js";
+import {
+  GAMEPLAY_MUSIC_URL,
+  MENU_MUSIC_URL,
+  BOOST_SFX_URL,
+  HIT_BALL_SFX_URL,
+  SCORE_GOAL_SFX_URL,
+  MATCH_WIN_SFX_URL,
+} from "../../../game/constants/audio-constants.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -51,6 +60,7 @@ export class GameLoopService {
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
   private cameraService: CameraService;
+  private audioService: AudioService;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -67,6 +77,7 @@ export class GameLoopService {
     this.matchmakingService = container.get(MatchmakingService);
     this.webrtcService = container.get(WebRTCService);
     this.cameraService = container.get(CameraService);
+    this.audioService = container.get(AudioService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
@@ -80,6 +91,7 @@ export class GameLoopService {
     this.isRunning = true;
     requestAnimationFrame(this.loop.bind(this));
     this.setInitialScene();
+    void this.initializeAudio();
   }
 
   public stop(): void {
@@ -205,6 +217,25 @@ export class GameLoopService {
   private loadLoadingIndicatorEntity(): void {
     this.loadingIndicatorEntity = new LoadingIndicatorEntity(this.canvas);
     this.gameFrame.setLoadingIndicatorEntity(this.loadingIndicatorEntity);
+  }
+
+  private async initializeAudio(): Promise<void> {
+    window.addEventListener(
+      "pointerdown",
+      this.audioService.resume.bind(this.audioService),
+      { once: true }
+    );
+
+    await Promise.all([
+      this.audioService.loadMusic("game", GAMEPLAY_MUSIC_URL),
+      this.audioService.loadMusic("menu", MENU_MUSIC_URL),
+      this.audioService.loadSFX("boost", BOOST_SFX_URL),
+      this.audioService.loadSFX("hit", HIT_BALL_SFX_URL),
+      this.audioService.loadSFX("score", SCORE_GOAL_SFX_URL),
+      this.audioService.loadSFX("win", MATCH_WIN_SFX_URL),
+    ]);
+
+    this.audioService.playMusic("menu");
   }
 
   private setInitialScene() {

@@ -12,6 +12,7 @@ import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../../core/models/game-state.js";
 import { container } from "../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { AudioService } from "../../services/audio/audio-service.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -22,6 +23,7 @@ export class MainMenuScene extends BaseGameScene {
 
   private serverMessageWindowEntity: ServerMessageWindowEntity | null = null;
   private closeableMessageEntity: CloseableMessageEntity | null = null;
+  private audioService: AudioService;
 
   constructor(
     gameState: GameState,
@@ -31,6 +33,7 @@ export class MainMenuScene extends BaseGameScene {
     super(gameState, eventConsumerService);
     this.showNews = showNews;
     this.apiService = container.get(APIService);
+    this.audioService = container.get(AudioService);
     this.subscribeToEvents();
   }
 
@@ -45,6 +48,7 @@ export class MainMenuScene extends BaseGameScene {
 
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
+    this.audioService.playMusic("menu");
     this.enableMenuButtons();
 
     if (this.showNews) {

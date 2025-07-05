@@ -32,6 +32,7 @@ import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
 import { CameraService } from "../../../core/services/gameplay/camera-service.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
+import { AudioService } from "../../services/audio/audio-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -51,6 +52,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private scoreManagerService: ScoreManagerService | null = null;
   private matchFlowController: MatchFlowController | null = null;
   private boostPads: BoostPadEntity[] = [];
+  private audioService: AudioService;
 
   constructor(
     protected gameState: GameState,
@@ -65,6 +67,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.entityOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
     this.cameraService = container.get(CameraService);
+    this.audioService = container.get(AudioService);
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -123,6 +126,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
+    this.audioService.playMusic("game");
 
     this.scoreboardEntity?.reset();
     this.matchmakingController
