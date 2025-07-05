@@ -6,12 +6,12 @@ import { GameKeyboard } from "../../core/models/game-keyboard.js";
 import { EntityUtils } from "../../core/utils/entity-utils.js";
 import { GameGamepad } from "../../core/models/game-gamepad.js";
 import { GamepadButton } from "../../core/enums/gamepad-button.js";
-import { BoostButtonEntity } from "./boost-button-entity.js";
+import { BoostMeterEntity } from "./boost-meter-entity.js";
 
 export class LocalCarEntity extends CarEntity {
   private readonly joystickEntity: JoystickEntity;
   private active = true;
-  private boostButtonEntity: BoostButtonEntity | null = null;
+  private boostMeterEntity: BoostMeterEntity | null = null;
 
   constructor(
     x: number,
@@ -47,12 +47,12 @@ export class LocalCarEntity extends CarEntity {
     return this.joystickEntity;
   }
 
-  public setBoostButtonEntity(button: BoostButtonEntity): void {
-    this.boostButtonEntity = button;
+  public setBoostMeterEntity(meter: BoostMeterEntity): void {
+    this.boostMeterEntity = meter;
   }
 
-  public getBoostButtonEntity(): BoostButtonEntity | null {
-    return this.boostButtonEntity;
+  public getBoostMeterEntity(): BoostMeterEntity | null {
+    return this.boostMeterEntity;
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -71,7 +71,7 @@ export class LocalCarEntity extends CarEntity {
     } else {
       this.deactivateBoost();
     }
-    this.boostButtonEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
+    this.boostMeterEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
 
     if (this.canvas) {
       EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
@@ -207,16 +207,9 @@ export class LocalCarEntity extends CarEntity {
       activating = true;
     }
 
-    if (this.boostButtonEntity) {
+    if (this.boostMeterEntity) {
       const touches = this.gamePointer.getTouchPoints();
-      if (
-        touches.some(
-          (t) => t.pressing && this.boostButtonEntity!.containsPoint(t.x, t.y)
-        )
-      ) {
-        activating = true;
-      }
-      if (!activating && touches.filter((t) => t.pressing).length >= 2) {
+      if (touches.filter((t) => t.pressing).length >= 2) {
         activating = true;
       }
     }
