@@ -15,9 +15,10 @@ export class ConfettiEntity extends BaseMoveableGameEntity {
   private particles: ConfettiParticle[] = [];
   private elapsed = 0;
   private spawnElapsed = 0;
-  // Keep spawning particles for three seconds so the celebration is visible
-  private readonly duration = 3000; // ms
-  private readonly spawnRate = 50; // particles per second
+  // Keep spawning particles for five seconds so the celebration is visible
+  private readonly duration = 5000; // ms
+  // Increased spawn rate for denser confetti
+  private readonly spawnRate = 100; // particles per second
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
