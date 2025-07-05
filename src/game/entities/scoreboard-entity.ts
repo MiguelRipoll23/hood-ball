@@ -193,17 +193,21 @@ export class ScoreboardEntity
     this.roundedRect(context, x, y, width, height, this.CORNER_RADIUS);
     context.fill();
 
-    const isCritical = this.remainingSeconds <= 5;
+    const atZero = this.remainingSeconds <= 0;
+    const underFive = this.remainingSeconds > 0 && this.remainingSeconds <= 5;
+
+    const flashing = (atZero && this.active) || underFive;
     let alpha = 1;
-    if (isCritical) {
-      // Fade the text in and out urgently rather than a hard flash
-      const cycle = (this.elapsedMilliseconds % this.FADE_INTERVAL_MS) / this.FADE_INTERVAL_MS;
+    if (flashing) {
+      // After time is up flash quicker for urgency
+      const interval = atZero ? this.FADE_INTERVAL_MS / 2 : this.FADE_INTERVAL_MS;
+      const cycle = (this.elapsedMilliseconds % interval) / interval;
       alpha = Math.abs(Math.sin(cycle * Math.PI));
     }
 
     context.save();
-    context.globalAlpha = alpha;
-    const color = isCritical ? this.FLASH_COLOR : this.TEXT_COLOR;
+    context.globalAlpha = flashing ? alpha : 1;
+    const color = atZero || underFive ? this.FLASH_COLOR : this.TEXT_COLOR;
     this.renderText(context, text, x + width / 2, y + 12.5 + height / 2, color);
     context.restore();
   }
