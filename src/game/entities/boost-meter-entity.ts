@@ -1,11 +1,11 @@
-import { BaseTappableGameEntity } from "../../core/entities/base-tappable-game-entity.js";
+import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
-export class BoostButtonEntity extends BaseTappableGameEntity {
+export class BoostMeterEntity extends BaseAnimatedGameEntity {
   private readonly RADIUS = 32;
   private boostLevel = 1; // target level 0..1
   private displayLevel = 1; // rendered level 0..1
-  private readonly FILL_RATE = 0.003; // units/ms
+  private readonly FILL_RATE = 0.05; // units/ms, super fast
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -53,14 +53,6 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
     this.y = y - this.height / 2;
   }
 
-  public containsPoint(x: number, y: number): boolean {
-    return (
-      x >= this.x &&
-      x <= this.x + this.width &&
-      y >= this.y &&
-      y <= this.y + this.height
-    );
-  }
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
@@ -102,13 +94,6 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
       context.restore();
     }
 
-    if (this.pressed) {
-      context.beginPath();
-      context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
-      context.closePath();
-      context.fillStyle = "rgba(100,100,100,0.4)";
-      context.fill();
-    }
 
     context.font = `${this.RADIUS * 1.0}px system-ui`;
     context.textAlign = "center";
