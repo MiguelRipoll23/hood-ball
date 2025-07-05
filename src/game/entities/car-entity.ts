@@ -27,7 +27,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   // Boost related constants
   protected readonly MAX_BOOST: number = 100;
-  protected readonly BOOST_DRAIN_RATE: number = 30; // units per second
+  // drain entire boost in roughly 3 seconds
+  protected readonly BOOST_DRAIN_RATE: number = 33.33; // units per second
   protected readonly BOOST_TOP_SPEED_MULTIPLIER: number = 2;
   protected readonly BOOST_ACCELERATION_MULTIPLIER: number = 2;
 
@@ -75,6 +76,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.angle = 1.5708;
     this.speed = 0;
     this.setCenterPosition();
+    this.boost = this.MAX_BOOST;
     super.reset();
   }
 

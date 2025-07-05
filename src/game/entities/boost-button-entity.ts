@@ -2,7 +2,7 @@ import { BaseTappableGameEntity } from "../..//core/entities/base-tappable-game-
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class BoostButtonEntity extends BaseTappableGameEntity {
-  private readonly RADIUS = 28;
+  private readonly RADIUS = 32;
   private boostLevel = 1; // 0..1
 
 
@@ -10,7 +10,7 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
     super();
     this.width = this.RADIUS * 2;
     this.height = this.RADIUS * 2;
-    this.setPosition(canvas.width / 2, canvas.height - this.RADIUS - 20);
+    this.setPosition(canvas.width / 2, canvas.height - this.RADIUS - 30);
   }
 
   public setBoostLevel(level: number): void {

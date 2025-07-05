@@ -14,6 +14,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   private readonly RADIUS = 25;
   private active = true;
   private cooldownRemaining = 0;
+  private glowTimer = 0;
 
   constructor(
     private startX: number,
@@ -34,6 +35,8 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    this.glowTimer += deltaTimeStamp;
+
     if (!this.active) {
       this.cooldownRemaining -= deltaTimeStamp;
       if (this.cooldownRemaining <= 0) {
@@ -70,6 +73,11 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     this.cooldownRemaining = PAD_COOLDOWN_MS;
   }
 
+  public reset(): void {
+    this.active = true;
+    this.cooldownRemaining = 0;
+  }
+
   public getIndex(): number {
     return this.index;
   }
@@ -92,8 +100,9 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       );
       gradient.addColorStop(0, '#ffe066');
       gradient.addColorStop(1, LIGHT_GREEN_COLOR);
+      const pulse = (Math.sin(this.glowTimer / 200) + 1) / 2;
       context.shadowColor = LIGHT_GREEN_COLOR;
-      context.shadowBlur = 20;
+      context.shadowBlur = 15 + pulse * 10;
       context.fillStyle = gradient;
     } else {
       const ratio = 1 - this.cooldownRemaining / PAD_COOLDOWN_MS;

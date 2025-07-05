@@ -88,7 +88,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.scoreboardEntity,
       this.ballEntity,
       this.localCarEntity,
-      this.alertEntity
+      this.alertEntity,
+      this.boostPads
     );
 
     this.scoreManagerService = new ScoreManagerService(
