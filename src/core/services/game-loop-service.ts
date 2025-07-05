@@ -8,7 +8,7 @@ import type { ServerDisconnectedPayload } from "../../game/interfaces/events/ser
 import type { ServerNotificationPayload } from "../../game/interfaces/events/server-notification-payload";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants";
 import { DebugUtils } from "../utils/debug-utils";
-import type { GameScene } from "../../game/interfaces/scenes/game-scene";
+import type { GameScene } from "../interfaces/scenes/game-scene";
 import { GAME_VERSION } from "../../game/constants/game-constants";
 import { EventConsumerService } from "./gameplay/event-consumer-service";
 import { DebugEntity } from "../entities/debug-entity";

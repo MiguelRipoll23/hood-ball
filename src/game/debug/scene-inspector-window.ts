@@ -1,6 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameEntity } from "../../core/models/game-entity.js";
-import type { GameScene } from "../interfaces/scenes/game-scene.js";
+import type { GameScene } from "../../core/interfaces/scenes/game-scene.js";
 import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";

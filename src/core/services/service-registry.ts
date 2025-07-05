@@ -43,6 +43,11 @@ export class ServiceRegistry {
       useClass: MatchmakingService,
     });
     container.bind({
+      provide: EntityOrchestratorService,
+      useClass: EntityOrchestratorService,
+    });
+    container.bind({ provide: WebRTCService, useClass: WebRTCService });
+    container.bind({
       provide: PendingIdentitiesToken,
       useValue: new Map<string, boolean>(),
     });
@@ -58,9 +63,8 @@ export class ServiceRegistry {
       const webrtcService: WebRTCService = container.get(WebRTCService);
       const matchmakingService: MatchmakingService =
         container.get(MatchmakingService);
-      const orchestratorService: EntityOrchestratorService = container.get(
-        EntityOrchestratorService
-      );
+      const entityOrchestratorService: EntityOrchestratorService =
+        container.get(EntityOrchestratorService);
       const eventProcessorService: EventProcessorService = container.get(
         EventProcessorService
       );
@@ -68,13 +72,13 @@ export class ServiceRegistry {
       if (
         !webrtcService ||
         !matchmakingService ||
-        !orchestratorService ||
+        !entityOrchestratorService ||
         !eventProcessorService
       ) {
         throw new Error("Failed to resolve core services");
       }
 
-      orchestratorService.initialize();
+      entityOrchestratorService.initialize(webrtcService);
       eventProcessorService.initialize(webrtcService);
       webrtcService.initialize(matchmakingService.getNetworkService());
     } catch (error) {

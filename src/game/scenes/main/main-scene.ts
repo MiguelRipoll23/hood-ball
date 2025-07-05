@@ -1,7 +1,7 @@
 import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
 import { SceneManagerService } from "../../../core/services/gameplay/scene-manager-service.js";
 import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
-import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import type { GameScene } from "../../../core/interfaces/scenes/game-scene.js";
 import type { GameState } from "../../../core/models/game-state.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
 

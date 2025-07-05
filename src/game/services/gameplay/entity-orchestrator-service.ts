@@ -2,7 +2,7 @@ import type { MultiplayerGameEntity } from "../../../core/interfaces/entities/mu
 import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityUtils } from "../../../core/utils/entity-utils.js";
-import type { MultiplayerScene } from "../../interfaces/scenes/multiplayer-scene.js";
+import type { MultiplayerScene } from "../../../core/interfaces/scenes/multiplayer-scene.js";
 import { EntityStateType } from "../../../core/enums/entity-state-type.js";
 import { SceneUtils } from "../../../core/utils/scene-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
@@ -24,13 +24,8 @@ export class EntityOrchestratorService {
 
   constructor(private gameState = container.get(GameState)) {}
 
-  public initialize(): void {
-    if (!this.webrtcService) {
-      throw new Error(
-        "WebRTCService must be initialized before registering handlers"
-      );
-    }
-
+  public initialize(webrtcService: WebRTCService): void {
+    this.webrtcService = webrtcService;
     this.webrtcService.registerCommandHandlers(this);
     console.log("Entity orchestrator service initialized");
   }

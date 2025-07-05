@@ -5,7 +5,7 @@ import type {
   StaticMultiplayerGameEntity,
 } from "../interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameScene } from "./base-game-scene.js";
-import type { MultiplayerScene } from "../../game/interfaces/scenes/multiplayer-scene.js";
+import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene.js";
 import { SceneType } from "../../game/enums/scene-type.js";
 import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
 

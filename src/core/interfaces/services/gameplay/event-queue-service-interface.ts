@@ -1,4 +1,4 @@
-import type { GameEvent } from "../../../../game/interfaces/events/game-event.js";
+import type { GameEvent } from "../../models/game-event.js";
 
 export interface IEventQueueService<T extends GameEvent> {
   getEvents(): T[];

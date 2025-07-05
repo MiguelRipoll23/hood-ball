@@ -1,5 +1,5 @@
-import { LayerType } from "../../../core/enums/layer-type.js";
-import type { GameEntity } from "../../../core/models/game-entity.js";
+import { LayerType } from "../../enums/layer-type.js";
+import type { GameEntity } from "../../models/game-entity.js";
 import type { SceneManager } from "./scene-manager.js";
 
 export interface GameScene {

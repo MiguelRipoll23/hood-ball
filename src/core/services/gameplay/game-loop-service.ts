@@ -11,7 +11,7 @@ import {
   CANVAS_WIDTH,
 } from "../../constants/canvas-constants.js";
 import { DebugUtils } from "../../utils/debug-utils.js";
-import type { GameScene } from "../../../game/interfaces/scenes/game-scene.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { GAME_VERSION } from "../../../game/constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugEntity } from "../../entities/debug-entity.js";

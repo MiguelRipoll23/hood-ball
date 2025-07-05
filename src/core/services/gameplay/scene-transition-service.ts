@@ -1,6 +1,6 @@
 import { injectable } from "@needle-di/core";
-import type { SceneManager } from "../../../game/interfaces/scenes/scene-manager";
-import type { GameScene } from "../../../game/interfaces/scenes/game-scene";
+import type { SceneManager } from "../../interfaces/scenes/scene-manager";
+import type { GameScene } from "../../interfaces/scenes/game-scene";
 
 @injectable()
 export class SceneTransitionService {

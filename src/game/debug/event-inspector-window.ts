@@ -1,6 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { EventType } from "../enums/event-type.js";
-import type { GameEvent } from "../interfaces/events/game-event.js";
+import type { GameEvent } from "../../core/interfaces/models/game-event.js";
 import { LocalEvent } from "../../core/models/local-event.js";
 import { RemoteEvent } from "../../core/models/remote-event.js";
 import { BaseWindow } from "../../core/debug/base-window.js";

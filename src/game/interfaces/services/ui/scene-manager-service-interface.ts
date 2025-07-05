@@ -1,4 +1,4 @@
-import type { GameScene } from "../../scenes/game-scene.js";
+import type { GameScene } from "../../../../core/interfaces/scenes/game-scene.js";
 import type { ISceneTransitionService } from "./scene-transition-service-interface.js";
 
 export interface ISceneManagerService {
