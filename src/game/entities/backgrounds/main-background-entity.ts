@@ -1,10 +1,18 @@
 import { BaseGameEntity } from "../../../core/entities/base-game-entity.js";
+import { CarSilhouetteEntity } from "./car-silhouette-entity.js";
 
 export class MainBackgroundEntity extends BaseGameEntity {
   private gradientOffset = 0; // Offset for moving gradient
+  private readonly carSilhouettes: CarSilhouetteEntity;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.carSilhouettes = new CarSilhouetteEntity(canvas);
+  }
+
+  public override load(): void {
+    this.carSilhouettes.load();
+    super.load();
   }
 
   // Update the gradient offset to animate the background
@@ -13,10 +21,13 @@ export class MainBackgroundEntity extends BaseGameEntity {
     if (this.gradientOffset > this.canvas.width) {
       this.gradientOffset = 0; // Loop the gradient
     }
+
+    this.carSilhouettes.update(deltaTimeStamp);
   }
 
   public render(context: CanvasRenderingContext2D) {
     this.drawMovingGradientSky(context);
+    this.carSilhouettes.render(context);
   }
 
   private drawMovingGradientSky(context: CanvasRenderingContext2D): void {
