@@ -21,8 +21,8 @@ export class CarSilhouetteEntity extends BaseGameEntity {
   private createCars(): void {
     for (let i = 0; i < this.carCount; i++) {
       const dir = i % 2 === 0 ? 1 : -1;
-      const speed = 0.06 + Math.random() * 0.04;
-      const size = 20 + Math.random() * 10;
+      const speed = 0.05 + Math.random() * 0.03;
+      const size = 30 + Math.random() * 15;
       this.cars.push({
         x: Math.random() * this.canvas.width,
         y: Math.random() * this.canvas.height,
@@ -55,15 +55,47 @@ export class CarSilhouetteEntity extends BaseGameEntity {
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
-    context.fillStyle = "rgba(0, 0, 0, 0.3)";
     this.cars.forEach((car) => {
       context.save();
       context.translate(car.x, car.y);
-      context.rotate(car.direction > 0 ? Math.PI / 6 : -Math.PI / 6);
-      context.fillRect(-car.size / 2, -car.size / 4, car.size, car.size / 2);
+      const angle = car.direction > 0 ? Math.PI / 4 : -Math.PI / 4;
+      context.rotate(angle);
+      this.drawCar(context, car.size);
       context.restore();
     });
     context.restore();
+  }
+
+  private drawCar(context: CanvasRenderingContext2D, size: number): void {
+    const bodyHeight = size * 0.3;
+    const roofHeight = size * 0.2;
+    const wheelRadius = size * 0.15;
+
+    const gradient = context.createLinearGradient(
+      0,
+      -roofHeight,
+      0,
+      bodyHeight + wheelRadius
+    );
+    gradient.addColorStop(0, "rgba(0,0,0,0.55)");
+    gradient.addColorStop(1, "rgba(0,0,0,0.2)");
+
+    // car body
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.moveTo(-size / 2, bodyHeight);
+    context.lineTo(-size / 4, -roofHeight);
+    context.lineTo(size / 4, -roofHeight);
+    context.lineTo(size / 2, bodyHeight);
+    context.closePath();
+    context.fill();
+
+    // wheels
+    context.fillStyle = "rgba(0,0,0,0.35)";
+    context.beginPath();
+    context.arc(-size * 0.3, bodyHeight + wheelRadius, wheelRadius, 0, Math.PI * 2);
+    context.arc(size * 0.3, bodyHeight + wheelRadius, wheelRadius, 0, Math.PI * 2);
+    context.fill();
   }
 }
 
