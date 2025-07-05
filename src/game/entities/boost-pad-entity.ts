@@ -120,11 +120,6 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       context.closePath();
     }
 
-    context.font = `${this.RADIUS * 0.9}px system-ui`;
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    context.fillStyle = '#000';
-    context.fillText('🔋', this.x, this.y + 1);
     context.restore();
     super.render(context);
   }

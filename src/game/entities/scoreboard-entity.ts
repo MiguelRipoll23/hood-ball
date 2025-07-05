@@ -26,6 +26,8 @@ export class ScoreboardEntity
   private readonly BLUE_SHAPE_COLOR: string = BLUE_TEAM_COLOR;
   private readonly RED_SHAPE_COLOR: string = RED_TEAM_COLOR;
   private readonly TIME_BOX_FILL_COLOR: string = "#4caf50"; // Added property for time box fill color
+  private readonly FLASH_COLOR: string = "red";
+  private readonly FLASH_INTERVAL_MS: number = 500;
 
   private x: number;
   private y: number = 90;
@@ -189,7 +191,11 @@ export class ScoreboardEntity
     context.fillStyle = this.TIME_BOX_FILL_COLOR;
     this.roundedRect(context, x, y, width, height, this.CORNER_RADIUS);
     context.fill();
-    this.renderText(context, text, x + width / 2, y + 12.5 + height / 2);
+    const flash =
+      this.remainingSeconds <= 5 &&
+      Math.floor(this.elapsedMilliseconds / this.FLASH_INTERVAL_MS) % 2 === 0;
+    const color = flash ? this.FLASH_COLOR : this.TEXT_COLOR;
+    this.renderText(context, text, x + width / 2, y + 12.5 + height / 2, color);
   }
 
   private roundedRect(
@@ -213,10 +219,11 @@ export class ScoreboardEntity
     context: CanvasRenderingContext2D,
     text: string,
     x: number,
-    y: number
+    y: number,
+    color: string = this.TEXT_COLOR
   ) {
     context.textAlign = "center";
-    context.fillStyle = this.TEXT_COLOR;
+    context.fillStyle = color;
     context.font = `${this.FONT_SIZE} ${this.FONT_FAMILY}`;
     context.fillText(text, x, y);
   }

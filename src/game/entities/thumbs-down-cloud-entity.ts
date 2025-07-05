@@ -13,7 +13,7 @@ interface EmojiParticle {
 export class ThumbsDownCloudEntity extends BaseMoveableGameEntity {
   private particles: EmojiParticle[] = [];
   private elapsed = 0;
-  private readonly duration = 3000; // ms
+  private readonly duration = 4000; // ms, extended so players notice the effect
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();

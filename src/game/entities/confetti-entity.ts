@@ -14,7 +14,7 @@ interface ConfettiParticle {
 export class ConfettiEntity extends BaseMoveableGameEntity {
   private particles: ConfettiParticle[] = [];
   private elapsed = 0;
-  private readonly duration = 3000; // ms
+  private readonly duration = 4000; // ms, extended for clearer celebration
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
