@@ -27,7 +27,8 @@ export class ScoreboardEntity
   private readonly RED_SHAPE_COLOR: string = RED_TEAM_COLOR;
   private readonly TIME_BOX_FILL_COLOR: string = "#4caf50"; // Added property for time box fill color
   private readonly FLASH_COLOR: string = "red";
-  private readonly FLASH_INTERVAL_MS: number = 500;
+  // Interval used for fade in/out effect when the timer is below 5 seconds
+  private readonly FADE_INTERVAL_MS: number = 500;
 
   private x: number;
   private y: number = 90;
@@ -191,11 +192,20 @@ export class ScoreboardEntity
     context.fillStyle = this.TIME_BOX_FILL_COLOR;
     this.roundedRect(context, x, y, width, height, this.CORNER_RADIUS);
     context.fill();
-    const flash =
-      this.remainingSeconds <= 5 &&
-      Math.floor(this.elapsedMilliseconds / this.FLASH_INTERVAL_MS) % 2 === 0;
-    const color = flash ? this.FLASH_COLOR : this.TEXT_COLOR;
+
+    const isCritical = this.remainingSeconds <= 5;
+    let alpha = 1;
+    if (isCritical) {
+      // Fade the text in and out urgently rather than a hard flash
+      const cycle = (this.elapsedMilliseconds % this.FADE_INTERVAL_MS) / this.FADE_INTERVAL_MS;
+      alpha = Math.abs(Math.sin(cycle * Math.PI));
+    }
+
+    context.save();
+    context.globalAlpha = alpha;
+    const color = isCritical ? this.FLASH_COLOR : this.TEXT_COLOR;
     this.renderText(context, text, x + width / 2, y + 12.5 + height / 2, color);
+    context.restore();
   }
 
   private roundedRect(
