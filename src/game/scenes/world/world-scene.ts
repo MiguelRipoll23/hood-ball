@@ -29,6 +29,9 @@ import { MatchFlowController } from "./match-flow-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
+import { TeamType } from "../../enums/team-type.js";
+import { CameraService } from "../../../core/services/gameplay/camera-service.js";
+import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -37,6 +40,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
+  private readonly cameraService: CameraService;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -60,6 +64,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchmakingController = container.get(MatchmakingControllerService);
     this.entityOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
+    this.cameraService = container.get(CameraService);
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -105,7 +110,9 @@ export class WorldScene extends BaseCollidingGameScene {
       () => {
         this.matchFlowController?.handleGameOverEnd();
         void this.returnToMainMenuScene();
-      }
+      },
+      (x: number, y: number, team: TeamType) =>
+        this.triggerGoalExplosion(x, y, team)
     );
     super.load();
   }
@@ -268,6 +275,12 @@ export class WorldScene extends BaseCollidingGameScene {
 
     const pad = this.boostPads[index];
     pad.forceConsume();
+  }
+
+  private triggerGoalExplosion(x: number, y: number, team: TeamType): void {
+    const explosion = new GoalExplosionEntity(this.canvas, x, y, team);
+    this.addEntityToSceneLayer(explosion);
+    this.cameraService.shake(0.3, 8);
   }
 
   private async returnToMainMenuScene(): Promise<void> {

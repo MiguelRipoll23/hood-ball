@@ -14,6 +14,7 @@ import {
   ReceivedIdentitiesToken,
 } from "../../game/services/gameplay/matchmaking-tokens.js";
 import { CredentialService } from "../../game/services/security/credential-service.js";
+import { CameraService } from "./gameplay/camera-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -47,6 +48,7 @@ export class ServiceRegistry {
       useClass: EntityOrchestratorService,
     });
     container.bind({ provide: WebRTCService, useClass: WebRTCService });
+    container.bind({ provide: CameraService, useClass: CameraService });
     container.bind({
       provide: PendingIdentitiesToken,
       useValue: new Map<string, boolean>(),
