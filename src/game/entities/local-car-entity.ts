@@ -208,11 +208,11 @@ export class LocalCarEntity extends CarEntity {
     }
 
     if (this.boostButtonEntity) {
-      const x = this.gamePointer.getX();
-      const y = this.gamePointer.getY();
+      const touches = this.gamePointer.getTouchPoints();
       if (
-        this.gamePointer.isPressing() &&
-        this.boostButtonEntity.containsPoint(x, y)
+        touches.some(
+          (t) => t.pressing && this.boostButtonEntity!.containsPoint(t.x, t.y)
+        )
       ) {
         activating = true;
       }

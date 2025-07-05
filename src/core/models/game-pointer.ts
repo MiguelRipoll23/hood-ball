@@ -2,107 +2,86 @@ import type {
   IGamePointer,
   PointerType,
 } from "../interfaces/input/game-pointer.js";
+import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point.js";
 
 export class GamePointer implements IGamePointer {
-  private x: number = 0;
-  private y: number = 0;
-  private initialX: number = 0;
-  private initialY: number = 0;
-  private type: PointerType = "mouse";
-  private pressing: boolean = false;
-  private pressed: boolean = false;
+  private touches: Map<number, GamePointerTouchPoint> = new Map();
+  private primaryPointerId: number | null = null;
   private preventDefault: boolean = true;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     this.addEventListeners();
   }
 
+  private getPrimaryTouch(): GamePointerTouchPoint | null {
+    if (this.primaryPointerId === null) return null;
+    return this.touches.get(this.primaryPointerId) ?? null;
+  }
+
+  public getTouchPoints(): GamePointerTouchPoint[] {
+    return Array.from(this.touches.values());
+  }
+
   public getX(): number {
-    return this.x;
+    return this.getPrimaryTouch()?.x ?? -1;
   }
 
   public getY(): number {
-    return this.y;
+    return this.getPrimaryTouch()?.y ?? -1;
   }
 
   public getInitialX(): number {
-    return this.initialX;
+    return this.getPrimaryTouch()?.initialX ?? -1;
   }
 
   public getInitialY(): number {
-    return this.initialY;
+    return this.getPrimaryTouch()?.initialY ?? -1;
   }
 
-  public setX(x: number): void {
-    this.x = x;
-  }
-
-  public setY(y: number): void {
-    this.y = y;
-  }
-
-  public setInitialX(x: number): void {
-    this.initialX = x;
-  }
-
-  public setInitialY(y: number): void {
-    this.initialY = y;
-  }
 
   public setPreventDefault(preventDefault: boolean): void {
     this.preventDefault = preventDefault;
   }
 
   public isPressing(): boolean {
-    return this.pressing;
-  }
-
-  public setPressing(pressing: boolean): void {
-    this.pressing = pressing;
+    return this.getPrimaryTouch()?.pressing ?? false;
   }
 
   public isPressed(): boolean {
-    return this.pressed;
-  }
-
-  public setPressed(pressed: boolean): void {
-    this.pressed = pressed;
+    return this.getPrimaryTouch()?.pressed ?? false;
   }
 
   public getType(): PointerType {
-    return this.type;
-  }
-
-  public setType(type: PointerType): void {
-    this.type = type;
+    return this.getPrimaryTouch()?.type ?? "mouse";
   }
 
   public isTouch(): boolean {
-    return this.type === "touch";
+    return this.getPrimaryTouch()?.type === "touch";
   }
 
   public reset(): void {
-    this.x = -1;
-    this.y = -1;
-    this.initialX = -1;
-    this.initialY = -1;
-    this.pressing = false;
-    this.pressed = false;
+    this.touches.clear();
+    this.primaryPointerId = null;
+  }
+
+  public clearPressed(): void {
+    this.touches.forEach((touch) => {
+      touch.pressed = false;
+    });
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    if (this.isTouch() && this.isPressing() == false) {
-      return;
-    }
+    this.touches.forEach((touch) => {
+      if (touch.type === "touch" && !touch.pressing) {
+        return;
+      }
 
-    const x = this.getX();
-    const y = this.getY();
-
-    context.fillStyle = "rgba(148, 0, 211, 0.5)";
-    context.beginPath();
-    context.arc(x, y, 15, 0, Math.PI * 2);
-    context.closePath();
-    context.fill();
+      context.fillStyle = "rgba(148, 0, 211, 0.5)";
+      context.beginPath();
+      context.arc(touch.x, touch.y, 15, 0, Math.PI * 2);
+      context.closePath();
+      context.fill();
+    });
   }
 
   private adjustCoordinates(event: PointerEvent): { x: number; y: number } {
@@ -146,8 +125,11 @@ export class GamePointer implements IGamePointer {
 
         const { x, y } = this.adjustCoordinates(event);
 
-        this.setX(x);
-        this.setY(y);
+        const touch = this.touches.get(event.pointerId);
+        if (touch) {
+          touch.x = x;
+          touch.y = y;
+        }
       },
       { passive: false }
     );
@@ -161,12 +143,22 @@ export class GamePointer implements IGamePointer {
 
         const { x, y } = this.adjustCoordinates(event);
 
-        this.setType(event.pointerType as PointerType);
-        this.setX(x);
-        this.setY(y);
-        this.setInitialX(x);
-        this.setInitialY(y);
-        this.setPressing(true);
+        const touch: GamePointerTouchPoint = {
+          pointerId: event.pointerId,
+          x,
+          y,
+          initialX: x,
+          initialY: y,
+          pressing: true,
+          pressed: false,
+          type: event.pointerType as PointerType,
+        };
+
+        this.touches.set(event.pointerId, touch);
+
+        if (this.primaryPointerId === null) {
+          this.primaryPointerId = event.pointerId;
+        }
       },
       { passive: false }
     );
@@ -180,10 +172,27 @@ export class GamePointer implements IGamePointer {
 
         const { x, y } = this.adjustCoordinates(event);
 
-        this.setX(x);
-        this.setY(y);
-        this.setPressing(false);
-        this.setPressed(true);
+        const touch = this.touches.get(event.pointerId);
+        if (touch) {
+          touch.x = x;
+          touch.y = y;
+          touch.pressing = false;
+          touch.pressed = true;
+        }
+
+        if (this.primaryPointerId === event.pointerId) {
+          const next = Array.from(this.touches.values()).find((t) => t.pressing);
+          this.primaryPointerId = next ? next.pointerId : null;
+          if (next) {
+            next.initialX = next.x;
+            next.initialY = next.y;
+          }
+        }
+
+        // remove touch if not needed
+        if (touch && !touch.pressing) {
+          // keep for pressed state, will clear later
+        }
       },
       { passive: false }
     );
