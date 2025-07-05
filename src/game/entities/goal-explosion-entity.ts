@@ -61,7 +61,7 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
     });
     this.particles = this.particles.filter((p) => p.life > 0);
 
-    if (this.elapsed >= this.duration) {
+    if (this.elapsed >= this.duration && this.particles.length === 0) {
       this.setRemoved(true);
     }
   }
@@ -81,7 +81,7 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
 
     // Shockwave
     context.strokeStyle = this.color;
-    context.lineWidth = 4 * (1 - this.elapsed / this.duration);
+    context.lineWidth = 4 * (1 - Math.min(this.elapsed / this.duration, 1));
     context.beginPath();
     context.arc(this.x, this.y, this.shockwaveRadius, 0, Math.PI * 2);
     context.stroke();
