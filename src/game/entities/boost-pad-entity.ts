@@ -11,7 +11,7 @@ import { container } from "../../core/services/di-container.js";
 const PAD_COOLDOWN_MS = 15000;
 
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
-  private readonly RADIUS = 25;
+  private readonly RADIUS = 20;
   private active = true;
   private cooldownRemaining = 0;
   private glowTimer = 0;

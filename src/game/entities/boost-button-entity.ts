@@ -44,13 +44,11 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
 
     const cx = this.x + this.RADIUS;
     const cy = this.y + this.RADIUS;
-    const gradient = context.createRadialGradient(
-      cx,
-      cy,
-      this.RADIUS / 4,
-      cx,
-      cy,
-      this.RADIUS
+    const gradient = context.createLinearGradient(
+      0,
+      this.y + this.height,
+      0,
+      this.y
     );
     gradient.addColorStop(0, '#ffe066');
     gradient.addColorStop(1, LIGHT_GREEN_COLOR);
@@ -63,14 +61,15 @@ export class BoostButtonEntity extends BaseTappableGameEntity {
     context.fill();
 
     if (this.boostLevel > 0) {
-      const start = -Math.PI / 2;
-      const end = start + Math.PI * 2 * this.boostLevel;
+      const fillHeight = this.height * this.boostLevel;
+      context.save();
       context.beginPath();
-      context.moveTo(cx, cy);
-      context.arc(cx, cy, this.RADIUS, start, end);
+      context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
       context.closePath();
+      context.clip();
       context.fillStyle = gradient;
-      context.fill();
+      context.fillRect(this.x, this.y + this.height - fillHeight, this.width, fillHeight);
+      context.restore();
     }
 
     if (this.pressed) {
