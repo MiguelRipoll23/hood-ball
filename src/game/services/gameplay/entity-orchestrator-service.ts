@@ -32,7 +32,7 @@ export class EntityOrchestratorService {
 
   public sendLocalData(
     multiplayerScene: MultiplayerScene,
-    deltaTimeStamp: number
+    deltaTimeStamp: DOMHighResTimeStamp
   ): void {
     if (this.gameState.getMatch() === null) {
       this.elapsedMilliseconds = 0;

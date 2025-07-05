@@ -11,6 +11,7 @@ import { EventConsumerService } from "../../../core/services/gameplay/event-cons
 import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginEntities } from "./login-entity-factory.js";
 import { LoginController } from "./login-controller.js";
+import type { ConfigurationType } from "../../types/configuration-type.js";
 
 export class LoginScene extends BaseGameScene {
   private controller: LoginController;
@@ -203,7 +204,9 @@ export class LoginScene extends BaseGameScene {
       });
   }
 
-  private async applyConfiguration(configuration: any): Promise<void> {
+  private async applyConfiguration(
+    configuration: ConfigurationType
+  ): Promise<void> {
     this.gameState.getGameServer().setConfiguration(configuration);
 
     console.log("Configuration response (decrypted)", configuration);

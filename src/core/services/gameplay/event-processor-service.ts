@@ -50,7 +50,8 @@ export class EventProcessorService implements IEventProcessorService {
   @PeerCommandHandler(WebRTCType.EventData)
   public handleEventData(webrtcPeer: WebRTCPeer, binaryReader: BinaryReader) {
     if (webrtcPeer.getPlayer()?.isHost() === false) {
-      return console.warn("Received event from non-host player");
+      console.warn("Received event from non-host player");
+      return;
     }
 
     const eventTypeId = binaryReader.unsignedInt8();

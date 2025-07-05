@@ -8,6 +8,7 @@ import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
 import type { GameState } from "../../../core/models/game-state.js";
+import type { GameEntity } from "../../../core/models/game-entity.js";
 
 export interface WorldEntities {
   scoreboardEntity: ScoreboardEntity;
@@ -24,7 +25,7 @@ export class WorldEntityFactory {
     private readonly canvas: HTMLCanvasElement
   ) {}
 
-  public createBackground(worldEntities: any[]): void {
+  public createBackground(worldEntities: GameEntity[]): void {
     const backgroundEntity = new WorldBackgroundEntity(this.canvas);
     worldEntities.push(backgroundEntity);
 
@@ -34,8 +35,8 @@ export class WorldEntityFactory {
   }
 
   public createWorldEntities(
-    worldEntities: any[],
-    uiEntities: any[]
+    worldEntities: GameEntity[],
+    uiEntities: GameEntity[]
   ): WorldEntities {
     const durationSeconds: number = getConfigurationKey<number>(
       SCOREBOARD_SECONDS_DURATION,

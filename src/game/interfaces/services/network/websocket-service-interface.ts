@@ -1,6 +1,8 @@
+import type { BinaryReader } from "../../../../core/utils/binary-reader-utils";
+
 export interface IWebSocketService {
-  registerCommandHandlers(instance: any): void;
+  registerCommandHandlers(instance: object): void;
   connectToServer(): void;
   sendMessage(arrayBuffer: ArrayBuffer): void;
-  handleNotificationMessage(binaryReader: any): void;
+  handleNotificationMessage(binaryReader: BinaryReader): void;
 }

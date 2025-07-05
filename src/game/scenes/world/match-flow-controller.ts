@@ -79,11 +79,13 @@ export class MatchFlowController {
 
   public handleRemoteCountdown(arrayBuffer: ArrayBuffer | null): void {
     if (arrayBuffer === null) {
-      return console.warn("Array buffer is null");
+      console.warn("Array buffer is null");
+      return;
     }
 
     if (this.gameState.getMatch()?.isHost()) {
-      return console.warn("Host should not receive countdown event");
+      console.warn("Host should not receive countdown event");
+      return;
     }
 
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);

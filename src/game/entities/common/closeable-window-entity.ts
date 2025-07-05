@@ -57,7 +57,8 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
   public close(): void {
     if (this.opened === false) {
-      return console.warn("CloseableWindowEntity is already closed");
+      console.warn("CloseableWindowEntity is already closed");
+      return;
     }
 
     this.fadeOut(0.2);

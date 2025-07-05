@@ -8,7 +8,7 @@ export class LoadingBackgroundEntity extends BaseGameEntity {
   }
 
   // Update the gradient offset to animate the background
-  public update(deltaTimeStamp: number): void {
+  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.gradientOffset += deltaTimeStamp * 0.01; // Adjust speed as needed
     if (this.gradientOffset > this.canvas.width) {
       this.gradientOffset = 0; // Loop the gradient

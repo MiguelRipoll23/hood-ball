@@ -75,7 +75,8 @@ export class GameState {
     this.match = match;
 
     if (match === null) {
-      return console.log("Match removed from game state");
+      console.log("Match removed from game state");
+      return;
     }
 
     if (match.isHost()) {

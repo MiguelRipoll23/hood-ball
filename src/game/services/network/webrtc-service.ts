@@ -40,7 +40,7 @@ export class WebRTCService implements IWebRTCService {
     console.log("WebRTC service initialized");
   }
 
-  public registerCommandHandlers(instance: any): void {
+  public registerCommandHandlers(instance: object): void {
     this.dispatcherService.registerCommandHandlers(instance);
   }
 
@@ -139,7 +139,8 @@ export class WebRTCService implements IWebRTCService {
     const peer = this.getPeer(originToken);
 
     if (peer === null) {
-      return console.warn("WebRTC peer with token not found", originToken);
+      console.warn("WebRTC peer with token not found", originToken);
+      return;
     }
 
     peer.addRemoteIceCandidate(iceCandidate);
@@ -301,7 +302,8 @@ export class WebRTCService implements IWebRTCService {
     const peer = this.getPeer(token);
 
     if (peer === null) {
-      return console.warn("WebRTC peer with token not found", token);
+      console.warn("WebRTC peer with token not found", token);
+      return;
     }
 
     await peer.connect(rtcSessionDescription);

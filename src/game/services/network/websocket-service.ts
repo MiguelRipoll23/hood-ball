@@ -29,7 +29,7 @@ export class WebSocketService {
     this.dispatcherService.registerCommandHandlers(this);
   }
 
-  public registerCommandHandlers(instance: any): void {
+  public registerCommandHandlers(instance: object): void {
     this.dispatcherService.registerCommandHandlers(instance);
   }
 

@@ -1,6 +1,7 @@
 import { APIService } from "../../services/network/api-service.js";
 import { CryptoService } from "../../../core/services/security/crypto-service.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
+import type { ConfigurationType } from "../../types/configuration-type.js";
 
 export class LoginController {
   constructor(
@@ -13,7 +14,7 @@ export class LoginController {
     return this.apiService.checkForUpdates();
   }
 
-  public async downloadConfiguration(): Promise<any> {
+  public async downloadConfiguration(): Promise<ConfigurationType> {
     const response = await this.apiService.getConfiguration();
     const decrypted = await this.cryptoService.decryptResponse(response);
     return JSON.parse(decrypted);

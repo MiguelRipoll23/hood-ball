@@ -68,7 +68,8 @@ export class MatchFinderService {
     const match = this.gameState.getMatch();
 
     if (match === null) {
-      return console.warn("Game match is null");
+      console.warn("Game match is null");
+      return;
     }
 
     const body: AdvertiseMatchRequest = {

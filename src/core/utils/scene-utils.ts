@@ -1,11 +1,12 @@
 import { GameFrame } from "../models/game-frame.js";
 import { BaseMultiplayerScene } from "../scenes/base-multiplayer-scene.js";
 import type { MultiplayerScene } from "../../game/interfaces/scenes/multiplayer-scene.js";
+import type { SceneType } from "../../game/enums/scene-type.js";
 
 export class SceneUtils {
   public static getSceneById(
     gameFrame: GameFrame,
-    sceneId: number
+    sceneId: SceneType
   ): MultiplayerScene | null {
     const currentScene = gameFrame.getCurrentScene();
 

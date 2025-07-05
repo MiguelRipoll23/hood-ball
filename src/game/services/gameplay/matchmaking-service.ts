@@ -69,7 +69,8 @@ export class MatchmakingService implements IMatchmakingService {
     const players = this.gameState.getMatch()?.getPlayers();
 
     if (players === undefined || players.length === 0) {
-      return console.warn("No players in the match to save score");
+      console.warn("No players in the match to save score");
+      return;
     }
 
     const savePlayerScoresRequest: SavePlayerScoresRequest[] = [];

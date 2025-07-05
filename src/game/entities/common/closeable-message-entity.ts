@@ -28,7 +28,8 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
 
   public close(): void {
     if (this.opacity === 0) {
-      return console.warn("CloseableMessageEntity is already closed");
+      console.warn("CloseableMessageEntity is already closed");
+      return;
     }
 
     this.active = false;
