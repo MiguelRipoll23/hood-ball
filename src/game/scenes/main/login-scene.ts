@@ -51,7 +51,8 @@ export class LoginScene extends BaseGameScene {
 
     this.uiEntities.push(
       this.entities.messageEntity,
-      this.entities.closeableMessageEntity
+      this.entities.closeableMessageEntity,
+      this.entities.audioToggleEntity
     );
 
     super.load();

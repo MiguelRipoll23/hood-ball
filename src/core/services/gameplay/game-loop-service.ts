@@ -25,6 +25,7 @@ import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { container } from "../di-container.js";
+import { AudioService } from "../../../game/services/audio/audio-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -49,6 +50,7 @@ export class GameLoopService {
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
+  private audioService: AudioService;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -64,6 +66,8 @@ export class GameLoopService {
     this.eventConsumerService = container.get(EventConsumerService);
     this.matchmakingService = container.get(MatchmakingService);
     this.webrtcService = container.get(WebRTCService);
+    this.audioService = container.get(AudioService);
+    this.audioService.disable();
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
