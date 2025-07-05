@@ -6,6 +6,8 @@ import type { GameScene } from "../interfaces/scenes/game-scene.js";
 import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
 import { SceneManagerService } from "../services/gameplay/scene-manager-service.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
+import { CameraService } from "../services/gameplay/camera-service.js";
+import { container } from "../services/di-container.js";
 import { EventType } from "../../game/enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
 
@@ -21,6 +23,8 @@ export class BaseGameScene implements GameScene {
   protected worldEntities: GameEntity[] = [];
   protected uiEntities: GameEntity[] = [];
 
+  protected readonly cameraService: CameraService;
+
   private gamePointer: GamePointer;
 
   constructor(
@@ -31,6 +35,7 @@ export class BaseGameScene implements GameScene {
     this.canvas = gameState.getCanvas();
     this.gamePointer = gameState.getGamePointer();
     this.eventConsumerService = eventConsumerService;
+    this.cameraService = container.get(CameraService);
   }
 
   public isActive(): boolean {
@@ -118,6 +123,7 @@ export class BaseGameScene implements GameScene {
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    this.cameraService.update(deltaTimeStamp);
     this.updateEntities(this.worldEntities, deltaTimeStamp);
     this.updateEntities(this.uiEntities, deltaTimeStamp);
 
@@ -133,12 +139,16 @@ export class BaseGameScene implements GameScene {
   }
 
   public render(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.cameraService.applyTransform(context);
+
     context.globalAlpha = this.opacity;
 
     this.renderEntities(this.worldEntities, context);
     this.renderEntities(this.uiEntities, context);
 
     context.globalAlpha = 1;
+    context.restore();
   }
 
   protected updateDebugStateForEntities(): void {
