@@ -33,8 +33,8 @@ export class LoadingScreen extends BaseGameScreen {
     const factory = new LoadingEntityFactory(this.canvas);
     this.objects = factory.createObjects();
     const { background, progressBar } = this.objects!;
-    this.sceneObjects.push(background);
-    this.uiObjects.push(progressBar);
+    this.worldEntities.push(background);
+    this.uiEntities.push(progressBar);
 
     super.load();
   }

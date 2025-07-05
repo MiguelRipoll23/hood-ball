@@ -17,7 +17,7 @@ export class BaseCollidingGameScreen extends BaseMultiplayerScreen {
 
   public detectCollisions(): void {
     const collidingObjects: BaseStaticCollidingGameEntity[] =
-      this.sceneObjects.filter(
+      this.worldEntities.filter(
         (sceneObject) =>
           sceneObject instanceof BaseStaticCollidingGameEntity ||
           sceneObject instanceof BaseDynamicCollidingGameEntity

@@ -50,6 +50,6 @@ export class MainScreen extends BaseGameScreen {
 
   private createMainBackgroundEntity() {
     const mainBackgroundObject = new MainBackgroundEntity(this.canvas);
-    this.sceneObjects.push(mainBackgroundObject);
+    this.worldEntities.push(mainBackgroundObject);
   }
 }

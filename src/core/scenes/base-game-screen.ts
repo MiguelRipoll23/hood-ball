@@ -18,8 +18,8 @@ export class BaseGameScreen implements GameScreen {
   protected loaded: boolean = false;
   protected opacity: number = 0;
 
-  protected sceneObjects: GameEntity[] = [];
-  protected uiObjects: GameEntity[] = [];
+  protected worldEntities: GameEntity[] = [];
+  protected uiEntities: GameEntity[] = [];
 
   private gamePointer: GamePointer;
 
@@ -50,8 +50,8 @@ export class BaseGameScreen implements GameScreen {
   public load(): void {
     this.updateDebugStateForObjects();
 
-    this.sceneObjects.forEach((object) => object.load());
-    this.uiObjects.forEach((object) => object.load());
+    this.worldEntities.forEach((object) => object.load());
+    this.uiEntities.forEach((object) => object.load());
 
     console.log(`${this.constructor.name} loaded`);
 
@@ -71,11 +71,11 @@ export class BaseGameScreen implements GameScreen {
   }
 
   public getUIObjects(): GameEntity[] {
-    return this.uiObjects;
+    return this.uiEntities;
   }
 
   public getSceneObjects(): GameEntity[] {
-    return this.sceneObjects;
+    return this.worldEntities;
   }
 
   public onTransitionStart(): void {
@@ -88,22 +88,22 @@ export class BaseGameScreen implements GameScreen {
   }
 
   public getTotalObjectsCount(): number {
-    return this.sceneObjects.length + this.uiObjects.length;
+    return this.worldEntities.length + this.uiEntities.length;
   }
 
   public getLoadedObjectsCount(): number {
     return (
-      this.sceneObjects.filter((object) => object.hasLoaded()).length +
-      this.uiObjects.filter((object) => object.hasLoaded()).length
+      this.worldEntities.filter((object) => object.hasLoaded()).length +
+      this.uiEntities.filter((object) => object.hasLoaded()).length
     );
   }
 
   public getObjectLayer(object: GameEntity): LayerType {
-    if (this.sceneObjects.includes(object)) {
+    if (this.worldEntities.includes(object)) {
       return LayerType.Scene;
     }
 
-    if (this.uiObjects.includes(object)) {
+    if (this.uiEntities.includes(object)) {
       return LayerType.UI;
     }
 
@@ -114,19 +114,19 @@ export class BaseGameScreen implements GameScreen {
     object.setDebugSettings(this.gameState.getDebugSettings());
     object.load();
 
-    this.sceneObjects.push(object);
+    this.worldEntities.push(object);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.updateObjects(this.sceneObjects, deltaTimeStamp);
-    this.updateObjects(this.uiObjects, deltaTimeStamp);
+    this.updateObjects(this.worldEntities, deltaTimeStamp);
+    this.updateObjects(this.uiEntities, deltaTimeStamp);
 
-    this.uiObjects.forEach((object) => {
-      this.deleteObjectIfRemoved(this.uiObjects, object);
+    this.uiEntities.forEach((object) => {
+      this.deleteObjectIfRemoved(this.uiEntities, object);
     });
 
-    this.sceneObjects.forEach((object) => {
-      this.deleteObjectIfRemoved(this.sceneObjects, object);
+    this.worldEntities.forEach((object) => {
+      this.deleteObjectIfRemoved(this.worldEntities, object);
     });
 
     this.handlePointerEvent();
@@ -135,8 +135,8 @@ export class BaseGameScreen implements GameScreen {
   public render(context: CanvasRenderingContext2D): void {
     context.globalAlpha = this.opacity;
 
-    this.renderObjects(this.sceneObjects, context);
-    this.renderObjects(this.uiObjects, context);
+    this.renderObjects(this.worldEntities, context);
+    this.renderObjects(this.uiEntities, context);
 
     context.globalAlpha = 1;
   }
@@ -144,11 +144,11 @@ export class BaseGameScreen implements GameScreen {
   protected updateDebugStateForObjects(): void {
     const debugSettings = this.gameState.getDebugSettings();
 
-    this.sceneObjects.forEach((object) =>
+    this.worldEntities.forEach((object) =>
       object.setDebugSettings(debugSettings)
     );
 
-    this.uiObjects.forEach((object) => object.setDebugSettings(debugSettings));
+    this.uiEntities.forEach((object) => object.setDebugSettings(debugSettings));
   }
 
   protected subscribeToLocalEvent<T>(
@@ -181,7 +181,7 @@ export class BaseGameScreen implements GameScreen {
   }
 
   private handlePointerEvent(): void {
-    const tappableObjects = this.uiObjects
+    const tappableObjects = this.uiEntities
       .filter(
         (object): object is BaseTappableGameEntity =>
           object instanceof BaseTappableGameEntity

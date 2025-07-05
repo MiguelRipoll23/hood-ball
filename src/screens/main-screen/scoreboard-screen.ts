@@ -28,7 +28,7 @@ export class ScoreboardScreen extends BaseGameScreen {
     this.objects = factory.createObjects();
 
     const { title, button, rankingTable, closeableMessage } = this.objects;
-    this.uiObjects.push(title, button, rankingTable, closeableMessage);
+    this.uiEntities.push(title, button, rankingTable, closeableMessage);
     super.load();
   }
 

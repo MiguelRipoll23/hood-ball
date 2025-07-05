@@ -29,7 +29,7 @@ export class SettingsScreen extends BaseGameScreen {
   private loadTitleEntity(): void {
     this.titleObject = new TitleEntity();
     this.titleObject.setText("SETTINGS");
-    this.uiObjects.push(this.titleObject);
+    this.uiEntities.push(this.titleObject);
   }
 
   public loadButtonEntity(): void {
@@ -38,7 +38,7 @@ export class SettingsScreen extends BaseGameScreen {
       this.canvas.width / 2,
       this.canvas.height - 60 - 20
     );
-    this.uiObjects.push(this.buttonObject);
+    this.uiEntities.push(this.buttonObject);
   }
 
   private loadSettingEntities(): void {
@@ -52,7 +52,7 @@ export class SettingsScreen extends BaseGameScreen {
     settingObject.setY(75);
     settingObject.load();
 
-    this.uiObjects.push(settingObject);
+    this.uiEntities.push(settingObject);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -62,7 +62,7 @@ export class SettingsScreen extends BaseGameScreen {
       this.returnMainMenu();
     }
 
-    this.uiObjects.forEach((object) => {
+    this.uiEntities.forEach((object) => {
       if (object instanceof SettingEntity) {
         if (object.getUpdated()) {
           this.handleSettingEntityPress(object);

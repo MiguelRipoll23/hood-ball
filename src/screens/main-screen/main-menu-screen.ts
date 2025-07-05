@@ -76,7 +76,7 @@ export class MainMenuScreen extends BaseGameScreen {
   private loadTitleEntity(): void {
     const titleObject = new TitleEntity();
     titleObject.setText("MAIN MENU");
-    this.uiObjects.push(titleObject);
+    this.uiEntities.push(titleObject);
   }
 
   private loadMenuOptionEntities(): void {
@@ -88,7 +88,7 @@ export class MainMenuScreen extends BaseGameScreen {
       const menuOptionObject = new MenuOptionEntity(this.canvas, index, text);
       menuOptionObject.setPosition(30, y);
 
-      this.uiObjects.push(menuOptionObject);
+      this.uiEntities.push(menuOptionObject);
 
       y += menuOptionObject.getHeight() + 30;
     }
@@ -96,14 +96,14 @@ export class MainMenuScreen extends BaseGameScreen {
 
   private loadCloseableMessageEntity(): void {
     this.closeableMessageEntity = new CloseableMessageEntity(this.canvas);
-    this.uiObjects.push(this.closeableMessageEntity);
+    this.uiEntities.push(this.closeableMessageEntity);
   }
 
   private loadServerMessageWindow(): void {
     this.serverMessageWindowObject = new ServerMessageWindowEntity(this.canvas);
     this.serverMessageWindowObject.load();
 
-    this.uiObjects.push(this.serverMessageWindowObject);
+    this.uiEntities.push(this.serverMessageWindowObject);
   }
 
   private downloadServerMessages(): void {
@@ -160,7 +160,7 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   private handleMenuOptionEntities(): void {
-    this.uiObjects.forEach((uiObject) => {
+    this.uiEntities.forEach((uiObject) => {
       if (uiObject instanceof MenuOptionEntity && uiObject.isPressed()) {
         this.handleMenuOption(uiObject);
       }
@@ -229,7 +229,7 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   private enableMenuButtons(): void {
-    this.uiObjects.forEach((uiObject) => {
+    this.uiEntities.forEach((uiObject) => {
       if (uiObject instanceof MenuOptionEntity) {
         uiObject.setActive(true);
       }
@@ -237,7 +237,7 @@ export class MainMenuScreen extends BaseGameScreen {
   }
 
   private disableMenuButtons(): void {
-    this.uiObjects.forEach((uiObject) => {
+    this.uiEntities.forEach((uiObject) => {
       if (uiObject instanceof MenuOptionEntity) {
         uiObject.setActive(false);
       }
