@@ -32,6 +32,11 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected readonly BOOST_TOP_SPEED_MULTIPLIER: number = 2;
   protected readonly BOOST_ACCELERATION_MULTIPLIER: number = 2;
 
+  // Turbo rendering constants
+  private readonly TURBO_MIN_LENGTH = 10;
+  private readonly TURBO_MAX_LENGTH = 20;
+  private readonly TURBO_WIDTH = 10;
+
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
   private readonly PLAYER_NAME_RADIUS = 10;
@@ -119,6 +124,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
     context.translate(this.x, this.y); // Centered position
     context.rotate(this.angle);
+    if (this.boosting) {
+      this.renderTurboEffect(context);
+    }
     context.drawImage(
       this.carImage!,
       -this.width / 2,
@@ -401,5 +409,32 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       this.y + this.height / 2 + 5,
       `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
+  }
+
+  private renderTurboEffect(context: CanvasRenderingContext2D): void {
+    context.save();
+
+    const length =
+      this.TURBO_MIN_LENGTH +
+      Math.random() * (this.TURBO_MAX_LENGTH - this.TURBO_MIN_LENGTH);
+    const gradient = context.createLinearGradient(
+      -this.width / 2,
+      0,
+      -this.width / 2 - length,
+      0
+    );
+    gradient.addColorStop(0, "#ffe066");
+    gradient.addColorStop(1, "#ff5722");
+
+    context.globalAlpha = 0.7 + Math.random() * 0.3;
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.moveTo(-this.width / 2, 0);
+    context.lineTo(-this.width / 2 - length, -this.TURBO_WIDTH / 2);
+    context.lineTo(-this.width / 2 - length, this.TURBO_WIDTH / 2);
+    context.closePath();
+    context.fill();
+
+    context.restore();
   }
 }
