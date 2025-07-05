@@ -11,6 +11,7 @@ import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { BallEntity } from "../../entities/ball-entity.js";
 import { LocalCarEntity } from "../../entities/local-car-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
+import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 
 export class MatchFlowController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -24,7 +25,8 @@ export class MatchFlowController {
     private readonly scoreboardEntity: ScoreboardEntity,
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,
-    private readonly alertEntity: AlertEntity
+    private readonly alertEntity: AlertEntity,
+    private readonly boostPads: BoostPadEntity[]
   ) {}
 
   public handleMatchState(): void {
@@ -110,6 +112,8 @@ export class MatchFlowController {
   private resetForCountdown(): void {
     this.ballEntity.reset();
     this.localCarEntity.reset();
+    this.localCarEntity.refillBoost();
+    this.boostPads.forEach((pad) => pad.reset());
   }
 
   private handleCountdownEnd(): void {

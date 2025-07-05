@@ -5,6 +5,8 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
+import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
+import { BoostButtonEntity } from "../../entities/boost-button-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
 import type { GameState } from "../../../core/models/game-state.js";
@@ -17,6 +19,7 @@ export interface WorldEntities {
   goalEntity: GoalEntity;
   alertEntity: AlertEntity;
   toastEntity: ToastEntity;
+  boostPads: BoostPadEntity[];
 }
 
 export class WorldEntityFactory {
@@ -71,14 +74,35 @@ export class WorldEntityFactory {
     const alertEntity = new AlertEntity(this.canvas);
     const toastEntity = new ToastEntity(this.canvas);
 
+    // Boost related entities
+    const boostButtonEntity = new BoostButtonEntity(this.canvas);
+    localCarEntity.setBoostButtonEntity(boostButtonEntity);
+
+    const padOffset = 60;
+    const boostPads = [
+      new BoostPadEntity(padOffset, padOffset, 0),
+      new BoostPadEntity(this.canvas.width - padOffset, padOffset, 1),
+      new BoostPadEntity(padOffset, this.canvas.height - padOffset, 2),
+      new BoostPadEntity(
+        this.canvas.width - padOffset,
+        this.canvas.height - padOffset,
+        3
+      ),
+    ];
+
     worldEntities.push(
       scoreboardEntity,
       ballEntity,
       goalEntity,
       localCarEntity,
-      toastEntity
+      toastEntity,
+      ...boostPads
     );
-    uiEntities.push(alertEntity, localCarEntity.getJoystickEntity());
+    uiEntities.push(
+      alertEntity,
+      localCarEntity.getJoystickEntity(),
+      boostButtonEntity
+    );
 
     return {
       scoreboardEntity,
@@ -87,6 +111,7 @@ export class WorldEntityFactory {
       goalEntity,
       alertEntity,
       toastEntity,
+      boostPads,
     };
   }
 }
