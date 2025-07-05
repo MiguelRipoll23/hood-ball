@@ -25,6 +25,7 @@ import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { container } from "../di-container.js";
+import { CameraService } from "./camera-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -49,6 +50,7 @@ export class GameLoopService {
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
+  private cameraService: CameraService;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -64,6 +66,7 @@ export class GameLoopService {
     this.eventConsumerService = container.get(EventConsumerService);
     this.matchmakingService = container.get(MatchmakingService);
     this.webrtcService = container.get(WebRTCService);
+    this.cameraService = container.get(CameraService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
@@ -250,6 +253,7 @@ export class GameLoopService {
 
     this.timerManagerService.update(deltaTimeStamp);
     this.intervalManagerService.update(deltaTimeStamp);
+    this.cameraService.update(deltaTimeStamp);
     this.sceneTransitionService.update(deltaTimeStamp);
 
     this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
@@ -265,6 +269,9 @@ export class GameLoopService {
   private render(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    this.context.save();
+    this.cameraService.applyTransform(this.context);
+
     this.gameFrame.getCurrentScene()?.render(this.context);
     this.gameFrame.getNextScene()?.render(this.context);
     this.gameFrame.getNotificationEntity()?.render(this.context);
@@ -273,6 +280,8 @@ export class GameLoopService {
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();
     }
+
+    this.context.restore();
 
     // Dear ImGui rendering
     this.debugService.render();

@@ -30,7 +30,12 @@ export class ScoreManagerService {
     private readonly eventProcessorService: EventProcessorService,
     private readonly matchmakingService: IMatchmakingProvider,
     private readonly goalTimeEndCallback: () => void,
-    private readonly gameOverEndCallback: () => void
+    private readonly gameOverEndCallback: () => void,
+    private readonly explosionCallback: (
+      x: number,
+      y: number,
+      team: TeamType
+    ) => void
   ) {}
 
   public updateScoreboard(): void {
@@ -91,6 +96,7 @@ export class ScoreManagerService {
     }
 
     this.showGoalAlert(player, team);
+    this.explosionCallback(this.ballEntity.getX(), this.ballEntity.getY(), team);
   }
 
   public handleRemoteGameOverStartEvent(arrayBuffer: ArrayBuffer | null): void {
@@ -152,6 +158,7 @@ export class ScoreManagerService {
     }
 
     this.showGoalAlert(player, goalTeam);
+    this.explosionCallback(this.ballEntity.getX(), this.ballEntity.getY(), goalTeam);
     this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
   }
 
