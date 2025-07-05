@@ -72,7 +72,7 @@ export class NotificationEntity extends BaseAnimatedGameEntity {
 
     this.textX -= this.TEXT_SPEED;
 
-    // Reset position if text is out of screen
+    // Reset position if text is out of scene
     const textWidth = this.context.measureText(this.text).width;
 
     if (this.textX < -textWidth) {

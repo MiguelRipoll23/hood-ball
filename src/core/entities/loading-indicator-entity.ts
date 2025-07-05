@@ -1,5 +1,5 @@
 import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
-import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
+import { LIGHT_GREEN_COLOR } from "../../game/constants/colors-constants.js";
 
 export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
   private readonly SIZE = 20;
@@ -43,7 +43,13 @@ export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
     context.strokeStyle = LIGHT_GREEN_COLOR;
     context.lineWidth = 3;
     context.beginPath();
-    context.arc(this.x + this.SIZE / 2, this.y + this.SIZE / 2, this.SIZE / 2, 0, Math.PI * 1.5);
+    context.arc(
+      this.x + this.SIZE / 2,
+      this.y + this.SIZE / 2,
+      this.SIZE / 2,
+      0,
+      Math.PI * 1.5
+    );
     context.stroke();
 
     context.restore();

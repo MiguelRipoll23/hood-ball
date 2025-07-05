@@ -1,5 +1,5 @@
-import { AnimationType } from "../../enums/animation-type.js";
-import { EntityAnimationService } from "../services/entity-animation-service.js";
+import { AnimationType } from "../../game/enums/animation-type.js";
+import { EntityAnimationService } from "../services/gameplay/entity-animation-service.js";
 import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
 
 export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {

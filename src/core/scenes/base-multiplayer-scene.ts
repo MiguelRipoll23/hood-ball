@@ -1,100 +1,100 @@
-import { GamePlayer } from "../../models/game-player.js";
-import { EntityType } from "../../enums/entity-type.js";
-import { BaseMultiplayerGameEntity } from "../../entities/base/base-multiplayer-entity.js";
+import { GamePlayer } from "../../game/models/game-player.js";
+import { EntityType } from "../../game/enums/entity-type.js";
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
-} from "../../interfaces/entities/multiplayer-game-entity.js";
+} from "../interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameScene } from "./base-game-scene.js";
-import type { MultiplayerScene } from "../../interfaces/scenes/multiplayer-scene.js";
-import { SceneType } from "../../enums/scene-type.js";
+import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene.js";
+import { SceneType } from "../../game/enums/scene-type.js";
+import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
 
 export class BaseMultiplayerScene
   extends BaseGameScene
   implements MultiplayerScene
 {
-  protected syncableObjectTypes: Map<EntityType, StaticMultiplayerGameEntity> =
+  protected syncableEntityTypes: Map<EntityType, StaticMultiplayerGameEntity> =
     new Map();
 
   public getTypeId(): SceneType {
     return SceneType.Unknown;
   }
 
-  public addSyncableObject(objectClass: StaticMultiplayerGameEntity): void {
-    const typeId = objectClass.getTypeId();
-    this.syncableObjectTypes.set(typeId, objectClass);
+  public addSyncableEntity(entityClass: StaticMultiplayerGameEntity): void {
+    const typeId = entityClass.getTypeId();
+    this.syncableEntityTypes.set(typeId, entityClass);
   }
 
-  public getSyncableObjectClass(
+  public getSyncableEntityClass(
     typeId: EntityType
   ): StaticMultiplayerGameEntity | null {
-    return this.syncableObjectTypes.get(typeId) ?? null;
+    return this.syncableEntityTypes.get(typeId) ?? null;
   }
 
-  public getSyncableObjects(): MultiplayerGameEntity[] {
+  public getSyncableEntities(): MultiplayerGameEntity[] {
     const result: MultiplayerGameEntity[] = [];
 
-    for (const object of this.uiEntities) {
+    for (const entity of this.uiEntities) {
       if (
-        object instanceof BaseMultiplayerGameEntity &&
-        object.getId() !== null
+        entity instanceof BaseMultiplayerGameEntity &&
+        entity.getId() !== null
       ) {
-        result.push(object);
+        result.push(entity);
       }
     }
 
-    for (const object of this.worldEntities) {
+    for (const entity of this.worldEntities) {
       if (
-        object instanceof BaseMultiplayerGameEntity &&
-        object.getId() !== null
+        entity instanceof BaseMultiplayerGameEntity &&
+        entity.getId() !== null
       ) {
-        result.push(object);
+        result.push(entity);
       }
     }
 
     return result;
   }
 
-  public getSyncableObject(id: string): BaseMultiplayerGameEntity | null {
-    for (const object of this.uiEntities) {
+  public getSyncableEntity(id: string): BaseMultiplayerGameEntity | null {
+    for (const entity of this.uiEntities) {
       if (
-        object instanceof BaseMultiplayerGameEntity &&
-        object.getId() === id
+        entity instanceof BaseMultiplayerGameEntity &&
+        entity.getId() === id
       ) {
-        return object;
+        return entity;
       }
     }
 
-    for (const object of this.worldEntities) {
+    for (const entity of this.worldEntities) {
       if (
-        object instanceof BaseMultiplayerGameEntity &&
-        object.getId() === id
+        entity instanceof BaseMultiplayerGameEntity &&
+        entity.getId() === id
       ) {
-        return object;
+        return entity;
       }
     }
 
     return null;
   }
 
-  public getObjectsByOwner(player: GamePlayer): BaseMultiplayerGameEntity[] {
+  public getEntitiesByOwner(player: GamePlayer): BaseMultiplayerGameEntity[] {
     const result: BaseMultiplayerGameEntity[] = [];
 
-    this.uiEntities.forEach((object) => {
+    this.uiEntities.forEach((entity) => {
       if (
-        object instanceof BaseMultiplayerGameEntity &&
-        object.getOwner() === player
+        entity instanceof BaseMultiplayerGameEntity &&
+        entity.getOwner() === player
       ) {
-        result.push(object);
+        result.push(entity);
       }
     });
 
-    this.worldEntities.forEach((object) => {
+    this.worldEntities.forEach((entity) => {
       if (
-        object instanceof BaseMultiplayerGameEntity &&
-        object.getOwner() === player
+        entity instanceof BaseMultiplayerGameEntity &&
+        entity.getOwner() === player
       ) {
-        result.push(object);
+        result.push(entity);
       }
     });
 

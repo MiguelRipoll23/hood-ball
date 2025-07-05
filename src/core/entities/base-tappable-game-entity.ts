@@ -1,4 +1,4 @@
-import { GamePointer } from "../services/game-pointer.js";
+import { GamePointer } from "../models/game-pointer.js";
 import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
 
 export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
@@ -67,7 +67,7 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
       context.save();
 
       if (this.stealFocus) {
-        this.drawFullScreenRectangle(context);
+        this.drawFullSceneRectangle(context);
       } else {
         this.drawRotatedRectangle(context);
       }
@@ -88,7 +88,7 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
     );
   }
 
-  private drawFullScreenRectangle(context: CanvasRenderingContext2D): void {
+  private drawFullSceneRectangle(context: CanvasRenderingContext2D): void {
     context.lineWidth = 6; // Set the border width
     context.strokeStyle = "rgba(148, 0, 211, 0.8)";
     context.beginPath();

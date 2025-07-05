@@ -1,27 +1,27 @@
-import { GameFrame } from "../scenes/game-frame.js";
-import { NotificationEntity } from "../entities/notification-entity.js";
-import { MainScene } from "../../scenes/main-screen/main-scene.js";
-import { LoginScene } from "../../scenes/main-screen/login-scene.js";
-import { MainMenuScene } from "../../scenes/main-screen/main-menu-scene.js";
-import { EventType } from "../../enums/event-type.js";
-import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants.js";
-import { DebugUtils } from "../utils/debug-utils.js";
-import type { GameScene } from "../../interfaces/scenes/game-scene.js";
-import { GAME_VERSION } from "../constants/game-constants.js";
-import { EventConsumerService } from "./event-consumer-service.js";
-import { DebugEntity } from "../entities/debug-entity.js";
-import { GameState } from "./game-state.js";
-import { SceneTransitionService } from "./scene-transition-service.js";
-import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
-import { DebugService } from "../../debug/debug-service.js";
-import { WebRTCService } from "../../services/network/webrtc-service.js";
-import { TimerManagerService } from "./timer-manager-service.js";
-import { IntervalManagerService } from "./interval-manager-service.js";
-import { ServiceRegistry } from "./service-registry.js";
-import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity.js";
-import { container } from "./di-container.js";
+import { GameFrame } from "../models/game-frame";
+import { NotificationEntity } from "../entities/notification-entity";
+import { MainScene } from "../../game/scenes/main/main-scene";
+import { LoginScene } from "../../game/scenes/main/login-scene";
+import { MainMenuScene } from "../../game/scenes/main/main-menu-scene";
+import { EventType } from "../../game/enums/event-type";
+import type { ServerDisconnectedPayload } from "../../game/interfaces/events/server-disconnected-payload";
+import type { ServerNotificationPayload } from "../../game/interfaces/events/server-notification-payload";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../constants/canvas-constants";
+import { DebugUtils } from "../utils/debug-utils";
+import type { GameScene } from "../interfaces/scenes/game-scene";
+import { GAME_VERSION } from "../../game/constants/game-constants";
+import { EventConsumerService } from "./gameplay/event-consumer-service";
+import { DebugEntity } from "../entities/debug-entity";
+import { GameState } from "../models/game-state";
+import { SceneTransitionService } from "./gameplay/scene-transition-service";
+import { MatchmakingService } from "../../game/services/gameplay/matchmaking-service";
+import { DebugService } from "../../game/services/debug/debug-service";
+import { WebRTCService } from "../../game/services/network/webrtc-service";
+import { TimerManagerService } from "./gameplay/timer-manager-service";
+import { IntervalManagerService } from "./gameplay/interval-manager-service";
+import { ServiceRegistry } from "./service-registry";
+import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity";
+import { container } from "./di-container";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -40,7 +40,7 @@ export class GameLoopService {
 
   // Services
   private debugService: DebugService;
-  private screenTransitionService: SceneTransitionService;
+  private sceneTransitionService: SceneTransitionService;
   private timerManagerService: TimerManagerService;
   private intervalManagerService: IntervalManagerService;
   private eventConsumerService: EventConsumerService;
@@ -55,7 +55,7 @@ export class GameLoopService {
     this.gameState = container.get(GameState);
     this.gameFrame = this.gameState.getGameFrame();
     this.debugService = container.get(DebugService);
-    this.screenTransitionService = container.get(SceneTransitionService);
+    this.sceneTransitionService = container.get(SceneTransitionService);
     this.timerManagerService = container.get(TimerManagerService);
     this.intervalManagerService = container.get(IntervalManagerService);
     this.eventConsumerService = container.get(EventConsumerService);
@@ -73,7 +73,7 @@ export class GameLoopService {
   public start(): void {
     this.isRunning = true;
     requestAnimationFrame(this.loop.bind(this));
-    this.setInitialScreen();
+    this.setInitialScene();
   }
 
   public stop(): void {
@@ -164,25 +164,20 @@ export class GameLoopService {
   private handleHostDisconnectedEvent(): void {
     alert("Host has disconnected");
 
-    const mainScreen = new MainScene(
+    const mainScene = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
     );
-    const mainMenuScreen = new MainMenuScene(
+    const mainMenuScene = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
       false
     );
 
-    mainScreen.activateScreen(mainMenuScreen);
-    mainScreen.load();
+    mainScene.activateScene(mainMenuScene);
+    mainScene.load();
 
-    this.screenTransitionService.fadeOutAndIn(
-      this.gameFrame,
-      mainScreen,
-      1,
-      1
-    );
+    this.sceneTransitionService.fadeOutAndIn(this.gameFrame, mainScene, 1, 1);
   }
 
   private loadObjects(): void {
@@ -206,20 +201,20 @@ export class GameLoopService {
     this.gameFrame.setLoadingIndicatorEntity(this.loadingIndicatorObject);
   }
 
-  private setInitialScreen() {
-    const mainScreen = new MainScene(
+  private setInitialScene() {
+    const mainScene = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
     );
-    const loginScreen = new LoginScene(
+    const loginScene = new LoginScene(
       this.gameState,
       container.get(EventConsumerService)
     );
 
-    mainScreen.activateScreen(loginScreen);
-    mainScreen.load();
+    mainScene.activateScene(loginScene);
+    mainScene.load();
 
-    this.screenTransitionService.crossfade(this.gameFrame, mainScreen, 1);
+    this.sceneTransitionService.crossfade(this.gameFrame, mainScene, 1);
   }
 
   private loop(timeStamp: DOMHighResTimeStamp): void {
@@ -252,10 +247,10 @@ export class GameLoopService {
 
     this.timerManagerService.update(deltaTimeStamp);
     this.intervalManagerService.update(deltaTimeStamp);
-    this.screenTransitionService.update(deltaTimeStamp);
+    this.sceneTransitionService.update(deltaTimeStamp);
 
-    this.gameFrame.getCurrentScreen()?.update(deltaTimeStamp);
-    this.gameFrame.getNextScreen()?.update(deltaTimeStamp);
+    this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
+    this.gameFrame.getNextScene()?.update(deltaTimeStamp);
     this.gameFrame.getNotificationEntity()?.update(deltaTimeStamp);
     this.gameFrame.getLoadingIndicatorEntity()?.update(deltaTimeStamp);
 
@@ -267,8 +262,8 @@ export class GameLoopService {
   private render(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.gameFrame.getCurrentScreen()?.render(this.context);
-    this.gameFrame.getNextScreen()?.render(this.context);
+    this.gameFrame.getCurrentScene()?.render(this.context);
+    this.gameFrame.getNextScene()?.render(this.context);
     this.gameFrame.getNotificationEntity()?.render(this.context);
     this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
 
@@ -289,7 +284,7 @@ export class GameLoopService {
     this.gameFrame.getDebugEntity()?.render(this.context);
 
     this.renderDebugGameInformation();
-    this.renderDebugScreenInformation();
+    this.renderDebugSceneInformation();
 
     this.gameState.getGamePointer().renderDebugInformation(this.context);
     this.context.restore();
@@ -306,7 +301,7 @@ export class GameLoopService {
     );
   }
 
-  private renderDebugScreenInformation(): void {
+  private renderDebugSceneInformation(): void {
     DebugUtils.renderText(
       this.context,
       this.canvas.width - 24,
@@ -315,28 +310,26 @@ export class GameLoopService {
       true
     );
 
-    const currentScreen = this.gameFrame.getCurrentScreen();
-    const currentScreenName = currentScreen?.constructor.name ?? "No screen";
+    const currentScene = this.gameFrame.getCurrentScene();
+    const currentSceneName = currentScene?.constructor.name ?? "No scene";
 
     DebugUtils.renderText(
       this.context,
       this.canvas.width - 24,
       48,
-      currentScreenName,
+      currentSceneName,
       true
     );
 
-    this.renderDebugSubSceneInformation(currentScreen);
+    this.renderDebugSubSceneInformation(currentScene);
   }
 
-  private renderDebugSubSceneInformation(
-    currentScene: GameScene | null
-  ): void {
-    const screenManagerService = currentScene?.getScreenManagerService();
-    const currentSubScreen = screenManagerService?.getCurrentScreen() ?? null;
-    const currentSubScreenName = currentSubScreen?.constructor.name ?? null;
+  private renderDebugSubSceneInformation(currentScene: GameScene | null): void {
+    const sceneManagerService = currentScene?.getSceneManagerService();
+    const currentSubScene = sceneManagerService?.getCurrentScene() ?? null;
+    const currentSubSceneName = currentSubScene?.constructor.name ?? null;
 
-    if (currentSubScreenName === null) {
+    if (currentSubSceneName === null) {
       return;
     }
 
@@ -344,7 +337,7 @@ export class GameLoopService {
       this.context,
       this.canvas.width - 24,
       72,
-      currentSubScreenName,
+      currentSubSceneName,
       true
     );
   }

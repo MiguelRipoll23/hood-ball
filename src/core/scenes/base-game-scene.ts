@@ -1,19 +1,19 @@
-import { GamePointer } from "../services/game-pointer.js";
-import { LayerType } from "../constants/layer-type.js";
+import { GamePointer } from "../models/game-pointer.js";
+import { LayerType } from "../enums/layer-type.js";
 import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
-import type { GameEntity } from "../../interfaces/entities/game-entity.js";
-import type { GameScene } from "../../interfaces/scenes/game-scene.js";
-import type { SceneManager } from "../../interfaces/scenes/scene-manager.js";
-import { SceneManagerService } from "../services/scene-manager-service.js";
-import { EventConsumerService } from "../services/event-consumer-service.js";
-import { EventType } from "../../enums/event-type.js";
-import type { GameState } from "../services/game-state.js";
+import type { GameEntity } from "../models/game-entity.js";
+import type { GameScene } from "../interfaces/scenes/game-scene.js";
+import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
+import { SceneManagerService } from "../services/gameplay/scene-manager-service.js";
+import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
+import { EventType } from "../../game/enums/event-type.js";
+import type { GameState } from "../models/game-state.js";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerService;
 
   protected canvas: HTMLCanvasElement;
-  protected screenManagerService: SceneManagerService | null = null;
+  protected sceneManagerService: SceneManagerService | null = null;
 
   protected loaded: boolean = false;
   protected opacity: number = 0;
@@ -37,21 +37,21 @@ export class BaseGameScene implements GameScene {
     return this.opacity > 0;
   }
 
-  public getScreenManagerService(): SceneManager | null {
-    return this.screenManagerService;
+  public getSceneManagerService(): SceneManager | null {
+    return this.sceneManagerService;
   }
 
-  public setScreenManagerService(
-    screenManagerService: SceneManagerService
+  public setSceneManagerService(
+    sceneManagerService: SceneManagerService
   ): void {
-    this.screenManagerService = screenManagerService;
+    this.sceneManagerService = sceneManagerService;
   }
 
   public load(): void {
-    this.updateDebugStateForObjects();
+    this.updateDebugStateForEntities();
 
-    this.worldEntities.forEach((object) => object.load());
-    this.uiEntities.forEach((object) => object.load());
+    this.worldEntities.forEach((entity) => entity.load());
+    this.uiEntities.forEach((entity) => entity.load());
 
     console.log(`${this.constructor.name} loaded`);
 
@@ -70,64 +70,64 @@ export class BaseGameScene implements GameScene {
     this.opacity = opacity;
   }
 
-  public getUIObjects(): GameEntity[] {
+  public getUIEntities(): GameEntity[] {
     return this.uiEntities;
   }
 
-  public getSceneObjects(): GameEntity[] {
+  public getWorldEntities(): GameEntity[] {
     return this.worldEntities;
   }
 
   public onTransitionStart(): void {
     console.log(`Transition to ${this.constructor.name} started`);
-    this.updateDebugStateForObjects();
+    this.updateDebugStateForEntities();
   }
 
   public onTransitionEnd(): void {
     console.log(`Transition to ${this.constructor.name} finished`);
   }
 
-  public getTotalObjectsCount(): number {
+  public getTotalEntitiesCount(): number {
     return this.worldEntities.length + this.uiEntities.length;
   }
 
-  public getLoadedObjectsCount(): number {
+  public getLoadedEntitiesCount(): number {
     return (
-      this.worldEntities.filter((object) => object.hasLoaded()).length +
-      this.uiEntities.filter((object) => object.hasLoaded()).length
+      this.worldEntities.filter((entity) => entity.hasLoaded()).length +
+      this.uiEntities.filter((entity) => entity.hasLoaded()).length
     );
   }
 
-  public getObjectLayer(object: GameEntity): LayerType {
-    if (this.worldEntities.includes(object)) {
+  public getEntityLayer(entity: GameEntity): LayerType {
+    if (this.worldEntities.includes(entity)) {
       return LayerType.Scene;
     }
 
-    if (this.uiEntities.includes(object)) {
+    if (this.uiEntities.includes(entity)) {
       return LayerType.UI;
     }
 
-    throw new Error("Object not found in any layer");
+    throw new Error("Entity not found in any layer");
   }
 
-  public addObjectToSceneLayer(object: GameEntity): void {
-    object.setDebugSettings(this.gameState.getDebugSettings());
-    object.load();
+  public addEntityToSceneLayer(entity: GameEntity): void {
+    entity.setDebugSettings(this.gameState.getDebugSettings());
+    entity.load();
 
-    this.worldEntities.push(object);
+    this.worldEntities.push(entity);
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.updateObjects(this.worldEntities, deltaTimeStamp);
-    this.updateObjects(this.uiEntities, deltaTimeStamp);
+    this.updateEntities(this.worldEntities, deltaTimeStamp);
+    this.updateEntities(this.uiEntities, deltaTimeStamp);
 
-    this.uiEntities.forEach((object) => {
-      this.deleteObjectIfRemoved(this.uiEntities, object);
-    });
+    for (let i = this.uiEntities.length - 1; i >= 0; i--) {
+      this.deleteEntityIfRemoved(this.uiEntities, this.uiEntities[i]);
+    }
 
-    this.worldEntities.forEach((object) => {
-      this.deleteObjectIfRemoved(this.worldEntities, object);
-    });
+    for (let i = this.worldEntities.length - 1; i >= 0; i--) {
+      this.deleteEntityIfRemoved(this.worldEntities, this.worldEntities[i]);
+    }
 
     this.handlePointerEvent();
   }
@@ -135,20 +135,20 @@ export class BaseGameScene implements GameScene {
   public render(context: CanvasRenderingContext2D): void {
     context.globalAlpha = this.opacity;
 
-    this.renderObjects(this.worldEntities, context);
-    this.renderObjects(this.uiEntities, context);
+    this.renderEntities(this.worldEntities, context);
+    this.renderEntities(this.uiEntities, context);
 
     context.globalAlpha = 1;
   }
 
-  protected updateDebugStateForObjects(): void {
+  protected updateDebugStateForEntities(): void {
     const debugSettings = this.gameState.getDebugSettings();
 
-    this.worldEntities.forEach((object) =>
-      object.setDebugSettings(debugSettings)
+    this.worldEntities.forEach((entity) =>
+      entity.setDebugSettings(debugSettings)
     );
 
-    this.uiEntities.forEach((object) => object.setDebugSettings(debugSettings));
+    this.uiEntities.forEach((entity) => entity.setDebugSettings(debugSettings));
   }
 
   protected subscribeToLocalEvent<T>(
@@ -173,26 +173,26 @@ export class BaseGameScene implements GameScene {
     );
   }
 
-  private deleteObjectIfRemoved(layer: GameEntity[], object: GameEntity): void {
-    if (object.isRemoved()) {
-      const index = layer.indexOf(object);
+  private deleteEntityIfRemoved(layer: GameEntity[], entity: GameEntity): void {
+    if (entity.isRemoved()) {
+      const index = layer.indexOf(entity);
       layer.splice(index, 1);
     }
   }
 
   private handlePointerEvent(): void {
-    const tappableObjects = this.uiEntities
+    const tappableEntities = this.uiEntities
       .filter(
-        (object): object is BaseTappableGameEntity =>
-          object instanceof BaseTappableGameEntity
+        (entity): entity is BaseTappableGameEntity =>
+          entity instanceof BaseTappableGameEntity
       )
-      .filter((object) => object.isActive())
+      .filter((entity) => entity.isActive())
       .reverse();
 
-    for (const tappableObject of tappableObjects) {
-      tappableObject.handlePointerEvent(this.gamePointer);
+    for (const tappableEntity of tappableEntities) {
+      tappableEntity.handlePointerEvent(this.gamePointer);
 
-      if (tappableObject.isHovering() || tappableObject.isPressed()) {
+      if (tappableEntity.isHovering() || tappableEntity.isPressed()) {
         break;
       }
     }
@@ -200,42 +200,45 @@ export class BaseGameScene implements GameScene {
     this.gamePointer.setPressed(false);
   }
 
-  private updateObjects(
-    objects: GameEntity[],
+  private updateEntities(
+    entities: GameEntity[],
     deltaTimeStamp: DOMHighResTimeStamp
   ): void {
-    objects.forEach((object) => {
-      if (object.hasLoaded()) {
-        object.update(deltaTimeStamp);
+    entities.forEach((entity) => {
+      if (entity.hasLoaded()) {
+        entity.update(deltaTimeStamp);
       }
     });
   }
 
-  private renderObjects(
-    objects: GameEntity[],
+  private renderEntities(
+    entities: GameEntity[],
     context: CanvasRenderingContext2D
   ): void {
-    objects.forEach((object) => {
-      if (object.hasLoaded()) {
-        object.render(context);
+    entities.forEach((entity) => {
+      if (entity.hasLoaded()) {
+        entity.render(context);
       }
     });
   }
 
-  protected returnToPreviousScreen(
+  protected returnToPreviousScene(
     crossfadeDurationSeconds: number = 0.2
   ): void {
-    const previousScreen =
-      this.screenManagerService?.getPreviousScreen() ?? null;
+    const previousScene = this.sceneManagerService?.getPreviousScene() ?? null;
 
-    if (previousScreen === null) {
+    if (previousScene === null) {
       return;
     }
 
-    console.log("Returning to", previousScreen.constructor.name);
+    console.log("Returning to", previousScene.constructor.name);
 
-    this.screenManagerService
+    this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(this.screenManagerService, previousScreen, crossfadeDurationSeconds);
+      .crossfade(
+        this.sceneManagerService,
+        previousScene,
+        crossfadeDurationSeconds
+      );
   }
 }

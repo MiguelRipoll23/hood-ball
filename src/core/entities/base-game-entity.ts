@@ -1,6 +1,6 @@
-import { EntityStateType } from "../constants/entity-state-type.js";
-import type { GameEntity } from "../../interfaces/entities/game-entity.js";
-import type { DebugSettings } from "../constants/debug-settings.js";
+import { EntityStateType } from "../enums/entity-state-type.js";
+import type { GameEntity } from "../models/game-entity.js";
+import type { DebugSettings } from "../models/debug-settings.js";
 
 export class BaseGameEntity implements GameEntity {
   protected loaded: boolean = false;
@@ -43,7 +43,7 @@ export class BaseGameEntity implements GameEntity {
     this.removed = removed;
 
     if (this.removed) {
-      console.log(`${this.constructor.name} to be removed from screen`);
+      console.log(`${this.constructor.name} to be removed from scene`);
     }
   }
 
@@ -56,7 +56,7 @@ export class BaseGameEntity implements GameEntity {
   }
 
   protected applyOpacity(context: CanvasRenderingContext2D): void {
-    // Apply desired object opacity only if it's less than the screen opacity
+    // Apply desired entity opacity only if it's less than the scene opacity
     if (context.globalAlpha > this.opacity) {
       context.globalAlpha = this.opacity;
     }
