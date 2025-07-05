@@ -2,8 +2,12 @@ import { BaseStaticCollidingGameEntity } from "../../core/entities/base-static-c
 import { HitboxEntity } from "../../core/entities/hitbox-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
+const PAD_COOLDOWN_MS = 15000;
+
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   private readonly SIZE = 40;
+  private active = true;
+  private cooldownRemaining = 0;
 
   constructor(private startX: number, private startY: number) {
     super();
@@ -19,6 +23,18 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     super.load();
   }
 
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (!this.active) {
+      this.cooldownRemaining -= deltaTimeStamp;
+      if (this.cooldownRemaining <= 0) {
+        this.active = true;
+        this.cooldownRemaining = 0;
+      }
+    }
+
+    super.update(deltaTimeStamp);
+  }
+
   private createHitbox(): void {
     const hitbox = new HitboxEntity(
       this.x - this.width / 2,
@@ -29,9 +45,37 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     this.setHitboxEntities([hitbox]);
   }
 
+  public tryConsume(): boolean {
+    if (!this.active) {
+      return false;
+    }
+    this.active = false;
+    this.cooldownRemaining = PAD_COOLDOWN_MS;
+    return true;
+  }
+
+  public isActive(): boolean {
+    return this.active;
+  }
+
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
-    context.fillStyle = LIGHT_GREEN_COLOR;
+    if (this.active) {
+      const gradient = context.createRadialGradient(
+        this.x,
+        this.y,
+        0,
+        this.x,
+        this.y,
+        this.width / 2
+      );
+      gradient.addColorStop(0, '#ffe066');
+      gradient.addColorStop(1, LIGHT_GREEN_COLOR);
+      context.fillStyle = gradient;
+    } else {
+      const ratio = 1 - this.cooldownRemaining / PAD_COOLDOWN_MS;
+      context.fillStyle = `rgba(100,100,100,${0.3 + 0.7 * ratio})`;
+    }
     context.fillRect(
       this.x - this.width / 2,
       this.y - this.height / 2,

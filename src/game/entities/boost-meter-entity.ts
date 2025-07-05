@@ -1,6 +1,8 @@
 import { BaseGameEntity } from "../../core/entities/base-game-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
+const BOOST_GRADIENT_START = '#ffe066';
+
 export class BoostMeterEntity extends BaseGameEntity {
   private readonly WIDTH = 20;
   private readonly HEIGHT = 100;
@@ -22,17 +24,34 @@ export class BoostMeterEntity extends BaseGameEntity {
     context.save();
     this.applyOpacity(context);
 
-    context.strokeStyle = "white";
+    // Background
+    context.fillStyle = 'rgba(0,0,0,0.4)';
+    context.fillRect(this.x - 2, this.y - 2, this.WIDTH + 4, this.HEIGHT + 4);
+
+    // Border
+    context.strokeStyle = 'white';
+    context.lineWidth = 2;
     context.strokeRect(this.x, this.y, this.WIDTH, this.HEIGHT);
 
-    context.fillStyle = LIGHT_GREEN_COLOR;
+    // Fill gradient
+    const gradient = context.createLinearGradient(
+      this.x,
+      this.y + this.HEIGHT,
+      this.x,
+      this.y
+    );
+    gradient.addColorStop(0, BOOST_GRADIENT_START);
+    gradient.addColorStop(1, LIGHT_GREEN_COLOR);
+
     const filledHeight = this.HEIGHT * this.boostLevel;
+    context.fillStyle = gradient;
     context.fillRect(
       this.x,
       this.y + this.HEIGHT - filledHeight,
       this.WIDTH,
       filledHeight
     );
+
     context.restore();
   }
 }
