@@ -8,7 +8,7 @@ import { GameState } from "../../core/models/game-state.js";
 import { EventType } from "../enums/event-type.js";
 import { container } from "../../core/services/di-container.js";
 
-const PAD_COOLDOWN_MS = 15000;
+const PAD_COOLDOWN_MS = 10000;
 
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   private readonly RADIUS = 20;
@@ -120,11 +120,11 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       context.closePath();
     }
 
-    context.font = `${this.RADIUS * 1.2}px system-ui`;
+    context.font = `${this.RADIUS * 0.9}px system-ui`;
     context.textAlign = 'center';
     context.textBaseline = 'middle';
     context.fillStyle = '#000';
-    context.fillText('⚡', this.x, this.y + 1);
+    context.fillText('🧪', this.x, this.y + 1);
     context.restore();
     super.render(context);
   }
