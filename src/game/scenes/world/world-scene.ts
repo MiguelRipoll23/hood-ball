@@ -280,7 +280,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private triggerGoalExplosion(x: number, y: number, team: TeamType): void {
     const explosion = new GoalExplosionEntity(this.canvas, x, y, team);
     this.addEntityToSceneLayer(explosion);
-    this.cameraService.shake(0.3, 8);
+    // Make the shake last a bit longer for added impact
+    this.cameraService.shake(0.5, 8);
   }
 
   private async returnToMainMenuScene(): Promise<void> {
