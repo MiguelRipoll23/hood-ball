@@ -197,7 +197,7 @@ export class BaseGameScene implements GameScene {
       }
     }
 
-    this.gamePointer.setPressed(false);
+    this.gamePointer.clearPressed();
   }
 
   private updateEntities(

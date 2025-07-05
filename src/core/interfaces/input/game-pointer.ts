@@ -1,22 +1,32 @@
 export type PointerType = "mouse" | "touch" | "pen";
 
+import type { GamePointerTouchPoint } from "./game-pointer-touch-point.js";
+
 export interface IGamePointer {
+  /** Primary pointer X coordinate */
   getX(): number;
+  /** Primary pointer Y coordinate */
   getY(): number;
+  /** Primary pointer initial X coordinate */
   getInitialX(): number;
+  /** Primary pointer initial Y coordinate */
   getInitialY(): number;
-  setX(x: number): void;
-  setY(y: number): void;
-  setInitialX(x: number): void;
-  setInitialY(y: number): void;
+  /** Allow disabling default behaviour of pointer events */
   setPreventDefault(preventDefault: boolean): void;
+  /** Whether the primary pointer is currently pressed */
   isPressing(): boolean;
-  setPressing(pressing: boolean): void;
+  /** Whether the primary pointer was released on the last frame */
   isPressed(): boolean;
-  setPressed(pressed: boolean): void;
+  /** Type of the primary pointer */
   getType(): PointerType;
-  setType(type: PointerType): void;
+  /** Returns true if the primary pointer is a touch */
   isTouch(): boolean;
+  /** Reset all pointer states */
   reset(): void;
+  /** Clear pressed state for all touches */
+  clearPressed(): void;
+  /** Get all active pointer touch points */
+  getTouchPoints(): GamePointerTouchPoint[];
+  /** Render debug pointer visuals */
   renderDebugInformation(context: CanvasRenderingContext2D): void;
 }
