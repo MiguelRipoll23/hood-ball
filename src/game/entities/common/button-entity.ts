@@ -10,6 +10,22 @@ export class ButtonEntity extends BaseTappableGameEntity {
     this.setSize(canvas);
   }
 
+  public getX(): number {
+    return this.x;
+  }
+
+  public getY(): number {
+    return this.y;
+  }
+
+  public getWidth(): number {
+    return this.width;
+  }
+
+  public getHeight(): number {
+    return this.height;
+  }
+
   public setPosition(x: number, y: number): void {
     this.x = x - this.width / 2;
     this.y = y - this.height / 2;

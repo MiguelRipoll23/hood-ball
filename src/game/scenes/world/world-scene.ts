@@ -27,6 +27,8 @@ import { EventConsumerService } from "../../../core/services/gameplay/event-cons
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { MatchFlowController } from "./match-flow-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
+import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
+import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -44,6 +46,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private toastEntity: ToastEntity | null = null;
   private scoreManagerService: ScoreManagerService | null = null;
   private matchFlowController: MatchFlowController | null = null;
+  private boostPads: BoostPadEntity[] = [];
 
   constructor(
     protected gameState: GameState,
@@ -75,6 +78,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.goalEntity = entities.goalEntity;
     this.alertEntity = entities.alertEntity;
     this.toastEntity = entities.toastEntity;
+    this.boostPads = entities.boostPads;
 
     this.matchFlowController = new MatchFlowController(
       this.gameState,
@@ -84,7 +88,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.scoreboardEntity,
       this.ballEntity,
       this.localCarEntity,
-      this.alertEntity
+      this.alertEntity,
+      this.boostPads
     );
 
     this.scoreManagerService = new ScoreManagerService(
@@ -232,10 +237,37 @@ export class WorldScene extends BaseCollidingGameScene {
       (data: ArrayBuffer | null) =>
         this.scoreManagerService?.handleRemoteGameOverStartEvent(data)
     );
+
+    this.subscribeToRemoteEvent(
+      EventType.BoostPadConsumed,
+      (data: ArrayBuffer | null) => this.handleRemoteBoostPadConsumed(data)
+    );
   }
 
   private handleWaitingForPlayers(): void {
     this.matchFlowController?.handleWaitingForPlayers();
+  }
+  private handleRemoteBoostPadConsumed(data: ArrayBuffer | null): void {
+    if (data === null) {
+      console.warn("Array buffer is null");
+      return;
+    }
+
+    if (this.gameState.getMatch()?.isHost()) {
+      console.warn("Host should not receive boost pad event");
+      return;
+    }
+
+    const binaryReader = BinaryReader.fromArrayBuffer(data);
+    const index = binaryReader.unsignedInt8();
+
+    if (index < 0 || index >= this.boostPads.length) {
+      console.warn(`Invalid boost pad index: ${index}`);
+      return;
+    }
+
+    const pad = this.boostPads[index];
+    pad.forceConsume();
   }
 
   private async returnToMainMenuScene(): Promise<void> {
