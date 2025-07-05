@@ -22,7 +22,7 @@ export class ConfettiEntity extends BaseMoveableGameEntity {
   }
 
   private createParticles(): void {
-    const count = 80;
+    const count = 200;
     for (let i = 0; i < count; i++) {
       this.particles.push({
         x: Math.random() * this.canvas.width,
