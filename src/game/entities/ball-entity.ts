@@ -199,12 +199,22 @@ export class BallEntity
     context.save();
     context.translate(this.x, this.y);
     context.rotate(this.spinAngle);
+
     context.strokeStyle = "rgba(0, 0, 0, 0.4)";
     context.lineWidth = 2;
+
+    const ellipseRadiusY = this.radius * 0.5;
+
+    // Equator line
     context.beginPath();
-    context.moveTo(0, -this.radius);
-    context.lineTo(0, this.radius);
+    context.ellipse(0, 0, this.radius, ellipseRadiusY, 0, 0, Math.PI * 2);
     context.stroke();
+
+    // Prime meridian line
+    context.beginPath();
+    context.ellipse(0, 0, this.radius, ellipseRadiusY, Math.PI / 2, 0, Math.PI * 2);
+    context.stroke();
+
     context.restore();
   }
 
