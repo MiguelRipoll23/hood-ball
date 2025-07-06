@@ -72,11 +72,11 @@ export class LocalCarEntity extends CarEntity {
       this.deactivateBoost();
     }
 
+    super.update(deltaTimeStamp);
+
     if (this.canvas) {
       EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
     }
-
-    super.update(deltaTimeStamp);
 
     this.boostMeterEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
   }
