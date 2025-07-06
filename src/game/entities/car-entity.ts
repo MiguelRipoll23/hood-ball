@@ -83,8 +83,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     if (remote) {
       this.imagePath = this.IMAGE_RED_PATH;
     }
-
-    this.addCollisionExclusion(CarEntity);
   }
 
   public override load(): void {

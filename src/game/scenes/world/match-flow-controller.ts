@@ -12,6 +12,7 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { LocalCarEntity } from "../../entities/local-car-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
+import { CAR_SPAWN_SPACING } from "../../constants/game-constants.js";
 
 export class MatchFlowController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -112,6 +113,7 @@ export class MatchFlowController {
   private resetForCountdown(): void {
     this.ballEntity.reset();
     this.localCarEntity.reset();
+    this.positionLocalCar();
     this.localCarEntity.refillBoost();
     this.boostPads.forEach((pad) => pad.reset());
   }
@@ -122,6 +124,7 @@ export class MatchFlowController {
 
     this.alertEntity.hide();
     this.localCarEntity.reset();
+    this.positionLocalCar();
     this.ballEntity.reset();
     this.scoreboardEntity.startTimer();
   }
@@ -135,5 +138,33 @@ export class MatchFlowController {
     countdownEvent.setData(arrayBuffer);
 
     this.eventProcessorService.sendEvent(countdownEvent);
+  }
+
+  private positionLocalCar(): void {
+    const match = this.gameState.getMatch();
+    if (!match) {
+      return;
+    }
+
+    const players = match
+      .getPlayers()
+      .slice()
+      .sort((a, b) => a.getId().localeCompare(b.getId()));
+
+    const player = this.localCarEntity.getPlayer();
+    if (!player) {
+      return;
+    }
+
+    const index = players.findIndex((p) => p.getId() === player.getId());
+    if (index === -1) {
+      return;
+    }
+
+    const canvas = this.gameState.getCanvas();
+    const startX =
+      canvas.width / 2 - ((players.length - 1) * CAR_SPAWN_SPACING) / 2;
+
+    this.localCarEntity.setX(startX + index * CAR_SPAWN_SPACING);
   }
 }
