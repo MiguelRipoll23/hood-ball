@@ -243,12 +243,17 @@ export class ScoreManagerService {
   private handleGameOverStart(winner: GamePlayer | null): void {
     this.gameState.endMatch();
 
+    const isLocalWinner = winner === this.gameState.getGamePlayer();
     const playerName = winner?.getName().toUpperCase() ?? "UNKNOWN";
-    const playerTeam =
-      winner === this.gameState.getGamePlayer() ? "blue" : "red";
+    const playerTeam = isLocalWinner ? "blue" : "red";
 
-    this.alertEntity.show([playerName, "WINS!"], playerTeam);
-    this.gameOverEffectCallback(winner === this.gameState.getGamePlayer());
+    if (isLocalWinner) {
+      this.alertEntity.show(["YOU", "WON!"], playerTeam);
+    } else {
+      this.alertEntity.show([playerName, "WINS!"], playerTeam);
+    }
+
+    this.gameOverEffectCallback(isLocalWinner);
     this.timerManagerService.createTimer(5, this.gameOverEndCallback);
 
     if (this.gameState.getMatch()?.isHost()) {
