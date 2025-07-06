@@ -61,6 +61,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     y: number;
     size: number;
     life: number; // remaining life in ms
+    vx: number;
+    vy: number;
   }[] = [];
   private smokeSpawnElapsed = 0;
 
@@ -443,17 +445,23 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     const offset = this.width / 2;
     const x = this.x + Math.cos(this.angle) * offset;
     const y = this.y + Math.sin(this.angle) * offset;
+    const dir = this.angle + Math.PI + (Math.random() - 0.5) * 0.4;
+    const speed = 0.1 + Math.random() * 0.1;
     this.smokeParticles.push({
       x,
       y,
       size: 4 + Math.random() * 2,
       life: this.SMOKE_DURATION,
+      vx: Math.cos(dir) * speed,
+      vy: Math.sin(dir) * speed,
     });
   }
 
   private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
     this.smokeParticles.forEach((p) => {
-      p.size += 0.02 * (delta / 16);
+      p.x += p.vx * (delta / 16);
+      p.y += p.vy * (delta / 16);
+      p.size += 0.03 * (delta / 16);
       p.life -= delta;
     });
     this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
@@ -462,8 +470,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private renderSmokeTrail(context: CanvasRenderingContext2D): void {
     context.save();
     this.smokeParticles.forEach((p) => {
-      context.globalAlpha = 0.75 * Math.max(p.life / this.SMOKE_DURATION, 0);
-      context.fillStyle = "#555";
+      const progress = Math.max(p.life / this.SMOKE_DURATION, 0);
+      const shade = Math.floor(80 + (1 - progress) * 50);
+      context.globalAlpha = 0.5 * progress;
+      context.fillStyle = `rgb(${shade},${shade},${shade})`;
       context.beginPath();
       context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       context.fill();
@@ -477,22 +487,33 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     const length =
       this.TURBO_MIN_LENGTH +
       Math.random() * (this.TURBO_MAX_LENGTH - this.TURBO_MIN_LENGTH);
+    const jitter = (Math.random() - 0.5) * 4;
     const gradient = context.createLinearGradient(
       this.width / 2,
       0,
       this.width / 2 + length,
       0
     );
-    gradient.addColorStop(0, "#ffe066");
+    gradient.addColorStop(0, "#ffffff");
+    gradient.addColorStop(0.2, "#ffe066");
     gradient.addColorStop(1, "#ff5722");
 
-    context.globalAlpha = 0.7 + Math.random() * 0.3;
+    context.globalAlpha = 0.6 + Math.random() * 0.4;
     context.fillStyle = gradient;
     context.beginPath();
     context.moveTo(this.width / 2, 0);
-    context.lineTo(this.width / 2 + length, -this.TURBO_WIDTH / 2);
-    context.lineTo(this.width / 2 + length, this.TURBO_WIDTH / 2);
-    context.closePath();
+    context.quadraticCurveTo(
+      this.width / 2 + length / 2 + jitter,
+      -this.TURBO_WIDTH / 2,
+      this.width / 2 + length,
+      0
+    );
+    context.quadraticCurveTo(
+      this.width / 2 + length / 2 + jitter,
+      this.TURBO_WIDTH / 2,
+      this.width / 2,
+      0
+    );
     context.fill();
 
     context.restore();
