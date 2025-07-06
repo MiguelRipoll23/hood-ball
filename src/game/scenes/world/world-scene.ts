@@ -303,13 +303,13 @@ export class WorldScene extends BaseCollidingGameScene {
   private getHelpText(): string {
     const driveControls = this.isMobile()
       ? "your first finger"
-      : "WASD or arrow keys";
+      : "the WASD or arrow keys";
 
     const boostControls = this.isMobile()
       ? "your second finger"
-      : "Shift or Space";
+      : "shift or space keys";
 
-    return `Drive using ${driveControls}\nBoost using ${boostControls}`;
+    return `Drive with ${driveControls}.\nBoost using ${boostControls}.`;
   }
 
   private isMobile(): boolean {
