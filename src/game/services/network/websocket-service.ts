@@ -20,6 +20,8 @@ export class WebSocketService {
   private baseURL: string;
   private webSocket: WebSocket | null = null;
 
+  private onlinePlayers = 0;
+
   private eventProcessorService: EventProcessorService;
   private dispatcherService: WebSocketDispatcherService;
 
@@ -28,6 +30,10 @@ export class WebSocketService {
     this.eventProcessorService = container.get(EventProcessorService);
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
+  }
+
+  public getOnlinePlayers(): number {
+    return this.onlinePlayers;
   }
 
   public registerCommandHandlers(instance: object): void {
@@ -93,6 +99,8 @@ export class WebSocketService {
   @ServerCommandHandler(WebSocketType.OnlinePlayers)
   public handleOnlinePlayers(binaryReader: BinaryReader) {
     const total = binaryReader.unsignedInt16();
+
+    this.onlinePlayers = total;
 
     const localEvent = new LocalEvent<OnlinePlayersPayload>(
       EventType.OnlinePlayers

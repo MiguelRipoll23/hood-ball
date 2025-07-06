@@ -16,6 +16,7 @@ import { EventConsumerService } from "../../../../core/services/gameplay/event-c
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
+import { WebSocketService } from "../../../services/network/websocket-service.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -61,6 +62,9 @@ export class MainMenuScene extends BaseGameScene {
     this.serverMessageWindowEntity = serverMessageWindowEntity;
     this.closeableMessageEntity = closeableMessageEntity;
     this.onlinePlayersEntity = onlinePlayersEntity;
+
+    const total = container.get(WebSocketService).getOnlinePlayers();
+    this.onlinePlayersEntity.setOnlinePlayers(total);
 
     this.uiEntities.push(
       titleEntity,

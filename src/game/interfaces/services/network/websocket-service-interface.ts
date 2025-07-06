@@ -5,4 +5,5 @@ export interface IWebSocketService {
   connectToServer(): void;
   sendMessage(arrayBuffer: ArrayBuffer): void;
   handleNotificationMessage(binaryReader: BinaryReader): void;
+  getOnlinePlayers(): number;
 }
