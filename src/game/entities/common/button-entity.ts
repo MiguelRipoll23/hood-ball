@@ -40,7 +40,8 @@ export class ButtonEntity extends BaseTappableGameEntity {
       this.width = 0;
     }
 
-    this.width *= 3;
+    // Keep some padding around the text but avoid overly wide buttons
+    this.width *= 2;
     this.height = 60;
   }
 
