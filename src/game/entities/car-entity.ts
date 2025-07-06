@@ -40,7 +40,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   // Smoke trail constants
   // Duration of each smoke particle in milliseconds
   private readonly SMOKE_DURATION = 1500; // ms
-  private readonly SMOKE_SPAWN_INTERVAL = 50; // ms
+  private readonly SMOKE_SPAWN_INTERVAL = 25; // ms
 
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
