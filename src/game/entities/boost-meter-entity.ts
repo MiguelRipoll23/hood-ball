@@ -5,6 +5,7 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   private readonly RADIUS = 32;
   private boostLevel = 1; // target level 0..1
   private displayLevel = 1; // rendered level 0..1
+  private boostAttemptWhileEmpty = false;
   // Fill or drain the meter in roughly 0.2 seconds
   private readonly FILL_RATE_UP = 1 / 100; // units/ms
   private readonly FILL_RATE_DOWN = 1 / 200; // units/ms
@@ -18,6 +19,10 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
 
   public setBoostLevel(level: number): void {
     this.boostLevel = Math.max(0, Math.min(1, level));
+  }
+
+  public setAttemptingBoostWhileEmpty(active: boolean): void {
+    this.boostAttemptWhileEmpty = active;
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -76,8 +81,11 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
     context.beginPath();
     context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
     context.closePath();
-    context.fillStyle =
-      this.displayLevel === 0 ? "rgba(255,0,0,0.3)" : "rgba(0,0,0,0.2)";
+    context.fillStyle = this.displayLevel === 0
+      ? this.boostAttemptWhileEmpty
+        ? "rgba(255,0,0,0.6)"
+        : "rgba(255,0,0,0.3)"
+      : "rgba(0,0,0,0.2)";
     context.fill();
 
     if (this.displayLevel > 0) {

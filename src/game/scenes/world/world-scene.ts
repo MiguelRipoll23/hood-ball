@@ -32,7 +32,6 @@ import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
-import { ThumbsDownCloudEntity } from "../../entities/thumbs-down-cloud-entity.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -288,9 +287,6 @@ export class WorldScene extends BaseCollidingGameScene {
     if (won) {
       const confetti = new ConfettiEntity(this.canvas);
       this.addEntityToSceneLayer(confetti);
-    } else {
-      const cloud = new ThumbsDownCloudEntity(this.canvas);
-      this.addEntityToSceneLayer(cloud);
     }
   }
 
