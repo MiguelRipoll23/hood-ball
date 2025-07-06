@@ -25,7 +25,7 @@ export class RankingTableEntity extends BaseAnimatedGameEntity {
       context.textAlign = "right";
       context.fillText(
         player.score.toString(),
-        context.canvas.width - 40,
+        context.canvas.width - 25,
         startY
       );
       startY += 40;
