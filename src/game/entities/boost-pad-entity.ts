@@ -66,13 +66,13 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     this.setHitboxEntities([hitbox]);
   }
 
-  public tryConsume(): boolean {
+  public tryConsume(playerId: string): boolean {
     if (!this.active) {
       return false;
     }
     this.active = false;
     this.cooldownRemaining = PAD_COOLDOWN_MS;
-    this.sendConsumeEvent();
+    this.sendConsumeEvent(playerId);
     return true;
   }
 
@@ -132,7 +132,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     super.render(context);
   }
 
-  private sendConsumeEvent(): void {
+  private sendConsumeEvent(playerId: string): void {
     const gameState = container.get(GameState);
 
     if (!gameState.getMatch()?.isHost()) {
@@ -142,6 +142,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     const eventProcessor = container.get(EventProcessorService);
     const payload = BinaryWriter.build()
       .unsignedInt8(this.index)
+      .fixedLengthString(playerId, 32)
       .toArrayBuffer();
 
     const event = new RemoteEvent(EventType.BoostPadConsumed);

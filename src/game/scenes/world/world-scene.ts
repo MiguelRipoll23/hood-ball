@@ -28,6 +28,7 @@ import { EventConsumerService } from "../../../core/services/gameplay/event-cons
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { MatchFlowController } from "./match-flow-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
+import { CarEntity } from "../../entities/car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
@@ -276,6 +277,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
     const binaryReader = BinaryReader.fromArrayBuffer(data);
     const index = binaryReader.unsignedInt8();
+    const playerId = binaryReader.fixedLengthString(32);
 
     if (index < 0 || index >= this.boostPads.length) {
       console.warn(`Invalid boost pad index: ${index}`);
@@ -284,6 +286,17 @@ export class WorldScene extends BaseCollidingGameScene {
 
     const pad = this.boostPads[index];
     pad.forceConsume();
+
+    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    if (player) {
+      this.getEntitiesByOwner(player).forEach((entity) => {
+        if (entity instanceof CarEntity) {
+          entity.refillBoost();
+        }
+      });
+    } else {
+      console.warn(`Cannot find player with id ${playerId}`);
+    }
   }
 
   private triggerGoalExplosion(x: number, y: number, team: TeamType): void {

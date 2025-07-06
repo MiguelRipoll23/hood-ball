@@ -285,7 +285,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private handleBoostPads(): void {
     this.getCollidingEntities().forEach((entity) => {
       if (entity instanceof BoostPadEntity && this.boost < this.MAX_BOOST) {
-        if (entity.tryConsume()) {
+        const playerId = this.owner?.getId();
+        if (playerId && entity.tryConsume(playerId)) {
           this.refillBoost();
         }
       }
