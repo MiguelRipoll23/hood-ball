@@ -2,6 +2,7 @@ import { CloseableMessageEntity } from "../../entities/common/closeable-message-
 import { MenuOptionEntity } from "../../entities/common/menu-option-entity.js";
 import { TitleEntity } from "../../entities/common/title-entity.js";
 import { ServerMessageWindowEntity } from "../../entities/server-message-window-entity.js";
+import { OnlinePlayersEntity } from "../../entities/common/online-players-entity.js";
 import { APIService } from "../../services/network/api-service.js";
 import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
 import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
@@ -23,7 +24,7 @@ export class MainMenuScene extends BaseGameScene {
 
   private serverMessageWindowEntity: ServerMessageWindowEntity | null = null;
   private closeableMessageEntity: CloseableMessageEntity | null = null;
-  private onlinePlayers: number = 0;
+  private onlinePlayersEntity: OnlinePlayersEntity | null = null;
 
   constructor(
     gameState: GameState,
@@ -41,6 +42,7 @@ export class MainMenuScene extends BaseGameScene {
     this.loadMenuOptionEntities();
     this.loadServerMessageWindow();
     this.loadCloseableMessageEntity();
+    this.loadOnlinePlayersEntity();
 
     super.load();
   }
@@ -107,6 +109,11 @@ export class MainMenuScene extends BaseGameScene {
   private loadCloseableMessageEntity(): void {
     this.closeableMessageEntity = new CloseableMessageEntity(this.canvas);
     this.uiEntities.push(this.closeableMessageEntity);
+  }
+
+  private loadOnlinePlayersEntity(): void {
+    this.onlinePlayersEntity = new OnlinePlayersEntity(this.canvas);
+    this.uiEntities.push(this.onlinePlayersEntity);
   }
 
   private loadServerMessageWindow(): void {
@@ -279,18 +286,10 @@ export class MainMenuScene extends BaseGameScene {
       this.canvas.height - 100
     );
 
-    this.showTotalOnlinePlayers(context);
   }
 
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
-    this.onlinePlayers = payload.total;
+    this.onlinePlayersEntity?.setOnlinePlayers(payload.total);
   }
 
-  private showTotalOnlinePlayers(context: CanvasRenderingContext2D): void {
-    const text = `${this.onlinePlayers} ONLINE PLAYERS`;
-    context.font = "bold 20px system-ui";
-    context.fillStyle = "#4a90e2";
-    context.textAlign = "center";
-    context.fillText(text, this.canvas.width / 2, this.canvas.height - 40);
-  }
 }
