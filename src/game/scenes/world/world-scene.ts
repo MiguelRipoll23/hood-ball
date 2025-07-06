@@ -4,7 +4,7 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
-import { HelpEntity } from "../../entities/help-emtity.js";
+import { HelpEntity } from "../../entities/help-entity.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityStateType } from "../../../core/enums/entity-state-type.js";
