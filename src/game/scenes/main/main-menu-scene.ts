@@ -255,6 +255,7 @@ export class MainMenuScene extends BaseGameScene {
     const playerName = this.gameState.getGamePlayer()?.getName() || "Unknown";
 
     // Draw text that says Hello
+    context.save();
     context.font = "bold 28px system-ui";
     context.fillStyle = "white";
     context.textAlign = "center";
@@ -272,6 +273,7 @@ export class MainMenuScene extends BaseGameScene {
       this.canvas.width / 2,
       this.canvas.height - 100
     );
+    context.restore();
 
   }
 
