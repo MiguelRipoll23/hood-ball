@@ -130,7 +130,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.scoreboardEntity?.reset();
     if (!this.helpShown) {
       const text = this.getHelpText();
-      this.helpEntity?.show(text, 2);
+      this.helpEntity?.show(text, 4);
       this.helpShown = true;
     }
     this.matchmakingController
@@ -301,7 +301,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private getHelpText(): string {
     if (this.isMobile()) {
-      return "Use first finger to drive. Use second finger to boost.";
+      return "Use first finger to drive.\nUse second finger to boost.";
     }
     return "Drive with WASD or arrow keys. Press Shift or Space to boost.";
   }
