@@ -13,12 +13,13 @@ interface Car {
 
 export class CarSilhouetteEntity extends BaseGameEntity {
   private cars: Car[] = [];
-  private readonly carCount = 8;
+  private readonly carCount = 4;
   private carImage: HTMLImageElement | null = null;
   private readonly IMAGE_PATH = "./images/car-silhouette.png";
   private readonly BASE_SPEED = 0.07;
-  private readonly SIZE = 40;
+  private readonly SIZE = 60;
   private readonly TRANSITION_SPEED_MULTIPLIER = 2;
+  private currentMultiplier = 1;
   private readonly transitionService: SceneTransitionService;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -40,9 +41,13 @@ export class CarSilhouetteEntity extends BaseGameEntity {
       const fromLeft = i < this.carCount / 2;
       const vx = fromLeft ? this.BASE_SPEED : -this.BASE_SPEED;
       const vy = this.BASE_SPEED;
+      const x = fromLeft
+        ? Math.random() * (this.canvas.width / 3)
+        : this.canvas.width - Math.random() * (this.canvas.width / 3);
+      const y = Math.random() * (this.canvas.height / 3);
       this.cars.push({
-        x: Math.random() * this.canvas.width,
-        y: Math.random() * this.canvas.height,
+        x,
+        y,
         vx,
         vy,
         size: this.SIZE,
@@ -52,12 +57,14 @@ export class CarSilhouetteEntity extends BaseGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
-    const multiplier = this.transitionService.isTransitionActive()
+    const targetMultiplier = this.transitionService.isTransitionActive()
       ? this.TRANSITION_SPEED_MULTIPLIER
       : 1;
+    this.currentMultiplier +=
+      (targetMultiplier - this.currentMultiplier) * 0.05;
     this.cars.forEach((car) => {
-      car.x += car.vx * delta * multiplier;
-      car.y += car.vy * delta * multiplier;
+      car.x += car.vx * delta * this.currentMultiplier;
+      car.y += car.vy * delta * this.currentMultiplier;
 
       if (car.x > this.canvas.width + car.size) {
         car.x = -car.size;

@@ -2,7 +2,7 @@ import { BaseGameEntity } from "../../../core/entities/base-game-entity.js";
 import { CarSilhouetteEntity } from "./car-silhouette-entity.js";
 
 export class MainBackgroundEntity extends BaseGameEntity {
-  private gradientOffset = 0; // Offset for moving gradient
+  private gradientOffset = 0; // Static gradient, offset remains 0
   private readonly carSilhouettes: CarSilhouetteEntity;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -15,13 +15,9 @@ export class MainBackgroundEntity extends BaseGameEntity {
     super.load();
   }
 
-  // Update the gradient offset to animate the background
+  // Update only the car silhouettes. Gradient remains static.
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.gradientOffset += deltaTimeStamp * 0.01; // Adjust speed as needed
-    if (this.gradientOffset > this.canvas.width) {
-      this.gradientOffset = 0; // Loop the gradient
-    }
-
+    this.gradientOffset = 0;
     this.carSilhouettes.update(deltaTimeStamp);
   }
 
