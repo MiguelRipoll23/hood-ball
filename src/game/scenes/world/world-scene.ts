@@ -301,16 +301,19 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private getHelpText(): string {
-    if (this.isMobile()) {
-      return "Use first finger to drive.\nUse second finger to boost.";
-    }
-    return "Drive with WASD or arrow keys.\nPress Shift or Space to boost.";
+    const driveControls = this.isMobile()
+      ? "your first finger"
+      : "the WASD or arrow keys";
+
+    const boostControls = this.isMobile()
+      ? "your second finger"
+      : "shift or space keys";
+
+    return `Drive with ${driveControls}.\nBoost using ${boostControls}.`;
   }
 
   private isMobile(): boolean {
-    return (
-      "ontouchstart" in window || navigator.maxTouchPoints > 0
-    );
+    return "ontouchstart" in window || navigator.maxTouchPoints > 0;
   }
 
   private async returnToMainMenuScene(): Promise<void> {
