@@ -4,6 +4,7 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
+import { HelpEmtity } from "../../entities/help-emtity.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityStateType } from "../../../core/enums/entity-state-type.js";
@@ -47,9 +48,11 @@ export class WorldScene extends BaseCollidingGameScene {
   private goalEntity: GoalEntity | null = null;
   private alertEntity: AlertEntity | null = null;
   private toastEntity: ToastEntity | null = null;
+  private helpEntity: HelpEmtity | null = null;
   private scoreManagerService: ScoreManagerService | null = null;
   private matchFlowController: MatchFlowController | null = null;
   private boostPads: BoostPadEntity[] = [];
+  private helpShown = false;
 
   constructor(
     protected gameState: GameState,
@@ -81,6 +84,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.goalEntity = entities.goalEntity;
     this.alertEntity = entities.alertEntity;
     this.toastEntity = entities.toastEntity;
+    this.helpEntity = entities.helpEntity;
     this.boostPads = entities.boostPads;
 
     this.matchFlowController = new MatchFlowController(
@@ -124,6 +128,11 @@ export class WorldScene extends BaseCollidingGameScene {
     super.onTransitionEnd();
 
     this.scoreboardEntity?.reset();
+    if (!this.helpShown) {
+      const text = this.getHelpText();
+      this.helpEntity?.show(text, 2);
+      this.helpShown = true;
+    }
     this.matchmakingController
       .startMatchmaking()
       .catch(this.handleMatchmakingError.bind(this));
@@ -288,6 +297,19 @@ export class WorldScene extends BaseCollidingGameScene {
       const confetti = new ConfettiEntity(this.canvas);
       this.addEntityToSceneLayer(confetti);
     }
+  }
+
+  private getHelpText(): string {
+    if (this.isMobile()) {
+      return "Use first finger to drive. Use second finger to boost.";
+    }
+    return "Drive with WASD or arrow keys. Press Shift or Space to boost.";
+  }
+
+  private isMobile(): boolean {
+    return (
+      "ontouchstart" in window || navigator.maxTouchPoints > 0
+    );
   }
 
   private async returnToMainMenuScene(): Promise<void> {
