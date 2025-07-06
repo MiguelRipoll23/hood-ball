@@ -9,6 +9,8 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
     super();
     this.x = this.canvas.width / 2;
     this.y = this.canvas.height - 40;
+    this.width = 0;
+    this.height = 0;
   }
 
   public setOnlinePlayers(total: number): void {
@@ -20,8 +22,6 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
 
     const y = this.canvas.height - 40;
     const labelX = this.canvas.width / 2;
-    this.x = labelX;
-    this.y = y;
 
     context.font = "bold 20px system-ui";
     context.fillStyle = "#4a90e2";
@@ -38,6 +38,11 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
     const rectHeight = 24;
     const rectWidth = textWidth + rectPadding * 2;
     const rectX = labelX + labelMetrics.width / 2 + padding + rectWidth / 2;
+
+    this.width = labelMetrics.width + padding + rectWidth;
+    this.height = rectHeight;
+    this.x = labelX - labelMetrics.width / 2 + this.width / 2;
+    this.y = y;
 
     this.roundedRect(
       context,
