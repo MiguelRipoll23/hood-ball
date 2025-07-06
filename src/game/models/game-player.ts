@@ -3,6 +3,7 @@ export class GamePlayer {
   private name: string;
   private host: boolean;
   private score: number;
+  private spawnIndex: number;
 
   private pingTime: number | null = null;
 
@@ -10,12 +11,14 @@ export class GamePlayer {
     id = "00000000000000000000000000000000",
     name = "Unknown",
     host = false,
-    score = 0
+    score = 0,
+    spawnIndex = -1
   ) {
     this.id = id;
     this.name = name;
     this.score = score;
     this.host = host;
+    this.spawnIndex = spawnIndex;
   }
 
   public getId(): string {
@@ -54,6 +57,14 @@ export class GamePlayer {
     this.score = score;
   }
 
+  public getSpawnIndex(): number {
+    return this.spawnIndex;
+  }
+
+  public setSpawnIndex(spawnIndex: number): void {
+    this.spawnIndex = spawnIndex;
+  }
+
   public getPingTime(): number | null {
     return this.pingTime;
   }
@@ -66,6 +77,7 @@ export class GamePlayer {
     this.host = false;
     this.pingTime = null;
     this.score = 0;
+    this.spawnIndex = -1;
 
     console.log("Player with name", this.name + " has been reset");
   }

@@ -146,17 +146,14 @@ export class MatchFlowController {
       return;
     }
 
-    const players = match
-      .getPlayers()
-      .slice()
-      .sort((a, b) => a.getId().localeCompare(b.getId()));
+    const players = match.getPlayers();
 
     const player = this.localCarEntity.getPlayer();
     if (!player) {
       return;
     }
 
-    const index = players.findIndex((p) => p.getId() === player.getId());
+    const index = player.getSpawnIndex();
     if (index === -1) {
       return;
     }

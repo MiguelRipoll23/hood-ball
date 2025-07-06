@@ -15,6 +15,7 @@ import {
 } from "../../game/services/gameplay/matchmaking-tokens.js";
 import { CredentialService } from "../../game/services/security/credential-service.js";
 import { CameraService } from "./gameplay/camera-service.js";
+import { PlayerSpawnService } from "../../game/services/gameplay/player-spawn-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -49,6 +50,7 @@ export class ServiceRegistry {
     });
     container.bind({ provide: WebRTCService, useClass: WebRTCService });
     container.bind({ provide: CameraService, useClass: CameraService });
+    container.bind({ provide: PlayerSpawnService, useClass: PlayerSpawnService });
     container.bind({
       provide: PendingIdentitiesToken,
       useValue: new Map<string, boolean>(),
