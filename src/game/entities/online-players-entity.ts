@@ -4,7 +4,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
   private onlinePlayers = 0;
 
   private getText(): string {
-    return "ONLINE PLAYERS";
+    return "ONLINE";
   }
 
   private baseX: number;
@@ -12,7 +12,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
 
   private shakeDuration = 0;
   private shakeElapsed = 0;
-  private readonly shakeMagnitude = 4;
+  private readonly shakeMagnitude = 2;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
@@ -32,7 +32,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
   }
 
   private startShake(): void {
-    this.shakeDuration = 500; // milliseconds
+    this.shakeDuration = 300; // milliseconds
     this.shakeElapsed = 0;
   }
 
@@ -60,7 +60,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     const labelText = this.getText();
 
     // Style for label text
-    context.font = "bold 20px system-ui";
+    context.font = "bold 24px system-ui";
     context.fillStyle = "#ffffff";
     context.textBaseline = "middle";
     context.textAlign = "left";
@@ -69,24 +69,26 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     const spacing = 10;
 
     const textWidth = context.measureText(labelText).width;
-    const totalWidth = textWidth + spacing + badgeRadius * 2;
+    const totalWidth = badgeRadius * 2 + spacing + textWidth;
 
-    const textX = this.x - totalWidth / 2;
-    const badgeX = textX + textWidth + spacing + badgeRadius;
+    const badgeX = this.x - totalWidth / 2 + badgeRadius;
     const badgeY = this.y;
+    const textX = badgeX + badgeRadius + spacing;
 
-    // Draw the label text with the badge horizontally aligned
-    context.fillText(labelText, textX, this.y);
-
-    // Draw badge background
+    // Draw the badge first followed by the label text
     context.fillStyle = "#7ed321";
     context.beginPath();
     context.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
     context.fill();
 
+    // Draw the label text
+    context.fillStyle = "#ffffff";
+    context.fillText(labelText, textX, this.y);
+    // Draw badge number
+    
     // Draw the number in the badge
     context.fillStyle = "#ffffff";
-    context.font = "bold 16px system-ui";
+    context.font = "bold 18px system-ui";
     context.textAlign = "center";
     context.fillText(this.onlinePlayers.toString(), badgeX, badgeY);
 
