@@ -287,7 +287,7 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private showTotalOnlinePlayers(context: CanvasRenderingContext2D): void {
-    const text = `${this.onlinePlayers} ONLINE`;
+    const text = `${this.onlinePlayers} ONLINE PLAYERS`;
     context.font = "bold 20px system-ui";
     context.fillStyle = "#4a90e2";
     context.textAlign = "center";

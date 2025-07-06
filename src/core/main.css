@@ -30,9 +30,7 @@ dialog {
   border-radius: 6px;
   text-align: center;
   top: -170px;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+  background: #fff;
 }
 
 dialog h1 {
