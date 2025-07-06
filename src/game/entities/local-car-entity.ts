@@ -201,18 +201,28 @@ export class LocalCarEntity extends CarEntity {
 
   private handleBoostInput(): void {
     let activating = false;
+    let attemptingWhileEmpty = false;
 
     const pressedKeys = this.gameKeyboard.getPressedKeys();
 
-    if (pressedKeys.has("Shift") || pressedKeys.has(" ")) {
+    const spacePressed = pressedKeys.has(" ");
+    if (pressedKeys.has("Shift") || spacePressed) {
       activating = true;
+      if (spacePressed && this.getBoost() === 0) {
+        attemptingWhileEmpty = true;
+      }
     }
 
     if (this.boostMeterEntity) {
       const touches = this.gamePointer.getTouchPoints();
-      if (touches.filter((t) => t.pressing).length >= 2) {
+      const twoFingers = touches.filter((t) => t.pressing).length >= 2;
+      if (twoFingers) {
         activating = true;
+        if (this.getBoost() === 0) {
+          attemptingWhileEmpty = true;
+        }
       }
+      this.boostMeterEntity.setAttemptingBoostWhileEmpty(attemptingWhileEmpty);
     }
 
     if (this.gameGamepad.isButtonPressed(GamepadButton.R1)) {
@@ -223,6 +233,7 @@ export class LocalCarEntity extends CarEntity {
       this.activateBoost();
     } else {
       this.deactivateBoost();
+      this.boostMeterEntity?.setAttemptingBoostWhileEmpty(false);
     }
   }
 }
