@@ -21,8 +21,13 @@ export class BallEntity
 
   private readonly SPIN_SPEED_FACTOR: number = 0.001;
 
+  // Factor to convert movement speed into rotation speed
+  private readonly ROTATION_SPEED_FACTOR: number = 0.005;
+
   private gradientOffsetX = 0;
   private gradientOffsetY = 0;
+
+  private rotationAngle = 0;
 
   private radius: number = this.RADIUS;
   protected width = this.RADIUS * 2;
@@ -91,6 +96,10 @@ export class BallEntity
     this.gradientOffsetX += this.vx * this.SPIN_SPEED_FACTOR * deltaTimeStamp;
     this.gradientOffsetY -= this.vy * this.SPIN_SPEED_FACTOR * deltaTimeStamp;
 
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    this.rotationAngle += speed * this.ROTATION_SPEED_FACTOR * deltaTimeStamp;
+    this.rotationAngle = this.rotationAngle % (Math.PI * 2);
+
     const limit = this.RADIUS;
     this.gradientOffsetX = ((this.gradientOffsetX + limit) % (limit * 2)) - limit;
     this.gradientOffsetY = ((this.gradientOffsetY + limit) % (limit * 2)) - limit;
@@ -103,6 +112,9 @@ export class BallEntity
 
     // Draw the gradient ball
     this.drawBallWithGradient(context);
+
+    // Draw soccer ball seams and patches
+    this.drawSoccerPattern(context);
 
     // If the ball is inactive, apply glow effect
     if (this.inactive) {
@@ -178,8 +190,9 @@ export class BallEntity
       this.y,
       this.radius
     );
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // Inner color (white)
-    gradient.addColorStop(1, "rgba(200, 200, 200, 1)"); // Outer color (light gray)
+    gradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // Inner color
+    gradient.addColorStop(0.7, "rgba(230, 230, 230, 1)");
+    gradient.addColorStop(1, "rgba(200, 200, 200, 1)"); // Outer color
     return gradient;
   }
 
@@ -197,6 +210,45 @@ export class BallEntity
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
     context.closePath();
+  }
+
+  // Draw basic soccer ball pattern to enhance realism
+  private drawSoccerPattern(context: CanvasRenderingContext2D): void {
+    context.save();
+    context.translate(this.x, this.y);
+    context.rotate(this.rotationAngle);
+
+    const seamRadius = this.radius * 0.8;
+
+    context.strokeStyle = "rgba(0, 0, 0, 0.7)";
+    context.lineWidth = this.radius * 0.1;
+
+    for (let i = 0; i < 3; i++) {
+      const startAngle = (i * Math.PI) / 3;
+      context.beginPath();
+      context.arc(0, 0, seamRadius, startAngle, startAngle + Math.PI);
+      context.stroke();
+    }
+
+    // central pentagon
+    const patchRadius = this.radius * 0.3;
+    const step = (Math.PI * 2) / 5;
+    context.fillStyle = "black";
+    context.beginPath();
+    for (let i = 0; i < 5; i++) {
+      const angle = -Math.PI / 2 + i * step;
+      const px = Math.cos(angle) * patchRadius;
+      const py = Math.sin(angle) * patchRadius;
+      if (i === 0) {
+        context.moveTo(px, py);
+      } else {
+        context.lineTo(px, py);
+      }
+    }
+    context.closePath();
+    context.fill();
+
+    context.restore();
   }
 
 
