@@ -3,6 +3,7 @@ import { ButtonEntity } from "../../entities/common/button-entity.js";
 import { TitleEntity } from "../../entities/common/title-entity.js";
 import { SettingEntity } from "../../entities/setting-entity.js";
 import { DebugService } from "../../services/debug/debug-service.js";
+import { AudioService } from "../../services/audio/audio-service.js";
 import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
 import { container } from "../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
@@ -46,13 +47,33 @@ export class SettingsScene extends BaseGameScene {
 
   private loadSettingEntities(): void {
     this.loadDebugSettingEntity();
+    this.loadAudioSettingEntity();
   }
 
   private loadDebugSettingEntity(): void {
     const debugging = this.gameState.isDebugging();
-    const settingEntity = new SettingEntity("debug", "Debug", debugging);
+    const settingEntity = new SettingEntity(
+      "debug",
+      "Enable debug mode",
+      debugging
+    );
 
     settingEntity.setY(75);
+    settingEntity.load();
+
+    this.uiEntities.push(settingEntity);
+  }
+
+  private loadAudioSettingEntity(): void {
+    const audioService = container.get(AudioService);
+    const enabled = audioService.isEnabled();
+    const settingEntity = new SettingEntity(
+      "audio",
+      "Play game audio",
+      enabled
+    );
+
+    settingEntity.setY(125);
     settingEntity.load();
 
     this.uiEntities.push(settingEntity);
@@ -86,6 +107,9 @@ export class SettingsScene extends BaseGameScene {
       case "debug":
         return this.handleDebugSettingPress(settingEntity);
 
+      case "audio":
+        return this.handleAudioSettingPress(settingEntity);
+
       default:
         console.log("Unknown setting pressed");
         break;
@@ -108,6 +132,17 @@ export class SettingsScene extends BaseGameScene {
 
     if (debugService.isInitialized() === false) {
       debugService.init();
+    }
+  }
+
+  private handleAudioSettingPress(settingEntity: SettingEntity): void {
+    const state = settingEntity.getSettingState();
+    const audioService = container.get(AudioService);
+
+    if (state) {
+      audioService.enable();
+    } else {
+      audioService.disable();
     }
   }
 }
