@@ -8,6 +8,14 @@ import { GameState } from "../../core/models/game-state.js";
 import { EventType } from "../enums/event-type.js";
 import { container } from "../../core/services/di-container.js";
 
+function colorWithAlpha(hex: string, alpha: number): string {
+  const bigint = parseInt(hex.replace("#", ""), 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 const PAD_COOLDOWN_MS = 10000;
 
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
@@ -103,7 +111,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       );
       gradient.addColorStop(0, '#ffe066');
       gradient.addColorStop(1, LIGHT_GREEN_COLOR);
-      context.shadowColor = LIGHT_GREEN_COLOR;
+      context.shadowColor = colorWithAlpha(LIGHT_GREEN_COLOR, context.globalAlpha);
       context.shadowBlur = 20 + pulse * 20;
       context.fillStyle = gradient;
       context.beginPath();
