@@ -45,10 +45,11 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
   }
 
   public render(context: CanvasRenderingContext2D): void {
+    context.save();
     this.applyOpacity(context);
     this.drawRoundedRectangle(context);
     this.drawText(context);
-    this.applyOpacity(context);
+    context.restore();
 
     super.render(context);
   }
