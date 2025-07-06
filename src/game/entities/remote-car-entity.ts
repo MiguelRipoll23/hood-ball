@@ -4,6 +4,7 @@ import type { MultiplayerGameEntity } from "../../core/interfaces/entities/multi
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
+  SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 
@@ -34,8 +35,10 @@ export class RemoteCarEntity extends CarEntity {
   ): MultiplayerGameEntity {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    const x = binaryReader.unsignedInt16();
-    const y = binaryReader.unsignedInt16();
+    const x =
+      binaryReader.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
+    const y =
+      binaryReader.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
     const angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
     const speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
     const boosting = binaryReader.unsignedInt8() === 1;
@@ -55,8 +58,8 @@ export class RemoteCarEntity extends CarEntity {
   public override synchronize(arrayBuffer: ArrayBuffer): void {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    this.x = binaryReader.unsignedInt16();
-    this.y = binaryReader.unsignedInt16();
+    this.x = binaryReader.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
+    this.y = binaryReader.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
     this.angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
     this.speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
     this.boosting = binaryReader.unsignedInt8() === 1;
