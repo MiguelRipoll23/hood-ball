@@ -19,7 +19,7 @@ function colorWithAlpha(hex: string, alpha: number): string {
 const PAD_COOLDOWN_MS = 10000;
 
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
-  private readonly RADIUS = 20;
+  private readonly RADIUS = 16;
   private active = true;
   private cooldownRemaining = 0;
   private glowTimer = 0;
