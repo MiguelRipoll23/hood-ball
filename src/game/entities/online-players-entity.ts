@@ -3,6 +3,7 @@ import { BaseMoveableGameEntity } from "../../core/entities/base-moveable-game-e
 export class OnlinePlayersEntity extends BaseMoveableGameEntity {
   private onlinePlayers = 0;
   private readonly LABEL = "ONLINE PLAYERS";
+  private readonly RECT_CORNER_RADIUS: number = 6;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
@@ -15,8 +16,12 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    const y = this.y;
-    const labelX = this.x;
+    context.save();
+
+    const y = this.canvas.height - 40;
+    const labelX = this.canvas.width / 2;
+    this.x = labelX;
+    this.y = y;
 
     context.font = "bold 20px system-ui";
     context.fillStyle = "#4a90e2";
@@ -25,18 +30,46 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
 
     context.fillText(this.LABEL, labelX, y);
 
-    const metrics = context.measureText(this.LABEL);
+    const labelMetrics = context.measureText(this.LABEL);
     const padding = 10;
-    const radius = 12;
-    const circleX = labelX + metrics.width / 2 + padding + radius;
+    const playersText = String(this.onlinePlayers);
+    const textWidth = context.measureText(playersText).width;
+    const rectPadding = 6;
+    const rectHeight = 24;
+    const rectWidth = textWidth + rectPadding * 2;
+    const rectX = labelX + labelMetrics.width / 2 + padding + rectWidth / 2;
 
-    context.beginPath();
-    context.arc(circleX, y, radius, 0, Math.PI * 2);
-    context.closePath();
+    this.roundedRect(
+      context,
+      rectX - rectWidth / 2,
+      y - rectHeight / 2,
+      rectWidth,
+      rectHeight,
+      this.RECT_CORNER_RADIUS
+    );
     context.strokeStyle = "#4a90e2";
     context.lineWidth = 2;
     context.stroke();
 
-    context.fillText(String(this.onlinePlayers), circleX, y);
+    context.fillText(playersText, rectX, y);
+
+    context.restore();
+  }
+
+  private roundedRect(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.arcTo(x + width, y, x + width, y + height, radius);
+    ctx.arcTo(x + width, y + height, x, y + height, radius);
+    ctx.arcTo(x, y + height, x, y, radius);
+    ctx.arcTo(x, y, x + width, y, radius);
+    ctx.closePath();
   }
 }
