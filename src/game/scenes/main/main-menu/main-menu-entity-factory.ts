@@ -3,18 +3,22 @@ import { MenuOptionEntity } from "../../../entities/common/menu-option-entity.js
 import { ServerMessageWindowEntity } from "../../../entities/server-message-window-entity.js";
 import { CloseableMessageEntity } from "../../../entities/common/closeable-message-entity.js";
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
+import { WelcomeMessageEntity } from "../../../entities/welcome-message-entity.js";
+import type { GameState } from "../../../../core/models/game-state.js";
 
 export interface MainMenuEntities {
   titleEntity: TitleEntity;
   menuOptionEntities: MenuOptionEntity[];
   serverMessageWindowEntity: ServerMessageWindowEntity;
   closeableMessageEntity: CloseableMessageEntity;
+  welcomeMessageEntity: WelcomeMessageEntity;
   onlinePlayersEntity: OnlinePlayersEntity;
 }
 
 export class MainMenuEntityFactory {
   constructor(
     private readonly canvas: HTMLCanvasElement,
+    private readonly gameState: GameState,
     private readonly menuOptionsText: string[]
   ) {}
 
@@ -34,6 +38,10 @@ export class MainMenuEntityFactory {
 
     const serverMessageWindowEntity = new ServerMessageWindowEntity(this.canvas);
     const closeableMessageEntity = new CloseableMessageEntity(this.canvas);
+    const welcomeMessageEntity = new WelcomeMessageEntity(
+      this.canvas,
+      this.gameState
+    );
     const onlinePlayersEntity = new OnlinePlayersEntity(this.canvas);
 
     return {
@@ -41,6 +49,7 @@ export class MainMenuEntityFactory {
       menuOptionEntities,
       serverMessageWindowEntity,
       closeableMessageEntity,
+      welcomeMessageEntity,
       onlinePlayersEntity,
     };
   }

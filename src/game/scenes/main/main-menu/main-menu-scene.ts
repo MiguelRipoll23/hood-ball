@@ -44,6 +44,7 @@ export class MainMenuScene extends BaseGameScene {
   public override load(): void {
     const factory = new MainMenuEntityFactory(
       this.canvas,
+      this.gameState,
       this.MENU_OPTIONS_TEXT
     );
     this.entities = factory.createEntities();
@@ -53,6 +54,7 @@ export class MainMenuScene extends BaseGameScene {
       menuOptionEntities,
       serverMessageWindowEntity,
       closeableMessageEntity,
+      welcomeMessageEntity,
       onlinePlayersEntity,
     } = this.entities;
 
@@ -63,6 +65,7 @@ export class MainMenuScene extends BaseGameScene {
     this.uiEntities.push(
       titleEntity,
       ...menuOptionEntities,
+      welcomeMessageEntity,
       onlinePlayersEntity,
       serverMessageWindowEntity,
       closeableMessageEntity
@@ -88,9 +91,6 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    context.globalAlpha = this.opacity;
-    this.showWelcomePlayerName(context);
-    context.globalAlpha = 1;
     super.render(context);
   }
 
@@ -251,31 +251,6 @@ export class MainMenuScene extends BaseGameScene {
     });
   }
 
-  private showWelcomePlayerName(context: CanvasRenderingContext2D): void {
-    const playerName = this.gameState.getGamePlayer()?.getName() || "Unknown";
-
-    // Draw text that says Hello
-    context.save();
-    context.font = "bold 28px system-ui";
-    context.fillStyle = "white";
-    context.textAlign = "center";
-
-    context.fillText(
-      "HEY, YOU!",
-      this.canvas.width / 2,
-      this.canvas.height - 140
-    );
-
-    context.fillStyle = "#7ed321";
-
-    context.fillText(
-      `${playerName}`,
-      this.canvas.width / 2,
-      this.canvas.height - 100
-    );
-    context.restore();
-
-  }
 
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
     this.onlinePlayersEntity?.setOnlinePlayers(payload.total);
