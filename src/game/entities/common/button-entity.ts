@@ -32,7 +32,14 @@ export class ButtonEntity extends BaseTappableGameEntity {
   }
 
   private setSize(canvas: HTMLCanvasElement): void {
-    this.width = canvas.getContext("2d")?.measureText(this.text).width || 0;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      ctx.font = "bold 28px system-ui";
+      this.width = ctx.measureText(this.text).width;
+    } else {
+      this.width = 0;
+    }
+
     this.width *= 3;
     this.height = 60;
   }
