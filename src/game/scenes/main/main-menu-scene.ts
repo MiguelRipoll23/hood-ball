@@ -10,6 +10,7 @@ import { ScoreboardScene } from "./scoreboard-scene.js";
 import { SettingsScene } from "./settings-scene.js";
 import { EventType } from "../../enums/event-type.js";
 import type { GameState } from "../../../core/models/game-state.js";
+import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
 import { container } from "../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
 
@@ -22,6 +23,7 @@ export class MainMenuScene extends BaseGameScene {
 
   private serverMessageWindowEntity: ServerMessageWindowEntity | null = null;
   private closeableMessageEntity: CloseableMessageEntity | null = null;
+  private onlinePlayers: number = 0;
 
   constructor(
     gameState: GameState,
@@ -74,6 +76,10 @@ export class MainMenuScene extends BaseGameScene {
     this.subscribeToLocalEvent(
       EventType.DebugChanged,
       this.updateDebugStateForEntities.bind(this)
+    );
+    this.subscribeToLocalEvent(
+      EventType.OnlinePlayers,
+      this.handleOnlinePlayersEvent.bind(this)
     );
   }
 
@@ -272,5 +278,19 @@ export class MainMenuScene extends BaseGameScene {
       this.canvas.width / 2,
       this.canvas.height - 100
     );
+
+    this.showTotalOnlinePlayers(context);
+  }
+
+  private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
+    this.onlinePlayers = payload.total;
+  }
+
+  private showTotalOnlinePlayers(context: CanvasRenderingContext2D): void {
+    const text = `${this.onlinePlayers} ONLINE`;
+    context.font = "bold 20px system-ui";
+    context.fillStyle = "#4a90e2";
+    context.textAlign = "center";
+    context.fillText(text, this.canvas.width / 2, this.canvas.height - 40);
   }
 }
