@@ -63,8 +63,8 @@ export class MainMenuScene extends BaseGameScene {
     this.uiEntities.push(
       titleEntity,
       ...menuOptionEntities,
-      serverMessageWindowEntity,
       onlinePlayersEntity,
+      serverMessageWindowEntity,
       closeableMessageEntity
     );
 
