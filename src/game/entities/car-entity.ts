@@ -90,12 +90,14 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     const angle = Math.round(this.angle * SCALE_FACTOR_FOR_ANGLES);
     const speed = Math.round(this.speed * SCALE_FACTOR_FOR_SPEED);
     const boost = Math.round(this.boost);
+    const boosting = this.boosting ? 1 : 0;
 
     const arrayBuffer = BinaryWriter.build()
       .unsignedInt16(this.x)
       .unsignedInt16(this.y)
       .signedInt16(angle)
       .signedInt16(speed)
+      .unsignedInt8(boosting)
       .unsignedInt8(boost)
       .toArrayBuffer();
 

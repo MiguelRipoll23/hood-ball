@@ -162,6 +162,7 @@ export class SceneInspectorWindow extends BaseWindow {
         y,
         angle,
         0,
+        false,
         100
       );
 
