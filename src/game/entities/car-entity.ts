@@ -38,7 +38,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private readonly TURBO_WIDTH = 15;
 
   // Smoke trail constants
-  private readonly SMOKE_DURATION = 500; // ms
+  // Duration of each smoke particle in milliseconds
+  private readonly SMOKE_DURATION = 1500; // ms
   private readonly SMOKE_SPAWN_INTERVAL = 50; // ms
 
   private readonly PLAYER_NAME_PADDING = 10;
@@ -58,10 +59,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private smokeParticles: {
     x: number;
     y: number;
-    vx: number;
-    vy: number;
     size: number;
-    life: number;
+    life: number; // remaining life in ms
   }[] = [];
   private smokeSpawnElapsed = 0;
 
@@ -444,24 +443,18 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     const offset = this.width / 2;
     const x = this.x + Math.cos(this.angle) * offset;
     const y = this.y + Math.sin(this.angle) * offset;
-    const speed = 0.1;
-
     this.smokeParticles.push({
       x,
       y,
-      vx: Math.cos(this.angle) * speed,
-      vy: Math.sin(this.angle) * speed,
       size: 4 + Math.random() * 2,
-      life: 1,
+      life: this.SMOKE_DURATION,
     });
   }
 
   private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
     this.smokeParticles.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
       p.size += 0.02 * (delta / 16);
-      p.life -= delta / this.SMOKE_DURATION;
+      p.life -= delta;
     });
     this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
   }
@@ -469,7 +462,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private renderSmokeTrail(context: CanvasRenderingContext2D): void {
     context.save();
     this.smokeParticles.forEach((p) => {
-      context.globalAlpha = 0.5 * Math.max(p.life, 0);
+      context.globalAlpha = 0.5 * Math.max(p.life / this.SMOKE_DURATION, 0);
       context.fillStyle = "#888";
       context.beginPath();
       context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
