@@ -16,6 +16,7 @@ import { GAME_VERSION } from "../../../game/constants/game-constants.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugEntity } from "../../entities/debug-entity.js";
 import { GameState } from "../../models/game-state.js";
+import { MatchStateType } from "../../../game/enums/match-state-type.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
 import { MatchmakingService } from "../../../game/services/gameplay/matchmaking-service.js";
 import { DebugService } from "../../../game/services/debug/debug-service.js";
@@ -153,6 +154,15 @@ export class GameLoopService {
   private handleServerDisconnectedEvent(
     payload: ServerDisconnectedPayload
   ): void {
+    const match = this.gameState.getMatch();
+    const state = match?.getState();
+
+    if (state !== undefined && state !== MatchStateType.WaitingPlayers) {
+      console.warn("WebSocket disconnected during active match");
+      // Wait to reconnect when returning to the main menu
+      return;
+    }
+
     if (payload.connectionLost) {
       alert("Connection to server was lost");
     } else {
