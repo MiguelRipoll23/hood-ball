@@ -26,7 +26,12 @@
     <script defer type="module" src="/src/core/main.ts"></script>
   </head>
   <body>
-    <dialog>
+    <dialog id="audio-dialog">
+      <h1>Audio</h1>
+      <p>Enable or disable game audio</p>
+      <button id="audio-toggle-button" aria-label="Toggle audio">🔊</button>
+    </dialog>
+    <dialog id="player-id-dialog">
       <h1>Player ID</h1>
       <input
         id="display-name-input"
@@ -39,7 +44,6 @@
       <hr />
       <button id="sign-in-button">Sign in</button>
     </dialog>
-    <button id="audio-toggle-button" aria-label="Toggle audio">🔊</button>
     <canvas id="debug" tabindex="1"></canvas>
     <canvas id="game" tabindex="-1"></canvas>
   </body>
