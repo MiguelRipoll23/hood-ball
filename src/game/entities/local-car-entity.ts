@@ -31,7 +31,7 @@ export class LocalCarEntity extends CarEntity {
   }
 
   public override mustSync(): boolean {
-    return this.speed !== 0;
+    return super.mustSync() || this.speed !== 0;
   }
 
   public override reset(): void {
