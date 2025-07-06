@@ -21,7 +21,8 @@ export class BallEntity
 
   private readonly SPIN_SPEED_FACTOR: number = 0.001;
 
-  private spinAngle = 0;
+  private gradientOffsetX = 0;
+  private gradientOffsetY = 0;
 
   private radius: number = this.RADIUS;
   protected width = this.RADIUS * 2;
@@ -87,10 +88,12 @@ export class BallEntity
     this.updateHitbox();
     this.handlePlayerCollision();
 
-    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    const direction = Math.sign(this.vx);
-    this.spinAngle +=
-      direction * speed * this.SPIN_SPEED_FACTOR * deltaTimeStamp;
+    this.gradientOffsetX += this.vx * this.SPIN_SPEED_FACTOR * deltaTimeStamp;
+    this.gradientOffsetY -= this.vy * this.SPIN_SPEED_FACTOR * deltaTimeStamp;
+
+    const limit = this.RADIUS;
+    this.gradientOffsetX = ((this.gradientOffsetX + limit) % (limit * 2)) - limit;
+    this.gradientOffsetY = ((this.gradientOffsetY + limit) % (limit * 2)) - limit;
 
     EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
   }
@@ -100,7 +103,6 @@ export class BallEntity
 
     // Draw the gradient ball
     this.drawBallWithGradient(context);
-    this.drawSpinEffect(context);
 
     // If the ball is inactive, apply glow effect
     if (this.inactive) {
@@ -150,6 +152,8 @@ export class BallEntity
   private resetVelocityAndPosition(): void {
     this.vx = 0;
     this.vy = 0;
+    this.gradientOffsetX = 0;
+    this.gradientOffsetY = 0;
     this.setCenterPosition();
     super.reset();
   }
@@ -167,9 +171,9 @@ export class BallEntity
   // Function to create the radial gradient
   private createGradient(context: CanvasRenderingContext2D): CanvasGradient {
     const gradient = context.createRadialGradient(
-      this.x,
-      this.y,
-      0,
+      this.x + this.gradientOffsetX,
+      this.y + this.gradientOffsetY,
+      this.radius * 0.1,
       this.x,
       this.y,
       this.radius
@@ -195,28 +199,6 @@ export class BallEntity
     context.closePath();
   }
 
-  private drawSpinEffect(context: CanvasRenderingContext2D): void {
-    context.save();
-    context.translate(this.x, this.y);
-    context.rotate(this.spinAngle);
-
-    context.strokeStyle = "rgba(0, 0, 0, 0.4)";
-    context.lineWidth = 2;
-
-    const ellipseRadiusY = this.radius * 0.5;
-
-    // Equator line
-    context.beginPath();
-    context.ellipse(0, 0, this.radius, ellipseRadiusY, 0, 0, Math.PI * 2);
-    context.stroke();
-
-    // Prime meridian line
-    context.beginPath();
-    context.ellipse(0, 0, this.radius, ellipseRadiusY, Math.PI / 2, 0, Math.PI * 2);
-    context.stroke();
-
-    context.restore();
-  }
 
   private createHitbox(): void {
     const hitboxEntity = new HitboxEntity(
