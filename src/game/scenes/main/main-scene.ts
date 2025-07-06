@@ -39,7 +39,7 @@ export class MainScene extends BaseGameScene {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     // No need to super.update() because the sceneManagerService will handle the update
-    //super.update(deltaTimeStamp);
+    super.update(deltaTimeStamp);
 
     this.sceneManagerService?.getCurrentScene()?.setOpacity(this.opacity);
     this.sceneManagerService?.update(deltaTimeStamp);
