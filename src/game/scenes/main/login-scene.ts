@@ -18,8 +18,6 @@ export class LoginScene extends BaseGameScene {
   private credentialService: CredentialService;
   private entities: LoginEntities | null = null;
   private dialogElement: HTMLDialogElement | null = null;
-  private audioDialogElement: HTMLDialogElement | null = null;
-  private audioContinueButtonElement: HTMLButtonElement | null = null;
   private displayNameInputElement: HTMLInputElement | null = null;
   private registerButtonElement: HTMLElement | null = null;
   private signInButtonElement: HTMLElement | null = null;
@@ -41,12 +39,6 @@ export class LoginScene extends BaseGameScene {
     this.dialogElement = document.querySelector(
       "#player-id-dialog"
     ) as HTMLDialogElement | null;
-    this.audioDialogElement = document.querySelector(
-      "#audio-dialog"
-    ) as HTMLDialogElement | null;
-    this.audioContinueButtonElement = document.querySelector(
-      "#audio-continue-button"
-    ) as HTMLButtonElement | null;
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"
     );
@@ -120,7 +112,7 @@ export class LoginScene extends BaseGameScene {
         }
 
         this.entities?.messageEntity.hide();
-        this.showAudioDialog().then(() => this.showDialog());
+        this.showDialog();
       })
       .catch((error) => {
         console.error(error);
@@ -148,35 +140,6 @@ export class LoginScene extends BaseGameScene {
     this.dialogElement?.showModal();
   }
 
-  private showAudioDialog(): Promise<void> {
-    this.gameState.getGamePointer().setPreventDefault(false);
-
-    return new Promise((resolve) => {
-      if (!this.audioDialogElement) {
-        resolve();
-        return;
-      }
-
-      const handleClose = () => {
-        this.audioDialogElement?.removeEventListener("close", handleClose);
-        resolve();
-      };
-
-      this.audioDialogElement.addEventListener("close", handleClose);
-
-      const handleContinueClick = () => {
-        this.audioDialogElement?.close();
-      };
-
-      this.audioContinueButtonElement?.addEventListener(
-        "click",
-        handleContinueClick,
-        { once: true }
-      );
-
-      this.audioDialogElement.showModal();
-    });
-  }
 
   private handleDisplayNameInputEvent(): void {
     if (this.displayNameInputElement?.value.trim() === "") {
