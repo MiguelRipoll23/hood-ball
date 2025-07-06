@@ -37,6 +37,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private readonly TURBO_MAX_LENGTH = 30;
   private readonly TURBO_WIDTH = 15;
 
+  // Smoke trail constants
+  private readonly SMOKE_DURATION = 500; // ms
+  private readonly SMOKE_SPAWN_INTERVAL = 50; // ms
+
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
   private readonly PLAYER_NAME_RADIUS = 10;
@@ -50,6 +54,16 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected height: number = 50;
   protected canvas: HTMLCanvasElement | null = null;
   protected speed: number = 0;
+
+  private smokeParticles: {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    life: number;
+  }[] = [];
+  private smokeSpawnElapsed = 0;
 
   protected boost: number = this.MAX_BOOST;
   protected boosting: boolean = false;
@@ -107,6 +121,18 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.handleBoostPads();
 
+    if (this.boosting) {
+      this.smokeSpawnElapsed += deltaTimeStamp;
+      if (this.smokeSpawnElapsed >= this.SMOKE_SPAWN_INTERVAL) {
+        this.smokeSpawnElapsed = 0;
+        this.spawnSmokeParticle();
+      }
+    } else {
+      this.smokeSpawnElapsed = 0;
+    }
+
+    this.updateSmokeParticles(deltaTimeStamp);
+
     if (this.isCollidingWithStatic()) {
       this.speed = 0;
     } else {
@@ -122,6 +148,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
+    this.renderSmokeTrail(context);
     context.save();
 
     context.translate(this.x, this.y); // Centered position
@@ -411,6 +438,44 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       this.y + this.height / 2 + 5,
       `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
+  }
+
+  private spawnSmokeParticle(): void {
+    const offset = this.width / 2;
+    const x = this.x + Math.cos(this.angle) * offset;
+    const y = this.y + Math.sin(this.angle) * offset;
+    const speed = 0.1;
+
+    this.smokeParticles.push({
+      x,
+      y,
+      vx: Math.cos(this.angle) * speed,
+      vy: Math.sin(this.angle) * speed,
+      size: 4 + Math.random() * 2,
+      life: 1,
+    });
+  }
+
+  private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
+    this.smokeParticles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.size += 0.02 * (delta / 16);
+      p.life -= delta / this.SMOKE_DURATION;
+    });
+    this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
+  }
+
+  private renderSmokeTrail(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.smokeParticles.forEach((p) => {
+      context.globalAlpha = 0.5 * Math.max(p.life, 0);
+      context.fillStyle = "#888";
+      context.beginPath();
+      context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      context.fill();
+    });
+    context.restore();
   }
 
   private renderTurboEffect(context: CanvasRenderingContext2D): void {
