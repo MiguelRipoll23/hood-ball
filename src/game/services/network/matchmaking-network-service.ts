@@ -186,8 +186,6 @@ export class MatchmakingNetworkService
 
     this.gameState.setMatch(match);
 
-    const localGamePlayer = this.gameState.getGamePlayer();
-    match.addPlayer(localGamePlayer);
   }
 
   @PeerCommandHandler(WebRTCType.PlayerConnection)
@@ -206,12 +204,20 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const gamePlayer = new GamePlayer(
-      playerId,
-      playerName,
-      isHost,
-      playerScore
-    );
+    const isLocalPlayer = this.gameState.getGamePlayer().getId() === playerId;
+
+    let gamePlayer: GamePlayer;
+
+    if (isLocalPlayer) {
+      gamePlayer = this.gameState.getGamePlayer();
+    } else {
+      gamePlayer = new GamePlayer(
+        playerId,
+        playerName,
+        isHost,
+        playerScore
+      );
+    }
 
     if (isHost) {
       if (this.isHostIdentityUnverified(peer, gamePlayer)) {
@@ -463,11 +469,9 @@ export class MatchmakingNetworkService
 
     const players = match.getPlayers();
 
-    players
-      .filter((matchPlayer: GamePlayer) => matchPlayer !== peer.getPlayer())
-      .forEach((player: GamePlayer) => {
-        this.sendPlayerConnection(peer, player, true, true);
-      });
+    players.forEach((player: GamePlayer) => {
+      this.sendPlayerConnection(peer, player, true, true);
+    });
   }
 
   private sendPlayerConnection(
