@@ -60,7 +60,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     const labelText = this.getText();
 
     // Style for label text
-    context.font = "bold 24px system-ui";
+    context.font = "bold 28px system-ui";
     context.fillStyle = "#ffffff";
     context.textBaseline = "middle";
     context.textAlign = "left";
