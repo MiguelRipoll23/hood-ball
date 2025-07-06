@@ -19,6 +19,10 @@ export class BallEntity
   private readonly MIN_VELOCITY: number = 0.1;
   private readonly MAX_VELOCITY: number = 10;
 
+  private readonly SPIN_SPEED_FACTOR: number = 0.001;
+
+  private spinAngle = 0;
+
   private radius: number = this.RADIUS;
   protected width = this.RADIUS * 2;
   protected height = this.RADIUS * 2;
@@ -77,11 +81,16 @@ export class BallEntity
     return this.lastPlayer;
   }
 
-  public update(): void {
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.applyFriction();
     this.calculateMovement();
     this.updateHitbox();
     this.handlePlayerCollision();
+
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    const direction = Math.sign(this.vx);
+    this.spinAngle +=
+      direction * speed * this.SPIN_SPEED_FACTOR * deltaTimeStamp;
 
     EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
   }
@@ -91,6 +100,7 @@ export class BallEntity
 
     // Draw the gradient ball
     this.drawBallWithGradient(context);
+    this.drawSpinEffect(context);
 
     // If the ball is inactive, apply glow effect
     if (this.inactive) {
@@ -183,6 +193,19 @@ export class BallEntity
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
     context.closePath();
+  }
+
+  private drawSpinEffect(context: CanvasRenderingContext2D): void {
+    context.save();
+    context.translate(this.x, this.y);
+    context.rotate(this.spinAngle);
+    context.strokeStyle = "rgba(0, 0, 0, 0.4)";
+    context.lineWidth = 2;
+    context.beginPath();
+    context.moveTo(0, -this.radius);
+    context.lineTo(0, this.radius);
+    context.stroke();
+    context.restore();
   }
 
   private createHitbox(): void {
