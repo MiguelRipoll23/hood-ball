@@ -7,6 +7,8 @@ import { DebugSettings } from "./debug-settings.js";
 import { GameKeyboard } from "./game-keyboard.js";
 import { GameGamepad } from "./game-gamepad.js";
 import { MatchStateType } from "../../game/enums/match-state-type.js";
+import { PlayerSpawnService } from "../../game/services/gameplay/player-spawn-service.js";
+import { container } from "../services/di-container.js";
 
 export class GameState {
   private debugSettings: DebugSettings;
@@ -72,12 +74,16 @@ export class GameState {
   }
 
   public setMatch(match: Match | null): void {
-    this.match = match;
-
+    const spawnService = container.get(PlayerSpawnService);
     if (match === null) {
+      spawnService.reset();
+      this.match = null;
       console.log("Match removed from game state");
       return;
     }
+
+    spawnService.reset();
+    this.match = match;
 
     if (match.isHost()) {
       console.log("Match created in game state", match);

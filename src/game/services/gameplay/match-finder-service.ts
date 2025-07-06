@@ -17,6 +17,7 @@ import { GameState } from "../../../core/models/game-state.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
+import { PlayerSpawnService } from "./player-spawn-service.js";
 
 @injectable()
 export class MatchFinderService {
@@ -25,7 +26,8 @@ export class MatchFinderService {
     private readonly apiService = inject(APIService),
     private readonly webSocketService = inject(WebSocketService),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly eventProcessorService = inject(EventProcessorService)
+    private readonly eventProcessorService = inject(EventProcessorService),
+    private readonly playerSpawnService = inject(PlayerSpawnService)
   ) {}
 
   public async findMatches(): Promise<FindMatchesResponse[]> {
@@ -56,6 +58,8 @@ export class MatchFinderService {
     const localPlayer = this.gameState.getGamePlayer();
     localPlayer.setHost(true);
     match.addPlayer(localPlayer);
+    this.playerSpawnService.reset();
+    this.playerSpawnService.assignSpawnIndex(localPlayer);
 
     await this.advertiseMatch();
   }
