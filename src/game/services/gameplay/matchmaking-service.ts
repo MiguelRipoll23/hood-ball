@@ -11,6 +11,10 @@ import { IntervalManagerService } from "../../../core/services/gameplay/interval
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import { GamePlayer } from "../../models/game-player.js";
+import {
+  PendingIdentitiesToken,
+  ReceivedIdentitiesToken,
+} from "./matchmaking-tokens.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import { injectable } from "@needle-di/core";
@@ -104,6 +108,8 @@ export class MatchmakingService implements IMatchmakingService {
     }
 
     this.gameState.setMatch(null);
+    container.get(PendingIdentitiesToken).clear();
+    container.get(ReceivedIdentitiesToken).clear();
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
