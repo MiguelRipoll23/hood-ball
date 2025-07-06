@@ -25,12 +25,12 @@ canvas {
 }
 
 dialog {
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   padding: 20px;
   border-radius: 6px;
   text-align: center;
   top: -170px;
-  filter: blur(4px);
+  backdrop-filter: blur(4px);
 }
 
 
