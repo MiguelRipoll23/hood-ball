@@ -38,6 +38,7 @@ export class ScoreboardEntity
 
   private active: boolean = false;
   private elapsedMilliseconds: number = 0;
+  private flashElapsedMilliseconds: number = 0;
   private durationMilliseconds: number = 0;
   private remainingSeconds: number = 0;
 
@@ -77,6 +78,7 @@ export class ScoreboardEntity
 
   public reset(): void {
     this.elapsedMilliseconds = 0;
+    this.flashElapsedMilliseconds = 0;
   }
 
   public incrementBlueScore(): void {
@@ -117,10 +119,12 @@ export class ScoreboardEntity
       if (this.elapsedMilliseconds < this.durationMilliseconds) {
         this.elapsedMilliseconds += deltaTimeStamp;
       }
+      this.flashElapsedMilliseconds += deltaTimeStamp;
     }
 
-    this.remainingSeconds = Math.ceil(
-      (this.durationMilliseconds - this.elapsedMilliseconds) / 1000
+    this.remainingSeconds = Math.max(
+      0,
+      Math.ceil((this.durationMilliseconds - this.elapsedMilliseconds) / 1000)
     );
   }
 
@@ -206,7 +210,7 @@ export class ScoreboardEntity
     if (flashing) {
       // After time is up flash quicker for urgency
       const interval = atZero ? this.FADE_INTERVAL_MS / 2 : this.FADE_INTERVAL_MS;
-      const cycle = (this.elapsedMilliseconds % interval) / interval;
+      const cycle = (this.flashElapsedMilliseconds % interval) / interval;
       alpha = Math.abs(Math.sin(cycle * Math.PI));
     }
 
