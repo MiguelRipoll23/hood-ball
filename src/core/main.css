@@ -85,30 +85,3 @@ hr {
   z-index: 1;
 }
 
-#audio-toggle-button {
-  display: block;
-  margin: 20px auto 0;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  border: 3px solid #fff;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  font-size: 32px;
-  line-height: 60px;
-  text-align: center;
-  cursor: pointer;
-  padding: 0;
-}
-
-#audio-toggle-button.enabled {
-  background: #7ed321;
-}
-
-#audio-toggle-button:hover {
-  background: #7ed321;
-}
-
-#audio-toggle-button:active {
-  background: #7ed321;
-}
