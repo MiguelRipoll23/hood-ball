@@ -33,6 +33,7 @@ import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
+import { WebSocketService } from "../../services/network/websocket-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -322,6 +323,14 @@ export class WorldScene extends BaseCollidingGameScene {
       container.get(EventConsumerService),
       false
     );
+
+    if (!this.gameState.getGameServer().isConnected()) {
+      try {
+        container.get(WebSocketService).connectToServer();
+      } catch (error) {
+        console.error("Failed to reconnect to server", error);
+      }
+    }
 
     mainScene.activateScene(mainMenuScene);
     mainScene.load();
