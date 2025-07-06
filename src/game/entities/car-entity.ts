@@ -8,6 +8,7 @@ import {
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
+  SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
 import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
@@ -105,9 +106,12 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     const boost = Math.round(this.boost);
     const boosting = this.boosting ? 1 : 0;
 
+    const scaledX = Math.round(this.x * SCALE_FACTOR_FOR_COORDINATES);
+    const scaledY = Math.round(this.y * SCALE_FACTOR_FOR_COORDINATES);
+
     const arrayBuffer = BinaryWriter.build()
-      .unsignedInt16(this.x)
-      .unsignedInt16(this.y)
+      .unsignedInt16(scaledX)
+      .unsignedInt16(scaledY)
       .signedInt16(angle)
       .signedInt16(speed)
       .unsignedInt8(boosting)
