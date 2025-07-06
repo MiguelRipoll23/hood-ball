@@ -52,7 +52,7 @@ export class SettingsScene extends BaseGameScene {
     const debugging = this.gameState.isDebugging();
     const settingEntity = new SettingEntity(
       "debug",
-      "Enable debug mode",
+      "Debug mode",
       debugging
     );
 
