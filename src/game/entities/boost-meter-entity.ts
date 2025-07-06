@@ -6,7 +6,8 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   private boostLevel = 1; // target level 0..1
   private displayLevel = 1; // rendered level 0..1
   // Fill or drain the meter in roughly 0.2 seconds
-  private readonly FILL_RATE = 1 / 200; // units/ms
+  private readonly FILL_RATE_UP = 1 / 100; // units/ms
+  private readonly FILL_RATE_DOWN = 1 / 200; // units/ms
 
   constructor(canvas: HTMLCanvasElement) {
     super();
@@ -22,7 +23,8 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     const diff = this.boostLevel - this.displayLevel;
     if (diff !== 0) {
-      const step = this.FILL_RATE * deltaTimeStamp;
+      const rate = diff > 0 ? this.FILL_RATE_UP : this.FILL_RATE_DOWN;
+      const step = rate * deltaTimeStamp;
       if (Math.abs(diff) <= step) {
         this.displayLevel = this.boostLevel;
       } else {
