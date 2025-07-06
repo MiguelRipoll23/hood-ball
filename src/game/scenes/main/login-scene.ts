@@ -19,7 +19,7 @@ export class LoginScene extends BaseGameScene {
   private entities: LoginEntities | null = null;
   private dialogElement: HTMLDialogElement | null = null;
   private audioDialogElement: HTMLDialogElement | null = null;
-  private audioToggleButtonElement: HTMLButtonElement | null = null;
+  private audioContinueButtonElement: HTMLButtonElement | null = null;
   private displayNameInputElement: HTMLInputElement | null = null;
   private registerButtonElement: HTMLElement | null = null;
   private signInButtonElement: HTMLElement | null = null;
@@ -44,8 +44,8 @@ export class LoginScene extends BaseGameScene {
     this.audioDialogElement = document.querySelector(
       "#audio-dialog"
     ) as HTMLDialogElement | null;
-    this.audioToggleButtonElement = document.querySelector(
-      "#audio-toggle-button"
+    this.audioContinueButtonElement = document.querySelector(
+      "#audio-continue-button"
     ) as HTMLButtonElement | null;
     this.displayNameInputElement = document.querySelector(
       "#display-name-input"
@@ -164,13 +164,13 @@ export class LoginScene extends BaseGameScene {
 
       this.audioDialogElement.addEventListener("close", handleClose);
 
-      const handleButtonClick = () => {
+      const handleContinueClick = () => {
         this.audioDialogElement?.close();
       };
 
-      this.audioToggleButtonElement?.addEventListener(
+      this.audioContinueButtonElement?.addEventListener(
         "click",
-        handleButtonClick,
+        handleContinueClick,
         { once: true }
       );
 
