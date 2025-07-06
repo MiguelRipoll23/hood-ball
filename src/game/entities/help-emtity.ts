@@ -1,7 +1,7 @@
 import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
 import { TimerService } from "../../core/services/gameplay/timer-service.js";
 
-export class HelpEmtity extends BaseAnimatedGameEntity {
+export class HelpEntity extends BaseAnimatedGameEntity {
   private readonly padding = 20;
   private readonly cornerRadius = 12;
   private readonly bottomMargin = 40;
