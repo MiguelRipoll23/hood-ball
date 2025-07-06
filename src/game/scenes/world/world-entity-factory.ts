@@ -5,7 +5,7 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
-import { HelpEntity } from "../../entities/help-emtity.js";
+import { HelpEntity } from "../../entities/help-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
