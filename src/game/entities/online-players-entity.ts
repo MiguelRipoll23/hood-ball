@@ -76,7 +76,8 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     const textX = badgeX + badgeRadius + spacing;
 
     // Draw the badge first followed by the label text
-    context.fillStyle = "#7ed321";
+    // Use the same color as the menu buttons for visual consistency
+    context.fillStyle = "#4a90e2";
     context.beginPath();
     context.arc(badgeX, badgeY, badgeRadius, 0, Math.PI * 2);
     context.fill();
