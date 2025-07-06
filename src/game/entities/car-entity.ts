@@ -462,8 +462,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private renderSmokeTrail(context: CanvasRenderingContext2D): void {
     context.save();
     this.smokeParticles.forEach((p) => {
-      context.globalAlpha = 0.5 * Math.max(p.life / this.SMOKE_DURATION, 0);
-      context.fillStyle = "#888";
+      context.globalAlpha = 0.75 * Math.max(p.life / this.SMOKE_DURATION, 0);
+      context.fillStyle = "#555";
       context.beginPath();
       context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
       context.fill();
