@@ -1,7 +1,7 @@
-import { APIService } from "../../services/network/api-service.js";
-import { CryptoService } from "../../../core/services/security/crypto-service.js";
-import { WebSocketService } from "../../services/network/websocket-service.js";
-import type { ConfigurationType } from "../../types/configuration-type.js";
+import { APIService } from "../../../services/network/api-service.js";
+import { CryptoService } from "../../../../core/services/security/crypto-service.js";
+import { WebSocketService } from "../../../services/network/websocket-service.js";
+import type { ConfigurationType } from "../../../types/configuration-type.js";
 
 export class LoginController {
   constructor(

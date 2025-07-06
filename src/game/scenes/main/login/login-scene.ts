@@ -1,17 +1,17 @@
-import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
-import { MainMenuScene } from "./main-menu-scene.js";
-import { CryptoService } from "../../../core/services/security/crypto-service.js";
-import { WebSocketService } from "../../services/network/websocket-service.js";
-import { APIService } from "../../services/network/api-service.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { EventType } from "../../enums/event-type.js";
-import { CredentialService } from "../../services/security/credential-service.js";
-import { container } from "../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { BaseGameScene } from "../../../../core/scenes/base-game-scene.js";
+import { MainMenuScene } from "../main-menu/main-menu-scene.js";
+import { CryptoService } from "../../../../core/services/security/crypto-service.js";
+import { WebSocketService } from "../../../services/network/websocket-service.js";
+import { APIService } from "../../../services/network/api-service.js";
+import { GameState } from "../../../../core/models/game-state.js";
+import { EventType } from "../../../enums/event-type.js";
+import { CredentialService } from "../../../services/security/credential-service.js";
+import { container } from "../../../../core/services/di-container.js";
+import { EventConsumerService } from "../../../../core/services/gameplay/event-consumer-service.js";
 import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginEntities } from "./login-entity-factory.js";
 import { LoginController } from "./login-controller.js";
-import type { ConfigurationType } from "../../types/configuration-type.js";
+import type { ConfigurationType } from "../../../types/configuration-type.js";
 
 export class LoginScene extends BaseGameScene {
   private controller: LoginController;

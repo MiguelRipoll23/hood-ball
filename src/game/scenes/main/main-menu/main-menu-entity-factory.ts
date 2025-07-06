@@ -1,8 +1,8 @@
-import { TitleEntity } from "../../entities/common/title-entity.js";
-import { MenuOptionEntity } from "../../entities/common/menu-option-entity.js";
-import { ServerMessageWindowEntity } from "../../entities/server-message-window-entity.js";
-import { CloseableMessageEntity } from "../../entities/common/closeable-message-entity.js";
-import { OnlinePlayersEntity } from "../../entities/online-players-entity.js";
+import { TitleEntity } from "../../../entities/common/title-entity.js";
+import { MenuOptionEntity } from "../../../entities/common/menu-option-entity.js";
+import { ServerMessageWindowEntity } from "../../../entities/server-message-window-entity.js";
+import { CloseableMessageEntity } from "../../../entities/common/closeable-message-entity.js";
+import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 
 export interface MainMenuEntities {
   titleEntity: TitleEntity;

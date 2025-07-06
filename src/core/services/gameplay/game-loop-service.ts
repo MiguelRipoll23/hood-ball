@@ -1,8 +1,8 @@
 import { GameFrame } from "../../models/game-frame.js";
 import { NotificationEntity } from "../../entities/notification-entity.js";
 import { MainScene } from "../../../game/scenes/main/main-scene.js";
-import { LoginScene } from "../../../game/scenes/main/login-scene.js";
-import { MainMenuScene } from "../../../game/scenes/main/main-menu-scene.js";
+import { LoginScene } from "../../../game/scenes/main/login/login-scene.js";
+import { MainMenuScene } from "../../../game/scenes/main/main-menu/main-menu-scene.js";
 import { EventType } from "../../../game/enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../../game/interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../../../game/interfaces/events/server-notification-payload.js";
