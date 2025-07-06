@@ -55,7 +55,7 @@ export class EntityUtils {
     }
 
     if (hasChanged) {
-      moveableEntity.setSync(true);
+      moveableEntity.setSyncReliably(true);
     }
   }
 }
