@@ -30,12 +30,9 @@ dialog {
   border-radius: 6px;
   text-align: center;
   top: -170px;
+  filter: blur(4px);
 }
 
-dialog::backdrop {
-  -webkit-backdrop-filter: blur(4px);
-  backdrop-filter: blur(4px);
-}
 
 dialog h1 {
   margin-top: 0;
