@@ -1,8 +1,7 @@
 import { CloseableMessageEntity } from "../../entities/common/closeable-message-entity.js";
 import { MenuOptionEntity } from "../../entities/common/menu-option-entity.js";
-import { TitleEntity } from "../../entities/common/title-entity.js";
-import { ServerMessageWindowEntity } from "../../entities/server-message-window-entity.js";
 import { OnlinePlayersEntity } from "../../entities/online-players-entity.js";
+import { ServerMessageWindowEntity } from "../../entities/server-message-window-entity.js";
 import { APIService } from "../../services/network/api-service.js";
 import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
 import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
@@ -14,11 +13,15 @@ import type { GameState } from "../../../core/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
 import { container } from "../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
+import type { MainMenuEntities } from "./main-menu-entity-factory.js";
+import { MainMenuController } from "./main-menu-controller.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
 
-  private apiService: APIService;
+  private controller: MainMenuController;
+  private entities: MainMenuEntities | null = null;
 
   private messagesResponse: MessagesResponse[] | null = null;
 
@@ -33,16 +36,37 @@ export class MainMenuScene extends BaseGameScene {
   ) {
     super(gameState, eventConsumerService);
     this.showNews = showNews;
-    this.apiService = container.get(APIService);
+    const apiService = container.get(APIService);
+    this.controller = new MainMenuController(apiService);
     this.subscribeToEvents();
   }
 
   public override load(): void {
-    this.loadTitleEntity();
-    this.loadMenuOptionEntities();
-    this.loadServerMessageWindow();
-    this.loadCloseableMessageEntity();
-    this.loadOnlinePlayersEntity();
+    const factory = new MainMenuEntityFactory(
+      this.canvas,
+      this.MENU_OPTIONS_TEXT
+    );
+    this.entities = factory.createEntities();
+
+    const {
+      titleEntity,
+      menuOptionEntities,
+      serverMessageWindowEntity,
+      closeableMessageEntity,
+      onlinePlayersEntity,
+    } = this.entities;
+
+    this.serverMessageWindowEntity = serverMessageWindowEntity;
+    this.closeableMessageEntity = closeableMessageEntity;
+    this.onlinePlayersEntity = onlinePlayersEntity;
+
+    this.uiEntities.push(
+      titleEntity,
+      ...menuOptionEntities,
+      serverMessageWindowEntity,
+      closeableMessageEntity,
+      onlinePlayersEntity
+    );
 
     super.load();
   }
@@ -85,47 +109,10 @@ export class MainMenuScene extends BaseGameScene {
     );
   }
 
-  private loadTitleEntity(): void {
-    const titleEntity = new TitleEntity();
-    titleEntity.setText("MAIN MENU");
-    this.uiEntities.push(titleEntity);
-  }
-
-  private loadMenuOptionEntities(): void {
-    let y = 100;
-
-    for (let index = 0; index < this.MENU_OPTIONS_TEXT.length; index++) {
-      const text = this.MENU_OPTIONS_TEXT[index];
-
-      const menuOptionEntity = new MenuOptionEntity(this.canvas, index, text);
-      menuOptionEntity.setPosition(30, y);
-
-      this.uiEntities.push(menuOptionEntity);
-
-      y += menuOptionEntity.getHeight() + 30;
-    }
-  }
-
-  private loadCloseableMessageEntity(): void {
-    this.closeableMessageEntity = new CloseableMessageEntity(this.canvas);
-    this.uiEntities.push(this.closeableMessageEntity);
-  }
-
-  private loadOnlinePlayersEntity(): void {
-    this.onlinePlayersEntity = new OnlinePlayersEntity(this.canvas);
-    this.uiEntities.push(this.onlinePlayersEntity);
-  }
-
-  private loadServerMessageWindow(): void {
-    this.serverMessageWindowEntity = new ServerMessageWindowEntity(this.canvas);
-    this.serverMessageWindowEntity.load();
-
-    this.uiEntities.push(this.serverMessageWindowEntity);
-  }
 
   private downloadServerMessages(): void {
-    this.apiService
-      .getMessages()
+    this.controller
+      .fetchServerMessages()
       .then((messages) => {
         this.showMessages(messages);
       })
