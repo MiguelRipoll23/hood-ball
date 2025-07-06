@@ -13,4 +13,5 @@ export enum EventType {
   GameOver,
   BoostPadConsumed,
   MatchmakingStarted,
+  OnlinePlayers,
 }

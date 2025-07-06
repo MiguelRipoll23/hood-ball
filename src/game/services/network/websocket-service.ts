@@ -4,6 +4,7 @@ import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
+import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { GameState } from "../../../core/models/game-state.js";
@@ -84,6 +85,20 @@ export class WebSocketService {
 
     localEvent.setData({
       message,
+    });
+
+    this.eventProcessorService.addLocalEvent(localEvent);
+  }
+
+  @ServerCommandHandler(WebSocketType.OnlinePlayers)
+  public handleOnlinePlayers(binaryReader: BinaryReader) {
+    const total = binaryReader.unsignedInt16();
+
+    const localEvent = new LocalEvent<OnlinePlayersPayload>(
+      EventType.OnlinePlayers
+    );
+    localEvent.setData({
+      total,
     });
 
     this.eventProcessorService.addLocalEvent(localEvent);
