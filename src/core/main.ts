@@ -9,3 +9,4 @@ if (!canvas) {
 
 const gameLoop = new GameLoopService(canvas);
 gameLoop.start();
+
