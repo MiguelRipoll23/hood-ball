@@ -64,8 +64,8 @@ export class MainMenuScene extends BaseGameScene {
       titleEntity,
       ...menuOptionEntities,
       serverMessageWindowEntity,
-      closeableMessageEntity,
-      onlinePlayersEntity
+      onlinePlayersEntity,
+      closeableMessageEntity
     );
 
     super.load();

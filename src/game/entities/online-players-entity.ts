@@ -4,7 +4,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
   private onlinePlayers = 0;
 
   private getText(): string {
-    return this.onlinePlayers === 1 ? "PLAYER" : "PLAYERS";
+    return "ONLINE PLAYERS";
   }
 
   private baseX: number;
@@ -63,16 +63,20 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     context.font = "bold 20px system-ui";
     context.fillStyle = "#ffffff";
     context.textBaseline = "middle";
-    context.textAlign = "center";
+    context.textAlign = "left";
 
     const badgeRadius = 14;
     const spacing = 10;
 
-    const badgeX = this.x;
-    const badgeY = this.y - badgeRadius - spacing;
+    const textWidth = context.measureText(labelText).width;
+    const totalWidth = textWidth + spacing + badgeRadius * 2;
 
-    // Draw the label text centered under the badge
-    context.fillText(labelText, this.x, this.y);
+    const textX = this.x - totalWidth / 2;
+    const badgeX = textX + textWidth + spacing + badgeRadius;
+    const badgeY = this.y;
+
+    // Draw the label text with the badge horizontally aligned
+    context.fillText(labelText, textX, this.y);
 
     // Draw badge background
     context.fillStyle = "#7ed321";
