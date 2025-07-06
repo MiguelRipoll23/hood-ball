@@ -5,6 +5,7 @@ import { BallEntity } from "../../entities/ball-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
+import { HelpEmtity } from "../../entities/help-emtity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
@@ -19,6 +20,7 @@ export interface WorldEntities {
   goalEntity: GoalEntity;
   alertEntity: AlertEntity;
   toastEntity: ToastEntity;
+  helpEntity: HelpEmtity;
   boostPads: BoostPadEntity[];
 }
 
@@ -73,6 +75,7 @@ export class WorldEntityFactory {
 
     const alertEntity = new AlertEntity(this.canvas);
     const toastEntity = new ToastEntity(this.canvas);
+    const helpEntity = new HelpEmtity(this.canvas);
 
     // Boost related entities
     const boostMeterEntity = new BoostMeterEntity(this.canvas);
@@ -101,7 +104,8 @@ export class WorldEntityFactory {
     uiEntities.push(
       alertEntity,
       localCarEntity.getJoystickEntity(),
-      boostMeterEntity
+      boostMeterEntity,
+      helpEntity
     );
 
     return {
@@ -111,6 +115,7 @@ export class WorldEntityFactory {
       goalEntity,
       alertEntity,
       toastEntity,
+      helpEntity,
       boostPads,
     };
   }
