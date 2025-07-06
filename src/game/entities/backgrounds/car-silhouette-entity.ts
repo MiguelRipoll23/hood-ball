@@ -1,4 +1,6 @@
 import { BaseGameEntity } from "../../../core/entities/base-game-entity.js";
+import { container } from "../../../core/services/di-container.js";
+import { SceneTransitionService } from "../../../core/services/gameplay/scene-transition-service.js";
 
 interface Car {
   x: number;
@@ -6,7 +8,7 @@ interface Car {
   vx: number;
   vy: number;
   size: number;
-  direction: number;
+  angle: number;
 }
 
 export class CarSilhouetteEntity extends BaseGameEntity {
@@ -14,9 +16,14 @@ export class CarSilhouetteEntity extends BaseGameEntity {
   private readonly carCount = 8;
   private carImage: HTMLImageElement | null = null;
   private readonly IMAGE_PATH = "./images/car-silhouette.png";
+  private readonly BASE_SPEED = 0.07;
+  private readonly SIZE = 40;
+  private readonly TRANSITION_SPEED_MULTIPLIER = 2;
+  private readonly transitionService: SceneTransitionService;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.transitionService = container.get(SceneTransitionService);
     this.createCars();
   }
 
@@ -30,24 +37,27 @@ export class CarSilhouetteEntity extends BaseGameEntity {
 
   private createCars(): void {
     for (let i = 0; i < this.carCount; i++) {
-      const dir = i % 2 === 0 ? 1 : -1;
-      const speed = 0.05 + Math.random() * 0.03;
-      const size = 30 + Math.random() * 15;
+      const fromLeft = i < this.carCount / 2;
+      const vx = fromLeft ? this.BASE_SPEED : -this.BASE_SPEED;
+      const vy = this.BASE_SPEED;
       this.cars.push({
         x: Math.random() * this.canvas.width,
         y: Math.random() * this.canvas.height,
-        vx: speed * dir,
-        vy: speed * dir,
-        size,
-        direction: dir,
+        vx,
+        vy,
+        size: this.SIZE,
+        angle: Math.atan2(vy, vx),
       });
     }
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
+    const multiplier = this.transitionService.isTransitionActive()
+      ? this.TRANSITION_SPEED_MULTIPLIER
+      : 1;
     this.cars.forEach((car) => {
-      car.x += car.vx * delta;
-      car.y += car.vy * delta;
+      car.x += car.vx * delta * multiplier;
+      car.y += car.vy * delta * multiplier;
 
       if (car.x > this.canvas.width + car.size) {
         car.x = -car.size;
@@ -68,9 +78,7 @@ export class CarSilhouetteEntity extends BaseGameEntity {
     this.cars.forEach((car) => {
       context.save();
       context.translate(car.x, car.y);
-      if (car.direction < 0) {
-        context.scale(-1, 1);
-      }
+      context.rotate(car.angle);
       this.drawCar(context, car.size);
       context.restore();
     });
