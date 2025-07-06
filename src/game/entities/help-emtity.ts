@@ -2,7 +2,8 @@ import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity
 import { TimerService } from "../../core/services/gameplay/timer-service.js";
 
 export class HelpEntity extends BaseAnimatedGameEntity {
-  private readonly padding = 20;
+  private readonly paddingX = 20;
+  private readonly paddingY = 10;
   private readonly cornerRadius = 12;
   private readonly bottomMargin = 40;
   private readonly lineHeight = 24;
@@ -63,8 +64,8 @@ export class HelpEntity extends BaseAnimatedGameEntity {
     const maxWidth = this.lines.reduce((acc, line) => {
       return Math.max(acc, this.context.measureText(line).width);
     }, 0);
-    this.width = maxWidth + this.padding * 2;
-    this.height = this.lines.length * this.lineHeight + this.padding * 2;
+    this.width = maxWidth + this.paddingX * 2;
+    this.height = this.lines.length * this.lineHeight + this.paddingY * 2;
   }
 
   private setPosition(): void {
@@ -117,7 +118,7 @@ export class HelpEntity extends BaseAnimatedGameEntity {
     ctx.font = "18px system-ui";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    let y = this.y + this.padding + this.lineHeight / 2;
+    let y = this.y + this.paddingY + this.lineHeight / 2;
     for (const line of this.lines) {
       ctx.fillText(line, this.x + this.width / 2, y);
       y += this.lineHeight;
