@@ -208,8 +208,8 @@ export class ScoreboardEntity
     const flashing = (atZero && this.active) || underFive;
     let alpha = 1;
     if (flashing) {
-      // After time is up flash quicker for urgency
-      const interval = atZero ? this.FADE_INTERVAL_MS / 2 : this.FADE_INTERVAL_MS;
+      // Use a consistent flash rate for low and zero time
+      const interval = this.FADE_INTERVAL_MS;
       const cycle = (this.flashElapsedMilliseconds % interval) / interval;
       alpha = Math.abs(Math.sin(cycle * Math.PI));
     }
