@@ -26,6 +26,32 @@ export class BaseGameScene implements GameScene {
   protected readonly cameraService: CameraService;
 
   private gamePointer: GamePointer;
+  /**
+   * Indicates whether pointer events should be cleared automatically
+   * after handling input in {@link update}. Subclasses can override
+   * {@link shouldClearPointerEvents} to delay or disable clearing
+   * when delegating events to nested scenes.
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  protected clearPointerEventsAutomatically = true;
+
+  /**
+   * Determines if pointer events should be cleared at the end of
+   * the default update cycle.
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  protected shouldClearPointerEvents(): boolean {
+    return this.clearPointerEventsAutomatically;
+  }
+
+  /**
+   * Clears the current pressed state of the game pointer. Subclasses may call
+   * this manually when deferring pointer handling to nested scenes.
+   */
+  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  protected clearPointerEvents(): void {
+    this.gamePointer.clearPressed();
+  }
 
   constructor(
     protected gameState: GameState,
@@ -136,6 +162,9 @@ export class BaseGameScene implements GameScene {
     }
 
     this.handlePointerEvent();
+    if (this.shouldClearPointerEvents()) {
+      this.clearPointerEvents();
+    }
   }
 
   public render(context: CanvasRenderingContext2D): void {
@@ -206,8 +235,6 @@ export class BaseGameScene implements GameScene {
         break;
       }
     }
-
-    this.gamePointer.clearPressed();
   }
 
   private updateEntities(
