@@ -1,5 +1,5 @@
-import { MessageEntity } from "../../entities/common/message-entity.js";
-import { CloseableMessageEntity } from "../../entities/common/closeable-message-entity.js";
+import { MessageEntity } from "../../../entities/common/message-entity.js";
+import { CloseableMessageEntity } from "../../../entities/common/closeable-message-entity.js";
 
 export interface LoginEntities {
   messageEntity: MessageEntity;

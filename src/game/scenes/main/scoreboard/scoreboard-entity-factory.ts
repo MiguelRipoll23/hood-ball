@@ -1,7 +1,7 @@
-import { TitleEntity } from "../../entities/common/title-entity.js";
-import { ButtonEntity } from "../../entities/common/button-entity.js";
-import { RankingTableEntity } from "../../entities/ranking-table-entity.js";
-import { CloseableMessageEntity } from "../../entities/common/closeable-message-entity.js";
+import { TitleEntity } from "../../../entities/common/title-entity.js";
+import { ButtonEntity } from "../../../entities/common/button-entity.js";
+import { RankingTableEntity } from "../../../entities/ranking-table-entity.js";
+import { CloseableMessageEntity } from "../../../entities/common/closeable-message-entity.js";
 
 export interface ScoreboardEntities {
   titleEntity: TitleEntity;

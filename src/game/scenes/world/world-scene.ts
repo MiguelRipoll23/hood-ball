@@ -22,7 +22,7 @@ import { EntityOrchestratorService } from "../../services/gameplay/entity-orches
 import { SceneTransitionService } from "../../../core/services/gameplay/scene-transition-service.js";
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { MainScene } from "../main/main-scene.js";
-import { MainMenuScene } from "../main/main-menu-scene.js";
+import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { container } from "../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
