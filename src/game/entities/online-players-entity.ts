@@ -24,7 +24,7 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
     const labelX = this.canvas.width / 2;
 
     context.font = "bold 20px system-ui";
-    context.fillStyle = "#4a90e2";
+    context.fillStyle = "#ffffff";
     context.textAlign = "center";
     context.textBaseline = "middle";
 
