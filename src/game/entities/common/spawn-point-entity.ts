@@ -24,13 +24,6 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
       context.fill();
       context.closePath();
 
-      // Draw the index centered above the circle in white
-      context.fillStyle = "white";
-      context.font = "16px system-ui";
-      context.textAlign = "center";
-      context.textBaseline = "bottom";
-      context.fillText(`${this.index}`, this.x, this.y - radius - 4);
-
       context.restore();
     }
   }
