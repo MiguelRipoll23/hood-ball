@@ -151,22 +151,29 @@ export class WorldController {
       this.spawnPointService.getAndConsumeSpawnPointIndex();
 
     const gamePlayer = this.gameState.getGamePlayer();
+    if (spawnPointIndex === -1) {
+      console.warn("No spawn points available for local player");
+      return;
+    }
+
     gamePlayer.setSpawnPointIndex(spawnPointIndex);
 
-    this.spawnPointEntities.forEach((spawnPoint) => {
-      if (spawnPoint.getIndex() === spawnPointIndex) {
-        const x = spawnPoint.getX();
-        const y = spawnPoint.getY();
-        this.localCarEntity.setX(x);
-        this.localCarEntity.setY(y);
-      }
-    });
+    this.updateLocalCarPosition(spawnPointIndex);
   }
 
   private moveCarToSpawnPoint(): void {
     const gamePlayer = this.gameState.getGamePlayer();
     const spawnPointIndex = gamePlayer.getSpawnPointIndex();
 
+    if (spawnPointIndex === -1) {
+      console.warn("Local player does not have a spawn point index");
+      return;
+    }
+
+    this.updateLocalCarPosition(spawnPointIndex);
+  }
+
+  private updateLocalCarPosition(spawnPointIndex: number): void {
     this.spawnPointEntities.forEach((spawnPoint) => {
       if (spawnPoint.getIndex() === spawnPointIndex) {
         const x = spawnPoint.getX();
