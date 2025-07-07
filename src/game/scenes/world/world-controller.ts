@@ -6,29 +6,35 @@ import { MatchStateType } from "../../enums/match-state-type.js";
 import type { GameState } from "../../../core/models/game-state.js";
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { BallEntity } from "../../entities/ball-entity.js";
 import { LocalCarEntity } from "../../entities/local-car-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
-import { CAR_SPAWN_SPACING } from "../../constants/game-constants.js";
+import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
+import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 
-export class MatchFlowController {
+export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
   constructor(
     private readonly gameState: GameState,
+    private readonly spawnPointService: SpawnPointService,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: IMatchmakingProvider,
+    private readonly matchmakingService: IMatchmakingService,
     private readonly scoreboardEntity: ScoreboardEntity,
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,
     private readonly alertEntity: AlertEntity,
-    private readonly boostPads: BoostPadEntity[]
-  ) {}
+    private readonly boostPadsEntities: BoostPadEntity[],
+    private readonly spawnPointEntities: SpawnPointEntity[]
+  ) {
+    this.assignInitialSpawnPoint();
+    this.moveCarToSpawnPoint();
+  }
 
   public handleMatchState(): void {
     const matchState = this.gameState.getMatch()?.getState();
@@ -113,9 +119,9 @@ export class MatchFlowController {
   private resetForCountdown(): void {
     this.ballEntity.reset();
     this.localCarEntity.reset();
-    this.positionLocalCar();
+    this.moveCarToSpawnPoint();
     this.localCarEntity.refillBoost();
-    this.boostPads.forEach((pad) => pad.reset());
+    this.boostPadsEntities.forEach((pad) => pad.reset());
   }
 
   private handleCountdownEnd(): void {
@@ -124,7 +130,7 @@ export class MatchFlowController {
 
     this.alertEntity.hide();
     this.localCarEntity.reset();
-    this.positionLocalCar();
+    this.moveCarToSpawnPoint();
     this.ballEntity.reset();
     this.scoreboardEntity.startTimer();
   }
@@ -140,28 +146,34 @@ export class MatchFlowController {
     this.eventProcessorService.sendEvent(countdownEvent);
   }
 
-  private positionLocalCar(): void {
-    const match = this.gameState.getMatch();
-    if (!match) {
-      return;
-    }
+  private assignInitialSpawnPoint(): void {
+    const spawnPointIndex =
+      this.spawnPointService.getAndConsumeSpawnPointIndex();
 
-    const players = match.getPlayers();
+    const gamePlayer = this.gameState.getGamePlayer();
+    gamePlayer.setSpawnPointIndex(spawnPointIndex);
 
-    const player = this.localCarEntity.getPlayer();
-    if (!player) {
-      return;
-    }
+    this.spawnPointEntities.forEach((spawnPoint) => {
+      if (spawnPoint.getIndex() === spawnPointIndex) {
+        const x = spawnPoint.getX();
+        const y = spawnPoint.getY();
+        this.localCarEntity.setX(x);
+        this.localCarEntity.setY(y);
+      }
+    });
+  }
 
-    const index = player.getSpawnIndex();
-    if (index === -1) {
-      return;
-    }
+  private moveCarToSpawnPoint(): void {
+    const gamePlayer = this.gameState.getGamePlayer();
+    const spawnPointIndex = gamePlayer.getSpawnPointIndex();
 
-    const canvas = this.gameState.getCanvas();
-    const startX =
-      canvas.width / 2 - ((players.length - 1) * CAR_SPAWN_SPACING) / 2;
-
-    this.localCarEntity.setX(startX + index * CAR_SPAWN_SPACING);
+    this.spawnPointEntities.forEach((spawnPoint) => {
+      if (spawnPoint.getIndex() === spawnPointIndex) {
+        const x = spawnPoint.getX();
+        const y = spawnPoint.getY();
+        this.localCarEntity.setX(x);
+        this.localCarEntity.setY(y);
+      }
+    });
   }
 }
