@@ -35,6 +35,7 @@ import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
+import { PlayerSpawnService } from "../../services/gameplay/player-spawn-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -43,6 +44,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
+  private readonly playerSpawnService: PlayerSpawnService;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -68,6 +70,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchmakingController = container.get(MatchmakingControllerService);
     this.entityOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
+    this.playerSpawnService = container.get(PlayerSpawnService);
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -154,6 +157,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
     alert("Could not find or advertise match, returning to main scene menu...");
 
+    this.playerSpawnService.reset();
     this.gameState.setMatch(null);
     void this.returnToMainMenuScene();
   }

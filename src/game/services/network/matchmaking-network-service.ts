@@ -187,6 +187,7 @@ export class MatchmakingNetworkService
       MATCH_ATTRIBUTES
     );
 
+    this.playerSpawnService.reset();
     this.gameState.setMatch(match);
 
   }
@@ -411,6 +412,7 @@ export class MatchmakingNetworkService
   private handleHostDisconnected(peer: WebRTCPeer): void {
     console.log(`Host ${peer.getName()} disconnected`);
 
+    this.playerSpawnService.reset();
     this.gameState.setMatch(null);
 
     const localEvent = new LocalEvent(EventType.HostDisconnected);
