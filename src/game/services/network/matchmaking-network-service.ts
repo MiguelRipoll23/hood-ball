@@ -173,7 +173,11 @@ export class MatchmakingNetworkService
 
     const spawnPointIndex =
       this.spawnPointService.getAndConsumeSpawnPointIndex();
-    gamePlayer.setSpawnPointIndex(spawnPointIndex);
+    if (spawnPointIndex === -1) {
+      console.warn("No spawn points available for joining player");
+    } else {
+      gamePlayer.setSpawnPointIndex(spawnPointIndex);
+    }
 
     match.addPlayer(gamePlayer);
 

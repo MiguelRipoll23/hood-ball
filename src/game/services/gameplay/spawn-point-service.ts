@@ -22,7 +22,8 @@ export class SpawnPointService {
 
   public getAndConsumeSpawnPointIndex(): number {
     if (this.availableSpawnPointIndexes.size === 0) {
-      return 0;
+      // -1 indicates that no spawn points are currently available
+      return -1;
     }
 
     const index = [...this.availableSpawnPointIndexes][0];
