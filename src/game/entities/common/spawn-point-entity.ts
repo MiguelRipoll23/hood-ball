@@ -13,6 +13,8 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
 
   public render(context: CanvasRenderingContext2D): void {
     if (this.debugSettings?.isDebugging()) {
+      context.save();
+
       const radius = 12;
 
       // Draw a larger purple circle without border
@@ -28,6 +30,8 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
       context.textAlign = "center";
       context.textBaseline = "bottom";
       context.fillText(`${this.index}`, this.x, this.y - radius - 4);
+
+      context.restore();
     }
   }
 }
