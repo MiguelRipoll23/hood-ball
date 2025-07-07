@@ -11,6 +11,7 @@ import { IntervalManagerService } from "../../../core/services/gameplay/interval
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import { GamePlayer } from "../../models/game-player.js";
+import { PlayerSpawnService } from "./player-spawn-service.js";
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
@@ -27,6 +28,7 @@ export class MatchmakingService implements IMatchmakingService {
   private readonly webrtcService: WebRTCService;
   private readonly matchFinderService: MatchFinderService;
   private readonly networkService: IMatchmakingNetworkService;
+  private readonly playerSpawnService: PlayerSpawnService;
 
   constructor(private gameState = container.get(GameState)) {
     container.get(TimerManagerService);
@@ -37,6 +39,7 @@ export class MatchmakingService implements IMatchmakingService {
     container.get(EventProcessorService);
     this.matchFinderService = container.get(MatchFinderService);
     this.networkService = container.get(MatchmakingNetworkService);
+    this.playerSpawnService = container.get(PlayerSpawnService);
     this.registerCommandHandlers();
   }
 
@@ -108,6 +111,7 @@ export class MatchmakingService implements IMatchmakingService {
     }
 
     this.gameState.setMatch(null);
+    this.playerSpawnService.reset();
     container.get(PendingIdentitiesToken).clear();
     container.get(ReceivedIdentitiesToken).clear();
   }

@@ -3,14 +3,15 @@ import type { GamePlayer } from "../../models/game-player.js";
 
 @injectable()
 export class PlayerSpawnService {
-  private assignedIndexes: Map<string, number> = new Map();
+  // Tracks the indexes that are currently free to be used
   private availableIndexes: number[] = [];
+  // Next index to assign in case there are no free ones
   private nextIndex = 0;
 
   public assignSpawnIndex(player: GamePlayer, index?: number): number {
-    const id = player.getId();
-    if (this.assignedIndexes.has(id)) {
-      return this.assignedIndexes.get(id)!;
+    // If the player already has a spawn index, return it
+    if (player.getSpawnIndex() !== -1) {
+      return player.getSpawnIndex();
     }
 
     let assigned: number;
@@ -32,30 +33,28 @@ export class PlayerSpawnService {
       this.nextIndex += 1;
     }
 
-    this.assignedIndexes.set(id, assigned);
     player.setSpawnIndex(assigned);
     console.log(`Assigned spawn index ${assigned} to player ${player.getName()}`);
     return assigned;
   }
 
   public releaseSpawnIndex(player: GamePlayer): void {
-    const id = player.getId();
-    const index = this.assignedIndexes.get(id);
-    if (index === undefined) return;
+    const index = player.getSpawnIndex();
+    if (index === -1) return;
 
-    this.assignedIndexes.delete(id);
     this.availableIndexes.push(index);
+    player.setSpawnIndex(-1);
     console.log(`Released spawn index ${index} from player ${player.getName()}`);
   }
 
   public reset(): void {
-    this.assignedIndexes.clear();
     this.availableIndexes = [];
     this.nextIndex = 0;
     console.log("Player spawn indexes reset");
   }
 
   public getSpawnIndex(player: GamePlayer): number | undefined {
-    return this.assignedIndexes.get(player.getId());
+    const index = player.getSpawnIndex();
+    return index === -1 ? undefined : index;
   }
 }
