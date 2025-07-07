@@ -16,8 +16,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
-
-import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
+import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 
 export class ScoreManagerService {
   constructor(
@@ -28,7 +27,7 @@ export class ScoreManagerService {
     private readonly alertEntity: AlertEntity,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: IMatchmakingProvider,
+    private readonly matchmakingService: IMatchmakingService,
     private readonly goalTimeEndCallback: () => void,
     private readonly gameOverEndCallback: () => void,
     private readonly explosionCallback: (
@@ -97,7 +96,11 @@ export class ScoreManagerService {
     }
 
     this.showGoalAlert(player, team);
-    this.explosionCallback(this.ballEntity.getX(), this.ballEntity.getY(), team);
+    this.explosionCallback(
+      this.ballEntity.getX(),
+      this.ballEntity.getY(),
+      team
+    );
   }
 
   public handleRemoteGameOverStartEvent(arrayBuffer: ArrayBuffer | null): void {
@@ -159,7 +162,11 @@ export class ScoreManagerService {
     }
 
     this.showGoalAlert(player, goalTeam);
-    this.explosionCallback(this.ballEntity.getX(), this.ballEntity.getY(), goalTeam);
+    this.explosionCallback(
+      this.ballEntity.getX(),
+      this.ballEntity.getY(),
+      goalTeam
+    );
     this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
   }
 

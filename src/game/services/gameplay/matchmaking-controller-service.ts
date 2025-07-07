@@ -2,19 +2,17 @@ import { EventProcessorService } from "../../../core/services/gameplay/event-pro
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
+import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 
 @injectable()
 export class MatchmakingControllerService {
-  private readonly matchmakingService: IMatchmakingProvider;
+  private readonly matchmakingService: IMatchmakingService;
   private readonly eventProcessor: EventProcessorService;
 
   constructor(
-    matchmakingService: IMatchmakingProvider = container.get(
-      MatchmakingService
-    ),
+    matchmakingService: IMatchmakingService = container.get(MatchmakingService),
     eventProcessor: EventProcessorService = container.get(EventProcessorService)
   ) {
     this.matchmakingService = matchmakingService;

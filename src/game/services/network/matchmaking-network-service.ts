@@ -28,7 +28,7 @@ import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
 } from "../gameplay/matchmaking-tokens.js";
-import { PlayerSpawnService } from "../gameplay/player-spawn-service.js";
+import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 
 @injectable()
 export class MatchmakingNetworkService
@@ -38,16 +38,28 @@ export class MatchmakingNetworkService
   private pingCheckInterval: IIntervalService | null = null;
 
   constructor(
-    private readonly gameState = inject(GameState),
-    private readonly timerManagerService = inject(TimerManagerService),
-    private readonly intervalManagerService = inject(IntervalManagerService),
-    private readonly webSocketService = inject(WebSocketService),
-    private readonly webrtcService = inject(WebRTCService),
-    private readonly eventProcessorService = inject(EventProcessorService),
-    private readonly matchFinderService = inject(MatchFinderService),
+    private readonly gameState: GameState = inject(GameState),
+    private readonly timerManagerService: TimerManagerService = inject(
+      TimerManagerService
+    ),
+    private readonly intervalManagerService: IntervalManagerService = inject(
+      IntervalManagerService
+    ),
+    private readonly webSocketService: WebSocketService = inject(
+      WebSocketService
+    ),
+    private readonly webrtcService: WebRTCService = inject(WebRTCService),
+    private readonly eventProcessorService: EventProcessorService = inject(
+      EventProcessorService
+    ),
+    private readonly matchFinderService: MatchFinderService = inject(
+      MatchFinderService
+    ),
+    private readonly spawnPointService: SpawnPointService = inject(
+      SpawnPointService
+    ),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
-    private readonly playerSpawnService = inject(PlayerSpawnService)
+    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
@@ -151,16 +163,19 @@ export class MatchmakingNetworkService
       return;
     }
 
+    this.receivedIdentities.delete(token);
+
     const { playerId, playerName } = identity;
     console.log("Received join request from", playerName);
 
     const gamePlayer = new GamePlayer(playerId, playerName);
     peer.setPlayer(gamePlayer);
 
-    match.addPlayer(gamePlayer);
-    this.playerSpawnService.assignSpawnIndex(gamePlayer);
+    const spawnPointIndex =
+      this.spawnPointService.getAndConsumeSpawnPointIndex();
+    gamePlayer.setSpawnPointIndex(spawnPointIndex);
 
-    this.receivedIdentities.delete(token);
+    match.addPlayer(gamePlayer);
 
     this.sendJoinResponse(peer, match);
   }
@@ -187,9 +202,7 @@ export class MatchmakingNetworkService
       MATCH_ATTRIBUTES
     );
 
-    this.playerSpawnService.reset();
     this.gameState.setMatch(match);
-
   }
 
   @PeerCommandHandler(WebRTCType.PlayerConnection)
@@ -215,7 +228,7 @@ export class MatchmakingNetworkService
 
     if (isLocalPlayer) {
       gamePlayer = this.gameState.getGamePlayer();
-      gamePlayer.setSpawnIndex(playerSpawnIndex);
+      gamePlayer.setSpawnPointIndex(playerSpawnIndex);
     } else {
       gamePlayer = new GamePlayer(
         playerId,
@@ -225,11 +238,6 @@ export class MatchmakingNetworkService
         playerSpawnIndex
       );
     }
-
-    this.playerSpawnService.assignSpawnIndex(gamePlayer, playerSpawnIndex);
-    console.log(
-      `Player ${gamePlayer.getName()} spawn index set to ${playerSpawnIndex}`
-    );
 
     if (isHost) {
       if (this.isHostIdentityUnverified(peer, gamePlayer)) {
@@ -361,13 +369,13 @@ export class MatchmakingNetworkService
 
     console.log(`Player ${player.getName()} disconnected`);
     this.gameState.getMatch()?.removePlayer(player);
-    this.playerSpawnService.releaseSpawnIndex(player);
+    this.spawnPointService.releaseSpawnPointIndex(player.getSpawnPointIndex());
 
     this.webrtcService
       .getPeers()
       .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
-      .forEach((p: WebRTCPeer) => {
-        this.sendPlayerConnection(p, player, false, false);
+      .forEach((matchPeer: WebRTCPeer) => {
+        this.sendPlayerConnection(matchPeer, player, false, false);
       });
 
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
@@ -398,7 +406,6 @@ export class MatchmakingNetworkService
 
     console.log(`Player ${player.getName()} disconnected`);
     match.removePlayer(player);
-    this.playerSpawnService.releaseSpawnIndex(player);
 
     const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
       EventType.PlayerDisconnected
@@ -411,8 +418,6 @@ export class MatchmakingNetworkService
 
   private handleHostDisconnected(peer: WebRTCPeer): void {
     console.log(`Host ${peer.getName()} disconnected`);
-
-    this.playerSpawnService.reset();
     this.gameState.setMatch(null);
 
     const localEvent = new LocalEvent(EventType.HostDisconnected);
@@ -499,7 +504,7 @@ export class MatchmakingNetworkService
     const playerId = player.getId();
     const playerScore = player.getScore();
     const playerName = player.getName();
-    const spawnIndex = player.getSpawnIndex();
+    const spawnIndex = player.getSpawnPointIndex();
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PlayerConnection)

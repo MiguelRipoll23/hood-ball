@@ -13,7 +13,6 @@ import { SceneType } from "../../enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
-import type { IMatchmakingProvider } from "../../interfaces/services/gameplay/matchmaking-provider.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
@@ -26,7 +25,7 @@ import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { container } from "../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
-import { MatchFlowController } from "./match-flow-controller.js";
+import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { CarEntity } from "../../entities/car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
@@ -35,27 +34,31 @@ import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
-import { PlayerSpawnService } from "../../services/gameplay/player-spawn-service.js";
+import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
+import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
+import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
+  private readonly spawnPointService: SpawnPointService;
   private readonly timerManagerService: TimerManagerService;
-  private readonly matchmakingService: IMatchmakingProvider;
+  private readonly matchmakingService: IMatchmakingService;
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
-  private readonly playerSpawnService: PlayerSpawnService;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
   private ballEntity: BallEntity | null = null;
   private goalEntity: GoalEntity | null = null;
+  private boostPadsEntities: BoostPadEntity[] = [];
+  private spawnPointEntities: SpawnPointEntity[] = [];
   private alertEntity: AlertEntity | null = null;
   private toastEntity: ToastEntity | null = null;
   private helpEntity: HelpEntity | null = null;
+
   private scoreManagerService: ScoreManagerService | null = null;
-  private matchFlowController: MatchFlowController | null = null;
-  private boostPads: BoostPadEntity[] = [];
+  private worldController: WorldController | null = null;
   private helpShown = false;
 
   constructor(
@@ -70,7 +73,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchmakingController = container.get(MatchmakingControllerService);
     this.entityOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
-    this.playerSpawnService = container.get(PlayerSpawnService);
+    this.spawnPointService = container.get(SpawnPointService);
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -78,6 +81,7 @@ export class WorldScene extends BaseCollidingGameScene {
   public override load(): void {
     const factory = new WorldEntityFactory(this.gameState, this.canvas);
     factory.createBackground(this.worldEntities);
+
     const entities = factory.createWorldEntities(
       this.worldEntities,
       this.uiEntities
@@ -90,10 +94,15 @@ export class WorldScene extends BaseCollidingGameScene {
     this.alertEntity = entities.alertEntity;
     this.toastEntity = entities.toastEntity;
     this.helpEntity = entities.helpEntity;
-    this.boostPads = entities.boostPads;
+    this.boostPadsEntities = entities.boostPadsEntities;
+    this.spawnPointEntities = entities.spawnPointEntities;
 
-    this.matchFlowController = new MatchFlowController(
+    // Set total spawn points created to service
+    this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
+
+    this.worldController = new WorldController(
       this.gameState,
+      this.spawnPointService,
       this.timerManagerService,
       this.eventProcessorService,
       this.matchmakingService,
@@ -101,7 +110,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.ballEntity,
       this.localCarEntity,
       this.alertEntity,
-      this.boostPads
+      this.boostPadsEntities,
+      this.spawnPointEntities
     );
 
     this.scoreManagerService = new ScoreManagerService(
@@ -113,15 +123,16 @@ export class WorldScene extends BaseCollidingGameScene {
       this.timerManagerService,
       this.eventProcessorService,
       this.matchmakingService,
-      this.matchFlowController.handleGoalTimeEnd.bind(this.matchFlowController),
+      this.worldController.handleGoalTimeEnd.bind(this.worldController),
       () => {
-        this.matchFlowController?.handleGameOverEnd();
+        this.worldController?.handleGameOverEnd();
         void this.returnToMainMenuScene();
       },
       (x: number, y: number, team: TeamType) =>
         this.triggerGoalExplosion(x, y, team),
       (won: boolean) => this.handleGameOverEffect(won)
     );
+
     super.load();
   }
 
@@ -146,7 +157,7 @@ export class WorldScene extends BaseCollidingGameScene {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
 
-    this.matchFlowController?.handleMatchState();
+    this.worldController?.handleMatchState();
     this.scoreManagerService?.detectScoresIfHost();
 
     this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
@@ -154,10 +165,8 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchmakingError(error: Error) {
     console.error("Matchmaking error", error);
-
     alert("Could not find or advertise match, returning to main scene menu...");
 
-    this.playerSpawnService.reset();
     this.gameState.setMatch(null);
     void this.returnToMainMenuScene();
   }
@@ -190,7 +199,7 @@ export class WorldScene extends BaseCollidingGameScene {
       const matchState = this.gameState.getMatch()?.getState();
 
       if (matchState === MatchStateType.WaitingPlayers) {
-        this.matchFlowController?.showCountdown();
+        this.worldController?.showCountdown();
       }
     }
   }
@@ -244,7 +253,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.subscribeToRemoteEvent(
       EventType.Countdown,
       (data: ArrayBuffer | null) =>
-        this.matchFlowController?.handleRemoteCountdown(data)
+        this.worldController?.handleRemoteCountdown(data)
     );
 
     this.subscribeToRemoteEvent(
@@ -266,7 +275,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private handleWaitingForPlayers(): void {
-    this.matchFlowController?.handleWaitingForPlayers();
+    this.worldController?.handleWaitingForPlayers();
   }
   private handleRemoteBoostPadConsumed(data: ArrayBuffer | null): void {
     if (data === null) {
@@ -283,12 +292,12 @@ export class WorldScene extends BaseCollidingGameScene {
     const index = binaryReader.unsignedInt8();
     const playerId = binaryReader.fixedLengthString(32);
 
-    if (index < 0 || index >= this.boostPads.length) {
+    if (index < 0 || index >= this.boostPadsEntities.length) {
       console.warn(`Invalid boost pad index: ${index}`);
       return;
     }
 
-    const pad = this.boostPads[index];
+    const pad = this.boostPadsEntities[index];
     pad.forceConsume();
 
     const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
