@@ -200,47 +200,55 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     }
 
     // Normalize collision vector
-    const vCollisionNorm = {
+    const normal = {
       x: vCollision.x / distance,
       y: vCollision.y / distance,
     };
 
-    // Calculate relative velocity
-    const vRelativeVelocity = {
-      x: otherDynamicCollidingEntity.getVX() - dynamicCollidingEntity.getVX(),
-      y: otherDynamicCollidingEntity.getVY() - dynamicCollidingEntity.getVY(),
+    const tangent = {
+      x: -normal.y,
+      y: normal.x,
     };
 
-    // Calculate speed along collision normal
-    const speed =
-      vRelativeVelocity.x * vCollisionNorm.x +
-      vRelativeVelocity.y * vCollisionNorm.y;
+    // Project velocities onto the normal and tangent vectors
+    const dpTan1 =
+      dynamicCollidingEntity.getVX() * tangent.x +
+      dynamicCollidingEntity.getVY() * tangent.y;
+    const dpTan2 =
+      otherDynamicCollidingEntity.getVX() * tangent.x +
+      otherDynamicCollidingEntity.getVY() * tangent.y;
 
-    if (speed < 0) {
-      // Collision has already been resolved
-      return;
-    }
+    const dpNorm1 =
+      dynamicCollidingEntity.getVX() * normal.x +
+      dynamicCollidingEntity.getVY() * normal.y;
+    const dpNorm2 =
+      otherDynamicCollidingEntity.getVX() * normal.x +
+      otherDynamicCollidingEntity.getVY() * normal.y;
 
-    // Calculate impulse
-    const impulse =
-      (2 * speed) /
-      (dynamicCollidingEntity.getMass() +
-        otherDynamicCollidingEntity.getMass());
+    // One dimensional elastic collision along the normal
+    const m1 =
+      (dpNorm1 * (dynamicCollidingEntity.getMass() - otherDynamicCollidingEntity.getMass()) +
+        2 * otherDynamicCollidingEntity.getMass() * dpNorm2) /
+      (dynamicCollidingEntity.getMass() + otherDynamicCollidingEntity.getMass());
+    const m2 =
+      (dpNorm2 * (otherDynamicCollidingEntity.getMass() - dynamicCollidingEntity.getMass()) +
+        2 * dynamicCollidingEntity.getMass() * dpNorm1) /
+      (dynamicCollidingEntity.getMass() + otherDynamicCollidingEntity.getMass());
 
-    // Update velocities for both movable entities
-    const impulseX =
-      impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.x;
-    const impulseY =
-      impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.y;
+    const RESTITUTION = 0.9;
 
-    dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() + impulseX);
-    dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() + impulseY);
+    dynamicCollidingEntity.setVX(
+      tangent.x * dpTan1 + normal.x * m1 * RESTITUTION
+    );
+    dynamicCollidingEntity.setVY(
+      tangent.y * dpTan1 + normal.y * m1 * RESTITUTION
+    );
 
     otherDynamicCollidingEntity.setVX(
-      otherDynamicCollidingEntity.getVX() - impulseX
+      tangent.x * dpTan2 + normal.x * m2 * RESTITUTION
     );
     otherDynamicCollidingEntity.setVY(
-      otherDynamicCollidingEntity.getVY() - impulseY
+      tangent.y * dpTan2 + normal.y * m2 * RESTITUTION
     );
   }
 }
