@@ -68,9 +68,9 @@ export class WorldEntityFactory {
       scoreboardEntity,
       ballEntity,
       goalEntity,
+      ...boostPadsEntities,
       localCarEntity,
       toastEntity,
-      ...boostPadsEntities,
       ...spawnPointEntities
     );
 
