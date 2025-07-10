@@ -70,6 +70,11 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected boost: number = this.MAX_BOOST;
   protected boosting: boolean = false;
 
+  private demolished = false;
+  private respawnTimer = 0;
+  private respawnX = 0;
+  private respawnY = 0;
+
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
 
@@ -122,6 +127,21 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.demolished) {
+      this.respawnTimer -= deltaTimeStamp;
+      if (this.respawnTimer <= 0) {
+        this.demolished = false;
+        this.opacity = 1;
+        this.angle = 1.5708;
+        this.speed = 0;
+        this.x = this.respawnX;
+        this.y = this.respawnY;
+        this.updateHitbox();
+      }
+      super.update(deltaTimeStamp);
+      return;
+    }
+
     this.handleBoostPads();
 
     if (this.boosting) {
@@ -151,6 +171,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
+    if (this.demolished) {
+      return;
+    }
     this.renderSmokeTrail(context);
     context.save();
 
@@ -195,6 +218,34 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   public isBoosting(): boolean {
     return this.boosting;
+  }
+
+  public getSpeed(): number {
+    return this.speed;
+  }
+
+  public getTopSpeed(): number {
+    return this.TOP_SPEED;
+  }
+
+  public getBoostTopSpeedMultiplier(): number {
+    return this.BOOST_TOP_SPEED_MULTIPLIER;
+  }
+
+  public demolish(respawnX: number, respawnY: number, delay: number): void {
+    this.demolished = true;
+    this.respawnTimer = delay;
+    this.respawnX = respawnX;
+    this.respawnY = respawnY;
+    this.speed = 0;
+    this.vx = 0;
+    this.vy = 0;
+    this.boosting = false;
+    this.opacity = 0;
+  }
+
+  public isDemolished(): boolean {
+    return this.demolished;
   }
 
   public activateBoost(): void {
