@@ -35,13 +35,9 @@ import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
 import { CarExplosionEntity } from "../../entities/car-explosion-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { RemoteEvent } from "../../../core/models/remote-event.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
-import type { GamePlayer } from "../../models/game-player.js";
-import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -162,7 +158,10 @@ export class WorldScene extends BaseCollidingGameScene {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
 
-    this.handleCarDemolitions();
+    this.worldController?.handleCarDemolitions(
+      this.worldEntities,
+      this.triggerCarExplosion.bind(this)
+    );
 
     this.worldController?.handleMatchState();
     this.scoreManagerService?.detectScoresIfHost();
@@ -282,7 +281,12 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.subscribeToRemoteEvent(
       EventType.CarDemolished,
-      (data: ArrayBuffer | null) => this.handleRemoteCarDemolished(data)
+      (data: ArrayBuffer | null) =>
+        this.worldController?.handleRemoteCarDemolished(
+          data,
+          this.getEntitiesByOwner.bind(this),
+          this.triggerCarExplosion.bind(this)
+        )
     );
   }
 
@@ -324,51 +328,6 @@ export class WorldScene extends BaseCollidingGameScene {
     }
   }
 
-  private handleRemoteCarDemolished(data: ArrayBuffer | null): void {
-    if (data === null) {
-      console.warn("Array buffer is null");
-      return;
-    }
-
-    if (this.gameState.getMatch()?.isHost()) {
-      console.warn("Host should not receive car demolished event");
-      return;
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(data);
-    const payload: CarDemolishedPayload = {
-      attackerId: binaryReader.fixedLengthString(32),
-      victimId: binaryReader.fixedLengthString(32),
-    };
-
-    const attacker =
-      this.gameState.getMatch()?.getPlayer(payload.attackerId) ?? null;
-    const victim = this.gameState.getMatch()?.getPlayer(payload.victimId) ?? null;
-
-    if (!victim) {
-      console.warn(`Cannot find victim with id ${payload.victimId}`);
-      return;
-    }
-
-    const victimCar = this.getEntitiesByOwner(victim).find(
-      (e): e is CarEntity => e instanceof CarEntity
-    );
-
-    if (!victimCar) {
-      console.warn(`Cannot find car for victim ${payload.victimId}`);
-      return;
-    }
-
-    const spawn = this.getSpawnPoint(victim);
-    if (spawn) {
-      victimCar.demolish(spawn.x, spawn.y, 3000);
-    }
-    this.triggerCarExplosion(victimCar.getX(), victimCar.getY());
-
-    const attackerName = attacker?.getName() ?? "Unknown";
-    const victimName = victim.getName();
-    this.alertEntity?.show([attackerName, "💣", victimName], "white", 2);
-  }
 
   private triggerGoalExplosion(x: number, y: number, team: TeamType): void {
     const explosion = new GoalExplosionEntity(this.canvas, x, y, team);
@@ -383,74 +342,6 @@ export class WorldScene extends BaseCollidingGameScene {
     this.cameraService.shake(1, 5);
   }
 
-  private handleCarDemolitions(): void {
-    if (!this.gameState.getMatch()?.isHost()) {
-      return;
-    }
-
-    const cars = this.worldEntities.filter(
-      (e): e is CarEntity => e instanceof CarEntity
-    );
-
-    cars.forEach((car) => {
-      car
-        .getCollidingEntities()
-        .forEach((other) => {
-          if (!(other instanceof CarEntity)) {
-            return;
-          }
-
-          if (car.isDemolished() || other.isDemolished()) {
-            return;
-          }
-
-          const carAtMax =
-            car.isBoosting() &&
-            car.getSpeed() >=
-              car.getTopSpeed() * car.getBoostTopSpeedMultiplier();
-
-          if (carAtMax) {
-            const victim = other;
-            const attacker = car;
-            const spawn = this.getSpawnPoint(victim.getPlayer());
-            if (spawn) {
-              victim.demolish(spawn.x, spawn.y, 3000);
-            }
-            this.triggerCarExplosion(victim.getX(), victim.getY());
-
-            const attackerName = attacker.getPlayer()?.getName() ?? "Unknown";
-            const victimName = victim.getPlayer()?.getName() ?? "Unknown";
-            this.alertEntity?.show([attackerName, "💣", victimName], "white", 2);
-
-            const attackerPlayer = attacker.getPlayer();
-            const victimPlayer = victim.getPlayer();
-            if (attackerPlayer && victimPlayer) {
-              const payload = BinaryWriter.build()
-                .fixedLengthString(attackerPlayer.getId(), 32)
-                .fixedLengthString(victimPlayer.getId(), 32)
-                .toArrayBuffer();
-
-              const event = new RemoteEvent(EventType.CarDemolished);
-              event.setData(payload);
-              this.eventProcessorService.sendEvent(event);
-            }
-          }
-        });
-    });
-  }
-
-  private getSpawnPoint(player: GamePlayer | null): { x: number; y: number } | null {
-    if (!player) {
-      return null;
-    }
-
-    const index = player.getSpawnPointIndex();
-    const spawn = this.spawnPointEntities.find((s) => s.getIndex() === index);
-    if (!spawn) {
-      return null;
-    }
-    return { x: spawn.getX(), y: spawn.getY() };
-  }
 
   private handleGameOverEffect(won: boolean): void {
     if (won) {

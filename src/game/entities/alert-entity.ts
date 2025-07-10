@@ -11,6 +11,7 @@ export class AlertEntity
   implements MultiplayerGameEntity
 {
   private textLines: string[] = ["Unknown", "message"];
+  private lineColors: string[] = [];
   private color: string = "white";
   private fontSize: number = 44;
 
@@ -22,18 +23,28 @@ export class AlertEntity
   }
 
   public show(textLines: string[], color = "white", duration = 0): void {
+    this.showColored(textLines, textLines.map(() => color), duration);
+  }
+
+  public showColored(
+    textLines: string[],
+    colors: string[],
+    duration = 0
+  ): void {
     if (this.timer !== null) {
       this.timer.stop(false);
     }
 
     this.textLines = textLines;
+    this.lineColors = colors;
 
-    if (color === "blue") {
+    const baseColor = colors[0] ?? "white";
+    if (baseColor === "blue") {
       this.color = BLUE_TEAM_COLOR;
-    } else if (color === "red") {
+    } else if (baseColor === "red") {
       this.color = RED_TEAM_COLOR;
     } else {
-      this.color = color;
+      this.color = baseColor;
     }
 
     if (textLines.length === 1) {
@@ -97,6 +108,8 @@ export class AlertEntity
 
     this.textLines.forEach((line, index) => {
       const yPosition = startY + index * lineHeight;
+      const color = this.resolveColor(this.lineColors[index] ?? this.color);
+      context.fillStyle = color;
       this.drawText(context, line, this.x, yPosition);
     });
   }
@@ -109,6 +122,15 @@ export class AlertEntity
   ): void {
     // Draw filled text with shadow applied
     context.fillText(text, x, y);
+  }
+
+  private resolveColor(color: string): string {
+    if (color === "blue") {
+      return BLUE_TEAM_COLOR;
+    } else if (color === "red") {
+      return RED_TEAM_COLOR;
+    }
+    return color;
   }
 
   private setInitialValues() {
