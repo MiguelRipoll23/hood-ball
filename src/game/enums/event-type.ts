@@ -14,4 +14,5 @@ export enum EventType {
   BoostPadConsumed,
   MatchmakingStarted,
   OnlinePlayers,
+  CarDemolished,
 }
