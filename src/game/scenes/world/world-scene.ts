@@ -339,7 +339,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private triggerCarExplosion(x: number, y: number): void {
     const explosion = new CarExplosionEntity(x, y);
     this.addEntityToSceneLayer(explosion);
-    this.cameraService.shake(1, 5);
+    // Slightly longer shake for demolition impact
+    this.cameraService.shake(1.5, 5);
   }
 
 
