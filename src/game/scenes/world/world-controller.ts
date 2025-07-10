@@ -236,9 +236,11 @@ export class WorldController {
 
     const attackerName = attacker?.getName() ?? "Unknown";
     const victimName = victim.getName();
+    const attackerColor = this.getPlayerColor(attacker);
+    const victimColor = this.getPlayerColor(victim);
     this.alertEntity.showColored(
       [attackerName, "\uD83D\uDCA3", victimName],
-      ["blue", "white", "red"],
+      [attackerColor, "white", victimColor],
       2
     );
   }
@@ -265,10 +267,11 @@ export class WorldController {
           return;
         }
 
+        const maxSpeed =
+          car.getTopSpeed() * car.getBoostTopSpeedMultiplier();
+        const EPSILON = 0.001;
         const carAtMax =
-          car.isBoosting() &&
-          car.getSpeed() >=
-            car.getTopSpeed() * car.getBoostTopSpeedMultiplier();
+          car.isBoosting() && car.getSpeed() >= maxSpeed - EPSILON;
 
         if (carAtMax) {
           const victim = other;
@@ -281,9 +284,11 @@ export class WorldController {
 
           const attackerName = attacker.getPlayer()?.getName() ?? "Unknown";
           const victimName = victim.getPlayer()?.getName() ?? "Unknown";
+          const attackerColor = this.getPlayerColor(attacker.getPlayer());
+          const victimColor = this.getPlayerColor(victim.getPlayer());
           this.alertEntity.showColored(
             [attackerName, "\uD83D\uDCA3", victimName],
-            ["blue", "white", "red"],
+            [attackerColor, "white", victimColor],
             2
           );
 
@@ -315,5 +320,13 @@ export class WorldController {
       return null;
     }
     return { x: spawn.getX(), y: spawn.getY() };
+  }
+
+  private getPlayerColor(player: GamePlayer | null): string {
+    if (!player) {
+      return "white";
+    }
+
+    return player === this.gameState.getGamePlayer() ? "blue" : "red";
   }
 }

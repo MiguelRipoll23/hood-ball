@@ -31,6 +31,11 @@ export class AlertEntity
     colors: string[],
     duration = 0
   ): void {
+    if (textLines.length !== colors.length) {
+      throw new Error(
+        `AlertEntity.showColored: textLines length (${textLines.length}) does not match colors length (${colors.length})`
+      );
+    }
     if (this.timer !== null) {
       this.timer.stop(false);
     }
