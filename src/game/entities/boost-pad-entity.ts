@@ -100,7 +100,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
 
     if (this.active) {
       const pulse = (Math.sin(this.glowTimer / 200) + 1) / 2;
-      const radius = this.RADIUS * (0.9 + 0.1 * pulse);
+      const radius = this.RADIUS * (0.8 + 0.2 * pulse);
       const gradient = context.createRadialGradient(
         this.x,
         this.y,
@@ -120,7 +120,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       context.closePath();
     } else {
       const ratio = 1 - this.cooldownRemaining / PAD_COOLDOWN_MS;
-      const radius = this.RADIUS * 0.9;
+      const radius = this.RADIUS * 0.8;
       context.fillStyle = `rgba(100,100,100,${0.3 + 0.7 * ratio})`;
       context.beginPath();
       context.arc(this.x, this.y, radius, 0, Math.PI * 2);
