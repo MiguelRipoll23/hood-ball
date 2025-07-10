@@ -12,6 +12,11 @@ import { LocalCarEntity } from "../../entities/local-car-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
+import { CarEntity } from "../../entities/car-entity.js";
+import type { GameEntity } from "../../../core/models/game-entity.js";
+import type { GamePlayer } from "../../models/game-player.js";
+import type { BaseMultiplayerGameEntity } from "../../../core/entities/base-multiplayer-entity.js";
+import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 
@@ -29,8 +34,8 @@ export class WorldController {
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,
     private readonly alertEntity: AlertEntity,
-    private readonly boostPadsEntities: BoostPadEntity[],
-    private readonly spawnPointEntities: SpawnPointEntity[]
+  private readonly boostPadsEntities: BoostPadEntity[],
+  private readonly spawnPointEntities: SpawnPointEntity[]
   ) {
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
@@ -182,5 +187,133 @@ export class WorldController {
         this.localCarEntity.setY(y);
       }
     });
+  }
+
+  public handleRemoteCarDemolished(
+    data: ArrayBuffer | null,
+    getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[],
+    triggerCarExplosion: (x: number, y: number) => void
+  ): void {
+    if (data === null) {
+      console.warn("Array buffer is null");
+      return;
+    }
+
+    if (this.gameState.getMatch()?.isHost()) {
+      console.warn("Host should not receive car demolished event");
+      return;
+    }
+
+    const binaryReader = BinaryReader.fromArrayBuffer(data);
+    const payload: CarDemolishedPayload = {
+      attackerId: binaryReader.fixedLengthString(32),
+      victimId: binaryReader.fixedLengthString(32),
+    };
+
+    const attacker =
+      this.gameState.getMatch()?.getPlayer(payload.attackerId) ?? null;
+    const victim = this.gameState.getMatch()?.getPlayer(payload.victimId) ?? null;
+
+    if (!victim) {
+      console.warn(`Cannot find victim with id ${payload.victimId}`);
+      return;
+    }
+
+    const victimCar = getEntitiesByOwner(victim).find(
+      (e): e is CarEntity => e instanceof CarEntity
+    );
+
+    if (!victimCar) {
+      console.warn(`Cannot find car for victim ${payload.victimId}`);
+      return;
+    }
+
+    const spawn = this.getSpawnPoint(victim);
+    if (spawn) {
+      victimCar.demolish(spawn.x, spawn.y, 3000);
+    }
+    triggerCarExplosion(victimCar.getX(), victimCar.getY());
+
+    const attackerName = attacker?.getName() ?? "Unknown";
+    const victimName = victim.getName();
+    this.alertEntity.showColored(
+      [attackerName, "\uD83D\uDCA3", victimName],
+      ["blue", "white", "red"],
+      2
+    );
+  }
+
+  public handleCarDemolitions(
+    worldEntities: GameEntity[],
+    triggerCarExplosion: (x: number, y: number) => void
+  ): void {
+    if (!this.gameState.getMatch()?.isHost()) {
+      return;
+    }
+
+    const cars = worldEntities.filter(
+      (e): e is CarEntity => e instanceof CarEntity
+    );
+
+    cars.forEach((car) => {
+      car.getCollidingEntities().forEach((other) => {
+        if (!(other instanceof CarEntity)) {
+          return;
+        }
+
+        if (car.isDemolished() || other.isDemolished()) {
+          return;
+        }
+
+        const carAtMax =
+          car.isBoosting() &&
+          car.getSpeed() >=
+            car.getTopSpeed() * car.getBoostTopSpeedMultiplier();
+
+        if (carAtMax) {
+          const victim = other;
+          const attacker = car;
+          const spawn = this.getSpawnPoint(victim.getPlayer());
+          if (spawn) {
+            victim.demolish(spawn.x, spawn.y, 3000);
+          }
+          triggerCarExplosion(victim.getX(), victim.getY());
+
+          const attackerName = attacker.getPlayer()?.getName() ?? "Unknown";
+          const victimName = victim.getPlayer()?.getName() ?? "Unknown";
+          this.alertEntity.showColored(
+            [attackerName, "\uD83D\uDCA3", victimName],
+            ["blue", "white", "red"],
+            2
+          );
+
+          const attackerPlayer = attacker.getPlayer();
+          const victimPlayer = victim.getPlayer();
+          if (attackerPlayer && victimPlayer) {
+            const payload = BinaryWriter.build()
+              .fixedLengthString(attackerPlayer.getId(), 32)
+              .fixedLengthString(victimPlayer.getId(), 32)
+              .toArrayBuffer();
+
+            const event = new RemoteEvent(EventType.CarDemolished);
+            event.setData(payload);
+            this.eventProcessorService.sendEvent(event);
+          }
+        }
+      });
+    });
+  }
+
+  private getSpawnPoint(player: GamePlayer | null): { x: number; y: number } | null {
+    if (!player) {
+      return null;
+    }
+
+    const index = player.getSpawnPointIndex();
+    const spawn = this.spawnPointEntities.find((s) => s.getIndex() === index);
+    if (!spawn) {
+      return null;
+    }
+    return { x: spawn.getX(), y: spawn.getY() };
   }
 }
