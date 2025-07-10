@@ -161,9 +161,33 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     };
 
     // Calculate distance between entities
-    const distance = Math.sqrt(
+    let distance = Math.sqrt(
       Math.pow(vCollision.x, 2) + Math.pow(vCollision.y, 2)
     );
+
+    const MIN_DISTANCE = 1;
+
+    // If entities are extremely close, push them apart to avoid being stuck
+    if (distance < MIN_DISTANCE) {
+      if (distance === 0) {
+        // Choose random direction when they share the same position
+        const angle = Math.random() * Math.PI * 2;
+        vCollision.x = Math.cos(angle);
+        vCollision.y = Math.sin(angle);
+        distance = 1;
+      }
+
+      const pushX = (vCollision.x / distance) * MIN_DISTANCE;
+      const pushY = (vCollision.y / distance) * MIN_DISTANCE;
+
+      dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() - pushX);
+      dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() - pushY);
+
+      otherDynamicCollidingEntity.setVX(otherDynamicCollidingEntity.getVX() + pushX);
+      otherDynamicCollidingEntity.setVY(otherDynamicCollidingEntity.getVY() + pushY);
+
+      return;
+    }
 
     // Normalize collision vector
     const vCollisionNorm = {
