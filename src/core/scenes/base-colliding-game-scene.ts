@@ -170,8 +170,18 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     // If entities are extremely close, push them apart to avoid being stuck
     if (distance < MIN_DISTANCE) {
       if (distance === 0) {
-        // Choose random direction when they share the same position
-        const angle = Math.random() * Math.PI * 2;
+        // Choose deterministic direction when they share the same position
+        const idPair = [
+          dynamicCollidingEntity.getId() ?? "",
+          otherDynamicCollidingEntity.getId() ?? "",
+        ]
+          .sort()
+          .join("");
+        let hash = 0;
+        for (let i = 0; i < idPair.length; i++) {
+          hash = (hash + idPair.charCodeAt(i)) % 360;
+        }
+        const angle = (hash / 360) * Math.PI * 2;
         vCollision.x = Math.cos(angle);
         vCollision.y = Math.sin(angle);
         distance = 1;
