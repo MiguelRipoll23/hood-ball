@@ -133,8 +133,9 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   private simulateCollisionBetweenDynamicAndStaticEntities(
     dynamicCollidingEntity: BaseDynamicCollidingGameEntity
   ) {
-    let vx = -dynamicCollidingEntity.getVX();
-    let vy = -dynamicCollidingEntity.getVY();
+    const restitution = dynamicCollidingEntity.getBounciness();
+    let vx = -dynamicCollidingEntity.getVX() * restitution;
+    let vy = -dynamicCollidingEntity.getVY() * restitution;
 
     // Impulse to avoid becoming stuck
     if (vx > -1 && vx < 1) {
@@ -221,9 +222,13 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       return;
     }
 
-    // Calculate impulse
+    // Calculate impulse with restitution
+    const restitution = Math.min(
+      dynamicCollidingEntity.getBounciness(),
+      otherDynamicCollidingEntity.getBounciness()
+    );
     const impulse =
-      (2 * speed) /
+      ((1 + restitution) * speed) /
       (dynamicCollidingEntity.getMass() +
         otherDynamicCollidingEntity.getMass());
 
