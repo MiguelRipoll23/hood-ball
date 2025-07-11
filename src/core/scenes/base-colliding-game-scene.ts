@@ -207,8 +207,8 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
     // Calculate relative velocity
     const vRelativeVelocity = {
-      x: otherDynamicCollidingEntity.getVX() - dynamicCollidingEntity.getVX(),
-      y: otherDynamicCollidingEntity.getVY() - dynamicCollidingEntity.getVY(),
+      x: dynamicCollidingEntity.getVX() - otherDynamicCollidingEntity.getVX(),
+      y: dynamicCollidingEntity.getVY() - otherDynamicCollidingEntity.getVY(),
     };
 
     // Calculate speed along collision normal
@@ -216,7 +216,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       vRelativeVelocity.x * vCollisionNorm.x +
       vRelativeVelocity.y * vCollisionNorm.y;
 
-    if (speed < 0) {
+    if (speed <= 0) {
       // Collision has already been resolved
       return;
     }
@@ -232,15 +232,14 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.x;
     const impulseY =
       impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.y;
-
-    dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() + impulseX);
-    dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() + impulseY);
+    dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() - impulseX);
+    dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() - impulseY);
 
     otherDynamicCollidingEntity.setVX(
-      otherDynamicCollidingEntity.getVX() - impulseX
+      otherDynamicCollidingEntity.getVX() + impulseX
     );
     otherDynamicCollidingEntity.setVY(
-      otherDynamicCollidingEntity.getVY() - impulseY
+      otherDynamicCollidingEntity.getVY() + impulseY
     );
   }
 }
