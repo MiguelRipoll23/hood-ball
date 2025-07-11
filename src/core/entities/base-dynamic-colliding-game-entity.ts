@@ -14,7 +14,6 @@ export class BaseDynamicCollidingGameEntity extends BaseStaticCollidingGameEntit
   protected vx: number = 0;
   protected vy: number = 0;
   protected mass: number = 0;
-  protected bounciness: number = 1;
 
   public override isDynamic(): boolean {
     return true;
@@ -42,14 +41,6 @@ export class BaseDynamicCollidingGameEntity extends BaseStaticCollidingGameEntit
 
   public getMass(): number {
     return this.mass;
-  }
-
-  public getBounciness(): number {
-    return this.bounciness;
-  }
-
-  public setBounciness(bounciness: number): void {
-    this.bounciness = bounciness;
   }
 
   public render(context: CanvasRenderingContext2D): void {

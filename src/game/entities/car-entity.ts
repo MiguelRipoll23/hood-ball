@@ -85,7 +85,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.y = y;
     this.angle = angle;
     this.mass = this.MASS;
-    this.setBounciness(0.5);
 
     if (remote) {
       this.imagePath = this.IMAGE_RED_PATH;
