@@ -35,6 +35,7 @@ export class BallEntity
     this.x = x;
     this.y = y;
     this.mass = this.MASS;
+    this.setBounciness(0.8);
     this.setSyncableValues();
   }
 
