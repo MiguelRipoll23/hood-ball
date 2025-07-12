@@ -23,7 +23,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private readonly IMAGE_RED_PATH = "./images/car-red.png";
 
   private readonly MASS: number = 1000;
-  private readonly DISTANCE_CENTER: number = 220;
   private readonly FRICTION: number = 0.001;
 
   // Boost related constants
@@ -100,7 +99,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   public override reset(): void {
     this.angle = 1.5708;
     this.speed = 0;
-    this.setCenterPosition();
     this.boost = this.MAX_BOOST;
     this.boosting = false;
     super.reset();
@@ -265,15 +263,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   public setCanvas(canvas: HTMLCanvasElement): void {
     this.canvas = canvas;
-  }
-
-  public setCenterPosition(): void {
-    if (this.canvas === null) {
-      throw new Error("Canvas is not set");
-    }
-
-    this.x = this.canvas.width / 2;
-    this.y = this.canvas.height / 2 + this.DISTANCE_CENTER;
   }
 
   private createHitbox(): void {
