@@ -4,6 +4,7 @@ import { EventInspectorWindow } from "./event-inspector-window.js";
 import { MatchInspectorWindow } from "./match-inspector-window.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
+import { ChatInspectorWindow } from "./chat-inspector-window.js";
 import type { GameState } from "../../core/models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
@@ -11,6 +12,7 @@ export class DebugWindow extends BaseWindow {
   private sceneInspectorWindow: SceneInspectorWindow;
   private matchInspectorWindow: MatchInspectorWindow;
   private peerInspectorWindow: PeerInspectorWindow;
+  private chatInspectorWindow: ChatInspectorWindow;
 
   constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
@@ -18,6 +20,7 @@ export class DebugWindow extends BaseWindow {
     this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
     this.matchInspectorWindow = new MatchInspectorWindow(gameState);
     this.peerInspectorWindow = new PeerInspectorWindow();
+    this.chatInspectorWindow = new ChatInspectorWindow();
     this.open();
   }
 
@@ -45,6 +48,10 @@ export class DebugWindow extends BaseWindow {
     if (this.peerInspectorWindow.isOpen()) {
       this.peerInspectorWindow.render();
     }
+
+    if (this.chatInspectorWindow.isOpen()) {
+      this.chatInspectorWindow.render();
+    }
   }
 
   private renderMenu(): void {
@@ -70,6 +77,10 @@ export class DebugWindow extends BaseWindow {
 
         if (ImGui.MenuItem("Peers", "P")) {
           this.peerInspectorWindow.toggle();
+        }
+
+        if (ImGui.MenuItem("Chat", "C")) {
+          this.chatInspectorWindow.toggle();
         }
 
         ImGui.EndMenu();

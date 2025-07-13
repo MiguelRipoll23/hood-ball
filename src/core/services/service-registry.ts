@@ -16,6 +16,7 @@ import {
 import { CredentialService } from "../../game/services/security/credential-service.js";
 import { CameraService } from "./gameplay/camera-service.js";
 import { SpawnPointService } from "../../game/services/gameplay/spawn-point-service.js";
+import { ChatService } from "../../game/services/network/chat-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -49,6 +50,7 @@ export class ServiceRegistry {
       useClass: EntityOrchestratorService,
     });
     container.bind({ provide: WebRTCService, useClass: WebRTCService });
+    container.bind({ provide: ChatService, useClass: ChatService });
     container.bind({ provide: CameraService, useClass: CameraService });
     container.bind({ provide: SpawnPointService, useClass: SpawnPointService });
     container.bind({

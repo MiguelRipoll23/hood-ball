@@ -1,0 +1,34 @@
+import { ImGui, ImVec2 } from "@mori2003/jsimgui";
+import { BaseWindow } from "../../core/debug/base-window.js";
+import { ChatService } from "../services/network/chat-service.js";
+import { container } from "../../core/services/di-container.js";
+import { injectable } from "@needle-di/core";
+
+@injectable()
+export class ChatInspectorWindow extends BaseWindow {
+  private readonly chatService: ChatService;
+  private inputText: string = "";
+
+  constructor() {
+    super("Chat inspector", new ImVec2(300, 250));
+    this.chatService = container.get(ChatService);
+  }
+
+  protected override renderContent(): void {
+    const messages = this.chatService.getMessages();
+
+    ImGui.BeginChild("ChatLog", new ImVec2(0, -40), true);
+    messages.forEach((msg) => ImGui.TextWrapped(msg));
+    ImGui.EndChild();
+
+    const inputRef = [this.inputText];
+    if (ImGui.InputText("##chatInput", inputRef, 256)) {
+      this.inputText = inputRef[0];
+    }
+    ImGui.SameLine();
+    if (ImGui.Button("Send") && this.inputText.trim() !== "") {
+      this.chatService.sendMessage(this.inputText.trim());
+      this.inputText = "";
+    }
+  }
+}
