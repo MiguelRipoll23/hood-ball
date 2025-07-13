@@ -13,6 +13,7 @@ export class ChatService {
   private static readonly MAX_HISTORY_SIZE = 50;
 
   private readonly messages: string[] = [];
+  private readonly listeners: ((messages: string[]) => void)[] = [];
   private readonly webSocketService: WebSocketService;
   private readonly gameState: GameState;
 
@@ -24,6 +25,10 @@ export class ChatService {
 
   public getMessages(): string[] {
     return this.messages;
+  }
+
+  public onMessage(listener: (messages: string[]) => void): void {
+    this.listeners.push(listener);
   }
 
   public clearMessages(): void {
@@ -70,5 +75,6 @@ export class ChatService {
     }
 
     this.messages.push(message);
+    this.listeners.forEach((l) => l(this.messages));
   }
 }
