@@ -20,7 +20,7 @@ export class ServerMessageWindowEntity extends CloseableWindowEntity {
     index: number,
     length: number,
     title: string,
-    content: string,
+    content: string
   ): void {
     this.index = index;
     this.next = false;
