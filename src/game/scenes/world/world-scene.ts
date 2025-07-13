@@ -136,7 +136,6 @@ export class WorldScene extends BaseCollidingGameScene {
       this.worldController.handleGoalTimeEnd.bind(this.worldController),
       () => {
         this.worldController?.handleGameOverEnd();
-        void this.returnToMainMenuScene();
       },
       (x: number, y: number, team: TeamType) =>
         this.triggerGoalExplosion(x, y, team),
@@ -261,6 +260,11 @@ export class WorldScene extends BaseCollidingGameScene {
     this.subscribeToLocalEvent<PlayerDisconnectedPayload>(
       EventType.PlayerDisconnected,
       this.handlePlayerDisconnection.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.ReturnToMainMenu,
+      () => void this.returnToMainMenuScene()
     );
   }
 

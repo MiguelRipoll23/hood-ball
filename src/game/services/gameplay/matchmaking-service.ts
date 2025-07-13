@@ -5,6 +5,8 @@ import { DebugUtils } from "../../../core/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { LocalEvent } from "../../../core/models/local-event.js";
+import { EventType } from "../../enums/event-type.js";
 import { APIService } from "../network/api-service.js";
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../core/services/gameplay/interval-manager-service.js";
@@ -133,6 +135,8 @@ export class MatchmakingService implements IMatchmakingService {
     this.gameState.setMatch(null);
     container.get(PendingIdentitiesToken).clear();
     container.get(ReceivedIdentitiesToken).clear();
+    const localEvent = new LocalEvent(EventType.ReturnToMainMenu);
+    container.get(EventProcessorService).addLocalEvent(localEvent);
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
