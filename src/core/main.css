@@ -83,3 +83,13 @@ hr {
   z-index: 1;
 }
 
+#chat-input {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  display: none;
+  z-index: 2;
+}
+

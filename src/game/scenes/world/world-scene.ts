@@ -5,6 +5,8 @@ import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { HelpEntity } from "../../entities/help-entity.js";
+import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
+import { ChatHistoryEntity } from "../../entities/chat-history-entity.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityStateType } from "../../../core/enums/entity-state-type.js";
@@ -38,6 +40,7 @@ import { WebSocketService } from "../../services/network/websocket-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import { ChatService } from "../../services/network/chat-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -47,6 +50,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
+  private readonly chatService: ChatService;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -57,6 +61,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private alertEntity: AlertEntity | null = null;
   private toastEntity: ToastEntity | null = null;
   private helpEntity: HelpEntity | null = null;
+  private chatButtonEntity: ChatButtonEntity | null = null;
+  private chatHistoryEntity: ChatHistoryEntity | null = null;
 
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
@@ -75,6 +81,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.entityOrchestrator = container.get(EntityOrchestratorService);
     this.eventProcessorService = container.get(EventProcessorService);
     this.spawnPointService = container.get(SpawnPointService);
+    this.chatService = container.get(ChatService);
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -97,6 +104,24 @@ export class WorldScene extends BaseCollidingGameScene {
     this.helpEntity = entities.helpEntity;
     this.boostPadsEntities = entities.boostPadsEntities;
     this.spawnPointEntities = entities.spawnPointEntities;
+
+    const chatInput = document.querySelector("#chat-input") as HTMLInputElement | null;
+    if (chatInput) {
+      this.chatHistoryEntity = new ChatHistoryEntity(this.canvas);
+      const boostMeter = this.localCarEntity.getBoostMeterEntity();
+      if (boostMeter) {
+        this.chatButtonEntity = new ChatButtonEntity(
+          boostMeter,
+          chatInput,
+          this.chatService,
+          this.gameState.getGamePointer()
+        );
+        this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
+        this.chatService.onMessage((msgs: string[]) =>
+          this.chatHistoryEntity?.show(msgs)
+        );
+      }
+    }
 
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
