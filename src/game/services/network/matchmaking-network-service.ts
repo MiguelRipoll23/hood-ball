@@ -27,7 +27,10 @@ import { injectable, inject } from "@needle-di/core";
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
+  PendingDisconnectionsToken,
 } from "../gameplay/matchmaking-tokens.js";
+import { container } from "../../../core/services/di-container.js";
+import { MatchmakingService } from "../gameplay/matchmaking-service.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 
 @injectable()
@@ -59,7 +62,8 @@ export class MatchmakingNetworkService
       SpawnPointService
     ),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
+    private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
+    private readonly pendingDisconnections = inject(PendingDisconnectionsToken)
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
@@ -399,6 +403,12 @@ export class MatchmakingNetworkService
     }
 
     void this.matchFinderService.advertiseMatch();
+
+    if (this.pendingDisconnections.delete(player.getId())) {
+      container
+        .get(MatchmakingService)
+        .finalizeIfNoPendingDisconnections();
+    }
   }
 
   private handlePlayerDisconnectedById(playerId: string) {

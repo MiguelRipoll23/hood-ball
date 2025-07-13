@@ -14,6 +14,7 @@ import { GamePlayer } from "../../models/game-player.js";
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
+  PendingDisconnectionsToken,
 } from "./matchmaking-tokens.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
@@ -27,6 +28,7 @@ export class MatchmakingService implements IMatchmakingService {
   private readonly webrtcService: WebRTCService;
   private readonly matchFinderService: MatchFinderService;
   private readonly networkService: IMatchmakingNetworkService;
+  private readonly pendingDisconnections: Set<string>;
 
   constructor(private gameState = container.get(GameState)) {
     container.get(TimerManagerService);
@@ -37,6 +39,7 @@ export class MatchmakingService implements IMatchmakingService {
     container.get(EventProcessorService);
     this.matchFinderService = container.get(MatchFinderService);
     this.networkService = container.get(MatchmakingNetworkService);
+    this.pendingDisconnections = container.get(PendingDisconnectionsToken);
     this.registerCommandHandlers();
   }
 
@@ -96,17 +99,37 @@ export class MatchmakingService implements IMatchmakingService {
 
   public async handleGameOver(): Promise<void> {
     if (this.gameState.getMatch()?.isHost()) {
-      this.webrtcService
-        .getPeers()
-        .forEach((peer) => peer.disconnectGracefully());
+      const peers = this.webrtcService.getPeers();
+
+      this.pendingDisconnections.clear();
+      peers.forEach((peer) => {
+        const playerId = peer.getPlayer()?.getId();
+        if (playerId) {
+          this.pendingDisconnections.add(playerId);
+        }
+
+        peer.disconnectGracefully();
+      });
 
       this.networkService.removePingCheckInterval();
 
       await this.apiService
         .removeMatch()
         .catch((error) => console.error(error));
-    }
 
+      this.finalizeIfNoPendingDisconnections();
+    } else {
+      this.finalizeGameOver();
+    }
+  }
+
+  public finalizeIfNoPendingDisconnections(): void {
+    if (this.pendingDisconnections.size === 0) {
+      this.finalizeGameOver();
+    }
+  }
+
+  private finalizeGameOver(): void {
     this.gameState.setMatch(null);
     container.get(PendingIdentitiesToken).clear();
     container.get(ReceivedIdentitiesToken).clear();
