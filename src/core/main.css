@@ -96,7 +96,14 @@ hr {
   font-size: 18px;
   color: #fff;
   outline: none;
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
   z-index: 2;
+}
+
+#chat-input.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 

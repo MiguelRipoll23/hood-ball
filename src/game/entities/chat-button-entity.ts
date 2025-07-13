@@ -47,6 +47,10 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     }
 
     this.inputElement.style.display = "block";
+    // Trigger reflow to ensure the transition runs
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+    this.inputElement.offsetWidth;
+    this.inputElement.classList.add("show");
     this.inputElement.value = "";
     this.inputElement.focus();
     this.gamePointer.setPreventDefault(false);
@@ -56,7 +60,14 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
 
   private hideInput(): void {
     this.inputElement.blur();
-    this.inputElement.style.display = "none";
+    this.inputElement.classList.remove("show");
+    const onTransitionEnd = () => {
+      this.inputElement.style.display = "none";
+      this.inputElement.removeEventListener("transitionend", onTransitionEnd);
+    };
+    this.inputElement.addEventListener("transitionend", onTransitionEnd, {
+      once: true,
+    });
     this.gamePointer.setPreventDefault(true);
     this.inputVisible = false;
     this.setActive(true);
