@@ -21,6 +21,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
   private connected = false;
+  private gracefulDisconnecting = false;
 
   private incomingReliableSequence = this.SEQUENCE_MAXIMUM;
   private incomingUnreliableSequence = this.SEQUENCE_MAXIMUM;
@@ -164,12 +165,14 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   public disconnectGracefully(): void {
     this.connected = false;
+    this.gracefulDisconnecting = true;
     this.sendDisconnectMessage();
   }
 
   public disconnect(graceful = false): void {
     if (graceful) {
       this.connected = false;
+      this.gracefulDisconnecting = true;
     }
 
     this.peerConnection.close();
@@ -270,10 +273,13 @@ export class WebRTCPeerService implements WebRTCPeer {
     console.info("Peer connection closed");
     this.webrtcDelegate.removePeer(this.token);
 
-    // If the peer was connected, notify the listener
-    if (this.connected) {
+    const shouldNotify = this.connected || this.gracefulDisconnecting;
+
+    if (shouldNotify) {
+      const graceful = this.gracefulDisconnecting;
       this.connected = false;
-      this.connectionListener.onPeerDisconnected(this);
+      this.gracefulDisconnecting = false;
+      this.connectionListener.onPeerDisconnected(this, graceful);
     }
   }
 
