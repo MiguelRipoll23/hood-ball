@@ -61,6 +61,7 @@ export class WorldController {
   public handleWaitingForPlayers(): void {
     this.gameState.setMatchState(MatchStateType.WaitingPlayers);
     this.scoreboardEntity.stopTimer();
+    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
   }
 
   public showCountdown(): void {
@@ -68,6 +69,10 @@ export class WorldController {
     const isHost = match?.isHost();
 
     this.gameState.setMatchState(MatchStateType.Countdown);
+
+    if (this.countdownCurrentNumber <= 0) {
+      this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+    }
 
     this.resetForCountdown();
 
