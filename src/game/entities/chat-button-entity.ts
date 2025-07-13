@@ -23,6 +23,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     super();
     this.width = this.SIZE;
     this.height = this.SIZE;
+    this.opacity = 0.7;
     this.inputElement.addEventListener("blur", () => {
       if (this.inputVisible) {
         this.hideInput();
