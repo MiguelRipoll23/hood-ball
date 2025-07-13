@@ -26,6 +26,10 @@ export class ChatService {
     return this.messages;
   }
 
+  public clearMessages(): void {
+    this.messages.length = 0;
+  }
+
   public sendMessage(text: string): void {
     const trimmed = text.trim();
     if (trimmed.length === 0 || trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
@@ -38,9 +42,6 @@ export class ChatService {
       .toArrayBuffer();
 
     this.webSocketService.sendMessage(payload);
-
-    const playerName = this.gameState.getGamePlayer().getName();
-    this.addMessage(`${playerName}: ${trimmed}`);
   }
 
   @ServerCommandHandler(WebSocketType.ChatMessage)
