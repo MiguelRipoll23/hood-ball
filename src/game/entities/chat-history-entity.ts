@@ -5,7 +5,8 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
   private readonly padding = 10;
   private readonly cornerRadius = 8;
   private readonly fontSize = 16;
-  private readonly lineHeight = 18;
+  private readonly lineHeight = 16;
+  private readonly messageMargin = 4;
   private messages: string[] = [];
   private timer: TimerService | null = null;
   private context: CanvasRenderingContext2D;
@@ -53,7 +54,8 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
     );
     this.width = maxWidth + this.padding * 2;
     this.height =
-      this.messages.length * this.lineHeight -
+      this.messages.length * this.lineHeight +
+      (this.messages.length - 1) * this.messageMargin -
       (this.lineHeight - this.fontSize) +
       this.padding * 2;
   }
@@ -84,7 +86,8 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
     ctx.textBaseline = "top";
     let y = this.y + this.padding;
     const x = this.x + this.padding;
-    for (const line of this.messages) {
+    for (let i = 0; i < this.messages.length; i++) {
+      const line = this.messages[i];
       const colonIndex = line.indexOf(":");
       if (colonIndex > -1) {
         const name = line.substring(0, colonIndex);
@@ -102,6 +105,9 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
         ctx.fillText(line, x, y);
       }
       y += this.lineHeight;
+      if (i < this.messages.length - 1) {
+        y += this.messageMargin;
+      }
     }
   }
 }
