@@ -7,7 +7,6 @@ import { injectable } from "@needle-di/core";
 @injectable()
 export class ChatInspectorWindow extends BaseWindow {
   private readonly chatService: ChatService;
-  private inputText: string = "";
 
   constructor() {
     super("Chat inspector", new ImVec2(300, 200));
@@ -16,18 +15,12 @@ export class ChatInspectorWindow extends BaseWindow {
 
   protected override renderContent(): void {
     const messages = this.chatService.getMessages();
+
     ImGui.BeginChild("ChatLog", new ImVec2(0, 150), true);
     messages.forEach((msg) => ImGui.TextWrapped(msg));
     ImGui.EndChild();
 
-    const inputRef = [this.inputText];
-    ImGui.SetNextItemWidth(-Number.MIN_VALUE);
-    if (ImGui.InputText("##chatInput", inputRef, 256)) {
-      this.inputText = inputRef[0];
-    }
-    const buttonWidth = ImGui.GetContentRegionAvail().x;
-
-    if (ImGui.Button("Clear", new ImVec2(buttonWidth, 0))) {
+    if (ImGui.Button("Clear")) {
       this.chatService.clearMessages();
     }
   }
