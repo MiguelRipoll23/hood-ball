@@ -103,6 +103,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     if (this.helpEntity.getOpacity() > 0) {
       if (!this.inputVisible) {
         this.setActive(false);
+        this.gamePointer.clearPressed();
       }
     } else if (!this.inputVisible) {
       this.setActive(true);
