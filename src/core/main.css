@@ -88,11 +88,12 @@ hr {
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 200px;
+  width: 300px;
   border: 0;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.8);
-  padding: 8px;
+  padding: 12px;
+  font-size: 18px;
   color: #fff;
   outline: none;
   display: none;
