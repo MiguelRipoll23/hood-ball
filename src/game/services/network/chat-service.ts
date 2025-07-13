@@ -9,6 +9,9 @@ import { injectable } from "@needle-di/core";
 
 @injectable()
 export class ChatService {
+  private static readonly MAX_MESSAGE_LENGTH = 256;
+  private static readonly MAX_HISTORY_SIZE = 50;
+
   private readonly messages: string[] = [];
   private readonly webSocketService: WebSocketService;
   private readonly gameState: GameState;
@@ -24,24 +27,47 @@ export class ChatService {
   }
 
   public sendMessage(text: string): void {
+    const trimmed = text.trim();
+    if (trimmed.length === 0 || trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
+      return;
+    }
+
     const payload = BinaryWriter.build()
       .unsignedInt8(WebSocketType.ChatMessage)
-      .variableLengthString(text)
+      .variableLengthString(trimmed)
       .toArrayBuffer();
 
     this.webSocketService.sendMessage(payload);
 
     const playerName = this.gameState.getGamePlayer().getName();
-    this.messages.push(`${playerName}: ${text}`);
+    this.addMessage(`${playerName}: ${trimmed}`);
   }
 
   @ServerCommandHandler(WebSocketType.ChatMessage)
   public handleChatMessage(binaryReader: BinaryReader): void {
     const playerId = binaryReader.fixedLengthString(32);
     const text = binaryReader.variableLengthString();
+
+    if (!playerId || !text) {
+      return;
+    }
+
+    const trimmed = text.trim();
+    if (trimmed.length === 0 || trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
+      return;
+    }
+
     const playerName =
       this.gameState.getMatch()?.getPlayer(playerId)?.getName() ?? playerId;
 
-    this.messages.push(`${playerName}: ${text}`);
+    this.addMessage(`${playerName}: ${trimmed}`);
+  }
+
+  private addMessage(message: string): void {
+    if (this.messages.length >= ChatService.MAX_HISTORY_SIZE) {
+      this.messages.shift();
+    }
+
+    this.messages.push(message);
   }
 }
