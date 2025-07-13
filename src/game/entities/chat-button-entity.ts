@@ -26,6 +26,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.width = this.SIZE;
     this.height = this.SIZE;
     this.opacity = 0.7;
+    this.setActive(false);
     this.inputElement.addEventListener("blur", () => {
       if (this.inputVisible) {
         this.hideInput();
@@ -55,6 +56,14 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
+    if (this.helpEntity.getOpacity() > 0) {
+      if (!this.inputVisible) {
+        this.setActive(false);
+      }
+    } else if (!this.inputVisible) {
+      this.setActive(true);
+    }
+
     const x =
       this.boostMeterEntity.getX() +
       this.boostMeterEntity.getWidth() +
@@ -93,7 +102,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    if (this.inputVisible) {
+    if (this.inputVisible || this.helpEntity.getOpacity() > 0) {
       return;
     }
 
