@@ -123,7 +123,8 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
     this.contentTextX = this.x + 14;
     this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 62;
-    this.contentTextMaxWidth = this.width - 25;
+    const paddingX = this.contentTextX - this.x;
+    this.contentTextMaxWidth = this.width - paddingX * 2;
     this.updateWrappedContentLines();
   }
 
