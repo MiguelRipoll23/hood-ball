@@ -10,7 +10,7 @@ export class ChatInspectorWindow extends BaseWindow {
   private inputText: string = "";
 
   constructor() {
-    super("Chat inspector", new ImVec2(300, 250));
+    super("Chat inspector", new ImVec2(300, 200));
     this.chatService = container.get(ChatService);
   }
 
@@ -25,17 +25,8 @@ export class ChatInspectorWindow extends BaseWindow {
     if (ImGui.InputText("##chatInput", inputRef, 256)) {
       this.inputText = inputRef[0];
     }
-    const buttonWidth =
-      (ImGui.GetContentRegionAvail().x - ImGui.GetStyle().ItemSpacing.x) / 2;
+    const buttonWidth = ImGui.GetContentRegionAvail().x;
 
-    if (
-      ImGui.Button("Send", new ImVec2(buttonWidth, 0)) &&
-      this.inputText.trim() !== ""
-    ) {
-      this.chatService.sendMessage(this.inputText.trim());
-      this.inputText = "";
-    }
-    ImGui.SameLine();
     if (ImGui.Button("Clear", new ImVec2(buttonWidth, 0))) {
       this.chatService.clearMessages();
     }
