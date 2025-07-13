@@ -16,7 +16,7 @@ export class ChatInspectorWindow extends BaseWindow {
   protected override renderContent(): void {
     const messages = this.chatService.getMessages();
 
-    ImGui.BeginChild("ChatLog", new ImVec2(0, 150), true);
+    ImGui.BeginChild("ChatLog", new ImVec2(0, 140));
     messages.forEach((msg) => ImGui.TextWrapped(msg));
     ImGui.EndChild();
 
