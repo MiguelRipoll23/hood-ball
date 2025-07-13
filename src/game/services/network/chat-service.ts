@@ -9,7 +9,7 @@ import { injectable } from "@needle-di/core";
 
 @injectable()
 export class ChatService {
-  private static readonly MAX_MESSAGE_LENGTH = 256;
+  private static readonly MAX_MESSAGE_LENGTH = 35;
   private static readonly MAX_HISTORY_SIZE = 50;
 
   private readonly messages: string[] = [];
@@ -37,7 +37,13 @@ export class ChatService {
 
   public sendMessage(text: string): void {
     const trimmed = text.trim();
-    if (trimmed.length === 0 || trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
+    if (trimmed.length === 0) {
+      console.warn("Chat message empty");
+      return;
+    }
+
+    if (trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
+      console.warn("Chat message exceeds max length");
       return;
     }
 
@@ -59,7 +65,13 @@ export class ChatService {
     }
 
     const trimmed = text.trim();
-    if (trimmed.length === 0 || trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
+    if (trimmed.length === 0) {
+      console.warn("Received empty chat message");
+      return;
+    }
+
+    if (trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
+      console.warn("Received chat message exceeding max length");
       return;
     }
 

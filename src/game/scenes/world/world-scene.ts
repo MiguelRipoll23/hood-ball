@@ -362,7 +362,8 @@ export class WorldScene extends BaseCollidingGameScene {
       chatInputElement,
       this.chatService,
       this.gameState.getGamePointer(),
-      this.gameState.getGameKeyboard()
+      this.gameState.getGameKeyboard(),
+      this.helpEntity as HelpEntity
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
     this.chatService.onMessage((msgs: string[]) =>
