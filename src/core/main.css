@@ -94,6 +94,7 @@ hr {
   background: rgba(0, 0, 0, 0.8);
   padding: 8px;
   color: #fff;
+  outline: none;
   display: none;
   z-index: 2;
 }

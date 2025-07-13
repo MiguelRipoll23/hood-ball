@@ -7,7 +7,7 @@ import { HelpEntity } from "./help-entity.js";
 
 export class ChatButtonEntity extends BaseTappableGameEntity {
   private readonly SIZE = 32;
-  private readonly OFFSET = 10;
+  private readonly OFFSET = 20;
   private readonly emoji = "\uD83D\uDCAC"; // chat emoji
 
   private inputVisible = false;
