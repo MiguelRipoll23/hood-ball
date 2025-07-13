@@ -16,16 +16,15 @@ export class ChatInspectorWindow extends BaseWindow {
 
   protected override renderContent(): void {
     const messages = this.chatService.getMessages();
-    ImGui.BeginChild("ChatLog", new ImVec2(0, -40), true);
+    ImGui.BeginChild("ChatLog", new ImVec2(0, -70), true);
     messages.forEach((msg) => ImGui.TextWrapped(msg));
     ImGui.EndChild();
 
     const inputRef = [this.inputText];
-    ImGui.SetNextItemWidth(-120);
+    ImGui.SetNextItemWidth(-Number.MIN_VALUE);
     if (ImGui.InputText("##chatInput", inputRef, 256)) {
       this.inputText = inputRef[0];
     }
-    ImGui.SameLine();
     if (ImGui.Button("Send") && this.inputText.trim() !== "") {
       this.chatService.sendMessage(this.inputText.trim());
       this.inputText = "";
