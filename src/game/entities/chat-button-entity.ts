@@ -108,7 +108,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
 
     context.save();
     this.applyOpacity(context);
-    context.font = `${this.SIZE * 0.8}px system-ui`;
+    context.font = `${this.SIZE}px system-ui`;
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(this.emoji, this.x + this.SIZE / 2, this.y + this.SIZE / 2 + 1);

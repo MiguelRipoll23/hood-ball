@@ -5,7 +5,7 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
   private readonly padding = 10;
   private readonly cornerRadius = 8;
   private readonly fontSize = 16;
-  private readonly lineHeight = 18;
+  private readonly lineHeight = 16;
   private messages: string[] = [];
   private timer: TimerService | null = null;
   private context: CanvasRenderingContext2D;
