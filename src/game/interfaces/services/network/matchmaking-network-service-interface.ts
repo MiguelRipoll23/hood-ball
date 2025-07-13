@@ -8,7 +8,7 @@ export interface IMatchmakingNetworkService {
   removePingCheckInterval(): void;
   handlePlayerIdentity(binaryReader: BinaryReader): void;
   onPeerConnected(peer: WebRTCPeer): void;
-  onPeerDisconnected(peer: WebRTCPeer): void;
+  onPeerDisconnected(peer: WebRTCPeer, graceful: boolean): void;
   handleJoinRequest(peer: WebRTCPeer): void;
   handleJoinResponse(peer: WebRTCPeer, binaryReader: BinaryReader): void;
   handlePlayerConnection(peer: WebRTCPeer, binaryReader: BinaryReader): void;

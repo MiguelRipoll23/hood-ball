@@ -131,7 +131,7 @@ export class MatchmakingNetworkService
     this.sendJoinRequest(peer);
   }
 
-  public onPeerDisconnected(peer: WebRTCPeer): void {
+  public onPeerDisconnected(peer: WebRTCPeer, graceful: boolean): void {
     if (peer.hasJoined() === false) {
       console.warn("Ignoring disconnection from non-joined peer", peer);
       return;
@@ -146,7 +146,7 @@ export class MatchmakingNetworkService
 
     if (this.gameState.getMatch()?.isHost()) {
       this.handlePlayerDisconnection(peer);
-    } else {
+    } else if (!graceful) {
       this.handleHostDisconnected(peer);
     }
   }
