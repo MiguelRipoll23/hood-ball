@@ -43,6 +43,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.inputElement.value = "";
     this.inputElement.focus();
     this.gamePointer.setPreventDefault(false);
+    this.gameKeyboard.setEnabled(false);
     this.inputVisible = true;
     this.setActive(false);
   }
@@ -51,6 +52,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.inputElement.blur();
     this.inputElement.style.display = "none";
     this.gamePointer.setPreventDefault(true);
+    this.gameKeyboard.setEnabled(true);
     this.inputVisible = false;
     this.setActive(true);
   }
