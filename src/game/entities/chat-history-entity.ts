@@ -61,7 +61,7 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
 
   private setPosition(): void {
     this.x = 20;
-    this.y = this.canvas.height - this.height - 100;
+    this.y = 20;
   }
 
   private drawBackground(ctx: CanvasRenderingContext2D): void {
