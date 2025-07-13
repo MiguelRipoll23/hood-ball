@@ -316,6 +316,10 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(localEvent);
 
+    if (this.gameState.getMatch()?.isHost()) {
+      this.notifyMatchPlayerToServer(true, player.getId());
+    }
+
     void this.matchFinderService.advertiseMatch();
   }
 
@@ -389,6 +393,10 @@ export class MatchmakingNetworkService
     playerDisconnectedEvent.setData({ player });
 
     this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
+
+    if (this.gameState.getMatch()?.isHost()) {
+      this.notifyMatchPlayerToServer(false, player.getId());
+    }
 
     void this.matchFinderService.advertiseMatch();
   }
@@ -629,5 +637,18 @@ export class MatchmakingNetworkService
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
+  }
+
+  private notifyMatchPlayerToServer(
+    connected: boolean,
+    playerId: string
+  ): void {
+    const payload = BinaryWriter.build()
+      .unsignedInt8(WebSocketType.MatchPlayer)
+      .boolean(connected)
+      .fixedLengthString(playerId, 32)
+      .toArrayBuffer();
+
+    this.webSocketService.sendMessage(payload);
   }
 }
