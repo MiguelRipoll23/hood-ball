@@ -16,7 +16,7 @@ export class ChatInspectorWindow extends BaseWindow {
 
   protected override renderContent(): void {
     const messages = this.chatService.getMessages();
-    ImGui.BeginChild("ChatLog", new ImVec2(0, -70), true);
+    ImGui.BeginChild("ChatLog", new ImVec2(0, 150), true);
     messages.forEach((msg) => ImGui.TextWrapped(msg));
     ImGui.EndChild();
 
@@ -25,12 +25,18 @@ export class ChatInspectorWindow extends BaseWindow {
     if (ImGui.InputText("##chatInput", inputRef, 256)) {
       this.inputText = inputRef[0];
     }
-    if (ImGui.Button("Send") && this.inputText.trim() !== "") {
+    const buttonWidth =
+      (ImGui.GetContentRegionAvail().x - ImGui.GetStyle().ItemSpacing.x) / 2;
+
+    if (
+      ImGui.Button("Send", new ImVec2(buttonWidth, 0)) &&
+      this.inputText.trim() !== ""
+    ) {
       this.chatService.sendMessage(this.inputText.trim());
       this.inputText = "";
     }
     ImGui.SameLine();
-    if (ImGui.Button("Clear")) {
+    if (ImGui.Button("Clear", new ImVec2(buttonWidth, 0))) {
       this.chatService.clearMessages();
     }
   }
