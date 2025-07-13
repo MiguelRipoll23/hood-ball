@@ -23,13 +23,10 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   protected content: string = "Content goes here";
 
   private opened: boolean = false;
-  private context: CanvasRenderingContext2D;
-  private wrappedContentLines: string[] = [];
 
   constructor(private canvas: HTMLCanvasElement) {
     super(true);
     this.backdropEntity = new BackdropEntity(this.canvas);
-    this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.setInitialState();
   }
 
@@ -56,7 +53,6 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.title = title;
     this.content = content;
     this.active = true;
-    this.updateWrappedContentLines();
   }
 
   public close(): void {
@@ -123,9 +119,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
     this.contentTextX = this.x + 14;
     this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 62;
-    const paddingX = this.contentTextX - this.x;
-    this.contentTextMaxWidth = this.width - paddingX * 2;
-    this.updateWrappedContentLines();
+    this.contentTextMaxWidth = this.width - 25;
   }
 
   private wrapText(
@@ -150,14 +144,6 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     lines.push(currentLine);
 
     return lines;
-  }
-
-  private updateWrappedContentLines(): void {
-    this.wrappedContentLines = this.wrapText(
-      this.context,
-      this.content,
-      this.contentTextMaxWidth
-    );
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -195,9 +181,15 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     context.font = "16px system-ui";
     context.textAlign = "left";
 
-    for (let i = 0; i < this.wrappedContentLines.length; i++) {
+    const lines = this.wrapText(
+      context,
+      this.content,
+      this.contentTextMaxWidth
+    );
+
+    for (let i = 0; i < lines.length; i++) {
       context.fillText(
-        this.wrappedContentLines[i],
+        lines[i],
         this.contentTextX,
         this.contentTextY + i * this.TEXT_LINE_HEIGHT
       );
