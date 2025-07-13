@@ -10,11 +10,31 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   private readonly FILL_RATE_UP = 1 / 100; // units/ms
   private readonly FILL_RATE_DOWN = 1 / 200; // units/ms
 
+  private gradient: CanvasGradient | null = null;
+
+  private readonly canvas: HTMLCanvasElement;
+
   constructor(canvas: HTMLCanvasElement) {
     super();
+    this.canvas = canvas;
     this.width = this.RADIUS * 2;
     this.height = this.RADIUS * 2;
     this.setPosition(canvas.width / 2, canvas.height - this.RADIUS - 30);
+    const ctx = this.canvas.getContext("2d");
+    if (ctx) {
+      this.updateGradient(ctx);
+    }
+  }
+
+  private updateGradient(context: CanvasRenderingContext2D): void {
+    this.gradient = context.createLinearGradient(
+      0,
+      this.y + this.height,
+      0,
+      this.y
+    );
+    this.gradient.addColorStop(0, "#ffe066");
+    this.gradient.addColorStop(1, LIGHT_GREEN_COLOR);
   }
 
   public setBoostLevel(level: number): void {
@@ -59,6 +79,10 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   public setPosition(x: number, y: number): void {
     this.x = x - this.width / 2;
     this.y = y - this.height / 2;
+    const ctx = this.canvas.getContext("2d");
+    if (ctx) {
+      this.updateGradient(ctx);
+    }
   }
 
 
@@ -68,14 +92,12 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
 
     const cx = this.x + this.RADIUS;
     const cy = this.y + this.RADIUS;
-    const gradient = context.createLinearGradient(
-      0,
-      this.y + this.height,
-      0,
-      this.y
-    );
-    gradient.addColorStop(0, "#ffe066");
-    gradient.addColorStop(1, LIGHT_GREEN_COLOR);
+
+    if (!this.gradient) {
+      this.updateGradient(context);
+    }
+
+    const gradient = this.gradient!;
 
     // base background when empty
     context.beginPath();
