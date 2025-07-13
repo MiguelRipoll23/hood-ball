@@ -12,6 +12,8 @@ import { MatchmakingNetworkService } from "../../game/services/network/matchmaki
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
+  PendingDisconnectionsToken,
+  MatchmakingServiceToken,
 } from "../../game/services/gameplay/matchmaking-tokens.js";
 import { CredentialService } from "../../game/services/security/credential-service.js";
 import { CameraService } from "./gameplay/camera-service.js";
@@ -46,6 +48,10 @@ export class ServiceRegistry {
       useClass: MatchmakingService,
     });
     container.bind({
+      provide: MatchmakingServiceToken,
+      useExisting: MatchmakingService,
+    });
+    container.bind({
       provide: EntityOrchestratorService,
       useClass: EntityOrchestratorService,
     });
@@ -60,6 +66,10 @@ export class ServiceRegistry {
     container.bind({
       provide: ReceivedIdentitiesToken,
       useValue: new Map<string, { playerId: string; playerName: string }>(),
+    });
+    container.bind({
+      provide: PendingDisconnectionsToken,
+      useValue: new Set<string>(),
     });
     ServiceRegistry.initializeServices();
   }
