@@ -15,4 +15,5 @@ export enum EventType {
   MatchmakingStarted,
   OnlinePlayers,
   CarDemolished,
+  ReturnToMainMenu,
 }
