@@ -55,8 +55,7 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
     this.width = maxWidth + this.padding * 2;
     this.height =
       this.messages.length * this.lineHeight +
-      (this.messages.length - 1) * this.messageMargin -
-      (this.lineHeight - this.fontSize) +
+      (this.messages.length - 1) * this.messageMargin +
       this.padding * 2;
   }
 
@@ -83,8 +82,8 @@ export class ChatHistoryEntity extends BaseAnimatedGameEntity {
 
   private drawText(ctx: CanvasRenderingContext2D): void {
     ctx.font = `${this.fontSize}px system-ui`;
-    ctx.textBaseline = "top";
-    let y = this.y + this.padding;
+    ctx.textBaseline = "middle";
+    let y = this.y + this.padding + this.lineHeight / 2;
     const x = this.x + this.padding;
     for (let i = 0; i < this.messages.length; i++) {
       const line = this.messages[i];
