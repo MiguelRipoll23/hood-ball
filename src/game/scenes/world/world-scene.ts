@@ -366,7 +366,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
     this.chatService.onMessage((msgs: string[]) =>
-      this.chatHistoryEntity?.show(msgs)
+      this.chatHistoryEntity?.show(msgs, this.gameState.getGamePlayer().getName())
     );
   }
 
