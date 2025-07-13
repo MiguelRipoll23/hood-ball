@@ -79,10 +79,6 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     const escapePressed = pressedKeys.has("Escape");
 
     if (!this.prevEnterPressed && enterPressed) {
-      const text = this.inputElement.value.trim();
-      if (text !== "") {
-        this.chatService.sendMessage(text);
-      }
       this.hideInput();
     } else if (!this.prevEscapePressed && escapePressed) {
       this.hideInput();
