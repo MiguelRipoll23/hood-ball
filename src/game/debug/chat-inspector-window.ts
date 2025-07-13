@@ -16,12 +16,12 @@ export class ChatInspectorWindow extends BaseWindow {
 
   protected override renderContent(): void {
     const messages = this.chatService.getMessages();
-
     ImGui.BeginChild("ChatLog", new ImVec2(0, -40), true);
     messages.forEach((msg) => ImGui.TextWrapped(msg));
     ImGui.EndChild();
 
     const inputRef = [this.inputText];
+    ImGui.SetNextItemWidth(-120);
     if (ImGui.InputText("##chatInput", inputRef, 256)) {
       this.inputText = inputRef[0];
     }
@@ -29,6 +29,10 @@ export class ChatInspectorWindow extends BaseWindow {
     if (ImGui.Button("Send") && this.inputText.trim() !== "") {
       this.chatService.sendMessage(this.inputText.trim());
       this.inputText = "";
+    }
+    ImGui.SameLine();
+    if (ImGui.Button("Clear")) {
+      this.chatService.clearMessages();
     }
   }
 }
