@@ -70,7 +70,7 @@ export class WorldController {
 
     this.gameState.setMatchState(MatchStateType.Countdown);
 
-    if (this.countdownCurrentNumber <= 0) {
+    if (this.countdownCurrentNumber < 0) {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
     }
 
