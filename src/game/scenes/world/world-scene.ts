@@ -105,23 +105,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.boostPadsEntities = entities.boostPadsEntities;
     this.spawnPointEntities = entities.spawnPointEntities;
 
-    const chatInput = document.querySelector("#chat-input") as HTMLInputElement | null;
-    if (chatInput) {
-      this.chatHistoryEntity = new ChatHistoryEntity(this.canvas);
-      const boostMeter = this.localCarEntity.getBoostMeterEntity();
-      if (boostMeter) {
-        this.chatButtonEntity = new ChatButtonEntity(
-          boostMeter,
-          chatInput,
-          this.chatService,
-          this.gameState.getGamePointer()
-        );
-        this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
-        this.chatService.onMessage((msgs: string[]) =>
-          this.chatHistoryEntity?.show(msgs)
-        );
-      }
-    }
+    this.setupChatUi();
 
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
@@ -351,6 +335,38 @@ export class WorldScene extends BaseCollidingGameScene {
     } else {
       console.warn(`Cannot find player with id ${playerId}`);
     }
+  }
+
+  private setupChatUi(): void {
+    const chatInputElement = document.querySelector("#chat-input") as HTMLInputElement | null;
+
+    if (!chatInputElement) {
+      console.error("Chat input element not found");
+      return;
+    }
+
+    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas);
+
+    const boostMeterEntity = this.localCarEntity?.getBoostMeterEntity();
+    if (!boostMeterEntity) {
+      console.error("Boost meter entity not found");
+      return;
+    }
+
+    if (!this.uiEntities.includes(boostMeterEntity)) {
+      this.uiEntities.push(boostMeterEntity);
+    }
+
+    this.chatButtonEntity = new ChatButtonEntity(
+      boostMeterEntity,
+      chatInputElement,
+      this.chatService,
+      this.gameState.getGamePointer()
+    );
+    this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
+    this.chatService.onMessage((msgs: string[]) =>
+      this.chatHistoryEntity?.show(msgs)
+    );
   }
 
 
