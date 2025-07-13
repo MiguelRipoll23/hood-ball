@@ -10,6 +10,9 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
 
   private baseX: number;
   private baseY: number;
+  private context: CanvasRenderingContext2D;
+  private labelWidth = 0;
+  private countWidth = 0;
 
   private shakeDuration = 0;
   private shakeElapsed = 0;
@@ -21,14 +24,20 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     this.baseY = this.canvas.height - 40;
     this.x = this.baseX;
     this.y = this.baseY;
+    this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+    this.context.font = "bold 28px system-ui";
+    this.labelWidth = this.context.measureText(this.getText()).width;
+    this.countWidth = this.context.measureText(this.onlinePlayers.toString()).width;
   }
 
   public setOnlinePlayers(total: number): void {
     if (this.onlinePlayers !== total) {
       this.onlinePlayers = total;
       this.startShake();
+      this.countWidth = this.context.measureText(this.onlinePlayers.toString()).width;
     } else {
       this.onlinePlayers = total;
+      this.countWidth = this.context.measureText(this.onlinePlayers.toString()).width;
     }
   }
 
@@ -66,12 +75,10 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     context.textAlign = "left";
 
     const spacing = 10;
-    const labelWidth = context.measureText(labelText).width;
-    const countWidth = context.measureText(countText).width;
-    const totalWidth = countWidth + spacing + labelWidth;
+    const totalWidth = this.countWidth + spacing + this.labelWidth;
 
     const countX = this.x - totalWidth / 2;
-    const labelX = countX + countWidth + spacing;
+    const labelX = countX + this.countWidth + spacing;
 
     context.fillStyle = LIGHT_GREEN_COLOR;
     context.fillText(countText, countX, this.y);
