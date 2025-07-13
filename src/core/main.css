@@ -90,6 +90,7 @@ hr {
   transform: translateX(-50%);
   width: 200px;
   border: 0;
+  border-radius: 4px;
   background: rgba(0, 0, 0, 0.8);
   padding: 4px;
   color: #fff;
