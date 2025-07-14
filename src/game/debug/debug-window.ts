@@ -4,26 +4,23 @@ import { EventInspectorWindow } from "./event-inspector-window.js";
 import { MatchInspectorWindow } from "./match-inspector-window.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
-import { ChatInspectorWindow } from "./chat-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
 import type { GameState } from "../../core/models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
+  private animationInspectorWindow: AnimationInspectorWindow;
   private eventInspectorWindow: EventInspectorWindow;
-  private sceneInspectorWindow: SceneInspectorWindow;
   private matchInspectorWindow: MatchInspectorWindow;
   private peerInspectorWindow: PeerInspectorWindow;
-  private animationInspectorWindow: AnimationInspectorWindow;
-  private chatInspectorWindow: ChatInspectorWindow;
+  private sceneInspectorWindow: SceneInspectorWindow;
 
   constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
+    this.animationInspectorWindow = new AnimationInspectorWindow();
     this.eventInspectorWindow = new EventInspectorWindow();
-    this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
     this.matchInspectorWindow = new MatchInspectorWindow(gameState);
     this.peerInspectorWindow = new PeerInspectorWindow();
-    this.animationInspectorWindow = new AnimationInspectorWindow();
-    this.chatInspectorWindow = new ChatInspectorWindow();
+    this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
     this.open();
   }
 
@@ -36,12 +33,12 @@ export class DebugWindow extends BaseWindow {
 
     // Always render child windows so they remain visible even when
     // the debug menu window itself is closed
-    if (this.eventInspectorWindow.isOpen()) {
-      this.eventInspectorWindow.render();
+    if (this.animationInspectorWindow.isOpen()) {
+      this.animationInspectorWindow.render();
     }
 
-    if (this.sceneInspectorWindow.isOpen()) {
-      this.sceneInspectorWindow.render();
+    if (this.eventInspectorWindow.isOpen()) {
+      this.eventInspectorWindow.render();
     }
 
     if (this.matchInspectorWindow.isOpen()) {
@@ -52,13 +49,10 @@ export class DebugWindow extends BaseWindow {
       this.peerInspectorWindow.render();
     }
 
-    if (this.animationInspectorWindow.isOpen()) {
-      this.animationInspectorWindow.render();
+    if (this.sceneInspectorWindow.isOpen()) {
+      this.sceneInspectorWindow.render();
     }
 
-    if (this.chatInspectorWindow.isOpen()) {
-      this.chatInspectorWindow.render();
-    }
   }
 
   private renderMenu(): void {
@@ -70,12 +64,12 @@ export class DebugWindow extends BaseWindow {
   private renderMenuBar(): void {
     if (ImGui.BeginMenuBar()) {
       if (ImGui.BeginMenu("Inspectors")) {
-        if (ImGui.MenuItem("Event", "E")) {
-          this.eventInspectorWindow.toggle();
+        if (ImGui.MenuItem("Animation", "A")) {
+          this.animationInspectorWindow.toggle();
         }
 
-        if (ImGui.MenuItem("Scene", "S")) {
-          this.sceneInspectorWindow.toggle();
+        if (ImGui.MenuItem("Event", "E")) {
+          this.eventInspectorWindow.toggle();
         }
 
         if (ImGui.MenuItem("Match", "M")) {
@@ -86,12 +80,8 @@ export class DebugWindow extends BaseWindow {
           this.peerInspectorWindow.toggle();
         }
 
-        if (ImGui.MenuItem("Animation", "A")) {
-          this.animationInspectorWindow.toggle();
-        }
-
-        if (ImGui.MenuItem("Chat", "C")) {
-          this.chatInspectorWindow.toggle();
+        if (ImGui.MenuItem("Scene", "S")) {
+          this.sceneInspectorWindow.toggle();
         }
 
         ImGui.EndMenu();

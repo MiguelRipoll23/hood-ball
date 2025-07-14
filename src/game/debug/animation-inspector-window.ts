@@ -10,7 +10,8 @@ export class AnimationInspectorWindow extends BaseWindow {
   private readonly animationLogService: AnimationLogService;
 
   constructor() {
-    super("Animation inspector", new ImVec2(350, 250));
+    // Slightly increased window height for better readability
+    super("Animation inspector", new ImVec2(350, 260));
     this.animationLogService = container.get(AnimationLogService);
   }
 

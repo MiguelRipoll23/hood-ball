@@ -6,8 +6,12 @@ import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import type { GameState } from "../../core/models/game-state.js";
+import type { ISceneManagerService } from "../interfaces/services/ui/scene-manager-service-interface.js";
 
 export class SceneInspectorWindow extends BaseWindow {
+  private selectedSceneIndex = 0;
+  private selectedSubSceneIndex = 0;
+
   constructor(private gameState: GameState) {
     super("Scene inspector", new ImVec2(300, 350));
     console.log(`${this.constructor.name} created`);
@@ -41,6 +45,10 @@ export class SceneInspectorWindow extends BaseWindow {
           subSceneWorldEntities,
           "world"
         );
+        ImGui.EndTabItem();
+      }
+      if (ImGui.BeginTabItem("Controller")) {
+        this.renderControllerTab(scene);
         ImGui.EndTabItem();
       }
       ImGui.EndTabBar();
@@ -175,6 +183,63 @@ export class SceneInspectorWindow extends BaseWindow {
 
       if (currentScene) {
         currentScene.getWorldEntities().push(remoteCarEntity);
+      }
+    }
+  }
+
+  private renderControllerTab(scene: GameScene | null): void {
+    const sceneManager =
+      (scene?.getSceneManagerService() as ISceneManagerService | null) ?? null;
+    const scenes = sceneManager?.getScenes() ?? [];
+
+    const sceneNames = scenes.map((s: GameScene) => s.constructor.name);
+    const currentSceneName = sceneNames[this.selectedSceneIndex] ?? "None";
+
+    if (ImGui.BeginCombo("Scene", currentSceneName)) {
+      sceneNames.forEach((name: string, index: number) => {
+        const isSelected = this.selectedSceneIndex === index;
+        if (ImGui.Selectable(name, isSelected)) {
+          this.selectedSceneIndex = index;
+          this.selectedSubSceneIndex = 0;
+        }
+        if (isSelected) ImGui.SetItemDefaultFocus();
+      });
+      ImGui.EndCombo();
+    }
+
+    const selectedScene = scenes[this.selectedSceneIndex] ?? null;
+    const subManager =
+      (selectedScene?.getSceneManagerService() as ISceneManagerService | null) ??
+      null;
+    const subScenes = subManager?.getScenes() ?? [];
+    const subSceneNames = subScenes.map((s: GameScene) => s.constructor.name);
+    const currentSubSceneName = subSceneNames[this.selectedSubSceneIndex] ?? "None";
+
+    if (ImGui.BeginCombo("Sub-scene", currentSubSceneName)) {
+      subSceneNames.forEach((name: string, index: number) => {
+        const isSelected = this.selectedSubSceneIndex === index;
+        if (ImGui.Selectable(name, isSelected)) {
+          this.selectedSubSceneIndex = index;
+        }
+        if (isSelected) ImGui.SetItemDefaultFocus();
+      });
+      ImGui.EndCombo();
+    }
+
+    if (ImGui.Button("Load")) {
+      if (selectedScene && sceneManager) {
+        selectedScene.load();
+        sceneManager
+          .getTransitionService()
+          .crossfade(sceneManager, selectedScene, 0.2);
+      }
+
+      const selectedSubScene = subScenes[this.selectedSubSceneIndex] ?? null;
+      if (selectedSubScene && subManager) {
+        selectedSubScene.load();
+        subManager
+          .getTransitionService()
+          .crossfade(subManager, selectedSubScene, 0.2);
       }
     }
   }
