@@ -255,6 +255,10 @@ export class MainMenuScene extends BaseGameScene {
     });
   }
 
+  public override resubscribeEvents(): void {
+    this.subscribeToEvents();
+  }
+
 
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
     this.onlinePlayersEntity?.setOnlinePlayers(payload.total);

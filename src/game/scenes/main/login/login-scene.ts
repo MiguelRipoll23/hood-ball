@@ -222,6 +222,10 @@ export class LoginScene extends BaseGameScene {
     this.controller.connectToServer();
   }
 
+  public override resubscribeEvents(): void {
+    this.subscribeToEvents();
+  }
+
   private transitionToMainMenuScene(): void {
     const mainMenuScene = new MainMenuScene(
       this.gameState,
