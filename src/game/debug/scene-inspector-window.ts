@@ -67,10 +67,10 @@ export class SceneInspectorWindow extends BaseWindow {
     subEntities: GameEntity[],
     idPrefix: string
   ): void {
-    ImGui.Text(scene ? scene.constructor.name : "No scene");
+    ImGui.SeparatorText(scene ? scene.constructor.name : "No scene");
     this.renderEntityList(mainEntities, `${idPrefix}_main`);
 
-    ImGui.Text(subScene ? subScene.constructor.name : "No sub-scene");
+    ImGui.SeparatorText(subScene ? subScene.constructor.name : "No sub-scene");
 
     this.renderEntityList(subEntities, `${idPrefix}_sub`);
   }
