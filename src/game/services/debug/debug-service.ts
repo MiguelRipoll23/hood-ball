@@ -1,4 +1,4 @@
-import { ImGui, ImGuiImplWeb } from "@mori2003/jsimgui";
+import { ImGui, ImGuiImplWeb, ImVec2 } from "@mori2003/jsimgui";
 import { DebugWindow } from "../../debug/debug-window.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { container } from "../../../core/services/di-container.js";
@@ -14,12 +14,16 @@ export class DebugService {
   private debugWindow: DebugWindow | null = null;
   private readonly knownEvents = new Set<string>();
 
+  private errorMessages: string[] = [];
+  private readonly originalConsoleError = console.error.bind(console);
+
   constructor(private gameState = container.get(GameState)) {
     console.log(`${this.constructor.name} created`);
     this.debugCanvas = this.getDebugCanvas();
     this.gameCanvas = this.gameState.getCanvas();
     this.setCanvasSize();
     this.addEventListeners();
+    this.patchConsoleError();
   }
 
   public isInitialized(): boolean {
@@ -41,6 +45,7 @@ export class DebugService {
     if (this.gameState.isDebugging()) {
       ImGuiImplWeb.BeginRenderWebGL();
       this.debugWindow?.render();
+      this.renderErrorMessages();
       ImGuiImplWeb.EndRenderWebGL();
     } else {
       this.clearCanvas();
@@ -140,5 +145,57 @@ export class DebugService {
 
       originalAdd(type, listener, finalOptions);
     };
+  }
+
+  private patchConsoleError(): void {
+    console.error = (...args: unknown[]): void => {
+      this.handleConsoleError(args);
+      this.originalConsoleError(...args);
+    };
+  }
+
+  private handleConsoleError(args: unknown[]): void {
+    if (!this.gameState.isDebugging()) return;
+
+    const parts = args.map((arg) => {
+      if (typeof arg === "string") return arg;
+      try {
+        return JSON.stringify(arg);
+      } catch {
+        return String(arg);
+      }
+    });
+
+    this.errorMessages.push(parts.join(" "));
+  }
+
+  private static readonly ERROR_COLOR = 0xff0000ff;
+
+  private renderErrorMessages(): void {
+    if (this.errorMessages.length === 0) return;
+
+    const io = ImGui.GetIO();
+    ImGui.SetNextWindowBgAlpha(0.35);
+    ImGui.SetNextWindowPos(
+      new ImVec2(10, io.DisplaySize.y - 10),
+      ImGui.Cond.Always,
+      new ImVec2(0, 1)
+    );
+
+    const flags =
+      ImGui.WindowFlags.NoDecoration |
+      ImGui.WindowFlags.NoMove |
+      ImGui.WindowFlags.AlwaysAutoResize;
+
+    ImGui.PushStyleColor(ImGui.Col.Text, DebugService.ERROR_COLOR);
+
+    if (ImGui.Begin("ErrorOverlay", undefined, flags)) {
+      this.errorMessages.forEach((msg) => {
+        ImGui.TextWrapped(msg);
+      });
+    }
+    ImGui.End();
+
+    ImGui.PopStyleColor();
   }
 }
