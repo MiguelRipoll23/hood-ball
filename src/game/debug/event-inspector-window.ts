@@ -95,14 +95,22 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.EndTable();
     }
 
-    if (ImGui.Button("View") && this.selectedEvent) {
+    const hasSelected = this.selectedEvent !== null;
+    const hasData =
+      this.selectedEvent?.getData() !== null && this.selectedEvent?.getData() !== undefined;
+
+    ImGui.BeginDisabled(!hasData);
+    if (ImGui.Button("View") && hasData && this.selectedEvent) {
       this.detailEvent = this.selectedEvent;
       this.shouldOpenDetails = true;
     }
+    ImGui.EndDisabled();
     ImGui.SameLine();
-    if (ImGui.Button("Replay") && this.selectedEvent) {
+    ImGui.BeginDisabled(!hasSelected);
+    if (ImGui.Button("Replay") && hasSelected && this.selectedEvent) {
       this.replayEvent(this.selectedEvent);
     }
+    ImGui.EndDisabled();
     ImGui.EndGroup();
   }
 
@@ -157,6 +165,12 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.OpenPopup("Event Details");
       this.shouldOpenDetails = false;
     }
+    const io = ImGui.GetIO();
+    ImGui.SetNextWindowPos(
+      new ImVec2(io.DisplaySize.x * 0.5, io.DisplaySize.y * 0.5),
+      ImGui.Cond.Appearing,
+      new ImVec2(0.5, 0.5)
+    );
     const open = [true];
     if (ImGui.BeginPopupModal("Event Details", open, ImGui.WindowFlags.AlwaysAutoResize)) {
       if (this.detailEvent) {
