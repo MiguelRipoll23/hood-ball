@@ -4,6 +4,7 @@ import type { GameEvent } from "../../core/interfaces/models/game-event.js";
 import { LocalEvent } from "../../core/models/local-event.js";
 import { RemoteEvent } from "../../core/models/remote-event.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
+import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { EventProcessorService } from "../../core/services/gameplay/event-processor-service.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
@@ -14,7 +15,8 @@ export class EventInspectorWindow extends BaseWindow {
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
-    super("Event inspector", new ImVec2(195, 230));
+    // Slightly larger window to better fit the event details section
+    super("Event inspector", new ImVec2(250, 260));
     this.eventProcessorService = container.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
@@ -61,7 +63,7 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollX |
       ImGui.TableFlags.SizingStretchSame;
 
-    if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(180, 150))) {
+    if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(220, 150))) {
       events.forEach((event, i) => {
         ImGui.TableNextRow();
 
@@ -92,6 +94,11 @@ export class EventInspectorWindow extends BaseWindow {
     if (ImGui.Button("Replay") && this.selectedEvent) {
       this.replayEvent(this.selectedEvent);
     }
+
+    if (this.selectedEvent) {
+      ImGui.SeparatorText("Details");
+      this.renderEventDetails(this.selectedEvent);
+    }
   }
 
   private replayEvent(event: GameEvent): void {
@@ -103,6 +110,29 @@ export class EventInspectorWindow extends BaseWindow {
       this.eventProcessorService.getLocalQueue().addEvent(newEvent);
     } else if (newEvent instanceof RemoteEvent) {
       this.eventProcessorService.getRemoteQueue().addEvent(newEvent);
+    }
+  }
+
+  private renderEventDetails(event: GameEvent): void {
+    if (event instanceof LocalEvent) {
+      const data = event.getData();
+      if (data && typeof data === "object") {
+        Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
+          ImGui.Text(`${key}: ${String(value)}`);
+        });
+      } else if (data !== null && data !== undefined) {
+        ImGui.Text(String(data));
+      } else {
+        ImGui.Text("No data");
+      }
+    } else if (event instanceof RemoteEvent) {
+      const buffer = event.getData();
+      if (buffer) {
+        const dump = DebugUtils.getHexDump(new Uint8Array(buffer));
+        dump.split("\n").forEach((line) => ImGui.Text(line));
+      } else {
+        ImGui.Text("No data");
+      }
     }
   }
 
