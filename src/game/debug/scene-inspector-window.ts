@@ -51,8 +51,8 @@ export class SceneInspectorWindow extends BaseWindow {
         );
         ImGui.EndTabItem();
       }
-      if (ImGui.BeginTabItem("Controller")) {
-        this.renderControllerTab(scene);
+      if (ImGui.BeginTabItem("Stack")) {
+        this.renderStackTab(scene);
         ImGui.EndTabItem();
       }
       ImGui.EndTabBar();
@@ -191,7 +191,7 @@ export class SceneInspectorWindow extends BaseWindow {
     }
   }
 
-  private renderControllerTab(scene: GameScene | null): void {
+  private renderStackTab(scene: GameScene | null): void {
     const sceneManager =
       (scene?.getSceneManagerService() as ISceneManagerService | null) ?? null;
 
@@ -199,8 +199,6 @@ export class SceneInspectorWindow extends BaseWindow {
       const scenes = sceneManager.getScenes();
       const currentScene = sceneManager.getCurrentScene();
       const currentIndex = scenes.indexOf(currentScene as GameScene);
-
-      ImGui.Text(`Current: ${currentScene?.constructor.name ?? "None"}`);
 
       ImGui.BeginDisabled(currentIndex <= 0);
       if (ImGui.Button("Prev")) {
@@ -211,14 +209,6 @@ export class SceneInspectorWindow extends BaseWindow {
           .crossfade(sceneManager, previous, 0.2);
       }
       ImGui.EndDisabled();
-
-      ImGui.SameLine();
-
-      if (ImGui.Button("Reload scene")) {
-        currentScene?.load();
-      }
-
-      ImGui.Separator();
 
       ImGui.Text("Stack:");
       scenes.forEach((s, idx) => {
@@ -238,6 +228,7 @@ export class SceneInspectorWindow extends BaseWindow {
   }
 
   private goToMainMenu(): void {
+    this.cleanupState();
     const mainScene = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
@@ -262,5 +253,10 @@ export class SceneInspectorWindow extends BaseWindow {
     container
       .get(SceneTransitionService)
       .fadeOutAndIn(this.gameState.getGameFrame(), mainScene, 1, 1);
+  }
+
+  private cleanupState(): void {
+    this.gameState.setMatch(null);
+    this.gameState.getGamePlayer().reset();
   }
 }
