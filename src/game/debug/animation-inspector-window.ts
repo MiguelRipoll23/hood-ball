@@ -11,6 +11,7 @@ export class AnimationInspectorWindow extends BaseWindow {
   // Use ABGR format for consistency with other debug colors
   private static readonly COLOR_IN_PROGRESS = 0xff00a5ff; // orange
   private readonly animationLogService: AnimationLogService;
+  private previousEntryCount = 0;
 
   constructor() {
     // Slightly increased window height for better readability
@@ -20,6 +21,7 @@ export class AnimationInspectorWindow extends BaseWindow {
 
   protected override renderContent(): void {
     const entries = this.animationLogService.getEntries();
+    const newEntryAdded = entries.length > this.previousEntryCount;
 
     const tableFlags =
       ImGui.TableFlags.Borders |
@@ -34,7 +36,7 @@ export class AnimationInspectorWindow extends BaseWindow {
       ImGui.TableSetupColumn("Progress", ImGui.TableColumnFlags.WidthFixed, 80);
       ImGui.TableHeadersRow();
 
-      entries.forEach((entry) => {
+      entries.forEach((entry, index) => {
         ImGui.TableNextRow();
         ImGui.TableSetColumnIndex(0);
         ImGui.Text(entry.entityName);
@@ -48,13 +50,18 @@ export class AnimationInspectorWindow extends BaseWindow {
         ImGui.PushStyleColor(ImGui.Col.Text, color);
         ImGui.Text(progressText);
         ImGui.PopStyleColor();
+        if (newEntryAdded && index === entries.length - 1) {
+          ImGui.SetScrollHereY(1.0);
+        }
       });
 
       ImGui.EndTable();
+      this.previousEntryCount = entries.length;
     }
 
     if (ImGui.Button("Clear")) {
       this.animationLogService.clear();
+      this.previousEntryCount = 0;
     }
   }
 }
