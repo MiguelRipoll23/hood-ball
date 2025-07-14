@@ -60,11 +60,6 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   }
 
   private hideInput(): void {
-    if (!this.inputVisible) {
-      return;
-    }
-
-    this.inputVisible = false;
     this.inputElement.blur();
     this.inputElement.classList.remove("show");
     const onTransitionEnd = () => {
@@ -75,6 +70,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
       once: true,
     });
     this.gamePointer.setPreventDefault(true);
+    this.inputVisible = false;
     this.setActive(true);
   }
 
