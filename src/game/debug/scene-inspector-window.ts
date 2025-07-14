@@ -7,10 +7,14 @@ import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import type { GameState } from "../../core/models/game-state.js";
 import type { ISceneManagerService } from "../interfaces/services/ui/scene-manager-service-interface.js";
+import { MainScene } from "../scenes/main/main-scene.js";
+import { MainMenuScene } from "../scenes/main/main-menu/main-menu-scene.js";
+import { SceneTransitionService } from "../../core/services/gameplay/scene-transition-service.js";
+import { EventConsumerService } from "../../core/services/gameplay/event-consumer-service.js";
+import { WebSocketService } from "../services/network/websocket-service.js";
+import { container } from "../../core/services/di-container.js";
 
 export class SceneInspectorWindow extends BaseWindow {
-  private selectedSceneIndex = 0;
-  private selectedSubSceneIndex = 0;
 
   constructor(private gameState: GameState) {
     super("Scene inspector", new ImVec2(300, 350));
@@ -190,57 +194,76 @@ export class SceneInspectorWindow extends BaseWindow {
   private renderControllerTab(scene: GameScene | null): void {
     const sceneManager =
       (scene?.getSceneManagerService() as ISceneManagerService | null) ?? null;
-    const scenes = sceneManager?.getScenes() ?? [];
-
-    const sceneNames = scenes.map((s: GameScene) => s.constructor.name);
-    const currentSceneName = sceneNames[this.selectedSceneIndex] ?? "None";
-
-    if (ImGui.BeginCombo("Scene", currentSceneName)) {
-      sceneNames.forEach((name: string, index: number) => {
-        const isSelected = this.selectedSceneIndex === index;
-        if (ImGui.Selectable(name, isSelected)) {
-          this.selectedSceneIndex = index;
-          this.selectedSubSceneIndex = 0;
-        }
-        if (isSelected) ImGui.SetItemDefaultFocus();
-      });
-      ImGui.EndCombo();
+    if (!sceneManager) {
+      ImGui.Text("No scene manager");
+      return;
     }
 
-    const selectedScene = scenes[this.selectedSceneIndex] ?? null;
-    const subManager =
-      (selectedScene?.getSceneManagerService() as ISceneManagerService | null) ??
-      null;
-    const subScenes = subManager?.getScenes() ?? [];
-    const subSceneNames = subScenes.map((s: GameScene) => s.constructor.name);
-    const currentSubSceneName = subSceneNames[this.selectedSubSceneIndex] ?? "None";
+    const scenes = sceneManager.getScenes();
+    const currentScene = sceneManager.getCurrentScene();
+    const currentIndex = scenes.indexOf(currentScene as GameScene);
 
-    if (ImGui.BeginCombo("Sub-scene", currentSubSceneName)) {
-      subSceneNames.forEach((name: string, index: number) => {
-        const isSelected = this.selectedSubSceneIndex === index;
-        if (ImGui.Selectable(name, isSelected)) {
-          this.selectedSubSceneIndex = index;
-        }
-        if (isSelected) ImGui.SetItemDefaultFocus();
-      });
-      ImGui.EndCombo();
+    ImGui.Text(`Current: ${currentScene?.constructor.name ?? "None"}`);
+
+    ImGui.BeginDisabled(currentIndex <= 0);
+    if (ImGui.Button("Prev")) {
+      const previous = scenes[currentIndex - 1];
+      previous.load();
+      sceneManager
+        .getTransitionService()
+        .crossfade(sceneManager, previous, 0.2);
     }
+    ImGui.EndDisabled();
 
-    if (ImGui.Button("Load")) {
-      if (selectedScene && sceneManager) {
-        selectedScene.load();
-        sceneManager
-          .getTransitionService()
-          .crossfade(sceneManager, selectedScene, 0.2);
+    ImGui.SameLine();
+    ImGui.BeginDisabled(currentIndex === -1 || currentIndex >= scenes.length - 1);
+    if (ImGui.Button("Next")) {
+      const next = scenes[currentIndex + 1];
+      next.load();
+      sceneManager
+        .getTransitionService()
+        .crossfade(sceneManager, next, 0.2);
+    }
+    ImGui.EndDisabled();
+
+    ImGui.Separator();
+
+    ImGui.Text("Stack:");
+    scenes.forEach((s, idx) => {
+      const prefix = idx === currentIndex ? "->" : "  ";
+      ImGui.Text(`${prefix} ${s.constructor.name}`);
+    });
+
+    ImGui.Separator();
+    if (ImGui.Button("Return to main menu")) {
+      this.goToMainMenu();
+    }
+  }
+
+  private goToMainMenu(): void {
+    const mainScene = new MainScene(
+      this.gameState,
+      container.get(EventConsumerService)
+    );
+    const mainMenuScene = new MainMenuScene(
+      this.gameState,
+      container.get(EventConsumerService),
+      false
+    );
+
+    if (!this.gameState.getGameServer().isConnected()) {
+      try {
+        container.get(WebSocketService).connectToServer();
+      } catch (error) {
+        console.error("Failed to reconnect to server", error);
       }
-
-      const selectedSubScene = subScenes[this.selectedSubSceneIndex] ?? null;
-      if (selectedSubScene && subManager) {
-        selectedSubScene.load();
-        subManager
-          .getTransitionService()
-          .crossfade(subManager, selectedSubScene, 0.2);
-      }
     }
+
+    mainScene.activateScene(mainMenuScene);
+    mainScene.load();
+
+    container
+      .get(SceneTransitionService)
+      .fadeOutAndIn(this.gameState.getGameFrame(), mainScene, 1, 1);
   }
 }
