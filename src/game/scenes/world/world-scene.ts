@@ -307,6 +307,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.worldController?.handleWaitingForPlayers();
     this.toastEntity?.show("Waiting for players...");
   }
+
   private handleRemoteBoostPadConsumed(data: ArrayBuffer | null): void {
     if (data === null) {
       console.warn("Array buffer is null");
@@ -343,7 +344,9 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private setupChatUi(): void {
-    const chatInputElement = document.querySelector("#chat-input") as HTMLInputElement | null;
+    const chatInputElement = document.querySelector(
+      "#chat-input"
+    ) as HTMLInputElement | null;
 
     if (!chatInputElement) {
       console.error("Chat input element not found");
@@ -372,10 +375,12 @@ export class WorldScene extends BaseCollidingGameScene {
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
     this.chatService.onMessage((msgs: string[]) =>
-      this.chatHistoryEntity?.show(msgs, this.gameState.getGamePlayer().getName())
+      this.chatHistoryEntity?.show(
+        msgs,
+        this.gameState.getGamePlayer().getName()
+      )
     );
   }
-
 
   private triggerGoalExplosion(x: number, y: number, team: TeamType): void {
     const explosion = new GoalExplosionEntity(this.canvas, x, y, team);
@@ -390,7 +395,6 @@ export class WorldScene extends BaseCollidingGameScene {
     // Slightly longer shake for demolition impact
     this.cameraService.shake(1.5, 5);
   }
-
 
   private handleGameOverEffect(won: boolean): void {
     if (won) {

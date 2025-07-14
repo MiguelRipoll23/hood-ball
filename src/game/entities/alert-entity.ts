@@ -23,7 +23,11 @@ export class AlertEntity
   }
 
   public show(textLines: string[], color = "white", duration = 0): void {
-    this.showColored(textLines, textLines.map(() => color), duration);
+    this.showColored(
+      textLines,
+      textLines.map(() => color),
+      duration
+    );
   }
 
   public showColored(
@@ -32,6 +36,7 @@ export class AlertEntity
     duration = 0
   ): void {
     if (textLines.length !== colors.length) {
+      console.log("fail");
       throw new Error(
         `AlertEntity.showColored: textLines length (${textLines.length}) does not match colors length (${colors.length})`
       );
@@ -78,7 +83,6 @@ export class AlertEntity
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
-    this.applyOpacity(context);
 
     this.setTransformOrigin(context);
     this.setFontStyle(context);

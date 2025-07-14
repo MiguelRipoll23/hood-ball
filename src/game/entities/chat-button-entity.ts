@@ -26,7 +26,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.width = this.SIZE;
     this.height = this.SIZE;
     this.opacity = 0.7;
-    this.setActive(false);
+    this.setPosition();
     this.inputElement.addEventListener("blur", () => {
       if (!this.inputVisible) {
         return;
@@ -73,7 +73,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.setActive(true);
   }
 
-  private updatePosition(): void {
+  private setPosition(): void {
     this.x =
       this.boostMeterEntity.getX() +
       this.boostMeterEntity.getWidth() +
@@ -100,17 +100,6 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
-    if (this.helpEntity.getOpacity() > 0) {
-      if (!this.inputVisible) {
-        this.setActive(false);
-        this.gamePointer.clearPressed();
-      }
-    } else if (!this.inputVisible) {
-      this.setActive(true);
-    }
-
-    this.updatePosition();
-
     if (this.pressed) {
       this.showInput();
     }
@@ -132,7 +121,11 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     context.font = `${this.SIZE}px system-ui`;
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(this.emoji, this.x + this.SIZE / 2, this.y + this.SIZE / 2 + 1);
+    context.fillText(
+      this.emoji,
+      this.x + this.SIZE / 2,
+      this.y + this.SIZE / 2 + 1
+    );
     context.restore();
     super.render(context);
   }
