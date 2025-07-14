@@ -26,18 +26,18 @@ export class ConsoleWindow extends BaseWindow {
 
   private renderFilterOptions(): void {
     ImGui.BeginGroup();
-    (Object.keys(this.levelFilters) as LogLevel[]).forEach((level) => {
-      ImGui.SameLine();
+    (Object.keys(this.levelFilters) as LogLevel[]).forEach((level, index) => {
+      if (index > 0) ImGui.SameLine();
       const value = [this.levelFilters[level]];
       if (ImGui.Checkbox(level, value)) {
         this.levelFilters[level] = value[0];
       }
     });
-    ImGui.EndGroup();
-
+    ImGui.SameLine();
     if (ImGui.Button("Clear")) {
       this.consoleLogService.clear();
     }
+    ImGui.EndGroup();
     ImGui.Separator();
   }
 
@@ -52,7 +52,8 @@ export class ConsoleWindow extends BaseWindow {
       .getEntries()
       .filter((e) => this.levelFilters[e.level]);
 
-    if (ImGui.BeginTable("ConsoleTable", 2, tableFlags, new ImVec2(0, 200))) {
+    if (ImGui.BeginTable("ConsoleTable", 3, tableFlags, new ImVec2(0, 200))) {
+      ImGui.TableSetupColumn("Time", ImGui.TableColumnFlags.WidthFixed, 70);
       ImGui.TableSetupColumn("Level", ImGui.TableColumnFlags.WidthFixed, 60);
       ImGui.TableSetupColumn("Message", ImGui.TableColumnFlags.WidthStretch);
       ImGui.TableHeadersRow();
@@ -60,8 +61,12 @@ export class ConsoleWindow extends BaseWindow {
       entries.forEach((entry) => {
         ImGui.TableNextRow();
         ImGui.TableSetColumnIndex(0);
-        ImGui.Text(entry.level.toUpperCase());
+        const time = entry.timestamp
+          .toLocaleTimeString(undefined, { hour12: false });
+        ImGui.Text(time);
         ImGui.TableSetColumnIndex(1);
+        ImGui.Text(entry.level.toUpperCase());
+        ImGui.TableSetColumnIndex(2);
         const color = this.getColor(entry.level);
         ImGui.PushStyleColor(ImGui.Col.Text, color);
         ImGui.TextWrapped(entry.message);

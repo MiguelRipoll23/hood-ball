@@ -5,6 +5,7 @@ export type LogLevel = "log" | "info" | "warn" | "error" | "debug";
 export type ConsoleLogEntry = {
   level: LogLevel;
   message: string;
+  timestamp: Date;
 };
 
 @injectable()
@@ -38,17 +39,41 @@ export class ConsoleLogService {
   }
 
   private addEntry(level: LogLevel, args: unknown[]): void {
-    const message = args
-      .map((a) => {
-        if (typeof a === "string") return a;
-        try {
-          return JSON.stringify(a);
-        } catch {
-          return String(a);
-        }
-      })
-      .join(" ");
+    const message = this.formatArgs(args);
 
-    this.entries.push({ level, message });
+    this.entries.push({ level, message, timestamp: new Date() });
+  }
+
+  private formatArgs(args: unknown[]): string {
+    if (args.length === 0) return "";
+
+    // Handle style arguments like console.log('%c text', 'color:red');
+    if (typeof args[0] === "string" && args[0].includes("%c")) {
+      const format = args[0] as string;
+      const styleCount = (format.match(/%c/g) || []).length;
+      args = [format.replace(/%c/g, ""), ...args.slice(styleCount + 1)];
+    }
+
+    const seen = new WeakSet<object>();
+    const stringify = (value: unknown): string => {
+      if (typeof value === "string") return value;
+      try {
+        return JSON.stringify(
+          value,
+          (_: string, val) => {
+            if (typeof val === "object" && val !== null) {
+              if (seen.has(val)) return "[Circular]";
+              seen.add(val);
+            }
+            return val;
+          },
+          2
+        );
+      } catch {
+        return String(value);
+      }
+    };
+
+    return args.map(stringify).join(" ");
   }
 }
