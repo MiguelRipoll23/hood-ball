@@ -15,8 +15,8 @@ export class EventInspectorWindow extends BaseWindow {
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
-    // Slightly larger window to better fit the event details section
-    super("Event inspector", new ImVec2(250, 260));
+    // Slightly smaller window for better fit with layout
+    super("Event inspector", new ImVec2(195, 230));
     this.eventProcessorService = container.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
