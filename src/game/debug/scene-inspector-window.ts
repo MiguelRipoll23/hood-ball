@@ -66,10 +66,10 @@ export class SceneInspectorWindow extends BaseWindow {
     subEntities: GameEntity[],
     idPrefix: string
   ): void {
-    ImGui.SeparatorText(scene ? scene.constructor.name : "No scene");
+    ImGui.Text(scene ? scene.constructor.name : "No scene");
     this.renderEntityList(mainEntities, `${idPrefix}_main`);
 
-    ImGui.SeparatorText(subScene ? subScene.constructor.name : "No sub-scene");
+    ImGui.Text(subScene ? subScene.constructor.name : "No sub-scene");
 
     this.renderEntityList(subEntities, `${idPrefix}_sub`);
   }
@@ -195,35 +195,40 @@ export class SceneInspectorWindow extends BaseWindow {
     const sceneManager =
       (scene?.getSceneManagerService() as ISceneManagerService | null) ?? null;
 
-    if (sceneManager) {
-      const scenes = sceneManager.getScenes();
-      const currentScene = sceneManager.getCurrentScene();
-      const currentIndex = scenes.indexOf(currentScene as GameScene);
+    let scenes: GameScene[] = [];
+    let currentIndex = -1;
 
-      ImGui.BeginDisabled(currentIndex <= 0);
-      if (ImGui.Button("Prev")) {
-        const previous = scenes[currentIndex - 1];
-        previous.load();
-        sceneManager
-          .getTransitionService()
-          .crossfade(sceneManager, previous, 0.2);
-      }
-      ImGui.EndDisabled();
+    if (sceneManager) {
+      scenes = sceneManager.getScenes();
+      const currentScene = sceneManager.getCurrentScene();
+      currentIndex = scenes.indexOf(currentScene as GameScene);
 
       ImGui.Text("Stack:");
       scenes.forEach((s, idx) => {
         const prefix = idx === currentIndex ? "->" : "  ";
         ImGui.Text(`${prefix} ${s.constructor.name}`);
       });
-
-      ImGui.Separator();
     } else {
       ImGui.Text("No scene manager");
-      ImGui.Separator();
     }
+
+    const disabled = !sceneManager || currentIndex <= 0;
+    ImGui.BeginDisabled(disabled);
+    const prevClicked = ImGui.Button("Previous scene");
+    ImGui.EndDisabled();
+
+    ImGui.SameLine();
 
     if (ImGui.Button("Return to main menu")) {
       this.goToMainMenu();
+    }
+
+    if (prevClicked && !disabled && sceneManager) {
+      const previous = scenes[currentIndex - 1];
+      previous.load();
+      sceneManager
+        .getTransitionService()
+        .crossfade(sceneManager, previous, 0.2);
     }
   }
 
