@@ -34,8 +34,8 @@ export class WorldController {
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,
     private readonly alertEntity: AlertEntity,
-  private readonly boostPadsEntities: BoostPadEntity[],
-  private readonly spawnPointEntities: SpawnPointEntity[]
+    private readonly boostPadsEntities: BoostPadEntity[],
+    private readonly spawnPointEntities: SpawnPointEntity[]
   ) {
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
@@ -217,7 +217,8 @@ export class WorldController {
 
     const attacker =
       this.gameState.getMatch()?.getPlayer(payload.attackerId) ?? null;
-    const victim = this.gameState.getMatch()?.getPlayer(payload.victimId) ?? null;
+    const victim =
+      this.gameState.getMatch()?.getPlayer(payload.victimId) ?? null;
 
     if (!victim) {
       console.warn(`Cannot find victim with id ${payload.victimId}`);
@@ -272,8 +273,7 @@ export class WorldController {
           return;
         }
 
-        const maxSpeed =
-          car.getTopSpeed() * car.getBoostTopSpeedMultiplier();
+        const maxSpeed = car.getTopSpeed() * car.getBoostTopSpeedMultiplier();
         const EPSILON = 0.001;
         const carAtMax =
           car.isBoosting() && car.getSpeed() >= maxSpeed - EPSILON;
@@ -314,7 +314,9 @@ export class WorldController {
     });
   }
 
-  private getSpawnPoint(player: GamePlayer | null): { x: number; y: number } | null {
+  private getSpawnPoint(
+    player: GamePlayer | null
+  ): { x: number; y: number } | null {
     if (!player) {
       return null;
     }
