@@ -15,6 +15,7 @@ import { WebSocketService } from "../services/network/websocket-service.js";
 import { container } from "../../core/services/di-container.js";
 
 export class SceneInspectorWindow extends BaseWindow {
+  private static readonly COLOR_CURRENT_SCENE = 0xffffff00; // Yellow
 
   constructor(private gameState: GameState) {
     super("Scene inspector", new ImVec2(300, 350));
@@ -203,32 +204,44 @@ export class SceneInspectorWindow extends BaseWindow {
       const currentScene = sceneManager.getCurrentScene();
       currentIndex = scenes.indexOf(currentScene as GameScene);
 
-      ImGui.Text("Stack:");
-      scenes.forEach((s, idx) => {
-        const prefix = idx === currentIndex ? "->" : "  ";
-        ImGui.Text(`${prefix} ${s.constructor.name}`);
-      });
+      const tableFlags =
+        ImGui.TableFlags.Borders |
+        ImGui.TableFlags.RowBg |
+        ImGui.TableFlags.Resizable |
+        ImGui.TableFlags.ScrollY |
+        ImGui.TableFlags.SizingStretchProp;
+
+      if (ImGui.BeginTable("SceneStackTable", 2, tableFlags, new ImVec2(0, 120))) {
+        ImGui.TableSetupColumn("#", ImGui.TableColumnFlags.WidthFixed, 20);
+        ImGui.TableSetupColumn("Scene", ImGui.TableColumnFlags.WidthStretch);
+        ImGui.TableHeadersRow();
+
+        scenes.forEach((s, idx) => {
+          ImGui.TableNextRow();
+          ImGui.TableSetColumnIndex(0);
+          ImGui.Text(String(idx));
+          ImGui.TableSetColumnIndex(1);
+          const isCurrent = idx === currentIndex;
+          if (isCurrent) {
+            ImGui.PushStyleColor(
+              ImGui.Col.Text,
+              SceneInspectorWindow.COLOR_CURRENT_SCENE
+            );
+          }
+          ImGui.Text(s.constructor.name);
+          if (isCurrent) {
+            ImGui.PopStyleColor();
+          }
+        });
+
+        ImGui.EndTable();
+      }
     } else {
       ImGui.Text("No scene manager");
     }
 
-    const disabled = !sceneManager || currentIndex <= 0;
-    ImGui.BeginDisabled(disabled);
-    const prevClicked = ImGui.Button("Previous scene");
-    ImGui.EndDisabled();
-
-    ImGui.SameLine();
-
     if (ImGui.Button("Return to main menu")) {
       this.goToMainMenu();
-    }
-
-    if (prevClicked && !disabled && sceneManager) {
-      const previous = scenes[currentIndex - 1];
-      previous.load();
-      sceneManager
-        .getTransitionService()
-        .crossfade(sceneManager, previous, 0.2);
     }
   }
 
