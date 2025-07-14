@@ -30,4 +30,9 @@ export interface GameScene {
    * Cleanup resources when the scene is removed from the stack.
    */
   dispose(): void;
+
+  /**
+   * Re-subscribe events when returning to a previously disposed scene.
+   */
+  resubscribeEvents(): void;
 }

@@ -280,6 +280,8 @@ export class BaseGameScene implements GameScene {
       return;
     }
 
+    previousScene.resubscribeEvents();
+
     console.log("Returning to", previousScene.constructor.name);
 
     this.sceneManagerService
@@ -289,6 +291,11 @@ export class BaseGameScene implements GameScene {
         previousScene,
         crossfadeDurationSeconds
       );
+  }
+
+  public resubscribeEvents(): void {
+    // Scenes can override this if they need to bind events again after
+    // being disposed when returning from the stack.
   }
 
   public dispose(): void {

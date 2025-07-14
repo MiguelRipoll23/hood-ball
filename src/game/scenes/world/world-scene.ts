@@ -420,6 +420,10 @@ export class WorldScene extends BaseCollidingGameScene {
     return "ontouchstart" in window || navigator.maxTouchPoints > 0;
   }
 
+  public override resubscribeEvents(): void {
+    this.subscribeToEvents();
+  }
+
   private async returnToMainMenuScene(): Promise<void> {
     const mainScene = new MainScene(
       this.gameState,
