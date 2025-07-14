@@ -194,47 +194,44 @@ export class SceneInspectorWindow extends BaseWindow {
   private renderControllerTab(scene: GameScene | null): void {
     const sceneManager =
       (scene?.getSceneManagerService() as ISceneManagerService | null) ?? null;
-    if (!sceneManager) {
+
+    if (sceneManager) {
+      const scenes = sceneManager.getScenes();
+      const currentScene = sceneManager.getCurrentScene();
+      const currentIndex = scenes.indexOf(currentScene as GameScene);
+
+      ImGui.Text(`Current: ${currentScene?.constructor.name ?? "None"}`);
+
+      ImGui.BeginDisabled(currentIndex <= 0);
+      if (ImGui.Button("Prev")) {
+        const previous = scenes[currentIndex - 1];
+        previous.load();
+        sceneManager
+          .getTransitionService()
+          .crossfade(sceneManager, previous, 0.2);
+      }
+      ImGui.EndDisabled();
+
+      ImGui.SameLine();
+
+      if (ImGui.Button("Reload scene")) {
+        currentScene?.load();
+      }
+
+      ImGui.Separator();
+
+      ImGui.Text("Stack:");
+      scenes.forEach((s, idx) => {
+        const prefix = idx === currentIndex ? "->" : "  ";
+        ImGui.Text(`${prefix} ${s.constructor.name}`);
+      });
+
+      ImGui.Separator();
+    } else {
       ImGui.Text("No scene manager");
-      return;
+      ImGui.Separator();
     }
 
-    const scenes = sceneManager.getScenes();
-    const currentScene = sceneManager.getCurrentScene();
-    const currentIndex = scenes.indexOf(currentScene as GameScene);
-
-    ImGui.Text(`Current: ${currentScene?.constructor.name ?? "None"}`);
-
-    ImGui.BeginDisabled(currentIndex <= 0);
-    if (ImGui.Button("Prev")) {
-      const previous = scenes[currentIndex - 1];
-      previous.load();
-      sceneManager
-        .getTransitionService()
-        .crossfade(sceneManager, previous, 0.2);
-    }
-    ImGui.EndDisabled();
-
-    ImGui.SameLine();
-    ImGui.BeginDisabled(currentIndex === -1 || currentIndex >= scenes.length - 1);
-    if (ImGui.Button("Next")) {
-      const next = scenes[currentIndex + 1];
-      next.load();
-      sceneManager
-        .getTransitionService()
-        .crossfade(sceneManager, next, 0.2);
-    }
-    ImGui.EndDisabled();
-
-    ImGui.Separator();
-
-    ImGui.Text("Stack:");
-    scenes.forEach((s, idx) => {
-      const prefix = idx === currentIndex ? "->" : "  ";
-      ImGui.Text(`${prefix} ${s.constructor.name}`);
-    });
-
-    ImGui.Separator();
     if (ImGui.Button("Return to main menu")) {
       this.goToMainMenu();
     }
