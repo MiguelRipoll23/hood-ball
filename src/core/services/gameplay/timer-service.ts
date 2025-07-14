@@ -18,7 +18,16 @@ export class TimerService {
     this.callback = callback;
   }
 
+  public setDuration(durationSeconds: number): void {
+    this.durationMilliseconds = durationSeconds * 1000;
+    console.log(
+      `${this.constructor.name} duration set to ${durationSeconds}s`,
+      this
+    );
+  }
+
   public start(): void {
+    this.reset();
     this.started = true;
   }
 
@@ -52,5 +61,14 @@ export class TimerService {
         this.callback();
       }
     }
+  }
+
+  public reset(): void {
+    this.elapsedMilliseconds = 0;
+    this.completed = false;
+    this.finished = false;
+    this.started = false;
+
+    console.log(`${this.constructor.name} reset`, this);
   }
 }

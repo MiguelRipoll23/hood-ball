@@ -23,6 +23,7 @@ export class AlertEntity
   }
 
   public show(textLines: string[], color = "white", duration = 0): void {
+    this.reset();
     this.showColored(
       textLines,
       textLines.map(() => color),
@@ -36,13 +37,9 @@ export class AlertEntity
     duration = 0
   ): void {
     if (textLines.length !== colors.length) {
-      console.log("fail");
       throw new Error(
         `AlertEntity.showColored: textLines length (${textLines.length}) does not match colors length (${colors.length})`
       );
-    }
-    if (this.timer !== null) {
-      this.timer.stop(false);
     }
 
     this.textLines = textLines;
@@ -67,7 +64,7 @@ export class AlertEntity
     this.scaleTo(1, 0.3);
 
     if (duration > 0) {
-      this.timer = new TimerService(duration, this.hide.bind(this));
+      this.timer = this.getTimerService(duration);
     }
   }
 
@@ -89,6 +86,17 @@ export class AlertEntity
     this.renderMultilineText(context);
 
     context.restore();
+  }
+
+  private getTimerService(durationSeconds: number): TimerService {
+    if (this.timer === null) {
+      this.timer = new TimerService(durationSeconds, this.hide.bind(this));
+    }
+
+    this.timer.setDuration(durationSeconds);
+    this.timer.start();
+
+    return this.timer;
   }
 
   private setTransformOrigin(context: CanvasRenderingContext2D): void {
