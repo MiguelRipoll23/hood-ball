@@ -181,10 +181,13 @@ export class SceneTransitionService {
   private updateCurrentAndNextScene(nextScene: GameScene): void {
     if (this.sceneManager === null) return;
 
+    const previousScene = this.sceneManager.getCurrentScene();
     this.resetTransitionState();
 
     this.sceneManager.setCurrentScene(nextScene);
     this.sceneManager.setNextScene(null);
+
+    previousScene?.dispose();
 
     this.sceneManager.getCurrentScene()?.onTransitionEnd();
 

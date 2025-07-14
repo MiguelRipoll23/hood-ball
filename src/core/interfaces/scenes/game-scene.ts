@@ -25,4 +25,9 @@ export interface GameScene {
 
   onTransitionStart(): void;
   onTransitionEnd(): void;
+
+  /**
+   * Cleanup resources when the scene is removed from the stack.
+   */
+  dispose(): void;
 }
