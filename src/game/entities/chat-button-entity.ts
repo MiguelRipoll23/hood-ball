@@ -9,6 +9,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   private readonly SIZE = 32;
   private readonly OFFSET = 20;
   private readonly emoji = "\uD83D\uDCAC"; // chat emoji
+  private readonly DEFAULT_OPACITY = 0.7;
 
   private inputVisible = false;
   private prevEnterPressed = false;
@@ -25,7 +26,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     super();
     this.width = this.SIZE;
     this.height = this.SIZE;
-    this.opacity = 0.7;
+    this.opacity = this.DEFAULT_OPACITY;
     this.setPosition();
     this.inputElement.addEventListener("blur", () => {
       if (!this.inputVisible) {
@@ -106,6 +107,14 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   public override update(delta: DOMHighResTimeStamp): void {
     if (this.pressed) {
       this.showInput();
+    }
+
+    if (this.gamePointer.isPressing()) {
+      if (!this.pressed) {
+        this.opacity = 0;
+      }
+    } else {
+      this.opacity = this.DEFAULT_OPACITY;
     }
 
     if (this.inputVisible) {
