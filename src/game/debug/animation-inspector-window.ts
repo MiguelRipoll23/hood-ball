@@ -8,7 +8,8 @@ import { injectable } from "@needle-di/core";
 @injectable()
 export class AnimationInspectorWindow extends BaseWindow {
   private static readonly COLOR_FINISHED = 0xff00ff00;
-  private static readonly COLOR_IN_PROGRESS = 0xffffa500;
+  // Use ABGR format for consistency with other debug colors
+  private static readonly COLOR_IN_PROGRESS = 0xff00a5ff; // orange
   private readonly animationLogService: AnimationLogService;
 
   constructor() {
