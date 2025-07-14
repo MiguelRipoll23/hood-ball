@@ -25,14 +25,21 @@ export class EventConsumerService {
     eventType: EventType,
     eventCallback: (data: T) => void,
     log = false
-  ) {
-    this.localSubscriptions.push({
-      eventType,
-      eventCallback,
-    } as EventSubscription);
+  ): EventSubscription {
+    const subscription = { eventType, eventCallback } as EventSubscription;
+    this.localSubscriptions.push(subscription);
 
     if (log) {
       console.log(`Subscribed to local event ${EventType[eventType]}`);
+    }
+
+    return subscription;
+  }
+
+  public unsubscribeFromLocalEvent(subscription: EventSubscription): void {
+    const index = this.localSubscriptions.indexOf(subscription);
+    if (index !== -1) {
+      this.localSubscriptions.splice(index, 1);
     }
   }
 
@@ -40,14 +47,21 @@ export class EventConsumerService {
     eventType: EventType,
     eventCallback: (data: T) => void,
     log = false
-  ) {
-    this.remoteSubscriptions.push({
-      eventType,
-      eventCallback,
-    } as EventSubscription);
+  ): EventSubscription {
+    const subscription = { eventType, eventCallback } as EventSubscription;
+    this.remoteSubscriptions.push(subscription);
 
     if (log) {
       console.log(`Subscribed to remote event ${EventType[eventType]}`);
+    }
+
+    return subscription;
+  }
+
+  public unsubscribeFromRemoteEvent(subscription: EventSubscription): void {
+    const index = this.remoteSubscriptions.indexOf(subscription);
+    if (index !== -1) {
+      this.remoteSubscriptions.splice(index, 1);
     }
   }
 

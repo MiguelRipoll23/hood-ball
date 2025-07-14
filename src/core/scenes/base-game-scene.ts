@@ -6,6 +6,7 @@ import type { GameScene } from "../interfaces/scenes/game-scene.js";
 import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
 import { SceneManagerService } from "../services/gameplay/scene-manager-service.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
+import type { EventSubscription } from "../../game/types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
 import { container } from "../services/di-container.js";
 import { EventType } from "../../game/enums/event-type.js";
@@ -13,6 +14,9 @@ import type { GameState } from "../models/game-state.js";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerService;
+
+  private localEventSubscriptions: EventSubscription[] = [];
+  private remoteEventSubscriptions: EventSubscription[] = [];
 
   protected canvas: HTMLCanvasElement;
   protected sceneManagerService: SceneManagerService | null = null;
@@ -194,7 +198,11 @@ export class BaseGameScene implements GameScene {
     eventType: EventType,
     eventCallback: (data: T) => void
   ) {
-    this.eventConsumerService.subscribeToLocalEvent(eventType, eventCallback);
+    const sub = this.eventConsumerService.subscribeToLocalEvent(
+      eventType,
+      eventCallback
+    );
+    this.localEventSubscriptions.push(sub);
 
     console.log(
       `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
@@ -205,7 +213,11 @@ export class BaseGameScene implements GameScene {
     eventType: EventType,
     eventCallback: (data: T) => void
   ) {
-    this.eventConsumerService.subscribeToRemoteEvent(eventType, eventCallback);
+    const sub = this.eventConsumerService.subscribeToRemoteEvent(
+      eventType,
+      eventCallback
+    );
+    this.remoteEventSubscriptions.push(sub);
 
     console.log(
       `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`
@@ -277,5 +289,16 @@ export class BaseGameScene implements GameScene {
         previousScene,
         crossfadeDurationSeconds
       );
+  }
+
+  public dispose(): void {
+    this.localEventSubscriptions.forEach((sub) =>
+      this.eventConsumerService.unsubscribeFromLocalEvent(sub)
+    );
+    this.remoteEventSubscriptions.forEach((sub) =>
+      this.eventConsumerService.unsubscribeFromRemoteEvent(sub)
+    );
+    this.localEventSubscriptions = [];
+    this.remoteEventSubscriptions = [];
   }
 }
