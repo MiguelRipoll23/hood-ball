@@ -7,6 +7,8 @@ import { injectable } from "@needle-di/core";
 
 @injectable()
 export class AnimationInspectorWindow extends BaseWindow {
+  private static readonly COLOR_FINISHED = 0xff00ff00;
+  private static readonly COLOR_IN_PROGRESS = 0xffffa500;
   private readonly animationLogService: AnimationLogService;
 
   constructor() {
@@ -39,13 +41,12 @@ export class AnimationInspectorWindow extends BaseWindow {
         ImGui.Text(AnimationType[entry.type]);
         ImGui.TableSetColumnIndex(2);
         const progressText = `${(entry.progress * 100).toFixed(0)}%`;
-        if (entry.finished) {
-          ImGui.PushStyleColor(ImGui.Col.Text, 0xff00ff00);
-          ImGui.Text(progressText);
-          ImGui.PopStyleColor();
-        } else {
-          ImGui.Text(progressText);
-        }
+        const color = entry.finished
+          ? AnimationInspectorWindow.COLOR_FINISHED
+          : AnimationInspectorWindow.COLOR_IN_PROGRESS;
+        ImGui.PushStyleColor(ImGui.Col.Text, color);
+        ImGui.Text(progressText);
+        ImGui.PopStyleColor();
       });
 
       ImGui.EndTable();
