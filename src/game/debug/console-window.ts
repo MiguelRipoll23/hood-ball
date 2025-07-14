@@ -6,6 +6,13 @@ import { container } from "../../core/services/di-container.js";
 
 export class ConsoleWindow extends BaseWindow {
   private readonly consoleLogService: ConsoleLogService;
+  private readonly levelEmojis: Record<LogLevel, string> = {
+    log: "📝",
+    info: "ℹ️",
+    warn: "⚠️",
+    error: "❌",
+    debug: "🐛",
+  };
   private readonly levelFilters: Record<LogLevel, boolean> = {
     log: true,
     info: true,
@@ -29,7 +36,8 @@ export class ConsoleWindow extends BaseWindow {
     (Object.keys(this.levelFilters) as LogLevel[]).forEach((level, index) => {
       if (index > 0) ImGui.SameLine();
       const value = [this.levelFilters[level]];
-      if (ImGui.Checkbox(level, value)) {
+      const label = `${this.levelEmojis[level]} ${level}`;
+      if (ImGui.Checkbox(label, value)) {
         this.levelFilters[level] = value[0];
       }
     });
@@ -65,7 +73,7 @@ export class ConsoleWindow extends BaseWindow {
           .toLocaleTimeString(undefined, { hour12: false });
         ImGui.Text(time);
         ImGui.TableSetColumnIndex(1);
-        ImGui.Text(entry.level.toUpperCase());
+        ImGui.Text(this.levelEmojis[entry.level]);
         ImGui.TableSetColumnIndex(2);
         const color = this.getColor(entry.level);
         ImGui.PushStyleColor(ImGui.Col.Text, color);
