@@ -2,6 +2,7 @@ import type { ITimerService } from "../../../core/interfaces/services/gameplay/t
 import { Match } from "../../models/match.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameState } from "../../../core/models/game-state.js";
+import { MatchStateType } from "../../enums/match-state-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { EventType } from "../../enums/event-type.js";
@@ -330,7 +331,10 @@ export class MatchmakingNetworkService
       this.notifyMatchPlayerToServer(true, player.getId());
     }
 
-    void this.matchFinderService.advertiseMatch();
+    const match = this.gameState.getMatch();
+    if (match !== null && match.getState() !== MatchStateType.GameOver) {
+      void this.matchFinderService.advertiseMatch();
+    }
   }
 
   @PeerCommandHandler(WebRTCType.PlayerPing)
@@ -408,7 +412,10 @@ export class MatchmakingNetworkService
       this.notifyMatchPlayerToServer(false, player.getId());
     }
 
-    void this.matchFinderService.advertiseMatch();
+    const match = this.gameState.getMatch();
+    if (match !== null && match.getState() !== MatchStateType.GameOver) {
+      void this.matchFinderService.advertiseMatch();
+    }
 
     if (this.pendingDisconnections.delete(player.getId())) {
       this.getMatchmakingService().finalizeIfNoPendingDisconnections();
