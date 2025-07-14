@@ -191,6 +191,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchAdvertised(): void {
     if (this.gameState.getMatch()?.getPlayers().length === 1) {
+      this.worldController?.handleWaitingForPlayers();
       this.toastEntity?.show("Waiting for players...");
     }
   }
