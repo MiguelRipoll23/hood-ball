@@ -16,7 +16,7 @@ export class EventInspectorWindow extends BaseWindow {
 
   constructor() {
     // Wider window to accommodate side by side layout
-    super("Event inspector", new ImVec2(390, 230));
+    super("Event inspector", new ImVec2(450, 230));
     this.eventProcessorService = container.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
@@ -101,7 +101,6 @@ export class EventInspectorWindow extends BaseWindow {
 
     ImGui.BeginGroup();
     if (this.selectedEvent) {
-      ImGui.SeparatorText("Details");
       this.renderEventDetails(this.selectedEvent);
     } else {
       ImGui.TextWrapped("No event selected in the left panel.");
