@@ -118,7 +118,18 @@ export class EventInspectorWindow extends BaseWindow {
       const data = event.getData();
       if (data && typeof data === "object") {
         Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
-          ImGui.Text(`${key}: ${String(value)}`);
+          if (value && typeof value === "object") {
+            try {
+              const json = JSON.stringify(value, null, 2) ?? String(value);
+              json.split("\n").forEach((line, idx) => {
+                ImGui.Text(idx === 0 ? `${key}: ${line}` : line);
+              });
+            } catch {
+              ImGui.Text(`${key}: [Object]`);
+            }
+          } else {
+            ImGui.Text(`${key}: ${String(value)}`);
+          }
         });
       } else if (data !== null && data !== undefined) {
         ImGui.Text(String(data));

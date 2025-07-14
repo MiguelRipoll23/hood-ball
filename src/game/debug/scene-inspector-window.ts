@@ -6,16 +6,8 @@ import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import type { GameState } from "../../core/models/game-state.js";
-import type { ISceneManagerService } from "../interfaces/services/ui/scene-manager-service-interface.js";
-import { MainScene } from "../scenes/main/main-scene.js";
-import { MainMenuScene } from "../scenes/main/main-menu/main-menu-scene.js";
-import { SceneTransitionService } from "../../core/services/gameplay/scene-transition-service.js";
-import { EventConsumerService } from "../../core/services/gameplay/event-consumer-service.js";
-import { WebSocketService } from "../services/network/websocket-service.js";
-import { container } from "../../core/services/di-container.js";
 
 export class SceneInspectorWindow extends BaseWindow {
-  private static readonly COLOR_CURRENT_SCENE = 0xffffff00; // Yellow
 
   constructor(private gameState: GameState) {
     super("Scene inspector", new ImVec2(300, 350));
@@ -50,10 +42,6 @@ export class SceneInspectorWindow extends BaseWindow {
           subSceneWorldEntities,
           "world"
         );
-        ImGui.EndTabItem();
-      }
-      if (ImGui.BeginTabItem("Stack")) {
-        this.renderStackTab(scene);
         ImGui.EndTabItem();
       }
       ImGui.EndTabBar();
@@ -192,89 +180,5 @@ export class SceneInspectorWindow extends BaseWindow {
     }
   }
 
-  private renderStackTab(scene: GameScene | null): void {
-    const sceneManager =
-      (scene?.getSceneManagerService() as ISceneManagerService | null) ?? null;
 
-    let scenes: GameScene[] = [];
-    let currentIndex = -1;
-
-    if (sceneManager) {
-      scenes = sceneManager.getScenes();
-      const currentScene = sceneManager.getCurrentScene();
-      currentIndex = scenes.indexOf(currentScene as GameScene);
-
-      const tableFlags =
-        ImGui.TableFlags.Borders |
-        ImGui.TableFlags.RowBg |
-        ImGui.TableFlags.Resizable |
-        ImGui.TableFlags.ScrollY |
-        ImGui.TableFlags.SizingStretchProp;
-
-      if (ImGui.BeginTable("SceneStackTable", 2, tableFlags, new ImVec2(0, 120))) {
-        ImGui.TableSetupColumn("#", ImGui.TableColumnFlags.WidthFixed, 20);
-        ImGui.TableSetupColumn("Scene", ImGui.TableColumnFlags.WidthStretch);
-        ImGui.TableHeadersRow();
-
-        scenes.forEach((s, idx) => {
-          ImGui.TableNextRow();
-          ImGui.TableSetColumnIndex(0);
-          ImGui.Text(String(idx));
-          ImGui.TableSetColumnIndex(1);
-          const isCurrent = idx === currentIndex;
-          if (isCurrent) {
-            ImGui.PushStyleColor(
-              ImGui.Col.Text,
-              SceneInspectorWindow.COLOR_CURRENT_SCENE
-            );
-          }
-          ImGui.Text(s.constructor.name);
-          if (isCurrent) {
-            ImGui.PopStyleColor();
-          }
-        });
-
-        ImGui.EndTable();
-      }
-    } else {
-      ImGui.Text("No scene manager");
-    }
-
-    if (ImGui.Button("Return to main menu")) {
-      this.goToMainMenu();
-    }
-  }
-
-  private goToMainMenu(): void {
-    this.cleanupState();
-    const mainScene = new MainScene(
-      this.gameState,
-      container.get(EventConsumerService)
-    );
-    const mainMenuScene = new MainMenuScene(
-      this.gameState,
-      container.get(EventConsumerService),
-      false
-    );
-
-    if (!this.gameState.getGameServer().isConnected()) {
-      try {
-        container.get(WebSocketService).connectToServer();
-      } catch (error) {
-        console.error("Failed to reconnect to server", error);
-      }
-    }
-
-    mainScene.activateScene(mainMenuScene);
-    mainScene.load();
-
-    container
-      .get(SceneTransitionService)
-      .fadeOutAndIn(this.gameState.getGameFrame(), mainScene, 1, 1);
-  }
-
-  private cleanupState(): void {
-    this.gameState.setMatch(null);
-    this.gameState.getGamePlayer().reset();
-  }
 }
