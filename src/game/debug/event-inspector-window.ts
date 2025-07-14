@@ -13,6 +13,7 @@ import { injectable } from "@needle-di/core";
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
   private detailEvent: GameEvent | null = null;
+  private shouldOpenDetails = false;
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
@@ -94,13 +95,13 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.EndTable();
     }
 
-    if (ImGui.Button("Replay") && this.selectedEvent) {
-      this.replayEvent(this.selectedEvent);
-    }
-    ImGui.SameLine();
     if (ImGui.Button("View") && this.selectedEvent) {
       this.detailEvent = this.selectedEvent;
-      ImGui.OpenPopup("Event Details");
+      this.shouldOpenDetails = true;
+    }
+    ImGui.SameLine();
+    if (ImGui.Button("Replay") && this.selectedEvent) {
+      this.replayEvent(this.selectedEvent);
     }
     ImGui.EndGroup();
   }
@@ -152,6 +153,10 @@ export class EventInspectorWindow extends BaseWindow {
   }
 
   private renderDetailsPopup(): void {
+    if (this.shouldOpenDetails) {
+      ImGui.OpenPopup("Event Details");
+      this.shouldOpenDetails = false;
+    }
     const open = [true];
     if (ImGui.BeginPopupModal("Event Details", open, ImGui.WindowFlags.AlwaysAutoResize)) {
       if (this.detailEvent) {
