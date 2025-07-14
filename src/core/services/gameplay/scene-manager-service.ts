@@ -43,6 +43,10 @@ export class SceneManagerService implements ISceneManagerService {
     return this.nextScene;
   }
 
+  public getScenes(): GameScene[] {
+    return [...this.stack];
+  }
+
   public setCurrentScene(currentScene: GameScene): void {
     this.currentScene = currentScene;
   }

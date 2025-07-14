@@ -9,6 +9,7 @@ export interface ISceneManagerService {
   getNextScene(): GameScene | null;
   setCurrentScene(currentScene: GameScene): void;
   setNextScene(nextScene: GameScene | null): void;
+  getScenes(): GameScene[];
   update(deltaTimeStamp: DOMHighResTimeStamp): void;
   render(context: CanvasRenderingContext2D): void;
 }
