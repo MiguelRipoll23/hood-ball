@@ -4,7 +4,7 @@ import type { GameEvent } from "../../core/interfaces/models/game-event.js";
 import { LocalEvent } from "../../core/models/local-event.js";
 import { RemoteEvent } from "../../core/models/remote-event.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
-import { DebugUtils } from "../../core/utils/debug-utils.js";
+import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { EventProcessorService } from "../../core/services/gameplay/event-processor-service.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
@@ -12,11 +12,11 @@ import { injectable } from "@needle-di/core";
 @injectable()
 export class EventInspectorWindow extends BaseWindow {
   private selectedEvent: GameEvent | null = null;
+  private detailEvent: GameEvent | null = null;
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
-    // Wider window to accommodate side by side layout
-    super("Event inspector", new ImVec2(450, 230));
+    super("Event inspector", new ImVec2(195, 230));
     this.eventProcessorService = container.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
@@ -32,6 +32,8 @@ export class EventInspectorWindow extends BaseWindow {
 
       ImGui.EndTabBar();
     }
+
+    this.renderDetailsPopup();
   }
 
   private renderTab(
@@ -95,15 +97,10 @@ export class EventInspectorWindow extends BaseWindow {
     if (ImGui.Button("Replay") && this.selectedEvent) {
       this.replayEvent(this.selectedEvent);
     }
-    ImGui.EndGroup();
-
     ImGui.SameLine();
-
-    ImGui.BeginGroup();
-    if (this.selectedEvent) {
-      this.renderEventDetails(this.selectedEvent);
-    } else {
-      ImGui.TextWrapped("No event selected in the left panel.");
+    if (ImGui.Button("View") && this.selectedEvent) {
+      this.detailEvent = this.selectedEvent;
+      ImGui.OpenPopup("Event Details");
     }
     ImGui.EndGroup();
   }
@@ -146,11 +143,30 @@ export class EventInspectorWindow extends BaseWindow {
     } else if (event instanceof RemoteEvent) {
       const buffer = event.getData();
       if (buffer) {
-        const dump = DebugUtils.getHexDump(new Uint8Array(buffer));
-        dump.split("\n").forEach((line) => ImGui.Text(line));
+        const preview = BinaryReader.fromArrayBuffer(buffer).preview();
+        preview.split("\n").forEach((line) => ImGui.Text(line));
       } else {
         ImGui.Text("No data");
       }
+    }
+  }
+
+  private renderDetailsPopup(): void {
+    const open = [true];
+    if (ImGui.BeginPopupModal("Event Details", open, ImGui.WindowFlags.AlwaysAutoResize)) {
+      if (this.detailEvent) {
+        this.renderEventDetails(this.detailEvent);
+      } else {
+        ImGui.Text("No event selected");
+      }
+
+      if (ImGui.Button("Close")) {
+        ImGui.CloseCurrentPopup();
+      }
+      ImGui.EndPopup();
+    }
+    if (!open[0]) {
+      this.detailEvent = null;
     }
   }
 
