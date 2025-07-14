@@ -15,8 +15,8 @@ export class EventInspectorWindow extends BaseWindow {
   private readonly eventProcessorService: EventProcessorService;
 
   constructor() {
-    // Slightly smaller window for better fit with layout
-    super("Event inspector", new ImVec2(195, 230));
+    // Wider window to accommodate side by side layout
+    super("Event inspector", new ImVec2(390, 230));
     this.eventProcessorService = container.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
@@ -63,6 +63,7 @@ export class EventInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollX |
       ImGui.TableFlags.SizingStretchSame;
 
+    ImGui.BeginGroup();
     if (ImGui.BeginTable(tableId, 1, tableFlags, new ImVec2(220, 150))) {
       events.forEach((event, i) => {
         ImGui.TableNextRow();
@@ -94,11 +95,18 @@ export class EventInspectorWindow extends BaseWindow {
     if (ImGui.Button("Replay") && this.selectedEvent) {
       this.replayEvent(this.selectedEvent);
     }
+    ImGui.EndGroup();
 
+    ImGui.SameLine();
+
+    ImGui.BeginGroup();
     if (this.selectedEvent) {
       ImGui.SeparatorText("Details");
       this.renderEventDetails(this.selectedEvent);
+    } else {
+      ImGui.TextWrapped("No event selected in the left panel.");
     }
+    ImGui.EndGroup();
   }
 
   private replayEvent(event: GameEvent): void {
