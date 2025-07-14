@@ -6,13 +6,7 @@ import { container } from "../../core/services/di-container.js";
 
 export class ConsoleWindow extends BaseWindow {
   private readonly consoleLogService: ConsoleLogService;
-  private readonly levelEmojis: Record<LogLevel, string> = {
-    log: "📝",
-    info: "ℹ️",
-    warn: "⚠️",
-    error: "❌",
-    debug: "🐛",
-  };
+  private previousEntryCount = 0;
   private readonly levelFilters: Record<LogLevel, boolean> = {
     log: true,
     info: true,
@@ -22,7 +16,7 @@ export class ConsoleWindow extends BaseWindow {
   };
 
   constructor() {
-    super("Console", new ImVec2(450, 260));
+    super("Console", new ImVec2(600, 260));
     this.consoleLogService = container.get(ConsoleLogService);
   }
 
@@ -36,10 +30,12 @@ export class ConsoleWindow extends BaseWindow {
     (Object.keys(this.levelFilters) as LogLevel[]).forEach((level, index) => {
       if (index > 0) ImGui.SameLine();
       const value = [this.levelFilters[level]];
-      const label = `${this.levelEmojis[level]} ${level}`;
+      ImGui.PushStyleColor(ImGui.Col.Text, this.getColor(level));
+      const label = level.toUpperCase();
       if (ImGui.Checkbox(label, value)) {
         this.levelFilters[level] = value[0];
       }
+      ImGui.PopStyleColor();
     });
     ImGui.SameLine();
     if (ImGui.Button("Clear")) {
@@ -56,9 +52,8 @@ export class ConsoleWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.SizingStretchProp;
 
-    const entries = this.consoleLogService
-      .getEntries()
-      .filter((e) => this.levelFilters[e.level]);
+    const allEntries = this.consoleLogService.getEntries();
+    const entries = allEntries.filter((e) => this.levelFilters[e.level]);
 
     if (ImGui.BeginTable("ConsoleTable", 3, tableFlags, new ImVec2(0, 200))) {
       ImGui.TableSetupColumn("Time", ImGui.TableColumnFlags.WidthFixed, 70);
@@ -73,13 +68,20 @@ export class ConsoleWindow extends BaseWindow {
           .toLocaleTimeString(undefined, { hour12: false });
         ImGui.Text(time);
         ImGui.TableSetColumnIndex(1);
-        ImGui.Text(this.levelEmojis[entry.level]);
+        ImGui.PushStyleColor(ImGui.Col.Text, this.getColor(entry.level));
+        ImGui.Text(entry.level.toUpperCase());
+        ImGui.PopStyleColor();
         ImGui.TableSetColumnIndex(2);
         const color = this.getColor(entry.level);
         ImGui.PushStyleColor(ImGui.Col.Text, color);
         ImGui.TextWrapped(entry.message);
         ImGui.PopStyleColor();
       });
+
+      if (allEntries.length > this.previousEntryCount) {
+        ImGui.SetScrollY(ImGui.GetScrollMaxY());
+      }
+      this.previousEntryCount = allEntries.length;
 
       ImGui.EndTable();
     }
