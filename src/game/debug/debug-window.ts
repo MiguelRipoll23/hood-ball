@@ -5,7 +5,6 @@ import { MatchInspectorWindow } from "./match-inspector-window.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
-import { ConsoleWindow } from "./console-window.js";
 import type { GameState } from "../../core/models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
@@ -14,7 +13,6 @@ export class DebugWindow extends BaseWindow {
   private matchInspectorWindow: MatchInspectorWindow;
   private peerInspectorWindow: PeerInspectorWindow;
   private sceneInspectorWindow: SceneInspectorWindow;
-  private consoleWindow: ConsoleWindow;
 
   constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
@@ -23,7 +21,6 @@ export class DebugWindow extends BaseWindow {
     this.matchInspectorWindow = new MatchInspectorWindow(gameState);
     this.peerInspectorWindow = new PeerInspectorWindow();
     this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
-    this.consoleWindow = new ConsoleWindow();
     this.open();
   }
 
@@ -56,9 +53,7 @@ export class DebugWindow extends BaseWindow {
       this.sceneInspectorWindow.render();
     }
 
-    if (this.consoleWindow.isOpen()) {
-      this.consoleWindow.render();
-    }
+
 
   }
 
@@ -94,9 +89,6 @@ export class DebugWindow extends BaseWindow {
         ImGui.EndMenu();
       }
 
-      if (ImGui.MenuItem("Console", "C")) {
-        this.consoleWindow.toggle();
-      }
       ImGui.EndMenuBar();
     }
   }

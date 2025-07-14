@@ -20,7 +20,6 @@ import { CameraService } from "./gameplay/camera-service.js";
 import { SpawnPointService } from "../../game/services/gameplay/spawn-point-service.js";
 import { ChatService } from "../../game/services/network/chat-service.js";
 import { AnimationLogService } from "./gameplay/animation-log-service.js";
-import { ConsoleLogService } from "./debug/console-log-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -59,7 +58,6 @@ export class ServiceRegistry {
     });
     container.bind({ provide: WebRTCService, useClass: WebRTCService });
     container.bind({ provide: ChatService, useClass: ChatService });
-    container.bind({ provide: ConsoleLogService, useClass: ConsoleLogService });
     container.bind({ provide: AnimationLogService, useClass: AnimationLogService });
     container.bind({ provide: CameraService, useClass: CameraService });
     container.bind({ provide: SpawnPointService, useClass: SpawnPointService });
