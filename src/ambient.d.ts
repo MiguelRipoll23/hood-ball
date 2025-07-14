@@ -1,5 +1,7 @@
 declare module '@needle-di/core';
 
+declare module '*.css';
+
 // Minimal declarations for jsimgui used in debug windows
 declare module '@mori2003/jsimgui' {
   export const ImGui: any;
