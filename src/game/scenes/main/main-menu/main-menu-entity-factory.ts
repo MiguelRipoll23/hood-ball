@@ -4,6 +4,7 @@ import { ServerMessageWindowEntity } from "../../../entities/server-message-wind
 import { CloseableMessageEntity } from "../../../entities/common/closeable-message-entity.js";
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 import { WelcomeMessageEntity } from "../../../entities/welcome-message-entity.js";
+import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import type { GameState } from "../../../../core/models/game-state.js";
 
 export interface MainMenuEntities {
@@ -13,6 +14,7 @@ export interface MainMenuEntities {
   closeableMessageEntity: CloseableMessageEntity;
   welcomeMessageEntity: WelcomeMessageEntity;
   onlinePlayersEntity: OnlinePlayersEntity;
+  toastEntity: ToastEntity;
 }
 
 export class MainMenuEntityFactory {
@@ -43,6 +45,7 @@ export class MainMenuEntityFactory {
       this.gameState
     );
     const onlinePlayersEntity = new OnlinePlayersEntity(this.canvas);
+    const toastEntity = new ToastEntity(this.canvas);
 
     return {
       titleEntity,
@@ -51,6 +54,7 @@ export class MainMenuEntityFactory {
       closeableMessageEntity,
       welcomeMessageEntity,
       onlinePlayersEntity,
+      toastEntity,
     };
   }
 }
