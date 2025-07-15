@@ -157,27 +157,14 @@ export class GameLoopService {
         ?.getCurrentScene();
 
       if (subScene instanceof MainMenuScene) {
+        this.gameState.setMatch(null);
+        this.gameState.getGamePlayer().reset();
         subScene.startServerReconnection();
         return;
       }
     }
 
-    const mainScene = new MainScene(
-      this.gameState,
-      container.get(EventConsumerService)
-    );
-    const mainMenuScene = new MainMenuScene(
-      this.gameState,
-      container.get(EventConsumerService),
-      false
-    );
-
-    mainScene.activateScene(mainMenuScene);
-    mainScene.load();
-
-    this.sceneTransitionService.fadeOutAndIn(this.gameFrame, mainScene, 1, 1);
-
-    mainMenuScene.startServerReconnection();
+    this.returnToMainMenuScene(true);
   }
 
   private handleServerNotificationEvent(
@@ -189,6 +176,13 @@ export class GameLoopService {
   private handleHostDisconnectedEvent(): void {
     alert("Host has disconnected");
 
+    this.returnToMainMenuScene(false);
+  }
+
+  private returnToMainMenuScene(reconnect: boolean): void {
+    this.gameState.setMatch(null);
+    this.gameState.getGamePlayer().reset();
+
     const mainScene = new MainScene(
       this.gameState,
       container.get(EventConsumerService)
@@ -202,7 +196,16 @@ export class GameLoopService {
     mainScene.activateScene(mainMenuScene);
     mainScene.load();
 
-    this.sceneTransitionService.fadeOutAndIn(this.gameFrame, mainScene, 1, 1);
+    this.sceneTransitionService.fadeOutAndIn(
+      this.gameFrame,
+      mainScene,
+      1,
+      1
+    );
+
+    if (reconnect) {
+      mainMenuScene.startServerReconnection();
+    }
   }
 
   private loadEntities(): void {
