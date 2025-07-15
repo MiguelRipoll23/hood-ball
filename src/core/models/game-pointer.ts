@@ -196,5 +196,32 @@ export class GamePointer implements IGamePointer {
       },
       { passive: false }
     );
+
+    // Reset pointer state if the window loses focus
+    window.addEventListener("blur", () => {
+      this.reset();
+    });
+
+    // Handle pointer cancel events similarly to pointer up
+    this.canvas.addEventListener(
+      "pointercancel",
+      (event) => {
+        const touch = this.touches.get(event.pointerId);
+        if (touch) {
+          touch.pressing = false;
+          touch.pressed = false;
+        }
+
+        if (this.primaryPointerId === event.pointerId) {
+          const next = Array.from(this.touches.values()).find((t) => t.pressing);
+          this.primaryPointerId = next ? next.pointerId : null;
+          if (next) {
+            next.initialX = next.x;
+            next.initialY = next.y;
+          }
+        }
+      },
+      { passive: false }
+    );
   }
 }
