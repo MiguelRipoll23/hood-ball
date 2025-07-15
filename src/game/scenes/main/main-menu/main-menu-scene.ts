@@ -32,6 +32,7 @@ export class MainMenuScene extends BaseGameScene {
   private closeableMessageEntity: CloseableMessageEntity | null = null;
   private onlinePlayersEntity: OnlinePlayersEntity | null = null;
   private toastEntity: ToastEntity | null = null;
+  private isReconnecting = false;
 
   constructor(
     gameState: GameState,
@@ -276,6 +277,11 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   public startServerReconnection(): void {
+    if (this.isReconnecting) {
+      return;
+    }
+
+    this.isReconnecting = true;
     this.toastEntity?.show("Reconnecting to game server...");
     this.disableMenuButtons();
     container.get(WebSocketService).connectToServer();
@@ -291,6 +297,7 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private handleServerConnectedEvent(): void {
+    this.isReconnecting = false;
     this.toastEntity?.hide();
     this.enableMenuButtons();
   }
