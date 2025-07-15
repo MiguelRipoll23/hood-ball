@@ -182,6 +182,12 @@ export class DebugService {
       new ImVec2(0, 1)
     );
 
+    // Use the full width so wrapped text is readable on small screens
+    ImGui.SetNextWindowSize(
+      new ImVec2(io.DisplaySize.x - 20, 0),
+      ImGui.Cond.Always
+    );
+
     const flags =
       ImGui.WindowFlags.NoDecoration |
       ImGui.WindowFlags.NoMove |
