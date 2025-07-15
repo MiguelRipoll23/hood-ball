@@ -251,6 +251,44 @@ export class WorldController {
     );
   }
 
+  public handleRemoteBoostPadConsumed(
+    data: ArrayBuffer | null,
+    getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[]
+  ): void {
+    if (data === null) {
+      console.warn("Array buffer is null");
+      return;
+    }
+
+    if (this.gameState.getMatch()?.isHost()) {
+      console.warn("Host should not receive boost pad event");
+      return;
+    }
+
+    const binaryReader = BinaryReader.fromArrayBuffer(data);
+    const index = binaryReader.unsignedInt8();
+    const playerId = binaryReader.fixedLengthString(32);
+
+    if (index < 0 || index >= this.boostPadsEntities.length) {
+      console.warn(`Invalid boost pad index: ${index}`);
+      return;
+    }
+
+    const pad = this.boostPadsEntities[index];
+    pad.forceConsume();
+
+    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    if (player) {
+      getEntitiesByOwner(player).forEach((entity) => {
+        if (entity instanceof CarEntity) {
+          entity.refillBoost();
+        }
+      });
+    } else {
+      console.warn(`Cannot find player with id ${playerId}`);
+    }
+  }
+
   public handleCarDemolitions(
     worldEntities: GameEntity[],
     triggerCarExplosion: (x: number, y: number) => void

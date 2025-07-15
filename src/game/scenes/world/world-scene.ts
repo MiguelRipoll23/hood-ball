@@ -29,9 +29,7 @@ import { EventConsumerService } from "../../../core/services/gameplay/event-cons
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
-import { CarEntity } from "../../entities/car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
@@ -290,7 +288,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.subscribeToRemoteEvent(
       EventType.BoostPadConsumed,
-      (data: ArrayBuffer | null) => this.handleRemoteBoostPadConsumed(data)
+      (data: ArrayBuffer | null) =>
+        this.worldController?.handleRemoteBoostPadConsumed(
+          data,
+          this.getEntitiesByOwner.bind(this)
+        )
     );
 
     this.subscribeToRemoteEvent(
@@ -309,40 +311,6 @@ export class WorldScene extends BaseCollidingGameScene {
     this.toastEntity?.show("Waiting for players...");
   }
 
-  private handleRemoteBoostPadConsumed(data: ArrayBuffer | null): void {
-    if (data === null) {
-      console.warn("Array buffer is null");
-      return;
-    }
-
-    if (this.gameState.getMatch()?.isHost()) {
-      console.warn("Host should not receive boost pad event");
-      return;
-    }
-
-    const binaryReader = BinaryReader.fromArrayBuffer(data);
-    const index = binaryReader.unsignedInt8();
-    const playerId = binaryReader.fixedLengthString(32);
-
-    if (index < 0 || index >= this.boostPadsEntities.length) {
-      console.warn(`Invalid boost pad index: ${index}`);
-      return;
-    }
-
-    const pad = this.boostPadsEntities[index];
-    pad.forceConsume();
-
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
-    if (player) {
-      this.getEntitiesByOwner(player).forEach((entity) => {
-        if (entity instanceof CarEntity) {
-          entity.refillBoost();
-        }
-      });
-    } else {
-      console.warn(`Cannot find player with id ${playerId}`);
-    }
-  }
 
   private setupChatUi(): void {
     const chatInputElement = document.querySelector(
