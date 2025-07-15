@@ -33,6 +33,7 @@ export class MainMenuScene extends BaseGameScene {
   private onlinePlayersEntity: OnlinePlayersEntity | null = null;
   private toastEntity: ToastEntity | null = null;
   private isReconnecting = false;
+  private pendingMessage: string | null = null;
 
   constructor(
     gameState: GameState,
@@ -91,6 +92,11 @@ export class MainMenuScene extends BaseGameScene {
 
     if (this.showNews) {
       this.downloadServerMessages();
+    }
+
+    if (this.pendingMessage) {
+      this.closeableMessageEntity?.show(this.pendingMessage);
+      this.pendingMessage = null;
     }
   }
 
@@ -274,6 +280,10 @@ export class MainMenuScene extends BaseGameScene {
 
   public override resubscribeEvents(): void {
     this.subscribeToEvents();
+  }
+
+  public setPendingMessage(message: string): void {
+    this.pendingMessage = message;
   }
 
   public startServerReconnection(): void {
