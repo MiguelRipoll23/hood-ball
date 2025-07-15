@@ -11,12 +11,14 @@ import { SettingsScene } from "../settings-scene.js";
 import { EventType } from "../../../enums/event-type.js";
 import type { GameState } from "../../../../core/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload.js";
+import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload.js";
 import { container } from "../../../../core/services/di-container.js";
 import { EventConsumerService } from "../../../../core/services/gameplay/event-consumer-service.js";
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
+import { ToastEntity } from "../../../entities/common/toast-entity.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -29,6 +31,7 @@ export class MainMenuScene extends BaseGameScene {
   private serverMessageWindowEntity: ServerMessageWindowEntity | null = null;
   private closeableMessageEntity: CloseableMessageEntity | null = null;
   private onlinePlayersEntity: OnlinePlayersEntity | null = null;
+  private toastEntity: ToastEntity | null = null;
 
   constructor(
     gameState: GameState,
@@ -57,11 +60,13 @@ export class MainMenuScene extends BaseGameScene {
       closeableMessageEntity,
       welcomeMessageEntity,
       onlinePlayersEntity,
+      toastEntity,
     } = this.entities;
 
     this.serverMessageWindowEntity = serverMessageWindowEntity;
     this.closeableMessageEntity = closeableMessageEntity;
     this.onlinePlayersEntity = onlinePlayersEntity;
+    this.toastEntity = toastEntity;
 
     const total = container.get(WebSocketService).getOnlinePlayers();
     this.onlinePlayersEntity.setOnlinePlayers(total);
@@ -72,7 +77,8 @@ export class MainMenuScene extends BaseGameScene {
       welcomeMessageEntity,
       onlinePlayersEntity,
       serverMessageWindowEntity,
-      closeableMessageEntity
+      closeableMessageEntity,
+      toastEntity
     );
 
     super.load();
@@ -110,6 +116,16 @@ export class MainMenuScene extends BaseGameScene {
     this.subscribeToLocalEvent(
       EventType.OnlinePlayers,
       this.handleOnlinePlayersEvent.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.ServerDisconnected,
+      this.handleServerDisconnectedEvent.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.ServerConnected,
+      this.handleServerConnectedEvent.bind(this)
     );
   }
 
@@ -259,6 +275,25 @@ export class MainMenuScene extends BaseGameScene {
     this.subscribeToEvents();
   }
 
+  public startServerReconnection(): void {
+    this.toastEntity?.show("Reconnecting to game server...");
+    this.disableMenuButtons();
+    container.get(WebSocketService).connectToServer();
+  }
+
+  private handleServerDisconnectedEvent(
+    payload: ServerDisconnectedPayload
+  ): void {
+    if (!payload.connectionLost) {
+      return;
+    }
+    this.startServerReconnection();
+  }
+
+  private handleServerConnectedEvent(): void {
+    this.toastEntity?.hide();
+    this.enableMenuButtons();
+  }
 
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
     this.onlinePlayersEntity?.setOnlinePlayers(payload.total);
