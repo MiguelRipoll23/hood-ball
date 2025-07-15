@@ -147,7 +147,7 @@ export class GameLoopService {
   }
 
   private handleServerDisconnectedEvent(
-    _payload: ServerDisconnectedPayload
+    payload: ServerDisconnectedPayload
   ): void {
     const currentScene = this.gameFrame.getCurrentScene();
 
@@ -160,11 +160,17 @@ export class GameLoopService {
         this.gameState.setMatch(null);
         this.gameState.getGamePlayer().reset();
         subScene.startServerReconnection();
+        if (payload.connectionLost) {
+          subScene.setPendingMessage("Connection to server was lost");
+        }
         return;
       }
     }
 
-    this.returnToMainMenuScene(true);
+    const message = payload.connectionLost
+      ? "Connection to server was lost"
+      : undefined;
+    this.returnToMainMenuScene(true, message);
   }
 
   private handleServerNotificationEvent(
@@ -174,12 +180,14 @@ export class GameLoopService {
   }
 
   private handleHostDisconnectedEvent(): void {
-    alert("Host has disconnected");
-
-    this.returnToMainMenuScene(false);
+    const message = "Host has disconnected";
+    this.returnToMainMenuScene(false, message);
   }
 
-  private returnToMainMenuScene(reconnect: boolean): void {
+  private returnToMainMenuScene(
+    reconnect: boolean,
+    message?: string
+  ): void {
     this.gameState.setMatch(null);
     this.gameState.getGamePlayer().reset();
 
@@ -195,6 +203,10 @@ export class GameLoopService {
 
     mainScene.activateScene(mainMenuScene);
     mainScene.load();
+
+    if (message) {
+      mainMenuScene.setPendingMessage(message);
+    }
 
     this.sceneTransitionService.fadeOutAndIn(
       this.gameFrame,
