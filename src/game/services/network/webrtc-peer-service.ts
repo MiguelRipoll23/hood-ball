@@ -14,6 +14,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_MAXIMUM = 65535;
   private SEQUENCE_PAST_WINDOW = (this.SEQUENCE_MAXIMUM + 1) / 2;
   private SEQUENCE_FUTURE_WINDOW = 32;
+  private SEQUENCE_HISTORY_LENGTH = 32;
 
   private connectionListener: PeerConnectionListener;
   private webrtcDelegate: IWebRTCService;
@@ -25,6 +26,8 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   private incomingReliableSequence = this.SEQUENCE_MAXIMUM;
   private incomingUnreliableSequence = this.SEQUENCE_MAXIMUM;
+  private readonly incomingReliableSequenceHistory: number[] = [];
+  private readonly incomingUnreliableSequenceHistory: number[] = [];
   private outgoingReliableSequence = 0;
   private outgoingUnreliableSequence = 0;
 
@@ -560,6 +563,14 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     const sequenceNumber = binaryReader.unsignedInt16();
     const isReliable = channelLabel.startsWith("reliable");
+    const history = isReliable
+      ? this.incomingReliableSequenceHistory
+      : this.incomingUnreliableSequenceHistory;
+
+    if (history.includes(sequenceNumber)) {
+      console.warn(`Replay ${channelLabel} message: ${sequenceNumber}`);
+      return true;
+    }
 
     const currentSequence = isReliable
       ? this.incomingReliableSequence
@@ -584,6 +595,10 @@ export class WebRTCPeerService implements WebRTCPeer {
         this.incomingReliableSequence = sequenceNumber;
       } else {
         this.incomingUnreliableSequence = sequenceNumber;
+      }
+      history.push(sequenceNumber);
+      if (history.length > this.SEQUENCE_HISTORY_LENGTH) {
+        history.shift();
       }
       return false;
     }
