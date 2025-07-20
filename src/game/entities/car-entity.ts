@@ -130,6 +130,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       this.respawnTimer -= deltaTimeStamp;
       if (this.respawnTimer <= 0) {
         this.demolished = false;
+        this.rigidBody = true;
         this.opacity = 1;
         this.angle = 1.5708;
         this.speed = 0;
@@ -242,6 +243,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.vy = 0;
     this.boosting = false;
     this.opacity = 0;
+    this.rigidBody = false;
   }
 
   public isDemolished(): boolean {
