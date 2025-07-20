@@ -73,6 +73,7 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
       this.active
     ) {
       context.save();
+      this.applyOpacity(context);
 
       if (this.stealFocus) {
         this.drawFullSceneRectangle(context);
@@ -110,5 +111,14 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
     context.rect(-this.width / 2, -this.height / 2, this.width, this.height);
     context.stroke();
     context.closePath();
+  }
+
+  protected override applyOpacity(context: CanvasRenderingContext2D): void {
+    super.applyOpacity(context);
+
+    // Reduce opacity slightly when the entity is inactive
+    if (!this.active) {
+      context.globalAlpha *= 0.5;
+    }
   }
 }
