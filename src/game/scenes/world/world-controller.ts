@@ -35,7 +35,10 @@ export class WorldController {
     private readonly localCarEntity: LocalCarEntity,
     private readonly alertEntity: AlertEntity,
     private readonly boostPadsEntities: BoostPadEntity[],
-    private readonly spawnPointEntities: SpawnPointEntity[]
+    private readonly spawnPointEntities: SpawnPointEntity[],
+    private readonly getEntitiesByOwner: (
+      player: GamePlayer
+    ) => BaseMultiplayerGameEntity[]
   ) {
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
@@ -130,6 +133,7 @@ export class WorldController {
     this.ballEntity.reset();
     this.localCarEntity.reset();
     this.moveCarToSpawnPoint();
+    this.markRemoteCarsForSpawn();
     this.localCarEntity.refillBoost();
     this.boostPadsEntities.forEach((pad) => pad.reset());
   }
@@ -141,6 +145,7 @@ export class WorldController {
     this.alertEntity.hide();
     this.localCarEntity.reset();
     this.moveCarToSpawnPoint();
+    this.markRemoteCarsForSpawn();
     this.ballEntity.reset();
     this.scoreboardEntity.startTimer();
   }
@@ -190,7 +195,22 @@ export class WorldController {
         const y = spawnPoint.getY();
         this.localCarEntity.setX(x);
         this.localCarEntity.setY(y);
+        this.localCarEntity.setSkipInterpolation();
       }
+    });
+  }
+
+  private markRemoteCarsForSpawn(): void {
+    const players = this.gameState.getMatch()?.getPlayers() ?? [];
+    players.forEach((player) => {
+      if (player === this.gameState.getGamePlayer()) {
+        return;
+      }
+      this.getEntitiesByOwner(player).forEach((entity) => {
+        if (entity instanceof CarEntity) {
+          entity.setSkipInterpolation();
+        }
+      });
     });
   }
 

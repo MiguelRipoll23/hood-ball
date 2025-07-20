@@ -119,7 +119,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.localCarEntity,
       this.alertEntity,
       this.boostPadsEntities,
-      this.spawnPointEntities
+      this.spawnPointEntities,
+      this.getEntitiesByOwner.bind(this)
     );
 
     this.scoreManagerService = new ScoreManagerService(
