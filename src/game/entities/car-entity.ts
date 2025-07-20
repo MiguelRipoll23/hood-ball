@@ -136,6 +136,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
         this.x = this.respawnX;
         this.y = this.respawnY;
         this.updateHitbox();
+        this.setSkipInterpolation();
       }
       super.update(deltaTimeStamp);
       return;
