@@ -42,7 +42,7 @@ export class RemoteCarEntity extends CarEntity {
     const y = scaledY / SCALE_FACTOR_FOR_COORDINATES;
     const angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
     const speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
-    const boosting = binaryReader.unsignedInt8() === 1;
+    const boosting = binaryReader.boolean();
     const boost = binaryReader.unsignedInt8();
 
     return new RemoteCarEntity(
@@ -78,7 +78,7 @@ export class RemoteCarEntity extends CarEntity {
     }
 
     this.speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
-    this.boosting = binaryReader.unsignedInt8() === 1;
+    this.boosting = binaryReader.boolean();
     this.boost = binaryReader.unsignedInt8();
 
     this.updateHitbox();
