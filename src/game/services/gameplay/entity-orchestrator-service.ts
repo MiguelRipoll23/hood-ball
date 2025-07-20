@@ -9,7 +9,7 @@ import { WebRTCType } from "../../enums/webrtc-type.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import type { EntityType } from "../../enums/entity-type.js";
-import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
+import { CommandHandler } from "../../decorators/command-handler.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
@@ -57,7 +57,7 @@ export class EntityOrchestratorService {
     }
   }
 
-  @PeerCommandHandler(WebRTCType.EntityData)
+  @CommandHandler(WebRTCType.EntityData)
   public handleEntityData(
     webrtcPeer: WebRTCPeer,
     binaryReader: BinaryReader

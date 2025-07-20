@@ -7,7 +7,7 @@ import type { IEventProcessorService } from "../../interfaces/services/gameplay/
 import type { IEventQueueService } from "../../interfaces/services/gameplay/event-queue-service-interface.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../../utils/binary-reader-utils.js";
-import { PeerCommandHandler } from "../../../game/decorators/peer-command-handler-decorator.js";
+import { CommandHandler } from "../../../game/decorators/command-handler.js";
 import type { IWebRTCService } from "../../../game/interfaces/services/network/webrtc-service-interface.js";
 import { injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../../game/interfaces/services/network/webrtc-peer.js";
@@ -47,7 +47,7 @@ export class EventProcessorService implements IEventProcessorService {
     this.localQueue.addEvent(event);
   }
 
-  @PeerCommandHandler(WebRTCType.EventData)
+  @CommandHandler(WebRTCType.EventData)
   public handleEventData(webrtcPeer: WebRTCPeer, binaryReader: BinaryReader) {
     if (webrtcPeer.getPlayer()?.isHost() === false) {
       console.warn("Received event from non-host player");

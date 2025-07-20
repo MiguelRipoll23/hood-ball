@@ -2,7 +2,7 @@ import { WebSocketService } from "./websocket-service.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
+import { CommandHandler } from "../../decorators/command-handler.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
@@ -55,7 +55,7 @@ export class ChatService {
     this.webSocketService.sendMessage(payload);
   }
 
-  @ServerCommandHandler(WebSocketType.ChatMessage)
+  @CommandHandler(WebSocketType.ChatMessage)
   public handleChatMessage(binaryReader: BinaryReader): void {
     const playerId = binaryReader.fixedLengthString(32);
     const text = binaryReader.variableLengthString();

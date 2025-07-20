@@ -14,8 +14,7 @@ import type { IIntervalService } from "../../../core/interfaces/services/gamepla
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
+import { CommandHandler } from "../../decorators/command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
@@ -100,7 +99,7 @@ export class MatchmakingNetworkService
     }
   }
 
-  @ServerCommandHandler(WebSocketType.PlayerIdentity)
+  @CommandHandler(WebSocketType.PlayerIdentity)
   public handlePlayerIdentity(binaryReader: BinaryReader): void {
     const tokenBytes = binaryReader.bytes(32);
     const playerId = binaryReader.fixedLengthString(32);
@@ -152,7 +151,7 @@ export class MatchmakingNetworkService
     }
   }
 
-  @PeerCommandHandler(WebRTCType.JoinRequest)
+  @CommandHandler(WebRTCType.JoinRequest)
   public handleJoinRequest(peer: WebRTCPeer): void {
     const match = this.gameState.getMatch();
 
@@ -195,7 +194,7 @@ export class MatchmakingNetworkService
     this.sendJoinResponse(peer, match);
   }
 
-  @PeerCommandHandler(WebRTCType.JoinResponse)
+  @CommandHandler(WebRTCType.JoinResponse)
   public handleJoinResponse(
     peer: WebRTCPeer,
     binaryReader: BinaryReader
@@ -220,7 +219,7 @@ export class MatchmakingNetworkService
     this.gameState.setMatch(match);
   }
 
-  @PeerCommandHandler(WebRTCType.PlayerConnection)
+  @CommandHandler(WebRTCType.PlayerConnection)
   public handlePlayerConnection(
     peer: WebRTCPeer,
     binaryReader: BinaryReader
@@ -267,7 +266,7 @@ export class MatchmakingNetworkService
     this.gameState.getMatch()?.addPlayer(gamePlayer);
   }
 
-  @PeerCommandHandler(WebRTCType.SnapshotEnd)
+  @CommandHandler(WebRTCType.SnapshotEnd)
   public handleSnapshotEnd(peer: WebRTCPeer): void {
     console.log("Received snapshot from", peer.getName());
 
@@ -295,7 +294,7 @@ export class MatchmakingNetworkService
     this.sendSnapshotACK(peer);
   }
 
-  @PeerCommandHandler(WebRTCType.SnapshotACK)
+  @CommandHandler(WebRTCType.SnapshotACK)
   public handleSnapshotACK(peer: WebRTCPeer): void {
     console.log("Received snapshot ACK from", peer.getName());
 
@@ -337,7 +336,7 @@ export class MatchmakingNetworkService
     }
   }
 
-  @PeerCommandHandler(WebRTCType.PlayerPing)
+  @CommandHandler(WebRTCType.PlayerPing)
   public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gameState.getGamePlayer().isHost()) {
       console.warn(

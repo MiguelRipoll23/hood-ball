@@ -5,10 +5,9 @@ import { DebugUtils } from "../../../core/utils/debug-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import type { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
+import { CommandDispatcherService } from "./command-dispatcher-service.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
+import { CommandHandler } from "../../decorators/command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../core/models/game-state.js";
 import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
@@ -24,12 +23,15 @@ export class WebRTCService implements IWebRTCService {
   private downloadKilobytesPerSecond: number = 0;
   private uploadKilobytesPerSecond: number = 0;
 
-  private readonly dispatcherService: WebRTCDispatcherService;
+  private readonly dispatcherService: CommandDispatcherService<
+    WebRTCType,
+    (peer: WebRTCPeer, reader: BinaryReader) => void
+  >;
   private webSocketService: WebSocketService | null = null;
   private connectionListener: PeerConnectionListener | null = null;
 
   constructor(private gameState = container.get(GameState)) {
-    this.dispatcherService = new WebRTCDispatcherService();
+    this.dispatcherService = new CommandDispatcherService();
     this.registerCommandHandlers(this);
   }
 
@@ -81,7 +83,7 @@ export class WebRTCService implements IWebRTCService {
     console.log("Removed WebRTC peer, updated peers count", this.peers.size);
   }
 
-  @ServerCommandHandler(WebSocketType.Tunnel)
+  @CommandHandler(WebSocketType.Tunnel)
   public handleTunnelWebRTCData(binaryReader: BinaryReader): void {
     const originTokenBytes = binaryReader.bytes(32);
     const tunnelTypeId = binaryReader.unsignedInt8();
@@ -146,13 +148,13 @@ export class WebRTCService implements IWebRTCService {
     peer.addRemoteIceCandidate(iceCandidate);
   }
 
-  @PeerCommandHandler(WebRTCType.GracefulDisconnect)
+  @CommandHandler(WebRTCType.GracefulDisconnect)
   public handleGracefulDisconnect(peer: WebRTCPeer): void {
     console.log("Received graceful disconnect message");
     peer.disconnect(true);
   }
 
-  @PeerCommandHandler(WebRTCType.PingRequest)
+  @CommandHandler(WebRTCType.PingRequest)
   public handlePingRequest(peer: WebRTCPeer): void {
     const arrayBuffer = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PingResponse)
@@ -161,7 +163,7 @@ export class WebRTCService implements IWebRTCService {
     peer.sendUnreliableUnorderedMessage(arrayBuffer);
   }
 
-  @PeerCommandHandler(WebRTCType.PingResponse)
+  @CommandHandler(WebRTCType.PingResponse)
   public handlePingResponse(peer: WebRTCPeer): void {
     const pingRequestTime = peer.getPingRequestTime();
 

@@ -10,8 +10,8 @@ import { APIUtils } from "../../utils/api-utils.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
-import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
+import { CommandDispatcherService } from "./command-dispatcher-service.js";
+import { CommandHandler } from "../../decorators/command-handler.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
@@ -23,12 +23,15 @@ export class WebSocketService {
   private onlinePlayers = 0;
 
   private eventProcessorService: EventProcessorService;
-  private dispatcherService: WebSocketDispatcherService;
+  private dispatcherService: CommandDispatcherService<
+    WebSocketType,
+    (reader: BinaryReader) => void
+  >;
 
   constructor(private gameState = container.get(GameState)) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.eventProcessorService = container.get(EventProcessorService);
-    this.dispatcherService = new WebSocketDispatcherService();
+    this.dispatcherService = new CommandDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
   }
 
@@ -80,7 +83,7 @@ export class WebSocketService {
     }
   }
 
-  @ServerCommandHandler(WebSocketType.Notification)
+  @CommandHandler(WebSocketType.Notification)
   public handleNotificationMessage(binaryReader: BinaryReader) {
     const textBytes = binaryReader.bytesAsArrayBuffer();
 
@@ -96,7 +99,7 @@ export class WebSocketService {
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
-  @ServerCommandHandler(WebSocketType.OnlinePlayers)
+  @CommandHandler(WebSocketType.OnlinePlayers)
   public handleOnlinePlayers(binaryReader: BinaryReader) {
     const total = binaryReader.unsignedInt16();
 
