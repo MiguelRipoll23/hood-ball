@@ -52,6 +52,7 @@ export class BallEntity
   public override reset(): void {
     this.resetVelocityAndPosition();
     this.inactive = false;
+    this.setSkipInterpolation();
     super.reset();
   }
 
@@ -59,6 +60,7 @@ export class BallEntity
     // Set position to the center of the canvas accounting for the radius
     this.x = this.canvas.width / 2;
     this.y = this.canvas.height / 2;
+    this.setSkipInterpolation();
   }
 
   public isInactive(): boolean {
@@ -127,8 +129,14 @@ export class BallEntity
 
     const newX = binaryReader.unsignedInt16();
     const newY = binaryReader.unsignedInt16();
-    this.x = MathUtils.lerp(this.x, newX, 0.5);
-    this.y = MathUtils.lerp(this.y, newY, 0.5);
+    if (this.skipInterpolation) {
+      this.x = newX;
+      this.y = newY;
+      this.skipInterpolation = false;
+    } else {
+      this.x = MathUtils.lerp(this.x, newX, 0.5);
+      this.y = MathUtils.lerp(this.y, newY, 0.5);
+    }
 
     this.vx = binaryReader.signedInt16();
     this.vy = binaryReader.signedInt16();

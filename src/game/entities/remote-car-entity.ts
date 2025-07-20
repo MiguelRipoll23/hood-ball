@@ -65,10 +65,17 @@ export class RemoteCarEntity extends CarEntity {
     const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
     const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
 
-    // Smooth the remote movement to reduce jitter
-    this.x = MathUtils.lerp(this.x, newX, 0.5);
-    this.y = MathUtils.lerp(this.y, newY, 0.5);
-    this.angle = MathUtils.lerp(this.angle, newAngle, 0.5);
+    if (this.skipInterpolation) {
+      this.x = newX;
+      this.y = newY;
+      this.angle = newAngle;
+      this.skipInterpolation = false;
+    } else {
+      // Smooth the remote movement to reduce jitter
+      this.x = MathUtils.lerp(this.x, newX, 0.5);
+      this.y = MathUtils.lerp(this.y, newY, 0.5);
+      this.angle = MathUtils.lerp(this.angle, newAngle, 0.5);
+    }
 
     this.speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
     this.boosting = binaryReader.unsignedInt8() === 1;

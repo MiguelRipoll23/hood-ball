@@ -6,6 +6,7 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
   protected width: number = 0;
   protected height: number = 0;
   protected angle: number = 0;
+  protected skipInterpolation = false;
 
   constructor() {
     super();
@@ -49,5 +50,9 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
 
   public setAngle(angle: number): void {
     this.angle = angle;
+  }
+
+  public setSkipInterpolation(): void {
+    this.skipInterpolation = true;
   }
 }
