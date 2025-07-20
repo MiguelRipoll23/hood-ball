@@ -7,6 +7,7 @@ import {
   SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
+import { MathUtils } from "../../core/utils/math-utils.js";
 
 export class RemoteCarEntity extends CarEntity {
   constructor(
@@ -60,9 +61,15 @@ export class RemoteCarEntity extends CarEntity {
 
     const scaledX = binaryReader.unsignedInt16();
     const scaledY = binaryReader.unsignedInt16();
-    this.x = scaledX / SCALE_FACTOR_FOR_COORDINATES;
-    this.y = scaledY / SCALE_FACTOR_FOR_COORDINATES;
-    this.angle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+    const newX = scaledX / SCALE_FACTOR_FOR_COORDINATES;
+    const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
+    const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+
+    // Smooth the remote movement to reduce jitter
+    this.x = MathUtils.lerp(this.x, newX, 0.5);
+    this.y = MathUtils.lerp(this.y, newY, 0.5);
+    this.angle = MathUtils.lerp(this.angle, newAngle, 0.5);
+
     this.speed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
     this.boosting = binaryReader.unsignedInt8() === 1;
     this.boost = binaryReader.unsignedInt8();

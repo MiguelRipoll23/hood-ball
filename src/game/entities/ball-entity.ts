@@ -8,6 +8,7 @@ import { EntityUtils } from "../../core/utils/entity-utils.js";
 import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
+import { MathUtils } from "../../core/utils/math-utils.js";
 
 export class BallEntity
   extends BaseDynamicCollidingGameEntity
@@ -124,8 +125,11 @@ export class BallEntity
   public override synchronize(arrayBuffer: ArrayBuffer): void {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    this.x = binaryReader.unsignedInt16();
-    this.y = binaryReader.unsignedInt16();
+    const newX = binaryReader.unsignedInt16();
+    const newY = binaryReader.unsignedInt16();
+    this.x = MathUtils.lerp(this.x, newX, 0.5);
+    this.y = MathUtils.lerp(this.y, newY, 0.5);
+
     this.vx = binaryReader.signedInt16();
     this.vy = binaryReader.signedInt16();
 
