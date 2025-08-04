@@ -171,7 +171,7 @@ export class ScoreManagerService {
   }
 
   private sendGoalEvent(player: GamePlayer): void {
-    const playerId = player.getId();
+    const playerId = player.getNetworkId();
     const playerScore = player.getScore();
 
     const payload = BinaryWriter.build()
@@ -235,7 +235,7 @@ export class ScoreManagerService {
   }
 
   private sendGameOverStartEvent(winner: GamePlayer): void {
-    const playerId = winner.getId();
+    const playerId = winner.getNetworkId();
 
     const payload = BinaryWriter.build()
       .fixedLengthString(playerId, 32)

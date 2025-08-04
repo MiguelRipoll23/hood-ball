@@ -55,7 +55,8 @@ export class MatchmakingService implements IMatchmakingService {
   }
 
   public async findOrAdvertiseMatch(): Promise<void> {
-    const matches = await this.matchFinderService.findMatches();
+    const findMatchesResponse = await this.matchFinderService.findMatches();
+    const matches = findMatchesResponse.results;
 
     if (matches.length === 0) {
       console.log("No matches found");
@@ -90,8 +91,8 @@ export class MatchmakingService implements IMatchmakingService {
       const score = player.getScore();
 
       savePlayerScoresRequest.push({
-        playerId,
-        playerName,
+        userId: playerId,
+        userDisplayName: playerName,
         score,
       });
     });

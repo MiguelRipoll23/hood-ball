@@ -185,6 +185,12 @@ export class WorldController {
       return;
     }
 
+    console.log(
+      "Moving local car to spawn point index",
+      gamePlayer,
+      spawnPointIndex
+    );
+
     this.updateLocalCarPosition(spawnPointIndex);
   }
 
@@ -357,14 +363,16 @@ export class WorldController {
 
           const attackerPlayer = attacker.getPlayer();
           const victimPlayer = victim.getPlayer();
+
           if (attackerPlayer && victimPlayer) {
             const payload = BinaryWriter.build()
-              .fixedLengthString(attackerPlayer.getId(), 32)
-              .fixedLengthString(victimPlayer.getId(), 32)
+              .fixedLengthString(attackerPlayer.getNetworkId(), 32)
+              .fixedLengthString(victimPlayer.getNetworkId(), 32)
               .toArrayBuffer();
 
             const event = new RemoteEvent(EventType.CarDemolished);
             event.setData(payload);
+
             this.eventProcessorService.sendEvent(event);
           }
         }

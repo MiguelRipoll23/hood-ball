@@ -1,3 +1,8 @@
 export interface FindMatchesResponse {
-  token: string;
+  results: MatchData[];
+  nextCursor?: number;
+}
+
+export interface MatchData {
+  sessionId: string;
 }

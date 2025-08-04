@@ -102,22 +102,22 @@ export class MatchmakingNetworkService
 
   @ServerCommandHandler(WebSocketType.PlayerIdentity)
   public handlePlayerIdentity(binaryReader: BinaryReader): void {
-    const tokenBytes = binaryReader.bytes(32);
+    const sessionIdBytes = binaryReader.bytes(32);
     const playerId = binaryReader.fixedLengthString(32);
     const playerName = binaryReader.fixedLengthString(16);
 
-    const token = btoa(String.fromCharCode(...tokenBytes));
+    const sessionId = btoa(String.fromCharCode(...sessionIdBytes));
 
     console.log(
-      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
+      `Received player identity (sessionId: ${sessionId}, playerId: ${playerId}, playerName: ${playerName})`
     );
 
-    this.receivedIdentities.set(token, { playerId, playerName });
+    this.receivedIdentities.set(sessionId, { playerId, playerName });
 
     if (this.gameState.getMatch()?.isHost()) {
-      this.handlePlayerIdentityAsHost(token, tokenBytes);
+      this.handlePlayerIdentityAsHost(sessionId, sessionIdBytes);
     } else {
-      this.handlePlayerIdentityAsPlayer(token);
+      this.handlePlayerIdentityAsPlayer(sessionId);
     }
   }
 
@@ -328,7 +328,8 @@ export class MatchmakingNetworkService
     this.eventProcessorService.addLocalEvent(localEvent);
 
     if (this.gameState.getMatch()?.isHost()) {
-      this.notifyMatchPlayerToServer(true, player.getId());
+      const playerId = player.getNetworkId();
+      this.notifyMatchPlayerToServer(true, playerId);
     }
 
     const match = this.gameState.getMatch();
@@ -534,7 +535,7 @@ export class MatchmakingNetworkService
     skipQueue: boolean
   ): void {
     const isHost = player.isHost();
-    const playerId = player.getId();
+    const playerId = player.getNetworkId();
     const playerScore = player.getScore();
     const playerName = player.getName();
     const spawnIndex = player.getSpawnPointIndex();
@@ -566,11 +567,11 @@ export class MatchmakingNetworkService
       return true;
     }
 
-    if (identity.playerId !== gamePlayer.getId()) {
+    if (identity.playerId !== gamePlayer.getNetworkId()) {
       console.warn(
         `Host player ID mismatch: expected ${
           identity.playerId
-        }, got ${gamePlayer.getId()} for ${peer.getName()}`
+        }, got ${gamePlayer.getNetworkId()} for ${peer.getName()}`
       );
 
       return true;
@@ -649,7 +650,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const playerId = player.getId();
+    const playerId = player.getNetworkId();
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PlayerPing)

@@ -1,5 +1,8 @@
+import { UUIDUtils } from "../utils/uuid-utils";
+
 export class GamePlayer {
   private id: string;
+  private networkId: string;
   private name: string;
   private host: boolean;
   private score: number;
@@ -8,13 +11,14 @@ export class GamePlayer {
   private pingTime: number | null = null;
 
   constructor(
-    id = "00000000000000000000000000000000",
+    id = "00000000-0000-0000-0000-000000000000",
     name = "Unknown",
     host = false,
     score = 0,
     spawnIndex = 0
   ) {
-    this.id = id;
+    this.id = this.getNormalizedId(id);
+    this.networkId = id.replaceAll("-", "");
     this.name = name;
     this.score = score;
     this.host = host;
@@ -27,6 +31,11 @@ export class GamePlayer {
 
   public setId(id: string): void {
     this.id = id;
+    this.networkId = this.getNormalizedId(id).replaceAll("-", "");
+  }
+
+  public getNetworkId(): string {
+    return this.networkId;
   }
 
   public getName(): string {
@@ -80,5 +89,13 @@ export class GamePlayer {
     this.spawnPointIndex = 0;
 
     console.log("Player with name", this.name + " has been reset");
+  }
+
+  private getNormalizedId(id: string): string {
+    if (id.includes("-")) {
+      return id;
+    }
+
+    return UUIDUtils.format(id);
   }
 }

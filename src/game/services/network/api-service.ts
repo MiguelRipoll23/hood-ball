@@ -221,7 +221,7 @@ export class APIService {
 
   public async findMatches(
     findMatchesRequest: FindMatchesRequest
-  ): Promise<FindMatchesResponse[]> {
+  ): Promise<FindMatchesResponse> {
     if (this.authenticationToken === null) {
       throw new Error("Authentication token not found");
     }
@@ -242,7 +242,7 @@ export class APIService {
       throw new Error("Failed to find matches");
     }
 
-    const findMatchResponse: FindMatchesResponse[] = await response.json();
+    const findMatchResponse: FindMatchesResponse = await response.json();
     console.log("Find matches response", findMatchResponse);
 
     return findMatchResponse;

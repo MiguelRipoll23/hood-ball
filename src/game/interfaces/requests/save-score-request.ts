@@ -1,5 +1,5 @@
 export interface SavePlayerScoresRequest {
-  playerId: string;
-  playerName: string;
+  userId: string;
+  userDisplayName: string;
   score: number;
 }

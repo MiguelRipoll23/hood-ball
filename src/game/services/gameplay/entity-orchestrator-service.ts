@@ -170,8 +170,8 @@ export class EntityOrchestratorService {
     }
 
     // Is entity not owned by the player?
-    const playerId = this.gameState.getGamePlayer().getId();
-    const ownerId = multiplayerEntity.getOwner()?.getId();
+    const playerId = this.gameState.getGamePlayer().getNetworkId();
+    const ownerId = multiplayerEntity.getOwner()?.getNetworkId();
 
     return ownerId !== playerId;
   }
@@ -191,7 +191,7 @@ export class EntityOrchestratorService {
     const sceneTypeId = multiplayerScene.getTypeId();
     const entityStateId = multiplayerEntity.getState();
     const entityTypeId = multiplayerEntity.getTypeId();
-    const entityOwnerId = multiplayerEntity.getOwner()?.getId() ?? null;
+    const entityOwnerId = multiplayerEntity.getOwner()?.getNetworkId() ?? null;
     const entityId = multiplayerEntity.getId();
 
     if (entityTypeId === null || entityId === null || entityOwnerId === null) {
