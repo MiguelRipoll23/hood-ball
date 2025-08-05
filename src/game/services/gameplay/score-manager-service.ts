@@ -84,7 +84,8 @@ export class ScoreManagerService {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
     const playerScore = binaryReader.unsignedInt8();
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
 
     player?.setScore(playerScore);
     this.updateScoreboard();
@@ -116,7 +117,8 @@ export class ScoreManagerService {
 
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
 
     this.handleGameOverStart(player);
   }

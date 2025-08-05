@@ -138,7 +138,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const playerId = peer.getPlayer()?.getId() ?? null;
+    const playerId = peer.getPlayer()?.getNetworkId() ?? null;
 
     if (playerId === null) {
       console.warn("Unknown peer disconnected", peer);
@@ -237,7 +237,8 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const isLocalPlayer = this.gameState.getGamePlayer().getId() === playerId;
+    const isLocalPlayer =
+      this.gameState.getGamePlayer().getNetworkId() === playerId;
 
     let gamePlayer: GamePlayer;
 
@@ -350,7 +351,10 @@ export class MatchmakingNetworkService
     const playerId = binaryReader.fixedLengthString(32);
     const playerPingTime = binaryReader.unsignedInt16();
 
-    this.gameState.getMatch()?.getPlayer(playerId)?.setPingTime(playerPingTime);
+    this.gameState
+      .getMatch()
+      ?.getPlayerByNetworkId(playerId)
+      ?.setPingTime(playerPingTime);
   }
 
   private handlePlayerIdentityAsHost(
@@ -410,7 +414,8 @@ export class MatchmakingNetworkService
     this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
 
     if (this.gameState.getMatch()?.isHost()) {
-      this.notifyMatchPlayerToServer(false, player.getId());
+      const playerNetworkId = player.getNetworkId();
+      this.notifyMatchPlayerToServer(false, playerNetworkId);
     }
 
     const match = this.gameState.getMatch();
@@ -431,7 +436,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const player = match.getPlayer(playerId);
+    const player = match.getPlayerByNetworkId(playerId);
 
     if (player === null) {
       console.warn("Player not found", playerId);

@@ -242,9 +242,10 @@ export class WorldController {
     };
 
     const attacker =
-      this.gameState.getMatch()?.getPlayer(payload.attackerId) ?? null;
+      this.gameState.getMatch()?.getPlayerByNetworkId(payload.attackerId) ??
+      null;
     const victim =
-      this.gameState.getMatch()?.getPlayer(payload.victimId) ?? null;
+      this.gameState.getMatch()?.getPlayerByNetworkId(payload.victimId) ?? null;
 
     if (!victim) {
       console.warn(`Cannot find victim with id ${payload.victimId}`);
@@ -303,7 +304,8 @@ export class WorldController {
     const pad = this.boostPadsEntities[index];
     pad.forceConsume();
 
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
     if (player) {
       getEntitiesByOwner(player).forEach((entity) => {
         if (entity instanceof CarEntity) {
