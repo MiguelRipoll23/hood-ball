@@ -87,13 +87,11 @@ export class MatchmakingService implements IMatchmakingService {
 
     players.forEach((player: GamePlayer) => {
       const playerId = player.getId();
-      const playerName = player.getName();
-      const score = player.getScore();
+      const totalScore = player.getScore();
 
       savePlayerScoresRequest.push({
         userId: playerId,
-        userDisplayName: playerName,
-        score,
+        totalScore,
       });
     });
 
