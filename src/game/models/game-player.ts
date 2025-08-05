@@ -31,7 +31,7 @@ export class GamePlayer {
 
   public setId(id: string): void {
     this.id = id;
-    this.networkId = this.getNormalizedId(id).replaceAll("-", "");
+    this.networkId = id.replaceAll("-", "");
   }
 
   public getNetworkId(): string {

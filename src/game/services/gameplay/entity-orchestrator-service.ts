@@ -276,7 +276,8 @@ export class EntityOrchestratorService {
     }
 
     // Try to find owner
-    const player = this.gameState.getMatch()?.getPlayer(entityOwnerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(entityOwnerId) ?? null;
 
     if (player === null) {
       console.warn("Cannot find player with id", entityOwnerId);
