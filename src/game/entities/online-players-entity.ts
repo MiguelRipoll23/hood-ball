@@ -27,17 +27,23 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.context.font = "bold 28px system-ui";
     this.labelWidth = this.context.measureText(this.getText()).width;
-    this.countWidth = this.context.measureText(this.onlinePlayers.toString()).width;
+    this.countWidth = this.context.measureText(
+      this.onlinePlayers.toString()
+    ).width;
   }
 
   public setOnlinePlayers(total: number): void {
     if (this.onlinePlayers !== total) {
       this.onlinePlayers = total;
       this.startShake();
-      this.countWidth = this.context.measureText(this.onlinePlayers.toString()).width;
+      this.countWidth = this.context.measureText(
+        this.onlinePlayers.toString()
+      ).width;
     } else {
       this.onlinePlayers = total;
-      this.countWidth = this.context.measureText(this.onlinePlayers.toString()).width;
+      this.countWidth = this.context.measureText(
+        this.onlinePlayers.toString()
+      ).width;
     }
   }
 
@@ -74,7 +80,7 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     context.textBaseline = "middle";
     context.textAlign = "left";
 
-    const spacing = 10;
+    const spacing = 15;
     const totalWidth = this.countWidth + spacing + this.labelWidth;
 
     const countX = this.x - totalWidth / 2;
