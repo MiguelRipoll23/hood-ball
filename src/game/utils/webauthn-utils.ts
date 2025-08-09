@@ -41,7 +41,7 @@ export class WebAuthnUtils {
     };
   }
 
-  public static challengeToUint8Array(challenge: string): Uint8Array {
-    return new Uint8Array(Base64Utils.base64UrlToArrayBuffer(challenge));
+  public static challengeToArrayBuffer(challenge: string): ArrayBuffer {
+    return Base64Utils.base64UrlToArrayBuffer(challenge);
   }
 }

@@ -76,7 +76,8 @@ export class ChatService {
     }
 
     const playerName =
-      this.gameState.getMatch()?.getPlayer(playerId)?.getName() ?? playerId;
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId)?.getName() ??
+      playerId;
 
     this.addMessage(`${playerName}: ${trimmed}`);
   }

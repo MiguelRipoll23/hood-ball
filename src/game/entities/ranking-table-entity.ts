@@ -13,7 +13,7 @@ export class RankingTableEntity extends BaseAnimatedGameEntity {
     this.applyOpacity(context);
 
     context.font = "bold 24px system-ui";
-    
+
     const startX = 30;
     let startY = 100;
 
@@ -21,10 +21,10 @@ export class RankingTableEntity extends BaseAnimatedGameEntity {
       context.fillStyle = "white";
       context.textAlign = "left";
       context.fillText(`#${index + 1}`, startX, startY);
-      context.fillText(player.playerName, startX + 50, startY);
+      context.fillText(player.userDisplayName, startX + 50, startY);
       context.textAlign = "right";
       context.fillText(
-        player.score.toString(),
+        player.totalScore.toString(),
         context.canvas.width - 25,
         startY
       );

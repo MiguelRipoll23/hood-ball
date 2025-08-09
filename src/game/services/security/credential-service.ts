@@ -34,7 +34,7 @@ export class CredentialService {
       );
 
     const publicKey = {
-      challenge: WebAuthnUtils.challengeToUint8Array(
+      challenge: WebAuthnUtils.challengeToArrayBuffer(
         authenticationOptions.challenge
       ),
     };
@@ -96,7 +96,7 @@ export class CredentialService {
 
     const publicKey = {
       ...registrationOptions,
-      challenge: WebAuthnUtils.challengeToUint8Array(challenge),
+      challenge: WebAuthnUtils.challengeToArrayBuffer(challenge),
       user: {
         id: new TextEncoder().encode(userId),
         name,
