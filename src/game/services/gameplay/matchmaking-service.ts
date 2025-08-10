@@ -1,6 +1,6 @@
 import { GameState } from "../../../core/models/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import type { SavePlayerScoresRequest } from "../../interfaces/requests/save-score-request.js";
+import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import { DebugUtils } from "../../../core/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
@@ -83,7 +83,7 @@ export class MatchmakingService implements IMatchmakingService {
       return;
     }
 
-    const savePlayerScoresRequest: SavePlayerScoresRequest[] = [];
+    const savePlayerScoresRequest: SaveUserScoresRequest[] = [];
 
     players.forEach((player: GamePlayer) => {
       const playerId = player.getId();

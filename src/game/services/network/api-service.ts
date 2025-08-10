@@ -5,7 +5,7 @@ import {
   MATCHES_REMOVE_ENDPOINT,
   MESSAGES_ENDPOINT,
   VERSION_ENDPOINT,
-  PLAYER_SCORES_PATH,
+  USER_SCORES_PATH,
   REGISTRATION_OPTIONS_ENDPOINT,
   VERIFY_REGISTRATION_RESPONSE_ENDPOINT,
   VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
@@ -18,7 +18,7 @@ import type { VersionResponse } from "../../interfaces/responses/version-respons
 import type { RankingResponse } from "../../interfaces/responses/ranking-response.js";
 import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
 import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
-import type { SavePlayerScoresRequest } from "../../interfaces/requests/save-score-request.js";
+import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import type { AuthenticationOptionsResponse } from "../../interfaces/responses/authentication-options-response.js";
 import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
 import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request.js";
@@ -305,7 +305,7 @@ export class APIService {
   }
 
   public async saveScore(
-    saveScoreRequest: SavePlayerScoresRequest[]
+    saveScoreRequest: SaveUserScoresRequest[]
   ): Promise<void> {
     if (this.authenticationToken === null) {
       throw new Error("Authentication token not found");
@@ -316,7 +316,7 @@ export class APIService {
     );
 
     const response = await this.fetchWithLoading(
-      this.baseURL + PLAYER_SCORES_PATH,
+      this.baseURL + USER_SCORES_PATH,
       {
         method: "POST",
         headers: {
@@ -344,7 +344,7 @@ export class APIService {
     }
 
     const response = await this.fetchWithLoading(
-      this.baseURL + PLAYER_SCORES_PATH,
+      this.baseURL + USER_SCORES_PATH,
       {
         headers: {
           Authorization: this.authenticationToken,
