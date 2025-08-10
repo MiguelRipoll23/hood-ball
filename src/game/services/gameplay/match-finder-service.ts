@@ -90,7 +90,7 @@ export class MatchFinderService {
   }
 
   private async joinMatch(match: MatchData): Promise<void> {
-    const { sessionId: token } = match;
+    const { token: token } = match;
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     this.pendingIdentities.set(token, true);
 

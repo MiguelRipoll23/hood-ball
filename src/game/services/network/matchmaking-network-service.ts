@@ -102,22 +102,22 @@ export class MatchmakingNetworkService
 
   @ServerCommandHandler(WebSocketType.PlayerIdentity)
   public handlePlayerIdentity(binaryReader: BinaryReader): void {
-    const sessionIdBytes = binaryReader.bytes(32);
+    const tokenBytes = binaryReader.bytes(32);
     const playerId = binaryReader.fixedLengthString(32);
     const playerName = binaryReader.fixedLengthString(16);
 
-    const sessionId = btoa(String.fromCharCode(...sessionIdBytes));
+    const token = btoa(String.fromCharCode(...tokenBytes));
 
     console.log(
-      `Received player identity (sessionId: ${sessionId}, playerId: ${playerId}, playerName: ${playerName})`
+      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
     );
 
-    this.receivedIdentities.set(sessionId, { playerId, playerName });
+    this.receivedIdentities.set(token, { playerId, playerName });
 
     if (this.gameState.getMatch()?.isHost()) {
-      this.handlePlayerIdentityAsHost(sessionId, sessionIdBytes);
+      this.handlePlayerIdentityAsHost(token, tokenBytes);
     } else {
-      this.handlePlayerIdentityAsPlayer(sessionId);
+      this.handlePlayerIdentityAsPlayer(token);
     }
   }
 

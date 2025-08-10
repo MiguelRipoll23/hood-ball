@@ -4,5 +4,5 @@ export interface FindMatchesResponse {
 }
 
 export interface MatchData {
-  sessionId: string;
+  token: string;
 }
