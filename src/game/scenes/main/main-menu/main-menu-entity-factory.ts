@@ -21,7 +21,8 @@ export class MainMenuEntityFactory {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly gameState: GameState,
-    private readonly menuOptionsText: string[]
+    private readonly menuOptionsText: string[],
+    private readonly onlineRequiredButtons: Set<number>
   ) {}
 
   public createEntities(): MainMenuEntities {
@@ -34,11 +35,19 @@ export class MainMenuEntityFactory {
       const text = this.menuOptionsText[i];
       const menuOptionEntity = new MenuOptionEntity(this.canvas, i, text);
       menuOptionEntity.setPosition(30, y);
+
+      // Set online connection requirement
+      if (this.onlineRequiredButtons.has(i)) {
+        menuOptionEntity.setRequiresOnlineConnection(true);
+      }
+
       menuOptionEntities.push(menuOptionEntity);
       y += menuOptionEntity.getHeight() + 30;
     }
 
-    const serverMessageWindowEntity = new ServerMessageWindowEntity(this.canvas);
+    const serverMessageWindowEntity = new ServerMessageWindowEntity(
+      this.canvas
+    );
     const closeableMessageEntity = new CloseableMessageEntity(this.canvas);
     const welcomeMessageEntity = new WelcomeMessageEntity(
       this.canvas,

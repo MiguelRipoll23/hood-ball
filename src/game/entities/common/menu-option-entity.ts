@@ -3,6 +3,7 @@ import { BaseTappableGameEntity } from "../../../core/entities/base-tappable-gam
 export class MenuOptionEntity extends BaseTappableGameEntity {
   private index: number = 0;
   private content: string = "Unknown";
+  private requiresOnlineConnection: boolean = false;
 
   private textX = 0;
   private textY = 0;
@@ -21,6 +22,14 @@ export class MenuOptionEntity extends BaseTappableGameEntity {
 
   public getHeight(): number {
     return this.height;
+  }
+
+  public getRequiresOnlineConnection(): boolean {
+    return this.requiresOnlineConnection;
+  }
+
+  public setRequiresOnlineConnection(requiresOnlineConnection: boolean): void {
+    this.requiresOnlineConnection = requiresOnlineConnection;
   }
 
   public setPosition(x: number, y: number): void {
@@ -108,7 +117,9 @@ export class MenuOptionEntity extends BaseTappableGameEntity {
 
     context.closePath();
 
-    if (this.pressed || this.hovering) {
+    if (!this.active) {
+      context.fillStyle = "#ccc"; // Gray color for inactive state
+    } else if (this.pressed || this.hovering) {
       context.fillStyle = "#7ed321";
     } else {
       context.fillStyle = "#4a90e2";

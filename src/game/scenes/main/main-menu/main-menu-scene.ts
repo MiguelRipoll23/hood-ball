@@ -22,6 +22,7 @@ import { ToastEntity } from "../../../entities/common/toast-entity.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
+  private ONLINE_REQUIRED_BUTTONS: Set<number> = new Set([0, 1]); // Join game and Scoreboard buttons require online connection
 
   private controller: MainMenuController;
   private entities: MainMenuEntities | null = null;
@@ -51,7 +52,8 @@ export class MainMenuScene extends BaseGameScene {
     const factory = new MainMenuEntityFactory(
       this.canvas,
       this.gameState,
-      this.MENU_OPTIONS_TEXT
+      this.MENU_OPTIONS_TEXT,
+      this.ONLINE_REQUIRED_BUTTONS
     );
     this.entities = factory.createEntities();
 
@@ -88,7 +90,7 @@ export class MainMenuScene extends BaseGameScene {
 
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
-    this.enableMenuButtons();
+    this.updateMenuButtonsConnectionState();
 
     if (this.showNews) {
       this.downloadServerMessages();
@@ -135,7 +137,6 @@ export class MainMenuScene extends BaseGameScene {
       this.handleServerConnectedEvent.bind(this)
     );
   }
-
 
   private downloadServerMessages(): void {
     this.controller
@@ -200,6 +201,17 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private handleMenuOption(menuOptionEntity: MenuOptionEntity): void {
+    // Check if the button is inactive due to lack of online connection
+    if (
+      !menuOptionEntity.isActive() &&
+      menuOptionEntity.getRequiresOnlineConnection()
+    ) {
+      this.closeableMessageEntity?.show(
+        "This feature requires an online connection"
+      );
+      return;
+    }
+
     const index = menuOptionEntity.getIndex();
 
     switch (index) {
@@ -262,20 +274,30 @@ export class MainMenuScene extends BaseGameScene {
       .crossfade(this.sceneManagerService, settingsScene, 0.2);
   }
 
-  private enableMenuButtons(): void {
+  private updateMenuButtonsConnectionState(): void {
+    const isConnected = this.gameState.getGameServer().isConnected();
+
     this.uiEntities.forEach((uiEntity) => {
       if (uiEntity instanceof MenuOptionEntity) {
-        uiEntity.setActive(true);
+        if (uiEntity.getRequiresOnlineConnection()) {
+          // Set active state based on connection status for online-required buttons
+          uiEntity.setActive(isConnected);
+        } else {
+          // Always keep offline buttons active
+          uiEntity.setActive(true);
+        }
       }
     });
   }
 
+  private enableMenuButtons(): void {
+    // Update button states based on current connection status
+    this.updateMenuButtonsConnectionState();
+  }
+
   private disableMenuButtons(): void {
-    this.uiEntities.forEach((uiEntity) => {
-      if (uiEntity instanceof MenuOptionEntity) {
-        uiEntity.setActive(false);
-      }
-    });
+    // Update button states based on current connection status
+    this.updateMenuButtonsConnectionState();
   }
 
   public override resubscribeEvents(): void {
@@ -303,6 +325,7 @@ export class MainMenuScene extends BaseGameScene {
     if (!payload.connectionLost) {
       return;
     }
+    this.disableMenuButtons();
     this.startServerReconnection();
   }
 
@@ -315,5 +338,4 @@ export class MainMenuScene extends BaseGameScene {
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
     this.onlinePlayersEntity?.setOnlinePlayers(payload.total);
   }
-
 }
