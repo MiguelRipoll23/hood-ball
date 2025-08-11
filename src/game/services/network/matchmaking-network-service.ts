@@ -297,7 +297,7 @@ export class MatchmakingNetworkService
   }
 
   @PeerCommandHandler(WebRTCType.SnapshotACK)
-  public handleSnapshotACK(peer: WebRTCPeer): void {
+  public async handleSnapshotACK(peer: WebRTCPeer): Promise<void> {
     console.log("Received snapshot ACK from", peer.getName());
 
     peer.setJoined(true);
@@ -309,6 +309,7 @@ export class MatchmakingNetworkService
       return;
     }
 
+    // Notify players on match
     this.webrtcService
       .getPeers()
       .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
@@ -317,6 +318,7 @@ export class MatchmakingNetworkService
         this.sendPlayerConnection(p, player, true, false);
       });
 
+    // Publish local event
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
       EventType.PlayerConnected
     );
@@ -328,14 +330,11 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(localEvent);
 
-    if (this.gameState.getMatch()?.isHost()) {
-      const playerId = player.getNetworkId();
-      this.notifyMatchPlayerToServer(true, playerId);
-    }
-
+    // Advertise match to update players count
     const match = this.gameState.getMatch();
+
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      void this.matchFinderService.advertiseMatch();
+      await this.matchFinderService.advertiseMatch();
     }
   }
 
@@ -386,7 +385,7 @@ export class MatchmakingNetworkService
     peer.disconnect(true);
   }
 
-  private handlePlayerDisconnection(peer: WebRTCPeer): void {
+  private async handlePlayerDisconnection(peer: WebRTCPeer): Promise<void> {
     const player = peer.getPlayer();
 
     if (player === null) {
@@ -398,6 +397,7 @@ export class MatchmakingNetworkService
     this.gameState.getMatch()?.removePlayer(player);
     this.spawnPointService.releaseSpawnPointIndex(player.getSpawnPointIndex());
 
+    // Notify players on match
     this.webrtcService
       .getPeers()
       .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
@@ -405,6 +405,7 @@ export class MatchmakingNetworkService
         this.sendPlayerConnection(matchPeer, player, false, false);
       });
 
+    // Publish local event
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
       EventType.PlayerDisconnected
     );
@@ -413,16 +414,14 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
 
-    if (this.gameState.getMatch()?.isHost()) {
-      const playerNetworkId = player.getNetworkId();
-      this.notifyMatchPlayerToServer(false, playerNetworkId);
-    }
-
+    // Advertise match to update players count
     const match = this.gameState.getMatch();
+
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      void this.matchFinderService.advertiseMatch();
+      await this.matchFinderService.advertiseMatch();
     }
 
+    // Remove pending disconnection
     if (this.pendingDisconnections.delete(player.getId())) {
       this.getMatchmakingService().finalizeIfNoPendingDisconnections();
     }
@@ -664,18 +663,5 @@ export class MatchmakingNetworkService
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
-  }
-
-  private notifyMatchPlayerToServer(
-    connected: boolean,
-    playerId: string
-  ): void {
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.MatchPlayer)
-      .boolean(connected)
-      .fixedLengthString(playerId, 32)
-      .toArrayBuffer();
-
-    this.webSocketService.sendMessage(payload);
   }
 }
