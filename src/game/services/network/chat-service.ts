@@ -126,5 +126,10 @@ export class ChatService {
     if (this.messages.length > ChatService.MAX_HISTORY_SIZE) {
       this.messages.shift();
     }
+
+    // Notify all listeners
+    this.listeners.forEach((listener) => {
+      listener([...this.messages]);
+    });
   }
 }
