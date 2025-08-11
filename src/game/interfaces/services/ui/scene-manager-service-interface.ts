@@ -1,8 +1,8 @@
 import type { GameScene } from "../../../../core/interfaces/scenes/game-scene.js";
-import type { ISceneTransitionService } from "./scene-transition-service-interface.js";
+import type { SceneTransitionServiceContract } from "./scene-transition-service-interface.js";
 
-export interface ISceneManagerService {
-  getTransitionService(): ISceneTransitionService;
+export interface SceneManagerServiceContract {
+  getTransitionService(): SceneTransitionServiceContract;
   setInitialScene(scene: GameScene): void;
   getPreviousScene(): GameScene | null;
   getCurrentScene(): GameScene | null;

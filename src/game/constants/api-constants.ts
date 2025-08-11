@@ -16,4 +16,4 @@ export const MATCHES_ENDPOINT = "/matches";
 export const MATCHES_FIND_ENDPOINT = `${MATCHES_ENDPOINT}/find`;
 export const MATCHES_ADVERTISE_ENDPOINT = `${MATCHES_ENDPOINT}/advertise`;
 export const MATCHES_REMOVE_ENDPOINT = `${MATCHES_ENDPOINT}/owned`;
-export const PLAYER_SCORES_PATH = "/player-scores";
+export const USER_SCORES_PATH = "/user-scores";

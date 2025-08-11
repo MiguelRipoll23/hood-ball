@@ -205,9 +205,9 @@ export class ScoreboardEntity
     const atZero = this.remainingSeconds <= 0;
     const underFive = this.remainingSeconds > 0 && this.remainingSeconds <= 5;
 
-    const flashing = (atZero && this.active) || underFive;
+    const shouldFlash = (atZero && this.active) || (underFive && this.active);
     let alpha = 1;
-    if (flashing) {
+    if (shouldFlash) {
       // Use a consistent flash rate for low and zero time
       const interval = this.FADE_INTERVAL_MS;
       const cycle = (this.flashElapsedMilliseconds % interval) / interval;
@@ -216,7 +216,9 @@ export class ScoreboardEntity
 
     context.save();
     const baseAlpha = context.globalAlpha;
-    context.globalAlpha = baseAlpha * (flashing ? alpha : 1);
+    // When not active but time is low, show red color at full opacity
+    const useFlashingAlpha = shouldFlash && this.active;
+    context.globalAlpha = baseAlpha * (useFlashingAlpha ? alpha : 1);
     const color = atZero || underFive ? this.FLASH_COLOR : this.TEXT_COLOR;
     this.renderText(context, text, x + width / 2, y + 12.5 + height / 2, color);
     context.restore();

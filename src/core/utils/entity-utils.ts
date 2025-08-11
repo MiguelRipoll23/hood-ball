@@ -14,7 +14,7 @@ export class EntityUtils {
       return false;
     }
 
-    return webrtcPeer.getPlayer()?.getId() !== ownerId;
+    return webrtcPeer.getPlayer()?.getNetworkId() !== ownerId;
   }
 
   public static fixEntityPositionIfOutOfBounds(

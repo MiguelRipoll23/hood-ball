@@ -31,7 +31,7 @@ export class DebugService {
   }
 
   public async init(): Promise<void> {
-    await ImGuiImplWeb.InitWebGL(this.debugCanvas);
+    await ImGuiImplWeb.Init({ canvas: this.debugCanvas });
     this.setCanvasContext();
     ImGui.SetNextWindowFocus();
     this.loadDebugWindow();
@@ -43,10 +43,10 @@ export class DebugService {
     if (!this.initialized) return;
 
     if (this.gameState.isDebugging()) {
-      ImGuiImplWeb.BeginRenderWebGL();
+      ImGuiImplWeb.BeginRender();
       this.debugWindow?.render();
       this.renderErrorMessages();
-      ImGuiImplWeb.EndRenderWebGL();
+      ImGuiImplWeb.EndRender();
     } else {
       this.clearCanvas();
     }

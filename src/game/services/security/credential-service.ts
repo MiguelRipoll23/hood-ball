@@ -13,12 +13,14 @@ import { WebAuthnUtils } from "../../utils/webauthn-utils.js";
 import { APIService } from "../network/api-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
+import { SignatureService } from "./signature-service.js";
 
 @injectable()
 export class CredentialService {
   constructor(
     private readonly gameState = inject(GameState),
     private readonly apiService = inject(APIService),
+    private readonly signatureService = inject(SignatureService),
     private readonly eventProcessorService = inject(EventProcessorService)
   ) {}
 
@@ -59,7 +61,7 @@ export class CredentialService {
         verifyAuthenticationRequest
       );
 
-      this.handleAuthenticationResponse(response);
+      await this.handleAuthenticationResponse(response);
     } catch (error) {
       if (this.isCredentialNotFoundError(error)) {
         this.signalUnknownCredential(authenticationOptions.rpId, credential.id);
@@ -125,7 +127,7 @@ export class CredentialService {
       verifyRegistrationRequest
     );
 
-    this.handleAuthenticationResponse(response);
+    await this.handleAuthenticationResponse(response);
   }
 
   private isCredentialNotFoundError(error: unknown): error is ServerError {
@@ -152,16 +154,25 @@ export class CredentialService {
     }
   }
 
-  private handleAuthenticationResponse(response: AuthenticationResponse): void {
+  private async handleAuthenticationResponse(
+    response: AuthenticationResponse
+  ): Promise<void> {
     this.gameState
       .getGameServer()
       .setServerRegistration(new ServerRegistration(response));
 
-    const { authenticationToken, userId, displayName } = response;
+    const {
+      authenticationToken,
+      userId,
+      userDisplayName,
+      serverSignaturePublicKey,
+    } = response;
 
     this.apiService.setAuthenticationToken(authenticationToken);
+    await this.signatureService.init(serverSignaturePublicKey);
+
     this.gameState.getGamePlayer().setId(userId);
-    this.gameState.getGamePlayer().setName(displayName);
+    this.gameState.getGamePlayer().setName(userDisplayName);
 
     const localEvent = new LocalEvent(EventType.ServerAuthenticated);
     this.eventProcessorService.addLocalEvent(localEvent);

@@ -185,6 +185,12 @@ export class WorldController {
       return;
     }
 
+    console.log(
+      "Moving local car to spawn point index",
+      gamePlayer,
+      spawnPointIndex
+    );
+
     this.updateLocalCarPosition(spawnPointIndex);
   }
 
@@ -236,9 +242,10 @@ export class WorldController {
     };
 
     const attacker =
-      this.gameState.getMatch()?.getPlayer(payload.attackerId) ?? null;
+      this.gameState.getMatch()?.getPlayerByNetworkId(payload.attackerId) ??
+      null;
     const victim =
-      this.gameState.getMatch()?.getPlayer(payload.victimId) ?? null;
+      this.gameState.getMatch()?.getPlayerByNetworkId(payload.victimId) ?? null;
 
     if (!victim) {
       console.warn(`Cannot find victim with id ${payload.victimId}`);
@@ -297,7 +304,8 @@ export class WorldController {
     const pad = this.boostPadsEntities[index];
     pad.forceConsume();
 
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
     if (player) {
       getEntitiesByOwner(player).forEach((entity) => {
         if (entity instanceof CarEntity) {
@@ -357,14 +365,16 @@ export class WorldController {
 
           const attackerPlayer = attacker.getPlayer();
           const victimPlayer = victim.getPlayer();
+
           if (attackerPlayer && victimPlayer) {
             const payload = BinaryWriter.build()
-              .fixedLengthString(attackerPlayer.getId(), 32)
-              .fixedLengthString(victimPlayer.getId(), 32)
+              .fixedLengthString(attackerPlayer.getNetworkId(), 32)
+              .fixedLengthString(victimPlayer.getNetworkId(), 32)
               .toArrayBuffer();
 
             const event = new RemoteEvent(EventType.CarDemolished);
             event.setData(payload);
+
             this.eventProcessorService.sendEvent(event);
           }
         }

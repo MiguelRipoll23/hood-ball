@@ -14,9 +14,11 @@ export class TitleEntity extends BaseMoveableGameEntity {
   }
 
   public render(context: CanvasRenderingContext2D): void {
+    context.save();
     context.fillStyle = "white";
     context.font = "lighter 38px system-ui";
     context.textAlign = "left";
     context.fillText(this.text, this.x, this.y);
+    context.restore();
   }
 }

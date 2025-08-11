@@ -5,6 +5,7 @@ export class BinaryReader {
   private readonly dataView: DataView;
   private readonly uint8: Uint8Array;
   private position: number = 0;
+  private markPosition: number | null = null;
   private readonly decoder = new TextDecoder();
   private readonly littleEndian: boolean;
   private readonly bufferLength: number;
@@ -123,6 +124,17 @@ export class BinaryReader {
     }
 
     this.position = position;
+  }
+
+  public mark(): void {
+    this.markPosition = this.position;
+  }
+
+  public getMarkedBytes(): ArrayBuffer {
+    if (this.markPosition === null) {
+      throw new Error("No mark set");
+    }
+    return this.buffer.slice(this.markPosition, this.position);
   }
 
   public preview(bytesPerLine: number = 24): string {

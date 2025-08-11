@@ -103,7 +103,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.boostPadsEntities = entities.boostPadsEntities;
     this.spawnPointEntities = entities.spawnPointEntities;
 
-    this.setupChatUi();
+    this.setupChatUI();
 
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
@@ -312,8 +312,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.toastEntity?.show("Waiting for players...");
   }
 
-
-  private setupChatUi(): void {
+  private setupChatUI(): void {
     const chatInputElement = document.querySelector(
       "#chat-input"
     ) as HTMLInputElement | null;
@@ -323,7 +322,10 @@ export class WorldScene extends BaseCollidingGameScene {
       return;
     }
 
-    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas);
+    // Make chat input visible now that the game has started
+    chatInputElement.removeAttribute("hidden");
+
+    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
 
     const boostMeterEntity = this.localCarEntity?.getBoostMeterEntity();
     if (!boostMeterEntity) {
@@ -344,7 +346,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.helpEntity as HelpEntity
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
-    this.chatService.onMessage((msgs: string[]) =>
+    this.chatService.onMessage((msgs) =>
       this.chatHistoryEntity?.show(
         msgs,
         this.gameState.getGamePlayer().getName()
@@ -421,5 +423,18 @@ export class WorldScene extends BaseCollidingGameScene {
       1,
       1
     );
+  }
+
+  public override dispose(): void {
+    // Hide chat input when leaving the game scene
+    const chatInputElement = document.querySelector(
+      "#chat-input"
+    ) as HTMLInputElement | null;
+
+    if (chatInputElement) {
+      chatInputElement.setAttribute("hidden", "");
+    }
+
+    super.dispose();
   }
 }

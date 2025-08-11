@@ -84,7 +84,8 @@ export class ScoreManagerService {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
     const playerScore = binaryReader.unsignedInt8();
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
 
     player?.setScore(playerScore);
     this.updateScoreboard();
@@ -116,7 +117,8 @@ export class ScoreManagerService {
 
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
-    const player = this.gameState.getMatch()?.getPlayer(playerId) ?? null;
+    const player =
+      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
 
     this.handleGameOverStart(player);
   }
@@ -171,7 +173,7 @@ export class ScoreManagerService {
   }
 
   private sendGoalEvent(player: GamePlayer): void {
-    const playerId = player.getId();
+    const playerId = player.getNetworkId();
     const playerScore = player.getScore();
 
     const payload = BinaryWriter.build()
@@ -235,7 +237,7 @@ export class ScoreManagerService {
   }
 
   private sendGameOverStartEvent(winner: GamePlayer): void {
-    const playerId = winner.getId();
+    const playerId = winner.getNetworkId();
 
     const payload = BinaryWriter.build()
       .fixedLengthString(playerId, 32)

@@ -1,6 +1,6 @@
 import type { AdvertiseMatchRequest } from "../../requests/advertise-match-request.js";
 import type { FindMatchesRequest } from "../../requests/find-matches-request.js";
-import type { SavePlayerScoresRequest } from "../../requests/save-score-request.js";
+import type { SaveUserScoresRequest } from "../../requests/save-score-request.js";
 import type { RegistrationOptionsRequest } from "../../requests/registration-options-request.js";
 import type { VerifyRegistrationRequest } from "../../requests/verify-registration-request.js";
 import type { AuthenticationOptionsRequest } from "../../requests/authentication-options.js";
@@ -29,9 +29,11 @@ export interface IAPIService {
   ): Promise<AuthenticationResponse>;
   getConfiguration(): Promise<ArrayBuffer>;
   getMessages(): Promise<MessagesResponse[]>;
-  findMatches(findMatchesRequest: FindMatchesRequest): Promise<FindMatchesResponse[]>;
+  findMatches(
+    findMatchesRequest: FindMatchesRequest
+  ): Promise<FindMatchesResponse[]>;
   advertiseMatch(advertiseMatchRequest: AdvertiseMatchRequest): Promise<void>;
   removeMatch(): Promise<void>;
-  saveScore(saveScoreRequest: SavePlayerScoresRequest[]): Promise<void>;
+  saveScore(saveScoreRequest: SaveUserScoresRequest[]): Promise<void>;
   getRanking(): Promise<RankingResponse[]>;
 }

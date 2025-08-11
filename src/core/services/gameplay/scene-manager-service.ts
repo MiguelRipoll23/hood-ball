@@ -1,21 +1,21 @@
 import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
-import type { ISceneManagerService } from "../../../game/interfaces/services/ui/scene-manager-service-interface.js";
-import type { ISceneTransitionService } from "../../../game/interfaces/services/ui/scene-transition-service-interface.js";
+import type { SceneManagerServiceContract } from "../../../game/interfaces/services/ui/scene-manager-service-interface.js";
+import type { SceneTransitionServiceContract } from "../../../game/interfaces/services/ui/scene-transition-service-interface.js";
 import { container } from "../di-container.js";
 
-export class SceneManagerService implements ISceneManagerService {
+export class SceneManagerService implements SceneManagerServiceContract {
   private stack: GameScene[] = [];
   private currentScene: GameScene | null = null;
   private nextScene: GameScene | null = null;
 
-  private transitionService: ISceneTransitionService;
+  private transitionService: SceneTransitionServiceContract;
 
   constructor() {
     this.transitionService = container.get(SceneTransitionService);
   }
 
-  public getTransitionService(): ISceneTransitionService {
+  public getTransitionService(): SceneTransitionServiceContract {
     return this.transitionService;
   }
 

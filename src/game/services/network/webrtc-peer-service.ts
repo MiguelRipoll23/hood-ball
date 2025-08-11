@@ -1,11 +1,12 @@
 import { GamePlayer } from "../../models/game-player.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { GameState } from "../../../core/models/game-state.js";
+import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
@@ -17,7 +18,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_HISTORY_LENGTH = 32;
 
   private connectionListener: PeerConnectionListener;
-  private webrtcDelegate: IWebRTCService;
+  private webrtcDelegate: WebRTCServiceContract;
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
@@ -48,9 +49,10 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   constructor(
     private token: string,
-    webrtcDelegate: IWebRTCService,
+    webrtcDelegate: WebRTCServiceContract,
     connectionListener: PeerConnectionListener,
-    private gameState = container.get(GameState)
+    private gameState = container.get(GameState),
+    private timerManagerService = container.get(TimerManagerService)
   ) {
     this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;
@@ -170,8 +172,12 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.connected = false;
     this.gracefulDisconnecting = true;
     this.sendDisconnectMessage();
-  }
 
+    // Delay the connection close to allow the disconnect message to be sent
+    this.timerManagerService.createTimer(0.1, () => {
+      this.peerConnection.close();
+    });
+  }
   public disconnect(graceful = false): void {
     if (graceful) {
       this.connected = false;

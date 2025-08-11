@@ -1,10 +1,10 @@
 import type {
-  IGamePointer,
+  GamePointerContract,
   PointerType,
-} from "../interfaces/input/game-pointer.js";
+} from "../interfaces/input/game-pointer-interface.js";
 import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point.js";
 
-export class GamePointer implements IGamePointer {
+export class GamePointer implements GamePointerContract {
   private touches: Map<number, GamePointerTouchPoint> = new Map();
   private primaryPointerId: number | null = null;
   private preventDefault: boolean = true;
@@ -37,7 +37,6 @@ export class GamePointer implements IGamePointer {
   public getInitialY(): number {
     return this.getPrimaryTouch()?.initialY ?? -1;
   }
-
 
   public setPreventDefault(preventDefault: boolean): void {
     this.preventDefault = preventDefault;
@@ -181,7 +180,9 @@ export class GamePointer implements IGamePointer {
         }
 
         if (this.primaryPointerId === event.pointerId) {
-          const next = Array.from(this.touches.values()).find((t) => t.pressing);
+          const next = Array.from(this.touches.values()).find(
+            (t) => t.pressing
+          );
           this.primaryPointerId = next ? next.pointerId : null;
           if (next) {
             next.initialX = next.x;
@@ -213,7 +214,9 @@ export class GamePointer implements IGamePointer {
         }
 
         if (this.primaryPointerId === event.pointerId) {
-          const next = Array.from(this.touches.values()).find((t) => t.pressing);
+          const next = Array.from(this.touches.values()).find(
+            (t) => t.pressing
+          );
           this.primaryPointerId = next ? next.pointerId : null;
           if (next) {
             next.initialX = next.x;

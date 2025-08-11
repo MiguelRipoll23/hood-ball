@@ -52,12 +52,12 @@ export class Match {
     return Array.from(this.players.values());
   }
 
-  public getPlayer(id: string): GamePlayer | null {
-    return this.players.get(id) ?? null;
+  public getPlayerByNetworkId(networkId: string): GamePlayer | null {
+    return this.players.get(networkId) ?? null;
   }
 
   public addPlayer(player: GamePlayer): void {
-    this.players.set(player.getId(), player);
+    this.players.set(player.getNetworkId(), player);
 
     console.log(
       `Added player ${player.getName()} to match, total players`,
@@ -66,7 +66,7 @@ export class Match {
   }
 
   public removePlayer(player: GamePlayer): void {
-    this.players.delete(player.getId());
+    this.players.delete(player.getNetworkId());
 
     console.log(
       `Removed player ${player.getName()} from match, total players`,
@@ -74,11 +74,11 @@ export class Match {
     );
   }
 
-  public removePlayerById(id: string): void {
-    this.players.delete(id);
+  public removePlayerByNetworkId(networkId: string): void {
+    this.players.delete(networkId);
 
     console.log(
-      `Removed player ${id} from match, total players`,
+      `Removed player ${networkId} from match, total players`,
       this.players.size
     );
   }

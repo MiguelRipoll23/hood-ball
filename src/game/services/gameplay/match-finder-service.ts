@@ -1,4 +1,7 @@
-import type { FindMatchesResponse } from "../../interfaces/responses/find-matches-response.js";
+import type {
+  FindMatchesResponse,
+  MatchData,
+} from "../../interfaces/responses/find-matches-response.js";
 import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
 import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
@@ -28,12 +31,13 @@ export class MatchFinderService {
     private readonly eventProcessorService = inject(EventProcessorService)
   ) {}
 
-  public async findMatches(): Promise<FindMatchesResponse[]> {
+  public async findMatches(): Promise<FindMatchesResponse> {
     const body: FindMatchesRequest = {
-      version: GAME_VERSION,
+      clientVersion: GAME_VERSION,
       totalSlots: 1,
       attributes: MATCH_ATTRIBUTES,
     };
+
     return this.apiService.findMatches(body);
   }
 
@@ -56,13 +60,12 @@ export class MatchFinderService {
 
     const localPlayer = this.gameState.getGamePlayer();
     localPlayer.setHost(true);
-
     match.addPlayer(localPlayer);
 
     await this.advertiseMatch();
   }
 
-  public async joinMatches(matches: FindMatchesResponse[]): Promise<void> {
+  public async joinMatches(matches: MatchData[]): Promise<void> {
     await Promise.all(matches.map((m) => this.joinMatch(m)));
   }
 
@@ -86,8 +89,8 @@ export class MatchFinderService {
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
-  private async joinMatch(match: FindMatchesResponse): Promise<void> {
-    const { token } = match;
+  private async joinMatch(match: MatchData): Promise<void> {
+    const { token: token } = match;
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     this.pendingIdentities.set(token, true);
 

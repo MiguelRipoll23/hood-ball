@@ -138,7 +138,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const playerId = peer.getPlayer()?.getId() ?? null;
+    const playerId = peer.getPlayer()?.getNetworkId() ?? null;
 
     if (playerId === null) {
       console.warn("Unknown peer disconnected", peer);
@@ -237,7 +237,8 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const isLocalPlayer = this.gameState.getGamePlayer().getId() === playerId;
+    const isLocalPlayer =
+      this.gameState.getGamePlayer().getNetworkId() === playerId;
 
     let gamePlayer: GamePlayer;
 
@@ -296,7 +297,7 @@ export class MatchmakingNetworkService
   }
 
   @PeerCommandHandler(WebRTCType.SnapshotACK)
-  public handleSnapshotACK(peer: WebRTCPeer): void {
+  public async handleSnapshotACK(peer: WebRTCPeer): Promise<void> {
     console.log("Received snapshot ACK from", peer.getName());
 
     peer.setJoined(true);
@@ -308,6 +309,7 @@ export class MatchmakingNetworkService
       return;
     }
 
+    // Notify players on match
     this.webrtcService
       .getPeers()
       .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
@@ -316,6 +318,7 @@ export class MatchmakingNetworkService
         this.sendPlayerConnection(p, player, true, false);
       });
 
+    // Publish local event
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
       EventType.PlayerConnected
     );
@@ -327,13 +330,11 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(localEvent);
 
-    if (this.gameState.getMatch()?.isHost()) {
-      this.notifyMatchPlayerToServer(true, player.getId());
-    }
-
+    // Advertise match to update players count
     const match = this.gameState.getMatch();
+
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      void this.matchFinderService.advertiseMatch();
+      await this.matchFinderService.advertiseMatch();
     }
   }
 
@@ -349,7 +350,10 @@ export class MatchmakingNetworkService
     const playerId = binaryReader.fixedLengthString(32);
     const playerPingTime = binaryReader.unsignedInt16();
 
-    this.gameState.getMatch()?.getPlayer(playerId)?.setPingTime(playerPingTime);
+    this.gameState
+      .getMatch()
+      ?.getPlayerByNetworkId(playerId)
+      ?.setPingTime(playerPingTime);
   }
 
   private handlePlayerIdentityAsHost(
@@ -381,7 +385,7 @@ export class MatchmakingNetworkService
     peer.disconnect(true);
   }
 
-  private handlePlayerDisconnection(peer: WebRTCPeer): void {
+  private async handlePlayerDisconnection(peer: WebRTCPeer): Promise<void> {
     const player = peer.getPlayer();
 
     if (player === null) {
@@ -393,6 +397,7 @@ export class MatchmakingNetworkService
     this.gameState.getMatch()?.removePlayer(player);
     this.spawnPointService.releaseSpawnPointIndex(player.getSpawnPointIndex());
 
+    // Notify players on match
     this.webrtcService
       .getPeers()
       .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
@@ -400,6 +405,7 @@ export class MatchmakingNetworkService
         this.sendPlayerConnection(matchPeer, player, false, false);
       });
 
+    // Publish local event
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
       EventType.PlayerDisconnected
     );
@@ -408,15 +414,14 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
 
-    if (this.gameState.getMatch()?.isHost()) {
-      this.notifyMatchPlayerToServer(false, player.getId());
-    }
-
+    // Advertise match to update players count
     const match = this.gameState.getMatch();
+
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      void this.matchFinderService.advertiseMatch();
+      await this.matchFinderService.advertiseMatch();
     }
 
+    // Remove pending disconnection
     if (this.pendingDisconnections.delete(player.getId())) {
       this.getMatchmakingService().finalizeIfNoPendingDisconnections();
     }
@@ -430,7 +435,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const player = match.getPlayer(playerId);
+    const player = match.getPlayerByNetworkId(playerId);
 
     if (player === null) {
       console.warn("Player not found", playerId);
@@ -534,7 +539,7 @@ export class MatchmakingNetworkService
     skipQueue: boolean
   ): void {
     const isHost = player.isHost();
-    const playerId = player.getId();
+    const playerId = player.getNetworkId();
     const playerScore = player.getScore();
     const playerName = player.getName();
     const spawnIndex = player.getSpawnPointIndex();
@@ -566,11 +571,11 @@ export class MatchmakingNetworkService
       return true;
     }
 
-    if (identity.playerId !== gamePlayer.getId()) {
+    if (identity.playerId !== gamePlayer.getNetworkId()) {
       console.warn(
         `Host player ID mismatch: expected ${
           identity.playerId
-        }, got ${gamePlayer.getId()} for ${peer.getName()}`
+        }, got ${gamePlayer.getNetworkId()} for ${peer.getName()}`
       );
 
       return true;
@@ -649,7 +654,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const playerId = player.getId();
+    const playerId = player.getNetworkId();
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.PlayerPing)
@@ -658,18 +663,5 @@ export class MatchmakingNetworkService
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
-  }
-
-  private notifyMatchPlayerToServer(
-    connected: boolean,
-    playerId: string
-  ): void {
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.MatchPlayer)
-      .boolean(connected)
-      .fixedLengthString(playerId, 32)
-      .toArrayBuffer();
-
-    this.webSocketService.sendMessage(payload);
   }
 }

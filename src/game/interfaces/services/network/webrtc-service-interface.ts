@@ -2,7 +2,7 @@ import type { WebRTCPeer } from "./webrtc-peer.js";
 import type { BinaryReader } from "../../../../core/utils/binary-reader-utils.js";
 import type { WebRTCType } from "../../../enums/webrtc-type.js";
 
-export interface IWebRTCService {
+export interface WebRTCServiceContract {
   registerCommandHandlers(instance: object): void;
   dispatchCommand(
     commandId: WebRTCType,

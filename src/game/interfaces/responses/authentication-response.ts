@@ -1,8 +1,9 @@
 export interface AuthenticationResponse {
   authenticationToken: string;
-  sessionKey: string;
   userId: string;
-  displayName: string;
-  publicIp: string;
+  userDisplayName: string;
+  userPublicIp: string;
+  userSymmetricKey: string;
+  serverSignaturePublicKey: string;
   rtcIceServers: RTCIceServer[];
 }

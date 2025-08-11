@@ -3,31 +3,38 @@ import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { GameState } from "../../../core/models/game-state.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
+import { WebRTCService } from "./webrtc-service.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
+import { ChatMessage } from "../../models/chat-message.js";
+import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
+import { SignatureService } from "../security/signature-service.js";
+import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 
 @injectable()
 export class ChatService {
-  private static readonly MAX_MESSAGE_LENGTH = 35;
   private static readonly MAX_HISTORY_SIZE = 50;
 
-  private readonly messages: string[] = [];
-  private readonly listeners: ((messages: string[]) => void)[] = [];
+  private readonly messages: ChatMessage[] = [];
+  private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
   private readonly webSocketService: WebSocketService;
-  private readonly gameState: GameState;
+  private readonly webrtcService: WebRTCService;
+  private readonly signatureService: SignatureService;
 
   constructor() {
     this.webSocketService = container.get(WebSocketService);
-    this.gameState = container.get(GameState);
+    this.webrtcService = container.get(WebRTCService);
+    this.signatureService = container.get(SignatureService);
+    this.webrtcService.registerCommandHandlers(this);
     this.webSocketService.registerCommandHandlers(this);
   }
 
-  public getMessages(): string[] {
+  public getMessages(): ChatMessage[] {
     return this.messages;
   }
 
-  public onMessage(listener: (messages: string[]) => void): void {
+  public onMessage(listener: (messages: ChatMessage[]) => void): void {
     this.listeners.push(listener);
   }
 
@@ -37,13 +44,9 @@ export class ChatService {
 
   public sendMessage(text: string): void {
     const trimmed = text.trim();
+
     if (trimmed.length === 0) {
       console.warn("Chat message empty");
-      return;
-    }
-
-    if (trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
-      console.warn("Chat message exceeds max length");
       return;
     }
 
@@ -57,36 +60,70 @@ export class ChatService {
 
   @ServerCommandHandler(WebSocketType.ChatMessage)
   public handleChatMessage(binaryReader: BinaryReader): void {
-    const playerId = binaryReader.fixedLengthString(32);
+    const userId = binaryReader.fixedLengthString(32);
     const text = binaryReader.variableLengthString();
+    const timestamp = binaryReader.unsignedInt32();
+    const signature = binaryReader.bytesAsArrayBuffer();
 
-    if (!playerId || !text) {
-      return;
-    }
+    // Send to other players
+    const chatMessagePayload = BinaryWriter.build()
+      .unsignedInt8(WebRTCType.ChatMessage)
+      .fixedLengthString(userId, 32)
+      .variableLengthString(text)
+      .unsignedInt32(timestamp)
+      .arrayBuffer(signature)
+      .toArrayBuffer();
 
-    const trimmed = text.trim();
-    if (trimmed.length === 0) {
-      console.warn("Received empty chat message");
-      return;
-    }
+    this.webrtcService.getPeers().forEach((peer) => {
+      peer.sendReliableUnorderedMessage(chatMessagePayload);
+    });
 
-    if (trimmed.length > ChatService.MAX_MESSAGE_LENGTH) {
-      console.warn("Received chat message exceeding max length");
-      return;
-    }
-
-    const playerName =
-      this.gameState.getMatch()?.getPlayer(playerId)?.getName() ?? playerId;
-
-    this.addMessage(`${playerName}: ${trimmed}`);
+    // Add message to UI
+    const chatMessage = new ChatMessage(userId, text, timestamp);
+    this.addMessage(chatMessage);
   }
 
-  private addMessage(message: string): void {
-    if (this.messages.length >= ChatService.MAX_HISTORY_SIZE) {
+  @PeerCommandHandler(WebRTCType.ChatMessage)
+  public async handlePeerChatMessage(
+    peer: WebRTCPeer,
+    binaryReader: BinaryReader
+  ): Promise<void> {
+    // Mark the current position
+    binaryReader.mark();
+
+    const userId = binaryReader.fixedLengthString(32);
+    const text = binaryReader.variableLengthString();
+    const timestampSeconds = binaryReader.unsignedInt32();
+    const signature = binaryReader.bytesAsArrayBuffer();
+
+    // Validate signature
+    const payload = binaryReader.getMarkedBytes();
+    const valid = await this.signatureService.verifyArrayBuffer(
+      payload,
+      signature
+    );
+
+    if (valid === false) {
+      console.warn("Invalid chat message signature from peer", peer.getName());
+      return;
+    }
+
+    // Add message to UI
+    const chatMessage = new ChatMessage(userId, text, timestampSeconds);
+    this.addMessage(chatMessage);
+  }
+
+  private addMessage(chatMessage: ChatMessage): void {
+    this.messages.push(chatMessage);
+
+    // Keep only the last MAX_HISTORY_SIZE messages
+    if (this.messages.length > ChatService.MAX_HISTORY_SIZE) {
       this.messages.shift();
     }
 
-    this.messages.push(message);
-    this.listeners.forEach((l) => l(this.messages));
+    // Notify all listeners
+    this.listeners.forEach((listener) => {
+      listener([...this.messages]);
+    });
   }
 }
