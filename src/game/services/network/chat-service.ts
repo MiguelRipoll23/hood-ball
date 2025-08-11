@@ -79,18 +79,8 @@ export class ChatService {
     });
 
     // Add message to UI
-    const messageObject = new ChatMessage(userId, text, timestamp);
-    this.messages.push(messageObject);
-
-    // Keep only the last MAX_HISTORY_SIZE messages
-    if (this.messages.length > ChatService.MAX_HISTORY_SIZE) {
-      this.messages.shift();
-    }
-
-    // Notify all listeners
-    this.listeners.forEach((listener) => {
-      listener([...this.messages]);
-    });
+    const chatMessage = new ChatMessage(userId, text, timestamp);
+    this.addMessage(chatMessage);
   }
 
   @PeerCommandHandler(WebRTCType.ChatMessage)
@@ -119,8 +109,12 @@ export class ChatService {
     }
 
     // Add message to UI
-    const messageObject = new ChatMessage(userId, text, timestampSeconds);
-    this.messages.push(messageObject);
+    const chatMessage = new ChatMessage(userId, text, timestampSeconds);
+    this.addMessage(chatMessage);
+  }
+
+  private addMessage(chatMessage: ChatMessage): void {
+    this.messages.push(chatMessage);
 
     // Keep only the last MAX_HISTORY_SIZE messages
     if (this.messages.length > ChatService.MAX_HISTORY_SIZE) {
