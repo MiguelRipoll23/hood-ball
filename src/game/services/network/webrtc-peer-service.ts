@@ -1,7 +1,7 @@
 import { GamePlayer } from "../../models/game-player.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
@@ -18,7 +18,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   private SEQUENCE_HISTORY_LENGTH = 32;
 
   private connectionListener: PeerConnectionListener;
-  private webrtcDelegate: IWebRTCService;
+  private webrtcDelegate: WebRTCServiceContract;
   private peerConnection: RTCPeerConnection;
   private iceCandidatesQueue: RTCIceCandidateInit[] = [];
   private dataChannels: Record<string, RTCDataChannel> = {};
@@ -49,7 +49,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   constructor(
     private token: string,
-    webrtcDelegate: IWebRTCService,
+    webrtcDelegate: WebRTCServiceContract,
     connectionListener: PeerConnectionListener,
     private gameState = container.get(GameState),
     private timerManagerService = container.get(TimerManagerService)

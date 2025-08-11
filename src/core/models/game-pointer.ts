@@ -1,10 +1,10 @@
 import type {
-  IGamePointer,
+  GamePointerContract,
   PointerType,
-} from "../interfaces/input/game-pointer.js";
+} from "../interfaces/input/game-pointer-interface.js";
 import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point.js";
 
-export class GamePointer implements IGamePointer {
+export class GamePointer implements GamePointerContract {
   private touches: Map<number, GamePointerTouchPoint> = new Map();
   private primaryPointerId: number | null = null;
   private preventDefault: boolean = true;

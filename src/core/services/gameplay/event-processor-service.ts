@@ -4,11 +4,11 @@ import { LocalEvent } from "../../models/local-event.js";
 import { WebRTCType } from "../../../game/enums/webrtc-type.js";
 import { EventQueueService } from "./event-queue-service.js";
 import type { IEventProcessorService } from "../../interfaces/services/gameplay/event-processor-service-interface.js";
-import type { IEventQueueService } from "../../interfaces/services/gameplay/event-queue-service-interface.js";
+import type { EventQueueServiceContract } from "../../interfaces/services/gameplay/event-queue-service-interface.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../../game/decorators/peer-command-handler-decorator.js";
-import type { IWebRTCService } from "../../../game/interfaces/services/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../../game/interfaces/services/network/webrtc-service-interface.js";
 import { injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../../game/interfaces/services/network/webrtc-peer.js";
 
@@ -21,24 +21,24 @@ export type EventSubscription = {
 export class EventProcessorService implements IEventProcessorService {
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
-  private webrtcService: IWebRTCService | null = null;
+  private webrtcService: WebRTCServiceContract | null = null;
 
   constructor() {
     this.localQueue = new EventQueueService<LocalEvent>();
     this.remoteQueue = new EventQueueService<RemoteEvent>();
   }
 
-  public initialize(webrtcService: IWebRTCService): void {
+  public initialize(webrtcService: WebRTCServiceContract): void {
     this.webrtcService = webrtcService;
     this.webrtcService.registerCommandHandlers(this);
     console.log("Event processor service initialized");
   }
 
-  public getLocalQueue(): IEventQueueService<LocalEvent> {
+  public getLocalQueue(): EventQueueServiceContract<LocalEvent> {
     return this.localQueue;
   }
 
-  public getRemoteQueue(): IEventQueueService<RemoteEvent> {
+  public getRemoteQueue(): EventQueueServiceContract<RemoteEvent> {
     return this.remoteQueue;
   }
 
@@ -75,7 +75,7 @@ export class EventProcessorService implements IEventProcessorService {
       });
   }
 
-  private getWebRTCService(): IWebRTCService {
+  private getWebRTCService(): WebRTCServiceContract {
     if (this.webrtcService === null) {
       throw new Error("WebRTCService is not initialized");
     }

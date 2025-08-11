@@ -11,13 +11,13 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../core/models/game-state.js";
-import type { IWebRTCService } from "../../interfaces/services/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { container } from "../../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
-export class WebRTCService implements IWebRTCService {
+export class WebRTCService implements WebRTCServiceContract {
   private peers: Map<string, WebRTCPeer> = new Map();
 
   // Network stats

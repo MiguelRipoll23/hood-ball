@@ -1,6 +1,6 @@
-import type { IGameKeyboard } from "../interfaces/input/game-keyboard.js";
+import type { GameKeyboardContract } from "../interfaces/input/game-keyboard-interface.js";
 
-export class GameKeyboard implements IGameKeyboard {
+export class GameKeyboard implements GameKeyboardContract {
   private pressedKeys: Set<string> = new Set();
 
   constructor() {

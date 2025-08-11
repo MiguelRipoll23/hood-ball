@@ -2,7 +2,7 @@ export type PointerType = "mouse" | "touch" | "pen";
 
 import type { GamePointerTouchPoint } from "./game-pointer-touch-point.js";
 
-export interface IGamePointer {
+export interface GamePointerContract {
   /** Primary pointer X coordinate */
   getX(): number;
   /** Primary pointer Y coordinate */
