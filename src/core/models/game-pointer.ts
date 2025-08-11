@@ -38,7 +38,6 @@ export class GamePointer implements GamePointerContract {
     return this.getPrimaryTouch()?.initialY ?? -1;
   }
 
-
   public setPreventDefault(preventDefault: boolean): void {
     this.preventDefault = preventDefault;
   }
@@ -181,7 +180,9 @@ export class GamePointer implements GamePointerContract {
         }
 
         if (this.primaryPointerId === event.pointerId) {
-          const next = Array.from(this.touches.values()).find((t) => t.pressing);
+          const next = Array.from(this.touches.values()).find(
+            (t) => t.pressing
+          );
           this.primaryPointerId = next ? next.pointerId : null;
           if (next) {
             next.initialX = next.x;
@@ -213,7 +214,9 @@ export class GamePointer implements GamePointerContract {
         }
 
         if (this.primaryPointerId === event.pointerId) {
-          const next = Array.from(this.touches.values()).find((t) => t.pressing);
+          const next = Array.from(this.touches.values()).find(
+            (t) => t.pressing
+          );
           this.primaryPointerId = next ? next.pointerId : null;
           if (next) {
             next.initialX = next.x;
