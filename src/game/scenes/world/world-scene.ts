@@ -103,7 +103,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.boostPadsEntities = entities.boostPadsEntities;
     this.spawnPointEntities = entities.spawnPointEntities;
 
-    this.setupChatUi();
+    this.setupChatUI();
 
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
@@ -312,7 +312,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.toastEntity?.show("Waiting for players...");
   }
 
-  private setupChatUi(): void {
+  private setupChatUI(): void {
     const chatInputElement = document.querySelector(
       "#chat-input"
     ) as HTMLInputElement | null;
@@ -321,6 +321,9 @@ export class WorldScene extends BaseCollidingGameScene {
       console.error("Chat input element not found");
       return;
     }
+
+    // Make chat input visible now that the game has started
+    chatInputElement.removeAttribute("hidden");
 
     this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
 
@@ -420,5 +423,18 @@ export class WorldScene extends BaseCollidingGameScene {
       1,
       1
     );
+  }
+
+  public override dispose(): void {
+    // Hide chat input when leaving the game scene
+    const chatInputElement = document.querySelector(
+      "#chat-input"
+    ) as HTMLInputElement | null;
+
+    if (chatInputElement) {
+      chatInputElement.setAttribute("hidden", "");
+    }
+
+    super.dispose();
   }
 }
