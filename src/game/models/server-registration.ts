@@ -2,16 +2,21 @@ import type { AuthenticationResponse } from "../interfaces/responses/authenticat
 
 export class ServerRegistration {
   private authenticationToken: string;
-  private sessionKey: string;
   private userId: string;
-  private publicIp: string;
+  private userDisplayName: string;
+  private userPublicIp: string;
+  private userSymmetricKey: string;
+  private serverSignaturePublicKey: string;
   private rtcIceServers: RTCIceServer[];
 
   constructor(registrationResponse: AuthenticationResponse) {
     this.authenticationToken = registrationResponse.authenticationToken;
-    this.sessionKey = registrationResponse.sessionKey;
     this.userId = registrationResponse.userId;
-    this.publicIp = registrationResponse.publicIp;
+    this.userDisplayName = registrationResponse.userDisplayName;
+    this.userPublicIp = registrationResponse.userPublicIp;
+    this.userSymmetricKey = registrationResponse.userSymmetricKey;
+    this.serverSignaturePublicKey =
+      registrationResponse.serverSignaturePublicKey;
     this.rtcIceServers = registrationResponse.rtcIceServers;
   }
 
@@ -19,16 +24,24 @@ export class ServerRegistration {
     return this.authenticationToken;
   }
 
-  public getSessionKey(): string {
-    return this.sessionKey;
-  }
-
   public getUserId(): string {
     return this.userId;
   }
 
-  public getPublicIp(): string {
-    return this.publicIp;
+  public getUserDisplayName(): string {
+    return this.userDisplayName;
+  }
+
+  public getUserPublicIp(): string {
+    return this.userPublicIp;
+  }
+
+  public getUserSymmetricKey(): string {
+    return this.userSymmetricKey;
+  }
+
+  public getServerSignaturePublicKey(): string {
+    return this.serverSignaturePublicKey;
   }
 
   public getRTCIceServers(): RTCIceServer[] {

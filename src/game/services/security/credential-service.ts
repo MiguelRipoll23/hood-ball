@@ -157,11 +157,11 @@ export class CredentialService {
       .getGameServer()
       .setServerRegistration(new ServerRegistration(response));
 
-    const { authenticationToken, userId, displayName } = response;
+    const { authenticationToken, userId, userDisplayName } = response;
 
     this.apiService.setAuthenticationToken(authenticationToken);
     this.gameState.getGamePlayer().setId(userId);
-    this.gameState.getGamePlayer().setName(displayName);
+    this.gameState.getGamePlayer().setName(userDisplayName);
 
     const localEvent = new LocalEvent(EventType.ServerAuthenticated);
     this.eventProcessorService.addLocalEvent(localEvent);

@@ -18,7 +18,7 @@ export class CryptoService {
       throw new Error("Game registration not found");
     }
 
-    const sessionKey = serverRegistration.getSessionKey();
+    const sessionKey = serverRegistration.getUserSymmetricKey();
 
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const data = new TextEncoder().encode(request);
@@ -62,7 +62,7 @@ export class CryptoService {
       throw new Error("Game registration not found");
     }
 
-    const sessionKey = serverRegistration.getSessionKey();
+    const sessionKey = serverRegistration.getUserSymmetricKey();
 
     const iv = response.slice(0, 12);
     const data = response.slice(12);
