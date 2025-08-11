@@ -31,9 +31,11 @@ export class MatchmakingService implements IMatchmakingService {
   private readonly matchFinderService: MatchFinderService;
   private readonly networkService: IMatchmakingNetworkService;
   private readonly pendingDisconnections: Set<string>;
+  private readonly timerManagerService: TimerManagerService;
+  private gameOverFinalized: boolean = false;
 
   constructor(private gameState = container.get(GameState)) {
-    container.get(TimerManagerService);
+    this.timerManagerService = container.get(TimerManagerService);
     container.get(IntervalManagerService);
     this.apiService = container.get(APIService);
     this.webSocketService = container.get(WebSocketService);
@@ -99,6 +101,8 @@ export class MatchmakingService implements IMatchmakingService {
   }
 
   public async handleGameOver(): Promise<void> {
+    this.gameOverFinalized = false; // Reset the flag for new game over
+
     if (this.gameState.getMatch()?.isHost()) {
       const peers = this.webrtcService.getPeers();
 
@@ -118,6 +122,13 @@ export class MatchmakingService implements IMatchmakingService {
         .removeMatch()
         .catch((error) => console.error(error));
 
+      // Add a timeout to force finalize if disconnections don't complete
+      this.timerManagerService.createTimer(3, () => {
+        console.warn("Game over timeout reached, forcing finalization");
+        this.pendingDisconnections.clear();
+        this.finalizeGameOver();
+      });
+
       this.finalizeIfNoPendingDisconnections();
     } else {
       this.finalizeGameOver();
@@ -125,17 +136,34 @@ export class MatchmakingService implements IMatchmakingService {
   }
 
   public finalizeIfNoPendingDisconnections(): void {
+    console.log(
+      `Checking pending disconnections: ${this.pendingDisconnections.size} remaining`
+    );
+
     if (this.pendingDisconnections.size === 0) {
+      console.log("No pending disconnections, finalizing game over");
       this.finalizeGameOver();
+    } else {
+      console.log(
+        "Still waiting for pending disconnections:",
+        Array.from(this.pendingDisconnections)
+      );
     }
   }
 
   private finalizeGameOver(): void {
+    if (this.gameOverFinalized) {
+      console.log("Game over already finalized, skipping");
+      return;
+    }
+
+    this.gameOverFinalized = true;
     this.gameState.setMatch(null);
     container.get(PendingIdentitiesToken).clear();
     container.get(ReceivedIdentitiesToken).clear();
     const localEvent = new LocalEvent(EventType.ReturnToMainMenu);
     container.get(EventProcessorService).addLocalEvent(localEvent);
+    console.log("Game over finalized, returning to main menu");
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
