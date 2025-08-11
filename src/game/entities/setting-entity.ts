@@ -54,6 +54,7 @@ export class SettingEntity extends BaseTappableGameEntity {
     this.width = canvasWidth;
 
     // Set the font and alignment for the setting text
+    context.fillStyle = "white";
     context.font = "bold 24px system-ui";
     context.textAlign = "left";
     context.textBaseline = "middle";

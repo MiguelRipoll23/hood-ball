@@ -2,11 +2,9 @@ import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
+  private static readonly SPACING = 10;
+  private static readonly ONLINE_TEXT = "ONLINE";
   private onlinePlayers = 0;
-
-  private getText(): string {
-    return "ONLINE";
-  }
 
   private baseX: number;
   private baseY: number;
@@ -25,8 +23,11 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     this.x = this.baseX;
     this.y = this.baseY;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
+    // Ensure font is properly set before measuring text
     this.context.font = "bold 28px system-ui";
-    this.labelWidth = this.context.measureText(this.getText()).width;
+    this.labelWidth = this.context.measureText(
+      OnlinePlayersEntity.ONLINE_TEXT
+    ).width;
     this.countWidth = this.context.measureText(
       this.onlinePlayers.toString()
     ).width;
@@ -36,11 +37,15 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     if (this.onlinePlayers !== total) {
       this.onlinePlayers = total;
       this.startShake();
+      // Ensure font is set before measuring text
+      this.context.font = "bold 28px system-ui";
       this.countWidth = this.context.measureText(
         this.onlinePlayers.toString()
       ).width;
     } else {
       this.onlinePlayers = total;
+      // Ensure font is set before measuring text
+      this.context.font = "bold 28px system-ui";
       this.countWidth = this.context.measureText(
         this.onlinePlayers.toString()
       ).width;
@@ -73,18 +78,18 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     context.save();
     this.applyOpacity(context);
 
-    const labelText = this.getText();
+    const labelText = OnlinePlayersEntity.ONLINE_TEXT;
     const countText = this.onlinePlayers.toString();
 
     context.font = "bold 28px system-ui";
     context.textBaseline = "middle";
     context.textAlign = "left";
 
-    const spacing = 15;
-    const totalWidth = this.countWidth + spacing + this.labelWidth;
+    const totalWidth =
+      this.countWidth + OnlinePlayersEntity.SPACING + this.labelWidth;
 
     const countX = this.x - totalWidth / 2;
-    const labelX = countX + this.countWidth + spacing;
+    const labelX = countX + this.countWidth + OnlinePlayersEntity.SPACING;
 
     context.fillStyle = LIGHT_GREEN_COLOR;
     context.fillText(countText, countX, this.y);
