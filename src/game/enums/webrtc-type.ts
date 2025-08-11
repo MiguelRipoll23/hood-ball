@@ -10,4 +10,5 @@ export enum WebRTCType {
   PingRequest,
   PingResponse,
   PlayerPing,
+  ChatMessage,
 }

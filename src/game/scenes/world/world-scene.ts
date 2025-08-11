@@ -312,7 +312,6 @@ export class WorldScene extends BaseCollidingGameScene {
     this.toastEntity?.show("Waiting for players...");
   }
 
-
   private setupChatUi(): void {
     const chatInputElement = document.querySelector(
       "#chat-input"
@@ -323,7 +322,7 @@ export class WorldScene extends BaseCollidingGameScene {
       return;
     }
 
-    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas);
+    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
 
     const boostMeterEntity = this.localCarEntity?.getBoostMeterEntity();
     if (!boostMeterEntity) {
@@ -344,7 +343,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.helpEntity as HelpEntity
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
-    this.chatService.onMessage((msgs: string[]) =>
+    this.chatService.onMessage((msgs) =>
       this.chatHistoryEntity?.show(
         msgs,
         this.gameState.getGamePlayer().getName()
