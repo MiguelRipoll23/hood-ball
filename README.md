@@ -15,7 +15,7 @@ battle.
 
 ## Demo
 
-https://github.com/user-attachments/assets/8634a9e5-b85c-43ca-a130-4412aed5753c
+https://github.com/user-attachments/assets/ae4b8b25-a3d4-4fdd-a5bf-f9d1fcb16f09
 
 ### Debug UI
 
