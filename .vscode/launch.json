@@ -1,18 +1,11 @@
 {
   "configurations": [
     {
-      "name": "Run game",
-      "type": "node",
+      "name": "Open game",
       "request": "launch",
-      "runtimeExecutable": "deno",
-      "runtimeArgs": [
-        "task",
-        "dev"
-      ],
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal",
-      "attachSimplePort": 9229,
-      "outputCapture": "std"
+      "type": "chrome",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src"
     }
   ]
 }
