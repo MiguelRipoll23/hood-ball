@@ -1,0 +1,18 @@
+{
+  "configurations": [
+    {
+      "name": "Run game",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "deno",
+      "runtimeArgs": [
+        "task",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "attachSimplePort": 9229,
+      "outputCapture": "std"
+    }
+  ]
+}
