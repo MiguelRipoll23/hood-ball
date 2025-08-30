@@ -5,6 +5,5 @@ export interface IMatchmakingService {
   findOrAdvertiseMatch(): Promise<void>;
   savePlayerScore(): Promise<void>;
   handleGameOver(): Promise<void>;
-  finalizeIfNoPendingDisconnections(): void;
   renderDebugInformation(context: CanvasRenderingContext2D): void;
 }
