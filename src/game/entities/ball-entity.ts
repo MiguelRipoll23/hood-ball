@@ -29,6 +29,20 @@ export class BallEntity
 
   private fireballActive = false;
   private fireballTimer = 0;
+  private fireTrailParticles: {
+    x: number;
+    y: number;
+    size: number;
+    life: number;
+  }[] = [];
+  private smokeParticles: {
+    x: number;
+    y: number;
+    size: number;
+    life: number;
+  }[] = [];
+  private readonly FIRE_TRAIL_DURATION = 300;
+  private readonly SMOKE_DURATION = 600;
 
   constructor(
     x: number,
@@ -94,6 +108,10 @@ export class BallEntity
       this.fireballTimer -= deltaTimeStamp;
       if (this.fireballTimer <= 0) {
         this.fireballActive = false;
+        this.fireTrailParticles = [];
+        this.smokeParticles = [];
+      } else {
+        this.updateFireballEffects(deltaTimeStamp);
       }
     }
 
@@ -218,29 +236,34 @@ export class BallEntity
   }
 
   private drawFireball(context: CanvasRenderingContext2D): void {
+    this.renderSmokeTrail(context);
+    this.renderFireTrail(context);
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
     const angle = Math.atan2(this.vy, this.vx);
     context.save();
     context.translate(this.x, this.y);
     context.rotate(angle);
 
-    // Flame tail
-    const flicker = Math.sin(performance.now() / 50);
-    const tailLength = this.radius * 1.5 + flicker * 2;
-    const tailGradient = context.createLinearGradient(
-      -this.radius,
-      0,
-      -this.radius - tailLength,
-      0
-    );
-    tailGradient.addColorStop(0, "#ffae00");
-    tailGradient.addColorStop(1, "rgba(255,0,0,0)");
-    context.fillStyle = tailGradient;
-    context.beginPath();
-    context.moveTo(-this.radius, -this.radius / 2);
-    context.lineTo(-this.radius - tailLength, 0);
-    context.lineTo(-this.radius, this.radius / 2);
-    context.closePath();
-    context.fill();
+    if (speed > this.MIN_VELOCITY) {
+      // Flame tail
+      const flicker = Math.sin(performance.now() / 50);
+      const tailLength = this.radius * 1.5 + flicker * 2;
+      const tailGradient = context.createLinearGradient(
+        -this.radius,
+        0,
+        -this.radius - tailLength,
+        0
+      );
+      tailGradient.addColorStop(0, "#ffae00");
+      tailGradient.addColorStop(1, "rgba(255,0,0,0)");
+      context.fillStyle = tailGradient;
+      context.beginPath();
+      context.moveTo(-this.radius, -this.radius / 2);
+      context.lineTo(-this.radius - tailLength, 0);
+      context.lineTo(-this.radius, this.radius / 2);
+      context.closePath();
+      context.fill();
+    }
 
     // Fireball body
     const gradient = context.createRadialGradient(
@@ -260,6 +283,80 @@ export class BallEntity
     context.fill();
     context.closePath();
 
+    context.restore();
+  }
+
+  private updateFireballEffects(delta: DOMHighResTimeStamp): void {
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    if (speed > this.MIN_VELOCITY) {
+      const dirX = -this.vx / speed;
+      const dirY = -this.vy / speed;
+      const spawnX = this.x + dirX * this.radius;
+      const spawnY = this.y + dirY * this.radius;
+
+      this.fireTrailParticles.push({
+        x: spawnX,
+        y: spawnY,
+        size: this.radius / 2,
+        life: this.FIRE_TRAIL_DURATION,
+      });
+
+      this.smokeParticles.push({
+        x: spawnX,
+        y: spawnY,
+        size: this.radius / 2,
+        life: this.SMOKE_DURATION,
+      });
+    }
+
+    this.fireTrailParticles.forEach((p) => {
+      p.life -= delta;
+      p.size *= 0.96;
+    });
+    this.fireTrailParticles = this.fireTrailParticles.filter((p) => p.life > 0);
+
+    this.smokeParticles.forEach((p) => {
+      p.life -= delta;
+      p.size += 0.02 * (delta / 16);
+      p.y -= 0.02 * (delta / 16);
+    });
+    this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
+  }
+
+  private renderFireTrail(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.fireTrailParticles.forEach((p) => {
+      const progress = p.life / this.FIRE_TRAIL_DURATION;
+      context.globalAlpha = progress;
+      const gradient = context.createRadialGradient(
+        p.x,
+        p.y,
+        0,
+        p.x,
+        p.y,
+        p.size
+      );
+      gradient.addColorStop(0, "#ffffaa");
+      gradient.addColorStop(1, "#ff0000");
+      context.fillStyle = gradient;
+      context.beginPath();
+      context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      context.fill();
+    });
+    context.restore();
+  }
+
+  private renderSmokeTrail(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.smokeParticles.forEach((p) => {
+      const progress = p.life / this.SMOKE_DURATION;
+      const shade = Math.floor(100 + 80 * progress);
+      context.globalAlpha = 0.3 * progress;
+      context.fillStyle = `rgb(${shade},${shade},${shade})`;
+      context.beginPath();
+      context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      context.fill();
+    });
     context.restore();
   }
 
