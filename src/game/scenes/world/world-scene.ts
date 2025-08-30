@@ -268,7 +268,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.subscribeToLocalEvent(EventType.Fireball, () => {
-      this.ballEntity?.activateFireball();
+      this.ballEntity?.activateFireball(30);
     });
   }
 

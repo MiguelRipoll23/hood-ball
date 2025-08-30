@@ -212,51 +212,56 @@ export class BallEntity
     context.closePath();
   }
 
-  public activateFireball(durationSeconds = 5): void {
+  public activateFireball(durationSeconds = 30): void {
     this.fireballActive = true;
     this.fireballTimer = durationSeconds * 1000;
   }
 
   private drawFireball(context: CanvasRenderingContext2D): void {
     const angle = Math.atan2(this.vy, this.vx);
+    const time = performance.now();
     context.save();
     context.translate(this.x, this.y);
     context.rotate(angle);
 
-    // Flame tail
-    const flicker = Math.sin(performance.now() / 50);
-    const tailLength = this.radius * 1.5 + flicker * 2;
+    // Add a subtle glow around the fireball
+    context.shadowColor = "rgba(255, 150, 0, 0.8)";
+    context.shadowBlur = 20;
+
+    // Flame tail with flicker for a more natural effect
+    const tailFlicker = 1 + Math.sin(time / 75) * 0.2;
+    const tailLength = this.radius * 2.5 * tailFlicker;
     const tailGradient = context.createLinearGradient(
       -this.radius,
       0,
       -this.radius - tailLength,
       0
     );
-    tailGradient.addColorStop(0, "#ffae00");
+    tailGradient.addColorStop(0, "rgba(255,200,0,0.9)");
     tailGradient.addColorStop(1, "rgba(255,0,0,0)");
     context.fillStyle = tailGradient;
     context.beginPath();
     context.moveTo(-this.radius, -this.radius / 2);
-    context.lineTo(-this.radius - tailLength, 0);
-    context.lineTo(-this.radius, this.radius / 2);
+    context.quadraticCurveTo(
+      -this.radius - tailLength / 2,
+      0,
+      -this.radius,
+      this.radius / 2
+    );
     context.closePath();
     context.fill();
 
-    // Fireball body
-    const gradient = context.createRadialGradient(
-      0,
-      0,
-      0,
-      0,
-      0,
-      this.radius
-    );
-    gradient.addColorStop(0, "#ffffaa");
-    gradient.addColorStop(0.5, "#ff8800");
+    // Fireball body with multi-stop gradient and flickering radius
+    const flickerScale = 1 + Math.sin(time / 100) * 0.05;
+    const flameRadius = this.radius * flickerScale;
+    const gradient = context.createRadialGradient(0, 0, 0, 0, 0, flameRadius);
+    gradient.addColorStop(0, "#ffffff");
+    gradient.addColorStop(0.3, "#ffd700");
+    gradient.addColorStop(0.6, "#ff8c00");
     gradient.addColorStop(1, "#ff0000");
     context.fillStyle = gradient;
     context.beginPath();
-    context.arc(0, 0, this.radius, 0, Math.PI * 2);
+    context.arc(0, 0, flameRadius, 0, Math.PI * 2);
     context.fill();
     context.closePath();
 
