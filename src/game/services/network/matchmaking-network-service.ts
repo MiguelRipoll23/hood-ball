@@ -389,6 +389,9 @@ export class MatchmakingNetworkService
     this.gameState.getMatch()?.removePlayer(player);
     this.spawnPointService.releaseSpawnPointIndex(player.getSpawnPointIndex());
 
+    // Remove pending disconnection before notifying others
+    this.pendingDisconnections.delete(player.getId());
+
     // Notify players on match
     this.webrtcService
       .getPeers()
@@ -412,9 +415,6 @@ export class MatchmakingNetworkService
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
       await this.matchFinderService.advertiseMatch();
     }
-
-    // Remove pending disconnection
-    this.pendingDisconnections.delete(player.getId());
   }
 
   private handlePlayerDisconnectedById(playerId: string) {
