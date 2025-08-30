@@ -30,6 +30,7 @@ export class DisconnectionMonitor {
 
   public clear(): void {
     this.timeout?.stop(false);
+    this.timeout = null;
     this.pending.clear();
   }
 

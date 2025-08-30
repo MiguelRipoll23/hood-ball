@@ -1,6 +1,7 @@
 import { GameState } from "../models/game-state.js";
 import { container } from "./di-container.js";
 import { EventProcessorService } from "./gameplay/event-processor-service.js";
+import { EventConsumerService } from "./gameplay/event-consumer-service.js";
 import { MatchmakingService } from "../../game/services/gameplay/matchmaking-service.js";
 import { EntityOrchestratorService } from "../../game/services/gameplay/entity-orchestrator-service.js";
 import { WebRTCService } from "../../game/services/network/webrtc-service.js";
@@ -30,6 +31,10 @@ export class ServiceRegistry {
     container.bind({
       provide: EventProcessorService,
       useClass: EventProcessorService,
+    });
+    container.bind({
+      provide: EventConsumerService,
+      useClass: EventConsumerService,
     });
     container.bind({ provide: CryptoService, useClass: CryptoService });
     container.bind({ provide: CredentialService, useClass: CredentialService });

@@ -63,8 +63,12 @@ export class MatchLifecycleService {
   }
 
   public async handleGameOver(): Promise<void> {
-    this.gameOverFinalized = false;
+    if (this.gameOverFinalized || this.gameOverInProgress) {
+      return;
+    }
+
     this.gameOverInProgress = true;
+    this.gameOverFinalized = false;
 
     if (this.gameState.getMatch()?.isHost()) {
       const peers = this.webrtcService.getPeers();
@@ -102,6 +106,9 @@ export class MatchLifecycleService {
     }
     this.gameOverFinalized = true;
     this.gameOverInProgress = false;
+    if (this.disconnectionMonitor.isTracking()) {
+      this.disconnectionMonitor.clear();
+    }
     this.gameState.setMatch(null);
     this.pendingIdentities.clear();
     this.receivedIdentities.clear();
