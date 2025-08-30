@@ -8,4 +8,3 @@ export const PendingDisconnectionsToken = new InjectionToken(
   "PendingDisconnections"
 );
 
-export const MatchmakingServiceToken = new InjectionToken("MatchmakingService");

@@ -5,6 +5,7 @@ import { DebugUtils } from "../../../core/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { APIService } from "../network/api-service.js";
@@ -33,6 +34,12 @@ export class MatchmakingService implements IMatchmakingService {
   private readonly pendingDisconnections: Set<string>;
   private readonly timerManagerService: TimerManagerService;
   private gameOverFinalized: boolean = false;
+  private gameOverInProgress: boolean = false;
+  private readonly handlePlayerDisconnected = (): void => {
+    if (this.gameOverInProgress) {
+      this.finalizeIfNoPendingDisconnections();
+    }
+  };
 
   constructor(private gameState = container.get(GameState)) {
     this.timerManagerService = container.get(TimerManagerService);
@@ -45,6 +52,12 @@ export class MatchmakingService implements IMatchmakingService {
     this.networkService = container.get(MatchmakingNetworkService);
     this.pendingDisconnections = container.get(PendingDisconnectionsToken);
     this.registerCommandHandlers();
+
+    const eventConsumerService = container.get(EventConsumerService);
+    eventConsumerService.subscribeToLocalEvent(
+      EventType.PlayerDisconnected,
+      this.handlePlayerDisconnected
+    );
   }
 
   public getNetworkService(): IMatchmakingNetworkService {
@@ -102,6 +115,7 @@ export class MatchmakingService implements IMatchmakingService {
 
   public async handleGameOver(): Promise<void> {
     this.gameOverFinalized = false; // Reset the flag for new game over
+    this.gameOverInProgress = true;
 
     if (this.gameState.getMatch()?.isHost()) {
       const peers = this.webrtcService.getPeers();
@@ -158,6 +172,7 @@ export class MatchmakingService implements IMatchmakingService {
     }
 
     this.gameOverFinalized = true;
+    this.gameOverInProgress = false;
     this.gameState.setMatch(null);
     container.get(PendingIdentitiesToken).clear();
     container.get(ReceivedIdentitiesToken).clear();

@@ -13,7 +13,6 @@ import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
   PendingDisconnectionsToken,
-  MatchmakingServiceToken,
 } from "../../game/services/gameplay/matchmaking-tokens.js";
 import { CredentialService } from "../../game/services/security/credential-service.js";
 import { CameraService } from "./gameplay/camera-service.js";
@@ -47,10 +46,6 @@ export class ServiceRegistry {
     container.bind({
       provide: MatchmakingService,
       useClass: MatchmakingService,
-    });
-    container.bind({
-      provide: MatchmakingServiceToken,
-      useExisting: MatchmakingService,
     });
     container.bind({
       provide: EntityOrchestratorService,
