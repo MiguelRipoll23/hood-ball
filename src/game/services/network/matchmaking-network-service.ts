@@ -30,9 +30,7 @@ import {
   ReceivedIdentitiesToken,
   PendingDisconnectionsToken,
 } from "../gameplay/matchmaking-tokens.js";
-import { MatchmakingServiceToken } from "../gameplay/matchmaking-tokens.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
-import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 
 @injectable()
 export class MatchmakingNetworkService
@@ -64,13 +62,7 @@ export class MatchmakingNetworkService
     ),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
     private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
-    private readonly pendingDisconnections = inject(PendingDisconnectionsToken),
-    private readonly getMatchmakingService: () => IMatchmakingService = inject(
-      MatchmakingServiceToken,
-      {
-        lazy: true,
-      }
-    )
+    private readonly pendingDisconnections = inject(PendingDisconnectionsToken)
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
@@ -422,9 +414,7 @@ export class MatchmakingNetworkService
     }
 
     // Remove pending disconnection
-    if (this.pendingDisconnections.delete(player.getId())) {
-      this.getMatchmakingService().finalizeIfNoPendingDisconnections();
-    }
+    this.pendingDisconnections.delete(player.getId());
   }
 
   private handlePlayerDisconnectedById(playerId: string) {
