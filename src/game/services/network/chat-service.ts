@@ -11,6 +11,10 @@ import { ChatMessage } from "../../models/chat-message.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { LocalEvent } from "../../../core/models/local-event.js";
+import { EventType } from "../../enums/event-type.js";
+import { GameState } from "../../../core/models/game-state.js";
 
 @injectable()
 export class ChatService {
@@ -21,11 +25,16 @@ export class ChatService {
   private readonly webSocketService: WebSocketService;
   private readonly webrtcService: WebRTCService;
   private readonly signatureService: SignatureService;
+  private readonly eventProcessorService: EventProcessorService;
+  private readonly localPlayerId: string;
 
   constructor() {
     this.webSocketService = container.get(WebSocketService);
     this.webrtcService = container.get(WebRTCService);
     this.signatureService = container.get(SignatureService);
+    this.eventProcessorService = container.get(EventProcessorService);
+    const gameState = container.get(GameState);
+    this.localPlayerId = gameState.getGamePlayer().getNetworkId();
     this.webrtcService.registerCommandHandlers(this);
     this.webSocketService.registerCommandHandlers(this);
   }
@@ -49,6 +58,9 @@ export class ChatService {
       console.warn("Chat message empty");
       return;
     }
+
+    // Execute local command effects immediately
+    this.handleCommand(trimmed);
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebSocketType.ChatMessage)
@@ -77,6 +89,11 @@ export class ChatService {
     this.webrtcService.getPeers().forEach((peer) => {
       peer.sendReliableUnorderedMessage(chatMessagePayload);
     });
+
+    // Execute command and skip chat output if handled
+    if (this.handleCommand(text, userId)) {
+      return;
+    }
 
     // Add message to UI
     const chatMessage = new ChatMessage(userId, text, timestamp);
@@ -108,6 +125,11 @@ export class ChatService {
       return;
     }
 
+    // Execute command and skip chat output if handled
+    if (this.handleCommand(text, userId)) {
+      return;
+    }
+
     // Add message to UI
     const chatMessage = new ChatMessage(userId, text, timestampSeconds);
     this.addMessage(chatMessage);
@@ -125,5 +147,24 @@ export class ChatService {
     this.listeners.forEach((listener) => {
       listener([...this.messages]);
     });
+  }
+
+  private handleCommand(text: string, senderId?: string): boolean {
+    if (!text.startsWith("/")) {
+      return false;
+    }
+
+    const command = text.slice(1).toLowerCase();
+
+    switch (command) {
+      case "fireball":
+        if (!senderId || senderId !== this.localPlayerId) {
+          const event = new LocalEvent<void>(EventType.Fireball);
+          this.eventProcessorService.addLocalEvent(event);
+        }
+        return true;
+      default:
+        return false;
+    }
   }
 }
