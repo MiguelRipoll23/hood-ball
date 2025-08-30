@@ -35,6 +35,11 @@ export class MatchmakingService implements IMatchmakingService {
   private readonly timerManagerService: TimerManagerService;
   private gameOverFinalized: boolean = false;
   private gameOverInProgress: boolean = false;
+  private readonly handlePlayerDisconnected = (): void => {
+    if (this.gameOverInProgress) {
+      this.finalizeIfNoPendingDisconnections();
+    }
+  };
 
   constructor(private gameState = container.get(GameState)) {
     this.timerManagerService = container.get(TimerManagerService);
@@ -51,11 +56,7 @@ export class MatchmakingService implements IMatchmakingService {
     const eventConsumerService = container.get(EventConsumerService);
     eventConsumerService.subscribeToLocalEvent(
       EventType.PlayerDisconnected,
-      () => {
-        if (this.gameOverInProgress) {
-          this.finalizeIfNoPendingDisconnections();
-        }
-      }
+      this.handlePlayerDisconnected
     );
   }
 
