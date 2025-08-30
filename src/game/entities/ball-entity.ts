@@ -27,6 +27,9 @@ export class BallEntity
   private inactive: boolean = false;
   private lastPlayer: GamePlayer | null = null;
 
+  private fireballActive = false;
+  private fireballTimer = 0;
+
   constructor(
     x: number,
     y: number,
@@ -81,11 +84,18 @@ export class BallEntity
     return this.lastPlayer;
   }
 
-  public update(): void {
+  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.applyFriction();
     this.calculateMovement();
     this.updateHitbox();
     this.handlePlayerCollision();
+
+    if (this.fireballActive) {
+      this.fireballTimer -= deltaTimeStamp;
+      if (this.fireballTimer <= 0) {
+        this.fireballActive = false;
+      }
+    }
 
     EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
   }
@@ -93,13 +103,17 @@ export class BallEntity
   public override render(context: CanvasRenderingContext2D): void {
     context.save(); // Save the current context state
 
-    // Draw the gradient ball
-    this.drawBallWithGradient(context);
+    if (this.fireballActive) {
+      this.drawFireball(context);
+    } else {
+      // Draw the gradient ball
+      this.drawBallWithGradient(context);
 
-    // If the ball is inactive, apply glow effect
-    if (this.inactive) {
-      this.applyGlowEffect(context);
-      this.drawBallWithGlow(context);
+      // If the ball is inactive, apply glow effect
+      if (this.inactive) {
+        this.applyGlowEffect(context);
+        this.drawBallWithGlow(context);
+      }
     }
 
     // Restore the context state
@@ -196,6 +210,57 @@ export class BallEntity
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
     context.closePath();
+  }
+
+  public activateFireball(durationSeconds = 5): void {
+    this.fireballActive = true;
+    this.fireballTimer = durationSeconds * 1000;
+  }
+
+  private drawFireball(context: CanvasRenderingContext2D): void {
+    const angle = Math.atan2(this.vy, this.vx);
+    context.save();
+    context.translate(this.x, this.y);
+    context.rotate(angle);
+
+    // Flame tail
+    const flicker = Math.sin(performance.now() / 50);
+    const tailLength = this.radius * 1.5 + flicker * 2;
+    const tailGradient = context.createLinearGradient(
+      -this.radius,
+      0,
+      -this.radius - tailLength,
+      0
+    );
+    tailGradient.addColorStop(0, "#ffae00");
+    tailGradient.addColorStop(1, "rgba(255,0,0,0)");
+    context.fillStyle = tailGradient;
+    context.beginPath();
+    context.moveTo(-this.radius, -this.radius / 2);
+    context.lineTo(-this.radius - tailLength, 0);
+    context.lineTo(-this.radius, this.radius / 2);
+    context.closePath();
+    context.fill();
+
+    // Fireball body
+    const gradient = context.createRadialGradient(
+      0,
+      0,
+      0,
+      0,
+      0,
+      this.radius
+    );
+    gradient.addColorStop(0, "#ffffaa");
+    gradient.addColorStop(0.5, "#ff8800");
+    gradient.addColorStop(1, "#ff0000");
+    context.fillStyle = gradient;
+    context.beginPath();
+    context.arc(0, 0, this.radius, 0, Math.PI * 2);
+    context.fill();
+    context.closePath();
+
+    context.restore();
   }
 
   private createHitbox(): void {

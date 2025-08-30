@@ -266,6 +266,10 @@ export class WorldScene extends BaseCollidingGameScene {
       EventType.ReturnToMainMenu,
       () => void this.returnToMainMenuScene()
     );
+
+    this.subscribeToLocalEvent(EventType.Fireball, () => {
+      this.ballEntity?.activateFireball();
+    });
   }
 
   private subscribeToRemoteEvents(): void {
