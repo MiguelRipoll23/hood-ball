@@ -238,40 +238,12 @@ export class BallEntity
   private drawFireball(context: CanvasRenderingContext2D): void {
     this.renderSmokeTrail(context);
     this.renderFireTrail(context);
-    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    const angle = Math.atan2(this.vy, this.vx);
-    context.save();
-    context.translate(this.x, this.y);
-    context.rotate(angle);
-
-    if (speed > this.MIN_VELOCITY) {
-      // Flame tail
-      const flicker = Math.sin(performance.now() / 50);
-      const tailLength = this.radius * 1.5 + flicker * 2;
-      const tailGradient = context.createLinearGradient(
-        -this.radius,
-        0,
-        -this.radius - tailLength,
-        0
-      );
-      tailGradient.addColorStop(0, "#ffae00");
-      tailGradient.addColorStop(1, "rgba(255,0,0,0)");
-      context.fillStyle = tailGradient;
-      context.beginPath();
-      context.moveTo(-this.radius, -this.radius / 2);
-      context.lineTo(-this.radius - tailLength, 0);
-      context.lineTo(-this.radius, this.radius / 2);
-      context.closePath();
-      context.fill();
-    }
-
-    // Fireball body
     const gradient = context.createRadialGradient(
+      this.x,
+      this.y,
       0,
-      0,
-      0,
-      0,
-      0,
+      this.x,
+      this.y,
       this.radius
     );
     gradient.addColorStop(0, "#ffffaa");
@@ -279,11 +251,9 @@ export class BallEntity
     gradient.addColorStop(1, "#ff0000");
     context.fillStyle = gradient;
     context.beginPath();
-    context.arc(0, 0, this.radius, 0, Math.PI * 2);
+    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
     context.closePath();
-
-    context.restore();
   }
 
   private updateFireballEffects(delta: DOMHighResTimeStamp): void {
