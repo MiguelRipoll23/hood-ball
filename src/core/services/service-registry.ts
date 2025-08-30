@@ -12,8 +12,10 @@ import { MatchmakingNetworkService } from "../../game/services/network/matchmaki
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
-  PendingDisconnectionsToken,
 } from "../../game/services/gameplay/matchmaking-tokens.js";
+import { MatchLifecycleService } from "../../game/services/gameplay/match-lifecycle-service.js";
+import { DisconnectionMonitor } from "../../game/services/gameplay/disconnection-monitor.js";
+import { MatchmakingCoordinator } from "../../game/services/gameplay/matchmaking-coordinator.js";
 import { CredentialService } from "../../game/services/security/credential-service.js";
 import { CameraService } from "./gameplay/camera-service.js";
 import { SpawnPointService } from "../../game/services/gameplay/spawn-point-service.js";
@@ -48,6 +50,18 @@ export class ServiceRegistry {
       useClass: MatchmakingService,
     });
     container.bind({
+      provide: MatchLifecycleService,
+      useClass: MatchLifecycleService,
+    });
+    container.bind({
+      provide: DisconnectionMonitor,
+      useClass: DisconnectionMonitor,
+    });
+    container.bind({
+      provide: MatchmakingCoordinator,
+      useClass: MatchmakingCoordinator,
+    });
+    container.bind({
       provide: EntityOrchestratorService,
       useClass: EntityOrchestratorService,
     });
@@ -64,10 +78,6 @@ export class ServiceRegistry {
       provide: ReceivedIdentitiesToken,
       useValue: new Map<string, { playerId: string; playerName: string }>(),
     });
-    container.bind({
-      provide: PendingDisconnectionsToken,
-      useValue: new Set<string>(),
-    });
     ServiceRegistry.initializeServices();
   }
 
@@ -78,22 +88,21 @@ export class ServiceRegistry {
         container.get(MatchmakingService);
       const entityOrchestratorService: EntityOrchestratorService =
         container.get(EntityOrchestratorService);
-      const eventProcessorService: EventProcessorService = container.get(
-        EventProcessorService
+      const matchmakingCoordinator: MatchmakingCoordinator = container.get(
+        MatchmakingCoordinator
       );
 
-      if (
-        !webrtcService ||
-        !matchmakingService ||
-        !entityOrchestratorService ||
-        !eventProcessorService
-      ) {
+        if (
+          !webrtcService ||
+          !matchmakingService ||
+          !entityOrchestratorService ||
+          !matchmakingCoordinator
+        ) {
         throw new Error("Failed to resolve core services");
       }
 
       entityOrchestratorService.initialize(webrtcService);
-      eventProcessorService.initialize(webrtcService);
-      webrtcService.initialize(matchmakingService.getNetworkService());
+      matchmakingCoordinator.initialize();
     } catch (error) {
       console.error("Error initializing services", error);
     }
