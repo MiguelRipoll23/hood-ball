@@ -159,6 +159,7 @@ export class ChatService {
     switch (command) {
       case "rainbow":
         if (!senderId || senderId !== this.localPlayerId) {
+          console.log("Rainbow command received - starting effect");
           const event = new LocalEvent<void>(EventType.Rainbow);
           this.eventProcessorService.addLocalEvent(event);
         }
