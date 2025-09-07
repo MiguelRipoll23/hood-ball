@@ -196,7 +196,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       this.renderTurboEffect(context);
     }
     if (this.rainbowActive) {
-      context.filter = `hue-rotate(${this.rainbowHue}deg)`;
+      context.filter = `hue-rotate(${this.rainbowHue}deg) saturate(200%) brightness(1.3) contrast(1.2)`;
+    } else {
+      context.filter = "none";
     }
     context.drawImage(
       this.carImage!,
@@ -279,6 +281,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.rainbowActive = true;
     this.rainbowTimer = durationSeconds * 1000;
     this.rainbowHue = 0;
+    console.log("Rainbow effect activated");
   }
 
   public refillBoost(): void {
