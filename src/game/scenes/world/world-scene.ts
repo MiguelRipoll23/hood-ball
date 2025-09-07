@@ -1,6 +1,7 @@
 import { LocalCarEntity } from "../../entities/local-car-entity.js";
 import { GoalEntity } from "../../entities/goal-entity.js";
 import { BallEntity } from "../../entities/ball-entity.js";
+import { CarEntity } from "../../entities/car-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
@@ -267,8 +268,12 @@ export class WorldScene extends BaseCollidingGameScene {
       () => void this.returnToMainMenuScene()
     );
 
-    this.subscribeToLocalEvent(EventType.Fireball, () => {
-      this.ballEntity?.activateFireball();
+    this.subscribeToLocalEvent(EventType.Rainbow, () => {
+      this.worldEntities.forEach((entity) => {
+        if (entity instanceof CarEntity) {
+          entity.activateRainbow();
+        }
+      });
     });
   }
 

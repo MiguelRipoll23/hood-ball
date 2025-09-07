@@ -16,5 +16,5 @@ export enum EventType {
   OnlinePlayers,
   CarDemolished,
   ReturnToMainMenu,
-  Fireball,
+  Rainbow,
 }
