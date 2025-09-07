@@ -157,9 +157,9 @@ export class ChatService {
     const command = text.slice(1).toLowerCase();
 
     switch (command) {
-      case "fireball":
+      case "rainbow":
         if (!senderId || senderId !== this.localPlayerId) {
-          const event = new LocalEvent<void>(EventType.Fireball);
+          const event = new LocalEvent<void>(EventType.Rainbow);
           this.eventProcessorService.addLocalEvent(event);
         }
         return true;
