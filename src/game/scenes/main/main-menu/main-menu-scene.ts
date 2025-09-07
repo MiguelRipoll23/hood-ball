@@ -3,7 +3,7 @@ import { MenuOptionEntity } from "../../../entities/common/menu-option-entity.js
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 import { ServerMessageWindowEntity } from "../../../entities/server-message-window-entity.js";
 import { APIService } from "../../../services/network/api-service.js";
-import type { MessagesResponse } from "../../../interfaces/responses/messages-response.js";
+import type { ServerMessagesResponse } from "../../../interfaces/responses/server-messages-response.js";
 import { BaseGameScene } from "../../../../core/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
@@ -27,7 +27,7 @@ export class MainMenuScene extends BaseGameScene {
   private controller: MainMenuController;
   private entities: MainMenuEntities | null = null;
 
-  private messagesResponse: MessagesResponse[] | null = null;
+  private serverMessagesResponse: ServerMessagesResponse | null = null;
 
   private serverMessageWindowEntity: ServerMessageWindowEntity | null = null;
   private closeableMessageEntity: CloseableMessageEntity | null = null;
@@ -149,32 +149,51 @@ export class MainMenuScene extends BaseGameScene {
       });
   }
 
-  private showMessages(messages: MessagesResponse[]): void {
-    if (messages.length === 0) {
+  private showMessages(messagesResponse: ServerMessagesResponse): void {
+    if (messagesResponse.results.length === 0) {
       console.log("No server messages to show");
       return;
     }
 
-    this.messagesResponse = messages;
+    this.serverMessagesResponse = messagesResponse;
     this.showNews = false;
     this.showMessage(0);
   }
 
   private showMessage(index: number): void {
-    if (this.messagesResponse === null) {
+    const messagesResponse = this.serverMessagesResponse;
+
+    if (!messagesResponse || messagesResponse.results.length === 0) {
       return;
     }
 
-    if (index === this.messagesResponse.length) {
+    if (index === messagesResponse.results.length) {
+      if (messagesResponse.nextCursor !== undefined) {
+        this.controller
+          .fetchServerMessages(messagesResponse.nextCursor)
+          .then((response) => {
+            messagesResponse.results.push(...response.results);
+            messagesResponse.nextCursor = response.nextCursor;
+            this.showMessage(index);
+          })
+          .catch((error) => {
+            console.error(error);
+            if (this.serverMessageWindowEntity?.isOpened()) {
+              this.serverMessageWindowEntity.closeAll();
+            }
+          });
+        return;
+      }
+
       if (this.serverMessageWindowEntity?.isOpened()) {
-        this.serverMessageWindowEntity?.closeAll();
+        this.serverMessageWindowEntity.closeAll();
       }
 
       return;
     }
 
-    const item = this.messagesResponse[index];
-    const length = this.messagesResponse.length;
+    const item = messagesResponse.results[index];
+    const length = messagesResponse.results.length;
 
     this.serverMessageWindowEntity?.openMessage(
       index,
