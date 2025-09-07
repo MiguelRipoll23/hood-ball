@@ -12,7 +12,7 @@ import {
   AUTHENTICATION_OPTIONS_ENDPOINT,
 } from "../../constants/api-constants.js";
 import type { FindMatchesResponse } from "../../interfaces/responses/find-matches-response.js";
-import type { MessagesResponse } from "../../interfaces/responses/messages-response.js";
+import type { ServerMessagesResponse } from "../../interfaces/responses/server-messages-response.js";
 import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
 import type { VersionResponse } from "../../interfaces/responses/version-response.js";
 import type { RankingResponse } from "../../interfaces/responses/ranking-response.js";
@@ -195,25 +195,29 @@ export class APIService {
     return response.arrayBuffer();
   }
 
-  public async getMessages(): Promise<MessagesResponse[]> {
+  public async getMessages(
+    cursor?: number
+  ): Promise<ServerMessagesResponse> {
     if (this.authenticationToken === null) {
       throw new Error("Authentication token not found");
     }
 
-    const response = await this.fetchWithLoading(
-      this.baseURL + MESSAGES_ENDPOINT,
-      {
-        headers: {
-          Authorization: this.authenticationToken,
-        },
-      }
-    );
+    const url =
+      this.baseURL +
+      MESSAGES_ENDPOINT +
+      (cursor !== undefined ? `?cursor=${cursor}` : "");
+
+    const response = await this.fetchWithLoading(url, {
+      headers: {
+        Authorization: this.authenticationToken,
+      },
+    });
 
     if (response.ok === false) {
       throw new Error("Failed to fetch messages");
     }
 
-    const messagesResponse: MessagesResponse[] = await response.json();
+    const messagesResponse: ServerMessagesResponse = await response.json();
     console.log("Messages response", messagesResponse);
 
     return messagesResponse;

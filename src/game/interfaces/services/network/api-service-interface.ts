@@ -9,7 +9,7 @@ import type { RegistrationOptionsResponse } from "../../responses/registration-o
 import type { AuthenticationOptionsResponse } from "../../responses/authentication-options-response.js";
 import type { AuthenticationResponse } from "../../responses/authentication-response.js";
 import type { FindMatchesResponse } from "../../responses/find-matches-response.js";
-import type { MessagesResponse } from "../../responses/messages-response.js";
+import type { ServerMessagesResponse } from "../../responses/server-messages-response.js";
 import type { RankingResponse } from "../../responses/ranking-response.js";
 
 export interface IAPIService {
@@ -28,10 +28,10 @@ export interface IAPIService {
     verifyAuthenticationRequest: VerifyAuthenticationRequest
   ): Promise<AuthenticationResponse>;
   getConfiguration(): Promise<ArrayBuffer>;
-  getMessages(): Promise<MessagesResponse[]>;
+  getMessages(cursor?: number): Promise<ServerMessagesResponse>;
   findMatches(
     findMatchesRequest: FindMatchesRequest
-  ): Promise<FindMatchesResponse[]>;
+  ): Promise<FindMatchesResponse>;
   advertiseMatch(advertiseMatchRequest: AdvertiseMatchRequest): Promise<void>;
   removeMatch(): Promise<void>;
   saveScore(saveScoreRequest: SaveUserScoresRequest[]): Promise<void>;

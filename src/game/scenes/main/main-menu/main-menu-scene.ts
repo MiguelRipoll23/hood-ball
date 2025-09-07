@@ -3,7 +3,7 @@ import { MenuOptionEntity } from "../../../entities/common/menu-option-entity.js
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 import { ServerMessageWindowEntity } from "../../../entities/server-message-window-entity.js";
 import { APIService } from "../../../services/network/api-service.js";
-import type { MessagesResponse } from "../../../interfaces/responses/messages-response.js";
+import type { ServerMessage } from "../../../interfaces/responses/server-messages-response.js";
 import { BaseGameScene } from "../../../../core/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
@@ -27,7 +27,7 @@ export class MainMenuScene extends BaseGameScene {
   private controller: MainMenuController;
   private entities: MainMenuEntities | null = null;
 
-  private messagesResponse: MessagesResponse[] | null = null;
+  private messagesResponse: ServerMessage[] | null = null;
 
   private serverMessageWindowEntity: ServerMessageWindowEntity | null = null;
   private closeableMessageEntity: CloseableMessageEntity | null = null;
@@ -141,7 +141,7 @@ export class MainMenuScene extends BaseGameScene {
     this.controller
       .fetchServerMessages()
       .then((messages) => {
-        this.showMessages(messages);
+        this.showMessages(messages.results);
       })
       .catch((error) => {
         console.error(error);
@@ -149,7 +149,7 @@ export class MainMenuScene extends BaseGameScene {
       });
   }
 
-  private showMessages(messages: MessagesResponse[]): void {
+  private showMessages(messages: ServerMessage[]): void {
     if (messages.length === 0) {
       console.log("No server messages to show");
       return;
