@@ -29,7 +29,6 @@ export interface WebRTCPeer {
     arrayBuffer: ArrayBuffer,
     skipQueue?: boolean
   ): void;
-  sendUnreliableOrderedMessage(arrayBuffer: ArrayBuffer): void;
   sendUnreliableUnorderedMessage(arrayBuffer: ArrayBuffer): void;
   getDownloadBytes(): number;
   getUploadBytes(): number;

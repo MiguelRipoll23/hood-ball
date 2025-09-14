@@ -23,7 +23,6 @@ export interface IWebRTCPeerService {
   disconnect(graceful?: boolean): void;
   sendReliableOrderedMessage(arrayBuffer: ArrayBuffer): void;
   sendReliableUnorderedMessage(arrayBuffer: ArrayBuffer): void;
-  sendUnreliableOrderedMessage(arrayBuffer: ArrayBuffer): void;
   sendUnreliableUnorderedMessage(arrayBuffer: ArrayBuffer): void;
   sendPingRequest(): void;
 }

@@ -201,14 +201,6 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.sendMessage("reliable-unordered", arrayBuffer, skipQueue);
   }
 
-  public sendUnreliableOrderedMessage(arrayBuffer: ArrayBuffer): void {
-    if (this.joined === false) {
-      return;
-    }
-
-    this.sendMessage("unreliable-ordered", arrayBuffer, true);
-  }
-
   public sendUnreliableUnorderedMessage(arrayBuffer: ArrayBuffer): void {
     if (this.joined === false) {
       return;
@@ -235,10 +227,6 @@ export class WebRTCPeerService implements WebRTCPeer {
       "reliable-unordered": this.peerConnection.createDataChannel(
         "reliable-unordered",
         { ordered: false }
-      ),
-      "unreliable-ordered": this.peerConnection.createDataChannel(
-        "unreliable-ordered",
-        { ordered: true, maxRetransmits: 0 }
       ),
       "unreliable-unordered": this.peerConnection.createDataChannel(
         "unreliable-unordered",
