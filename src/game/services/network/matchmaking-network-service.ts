@@ -618,6 +618,7 @@ export class MatchmakingNetworkService
   }
 
   private sendPingToJoinedPlayers(): void {
+    this.matchFinderService.updatePlayersPingMedian();
     this.sendPingInformationToJoinedPlayers();
 
     this.webrtcService

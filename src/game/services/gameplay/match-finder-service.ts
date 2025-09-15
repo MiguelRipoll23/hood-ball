@@ -78,6 +78,8 @@ export class MatchFinderService {
       return;
     }
 
+    this.updatePlayersPingMedian();
+
     const body: AdvertiseMatchRequest = {
       version: GAME_VERSION,
       totalSlots: match.getTotalSlots(),
@@ -85,7 +87,7 @@ export class MatchFinderService {
       attributes: match.getAttributes(),
     };
 
-    const pingMedian = this.calculatePlayersPingMedian();
+    const pingMedian = match.getPingMedianMilliseconds();
 
     if (pingMedian !== null) {
       body.ping_median_milliseconds = pingMedian;
@@ -96,12 +98,12 @@ export class MatchFinderService {
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
-  private calculatePlayersPingMedian(): number | null {
+  public updatePlayersPingMedian(): void {
     const match = this.gameState.getMatch();
 
     if (match === null) {
       console.warn("Game match is null");
-      return null;
+      return;
     }
 
     const pings = match
@@ -110,17 +112,19 @@ export class MatchFinderService {
       .filter((ping: number | null): ping is number => ping !== null);
 
     if (pings.length === 0) {
-      return null;
+      match.setPingMedianMilliseconds(null);
+      return;
     }
 
     pings.sort((a: number, b: number) => a - b);
     const middle = Math.floor(pings.length / 2);
 
-    if (pings.length % 2 === 0) {
-      return Math.round((pings[middle - 1] + pings[middle]) / 2);
-    }
+    const median =
+      pings.length % 2 === 0
+        ? Math.round((pings[middle - 1] + pings[middle]) / 2)
+        : Math.round(pings[middle]);
 
-    return Math.round(pings[middle]);
+    match.setPingMedianMilliseconds(median);
   }
 
   private async joinMatch(match: MatchData): Promise<void> {

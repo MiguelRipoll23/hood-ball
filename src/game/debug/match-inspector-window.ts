@@ -22,6 +22,9 @@ export class MatchInspectorWindow extends BaseWindow {
 
     ImGui.Text(`State: ${MatchStateType[match.getState()]}`);
     ImGui.Text(`Slots: ${match.getPlayers().length}/${match.getTotalSlots()}`);
+    const pingMedian = match.getPingMedianMilliseconds();
+    const displayPingMedian = pingMedian === null ? "--" : `${pingMedian} ms`;
+    ImGui.Text(`Median ping (friends): ${displayPingMedian}`);
 
     if (ImGui.CollapsingHeader("Attributes", ImGui.TreeNodeFlags.DefaultOpen)) {
       this.renderMatchAttributes(match.getAttributes());
