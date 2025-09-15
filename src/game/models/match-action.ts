@@ -12,6 +12,7 @@ interface DemolitionActionOptions {
 }
 
 interface ChatCommandActionOptions extends PlayerActionOptions {}
+interface ChatMessageActionOptions extends PlayerActionOptions {}
 
 export class MatchAction {
   private fadeOutStartTimestamp: number | null = null;
@@ -24,6 +25,7 @@ export class MatchAction {
     private readonly attackerId: string | null,
     private readonly victimId: string | null,
     private readonly commandName: string | null,
+    private readonly messageText: string | null,
     private readonly scorerName: string | null,
     private readonly attackerName: string | null,
     private readonly victimName: string | null
@@ -39,6 +41,7 @@ export class MatchAction {
       MatchActionType.Goal,
       timestamp,
       playerId,
+      null,
       null,
       null,
       null,
@@ -67,6 +70,7 @@ export class MatchAction {
       victimId,
       null,
       null,
+      null,
       attackerName,
       victimName
     );
@@ -82,6 +86,7 @@ export class MatchAction {
       MatchActionType.PlayerJoined,
       timestamp,
       playerId,
+      null,
       null,
       null,
       null,
@@ -101,6 +106,7 @@ export class MatchAction {
       MatchActionType.PlayerLeft,
       timestamp,
       playerId,
+      null,
       null,
       null,
       null,
@@ -124,6 +130,28 @@ export class MatchAction {
       null,
       null,
       commandName,
+      null,
+      playerName,
+      null,
+      null
+    );
+  }
+
+  public static chatMessage(
+    playerId: string,
+    message: string,
+    options: ChatMessageActionOptions = {}
+  ): MatchAction {
+    const { timestamp = Date.now(), playerName = null } = options;
+
+    return new MatchAction(
+      MatchActionType.ChatMessage,
+      timestamp,
+      playerId,
+      null,
+      null,
+      null,
+      message,
       playerName,
       null,
       null
@@ -184,6 +212,10 @@ export class MatchAction {
 
   public getCommandName(): string | null {
     return this.commandName;
+  }
+
+  public getMessageText(): string | null {
+    return this.messageText;
   }
 
   public startFadeOut(
