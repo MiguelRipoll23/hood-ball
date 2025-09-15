@@ -25,6 +25,17 @@ Define clear layering, dependency rules, and TypeScript naming conventions so ag
    └────────── [Infrastructure]  (imports Domain contracts only)
 ```
 
+## Directory Layout
+
+- `src/domain/**` — **Domain layer.** Keep business entities, value objects, domain events, and contracts here only.
+  Avoid infrastructure or framework-specific code in this tree.
+- `src/application/**` — **Application layer.** House use cases, orchestrators, and domain event handlers here.
+  These modules may import from `src/domain` exclusively.
+- `src/infrastructure/**` — **Infrastructure layer.** Put implementations of domain contracts, adapters, and
+  composition-root wiring in this directory. These files may depend on `src/domain` but never on `src/application`.
+- `src/shared/**` — Use sparingly for cross-layer utilities that must stay free of infrastructure concerns. Duplicate
+  small helpers per layer whenever that avoids breaking dependency rules.
+
 **Allowed**
 - `Application → Domain`
 - `Infrastructure → Domain` (to implement contracts)
