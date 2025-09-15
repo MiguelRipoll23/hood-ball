@@ -338,24 +338,29 @@ export class WebRTCService implements WebRTCServiceContract {
       return;
     }
 
-    const pings = match
-      .getPlayers()
+    const players = match.getPlayers();
+
+    const allPings = players
       .map((player: GamePlayer) => player.getPingTime())
       .filter((ping: number | null): ping is number => ping !== null);
 
-    if (pings.length === 0) {
-      match.setPingMedianMilliseconds(null);
-      return;
-    }
+    const friendPings = players
+      .filter((p: GamePlayer) => !p.isHost())
+      .map((player: GamePlayer) => player.getPingTime())
+      .filter((ping: number | null): ping is number => ping !== null);
 
-    pings.sort((a: number, b: number) => a - b);
-    const middle = Math.floor(pings.length / 2);
+    const computeMedian = (values: number[]): number | null => {
+      if (values.length === 0) {
+        return null;
+      }
+      values.sort((a: number, b: number) => a - b);
+      const middle = Math.floor(values.length / 2);
+      return values.length % 2 === 0
+        ? Math.round((values[middle - 1] + values[middle]) / 2)
+        : Math.round(values[middle]);
+    };
 
-    const median =
-      pings.length % 2 === 0
-        ? Math.round((pings[middle - 1] + pings[middle]) / 2)
-        : Math.round(pings[middle]);
-
-    match.setPingMedianMilliseconds(median);
+    match.setPingMedianMilliseconds(computeMedian(allPings));
+    match.setPingMedianMillisecondsFriend(computeMedian(friendPings));
   }
 }

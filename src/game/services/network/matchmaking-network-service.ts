@@ -95,6 +95,10 @@ export class MatchmakingNetworkService
     this.advertiseMatchInterval = this.intervalManagerService.createInterval(
       60,
       () => {
+        const match = this.gameState.getMatch();
+        if (match === null || match.getPlayers().length < 2) {
+          return;
+        }
         this.matchFinderService
           .advertiseMatch()
           .catch((error: unknown) => console.error(error));

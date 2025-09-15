@@ -84,10 +84,11 @@ export class MatchFinderService {
       attributes: match.getAttributes(),
     };
 
-    const pingMedian = match.getPingMedianMilliseconds();
-
-    if (pingMedian !== null) {
-      body.pingMedianMilliseconds = pingMedian;
+    if (match.getPlayers().length >= 2) {
+      const pingMedian = match.getPingMedianMilliseconds();
+      if (pingMedian !== null) {
+        body.pingMedianMilliseconds = pingMedian;
+      }
     }
 
     await this.apiService.advertiseMatch(body);
