@@ -213,7 +213,7 @@ export class ChatService {
 
     this.commandLogTimestamps.set(key, now);
     this.matchActionsLogService.addAction(
-      MatchAction.chatCommand(playerId, command, now)
+      MatchAction.chatCommand(playerId, command, { timestamp: now })
     );
   }
 }

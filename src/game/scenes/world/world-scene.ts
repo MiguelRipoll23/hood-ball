@@ -232,7 +232,9 @@ export class WorldScene extends BaseCollidingGameScene {
     }
 
     this.matchActionsLogService.addAction(
-      MatchAction.playerJoined(player.getNetworkId())
+      MatchAction.playerJoined(player.getNetworkId(), {
+        playerName: player.getName(),
+      })
     );
   }
 
@@ -254,7 +256,9 @@ export class WorldScene extends BaseCollidingGameScene {
     this.scoreManagerService?.updateScoreboard();
 
     this.matchActionsLogService.addAction(
-      MatchAction.playerLeft(player.getNetworkId())
+      MatchAction.playerLeft(player.getNetworkId(), {
+        playerName: player.getName(),
+      })
     );
   }
 

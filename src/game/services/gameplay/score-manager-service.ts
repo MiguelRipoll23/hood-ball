@@ -93,7 +93,10 @@ export class ScoreManagerService {
     player?.setScore(playerScore);
     this.updateScoreboard();
 
-    this.matchActionsLogService.addAction(MatchAction.goal(playerId));
+    const playerName = player?.getName() ?? null;
+    this.matchActionsLogService.addAction(
+      MatchAction.goal(playerId, { playerName })
+    );
 
     let team: TeamType = TeamType.Red;
 
@@ -169,7 +172,9 @@ export class ScoreManagerService {
     }
 
     this.matchActionsLogService.addAction(
-      MatchAction.goal(player.getNetworkId())
+      MatchAction.goal(player.getNetworkId(), {
+        playerName: player.getName(),
+      })
     );
 
     this.showGoalAlert(player, goalTeam);
