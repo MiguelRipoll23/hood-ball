@@ -10,7 +10,6 @@ export class Match {
 
   private players: Map<string, GamePlayer>;
   private pingMedianMilliseconds: number | null;
-  private pingMedianMillisecondsFriend: number | null;
 
   constructor(
     host: boolean,
@@ -24,7 +23,6 @@ export class Match {
     this.attributes = attributes;
     this.players = new Map();
     this.pingMedianMilliseconds = null;
-    this.pingMedianMillisecondsFriend = null;
   }
 
   public isHost(): boolean {
@@ -64,13 +62,6 @@ export class Match {
     this.pingMedianMilliseconds = ping;
   }
 
-  public getPingMedianMillisecondsFriend(): number | null {
-    return this.pingMedianMillisecondsFriend;
-  }
-
-  public setPingMedianMillisecondsFriend(ping: number | null): void {
-    this.pingMedianMillisecondsFriend = ping;
-  }
 
   public getPlayerByNetworkId(networkId: string): GamePlayer | null {
     return this.players.get(networkId) ?? null;
