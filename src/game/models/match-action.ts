@@ -99,6 +99,14 @@ export class MatchAction {
     return this.scorerId;
   }
 
+  public getActorId(): string | null {
+    return this.scorerId;
+  }
+
+  public getPlayerId(): string | null {
+    return this.scorerId;
+  }
+
   public getAttackerId(): string | null {
     return this.attackerId;
   }

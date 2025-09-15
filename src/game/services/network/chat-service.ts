@@ -21,6 +21,7 @@ import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js
 @injectable()
 export class ChatService {
   private static readonly MAX_HISTORY_SIZE = 50;
+  private static readonly LOG_THROTTLE_MS = 500;
 
   private readonly messages: ChatMessage[] = [];
   private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
@@ -79,7 +80,7 @@ export class ChatService {
     }
 
     // Execute local command effects immediately
-    this.handleCommand(trimmed);
+    this.handleCommand(trimmed, undefined, Date.now());
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebSocketType.ChatMessage)
@@ -110,7 +111,7 @@ export class ChatService {
     });
 
     // Execute command and skip chat output if handled
-    if (this.handleCommand(text, userId)) {
+    if (this.handleCommand(text, userId, timestamp)) {
       return;
     }
 
@@ -145,7 +146,7 @@ export class ChatService {
     }
 
     // Execute command and skip chat output if handled
-    if (this.handleCommand(text, userId)) {
+    if (this.handleCommand(text, userId, timestampSeconds)) {
       return;
     }
 
@@ -168,7 +169,11 @@ export class ChatService {
     });
   }
 
-  private handleCommand(text: string, senderId?: string): boolean {
+  private handleCommand(
+    text: string,
+    senderId?: string,
+    timestamp?: number
+  ): boolean {
     if (!text.startsWith("/")) {
       return false;
     }
@@ -182,20 +187,27 @@ export class ChatService {
           const event = new LocalEvent<void>(EventType.Rainbow);
           this.eventProcessorService.addLocalEvent(event);
         }
-        this.logChatCommand(senderId, command);
+        this.logChatCommand(senderId, command, timestamp);
         return true;
       default:
         return false;
     }
   }
 
-  private logChatCommand(senderId: string | undefined, command: string): void {
+  private logChatCommand(
+    senderId: string | undefined,
+    command: string,
+    timestamp?: number
+  ): void {
     const playerId = senderId ?? this.localPlayerId;
     const key = `${playerId}:${command}`;
-    const now = Date.now();
+    const now = timestamp ?? Date.now();
     const lastLoggedAt = this.commandLogTimestamps.get(key);
 
-    if (lastLoggedAt !== undefined && now - lastLoggedAt < 500) {
+    if (
+      lastLoggedAt !== undefined &&
+      now - lastLoggedAt < ChatService.LOG_THROTTLE_MS
+    ) {
       return;
     }
 

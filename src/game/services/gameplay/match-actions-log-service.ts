@@ -6,6 +6,7 @@ type MatchActionListener = (actions: MatchAction[]) => void;
 @injectable()
 export class MatchActionsLogService {
   private readonly maxActions = 5;
+  private readonly removalDelayMs = 3000;
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];
   private readonly removalTimeouts = new Map<
@@ -56,7 +57,7 @@ export class MatchActionsLogService {
   private scheduleRemoval(action: MatchAction): void {
     const timeoutId = setTimeout(() => {
       this.removeAction(action);
-    }, 3000);
+    }, this.removalDelayMs);
 
     this.cancelRemovalTimeout(action);
     this.removalTimeouts.set(action, timeoutId);

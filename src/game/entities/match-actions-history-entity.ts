@@ -187,7 +187,7 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
         ];
       }
       case MatchActionType.PlayerJoined: {
-        const playerId = action.getScorerId();
+        const playerId = action.getActorId();
         const playerName = this.getPlayerName(playerId);
         const playerColor = this.getPlayerColor(playerId);
 
@@ -197,7 +197,7 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
         ];
       }
       case MatchActionType.PlayerLeft: {
-        const playerId = action.getScorerId();
+        const playerId = action.getActorId();
         const playerName = this.getPlayerName(playerId);
         const playerColor = this.getPlayerColor(playerId);
 
@@ -207,28 +207,18 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
         ];
       }
       case MatchActionType.ChatCommand: {
-        const playerId = action.getScorerId();
+        const playerId = action.getActorId();
         const playerName = this.getPlayerName(playerId);
         const playerColor = this.getPlayerColor(playerId);
         const commandName = action.getCommandName() ?? "command";
-        const emoji = this.getCommandEmoji(commandName);
 
         return [
           { text: playerName, color: playerColor },
-          { text: ` ${emoji} used /${commandName}`, color: "white" },
+          { text: ` ✨ used /${commandName}`, color: "white" },
         ];
       }
       default:
-        return [];
-    }
-  }
-
-  private getCommandEmoji(commandName: string): string {
-    switch (commandName) {
-      case "rainbow":
-        return "🌈";
-      default:
-        return "✨";
+        return [{ text: "Unknown action", color: "white" }];
     }
   }
 
