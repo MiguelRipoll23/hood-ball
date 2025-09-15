@@ -8,6 +8,7 @@ import { injectable } from "@needle-di/core";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { ChatMessage } from "../../models/chat-message.js";
+import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
@@ -15,6 +16,7 @@ import { EventProcessorService } from "../../../core/services/gameplay/event-pro
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { GameState } from "../../../core/models/game-state.js";
+import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 
 @injectable()
 export class ChatService {
@@ -27,6 +29,8 @@ export class ChatService {
   private readonly signatureService: SignatureService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly localPlayerId: string;
+  private readonly matchActionsLogService: MatchActionsLogService;
+  private readonly commandLogTimestamps = new Map<string, number>();
 
   constructor() {
     this.webSocketService = container.get(WebSocketService);
@@ -35,6 +39,7 @@ export class ChatService {
     this.eventProcessorService = container.get(EventProcessorService);
     const gameState = container.get(GameState);
     this.localPlayerId = gameState.getGamePlayer().getNetworkId();
+    this.matchActionsLogService = container.get(MatchActionsLogService);
     this.webrtcService.registerCommandHandlers(this);
     this.webSocketService.registerCommandHandlers(this);
   }
@@ -177,9 +182,26 @@ export class ChatService {
           const event = new LocalEvent<void>(EventType.Rainbow);
           this.eventProcessorService.addLocalEvent(event);
         }
+        this.logChatCommand(senderId, command);
         return true;
       default:
         return false;
     }
+  }
+
+  private logChatCommand(senderId: string | undefined, command: string): void {
+    const playerId = senderId ?? this.localPlayerId;
+    const key = `${playerId}:${command}`;
+    const now = Date.now();
+    const lastLoggedAt = this.commandLogTimestamps.get(key);
+
+    if (lastLoggedAt !== undefined && now - lastLoggedAt < 500) {
+      return;
+    }
+
+    this.commandLogTimestamps.set(key, now);
+    this.matchActionsLogService.addAction(
+      MatchAction.chatCommand(playerId, command, now)
+    );
   }
 }

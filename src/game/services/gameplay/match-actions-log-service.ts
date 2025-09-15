@@ -8,12 +8,22 @@ export class MatchActionsLogService {
   private readonly maxActions = 5;
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];
+  private readonly removalTimeouts = new Map<
+    MatchAction,
+    ReturnType<typeof setTimeout>
+  >();
 
   public addAction(action: MatchAction): void {
     this.actions.push(action);
-    if (this.actions.length > this.maxActions) {
-      this.actions.splice(0, this.actions.length - this.maxActions);
+    this.scheduleRemoval(action);
+
+    while (this.actions.length > this.maxActions) {
+      const removedAction = this.actions.shift();
+      if (removedAction) {
+        this.cancelRemovalTimeout(removedAction);
+      }
     }
+
     this.notifyListeners();
   }
 
@@ -26,6 +36,7 @@ export class MatchActionsLogService {
       return;
     }
 
+    this.actions.forEach((action) => this.cancelRemovalTimeout(action));
     this.actions.length = 0;
     this.notifyListeners();
   }
@@ -40,6 +51,37 @@ export class MatchActionsLogService {
         this.listeners.splice(index, 1);
       }
     };
+  }
+
+  private scheduleRemoval(action: MatchAction): void {
+    const timeoutId = setTimeout(() => {
+      this.removeAction(action);
+    }, 3000);
+
+    this.cancelRemovalTimeout(action);
+    this.removalTimeouts.set(action, timeoutId);
+  }
+
+  private removeAction(action: MatchAction): void {
+    const index = this.actions.indexOf(action);
+
+    if (index === -1) {
+      this.cancelRemovalTimeout(action);
+      return;
+    }
+
+    this.actions.splice(index, 1);
+    this.cancelRemovalTimeout(action);
+    this.notifyListeners();
+  }
+
+  private cancelRemovalTimeout(action: MatchAction): void {
+    const timeoutId = this.removalTimeouts.get(action);
+
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      this.removalTimeouts.delete(action);
+    }
   }
 
   private notifyListeners(): void {

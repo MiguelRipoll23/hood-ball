@@ -6,11 +6,19 @@ export class MatchAction {
     private readonly timestamp: number,
     private readonly scorerId: string | null,
     private readonly attackerId: string | null,
-    private readonly victimId: string | null
+    private readonly victimId: string | null,
+    private readonly commandName: string | null
   ) {}
 
   public static goal(playerId: string, timestamp: number = Date.now()): MatchAction {
-    return new MatchAction(MatchActionType.Goal, timestamp, playerId, null, null);
+    return new MatchAction(
+      MatchActionType.Goal,
+      timestamp,
+      playerId,
+      null,
+      null,
+      null
+    );
   }
 
   public static demolition(
@@ -23,7 +31,51 @@ export class MatchAction {
       timestamp,
       null,
       attackerId,
-      victimId
+      victimId,
+      null
+    );
+  }
+
+  public static playerJoined(
+    playerId: string,
+    timestamp: number = Date.now()
+  ): MatchAction {
+    return new MatchAction(
+      MatchActionType.PlayerJoined,
+      timestamp,
+      playerId,
+      null,
+      null,
+      null
+    );
+  }
+
+  public static playerLeft(
+    playerId: string,
+    timestamp: number = Date.now()
+  ): MatchAction {
+    return new MatchAction(
+      MatchActionType.PlayerLeft,
+      timestamp,
+      playerId,
+      null,
+      null,
+      null
+    );
+  }
+
+  public static chatCommand(
+    playerId: string,
+    commandName: string,
+    timestamp: number = Date.now()
+  ): MatchAction {
+    return new MatchAction(
+      MatchActionType.ChatCommand,
+      timestamp,
+      playerId,
+      null,
+      null,
+      commandName
     );
   }
 
@@ -53,5 +105,9 @@ export class MatchAction {
 
   public getVictimId(): string | null {
     return this.victimId;
+  }
+
+  public getCommandName(): string | null {
+    return this.commandName;
   }
 }

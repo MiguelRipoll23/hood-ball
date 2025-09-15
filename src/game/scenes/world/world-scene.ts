@@ -9,6 +9,7 @@ import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
 import { ChatHistoryEntity } from "../../entities/chat-history-entity.js";
 import { MatchActionsHistoryEntity } from "../../entities/match-actions-history-entity.js";
+import { MatchAction } from "../../models/match-action.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityStateType } from "../../../core/enums/entity-state-type.js";
@@ -229,6 +230,10 @@ export class WorldScene extends BaseCollidingGameScene {
         this.worldController?.showCountdown();
       }
     }
+
+    this.matchActionsLogService.addAction(
+      MatchAction.playerJoined(player.getNetworkId())
+    );
   }
 
   private handlePlayerDisconnection(payload: PlayerDisconnectedPayload): void {
@@ -247,6 +252,10 @@ export class WorldScene extends BaseCollidingGameScene {
     }
 
     this.scoreManagerService?.updateScoreboard();
+
+    this.matchActionsLogService.addAction(
+      MatchAction.playerLeft(player.getNetworkId())
+    );
   }
 
   private subscribeToEvents(): void {
