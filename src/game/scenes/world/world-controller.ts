@@ -15,10 +15,12 @@ import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.
 import { CarEntity } from "../../entities/car-entity.js";
 import type { GameEntity } from "../../../core/models/game-entity.js";
 import type { GamePlayer } from "../../models/game-player.js";
+import { MatchAction } from "../../models/match-action.js";
 import type { BaseMultiplayerGameEntity } from "../../../core/entities/base-multiplayer-entity.js";
 import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
+import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -34,6 +36,7 @@ export class WorldController {
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,
     private readonly alertEntity: AlertEntity,
+    private readonly matchActionsLogService: MatchActionsLogService,
     private readonly boostPadsEntities: BoostPadEntity[],
     private readonly spawnPointEntities: SpawnPointEntity[],
     private readonly getEntitiesByOwner: (
@@ -267,6 +270,8 @@ export class WorldController {
     }
     triggerCarExplosion(victimCar.getX(), victimCar.getY());
 
+    this.logDemolition(payload.attackerId, payload.victimId);
+
     const attackerName = attacker?.getName() ?? "Unknown";
     const victimName = victim.getName();
     const attackerColor = this.getPlayerColor(attacker);
@@ -376,6 +381,11 @@ export class WorldController {
             event.setData(payload);
 
             this.eventProcessorService.sendEvent(event);
+
+            this.logDemolition(
+              attackerPlayer.getNetworkId(),
+              victimPlayer.getNetworkId()
+            );
           }
         }
       });
@@ -403,5 +413,11 @@ export class WorldController {
     }
 
     return player === this.gameState.getGamePlayer() ? "blue" : "red";
+  }
+
+  private logDemolition(attackerId: string, victimId: string): void {
+    this.matchActionsLogService.addAction(
+      MatchAction.demolition(attackerId, victimId)
+    );
   }
 }

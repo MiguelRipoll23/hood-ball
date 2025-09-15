@@ -43,12 +43,26 @@ export class ChatService {
     return this.messages;
   }
 
-  public onMessage(listener: (messages: ChatMessage[]) => void): void {
+  public onMessage(listener: (messages: ChatMessage[]) => void): () => void {
     this.listeners.push(listener);
+    // Deliver current snapshot if available (prevents blank UI on first subscribe)
+    if (this.messages.length > 0) {
+      listener([...this.messages]);
+    }
+
+    return () => {
+      const index = this.listeners.indexOf(listener);
+      if (index !== -1) {
+        this.listeners.splice(index, 1);
+      }
+    };
   }
 
   public clearMessages(): void {
     this.messages.length = 0;
+    this.listeners.forEach((listener) => {
+      listener([]);
+    });
   }
 
   public sendMessage(text: string): void {

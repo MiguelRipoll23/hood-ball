@@ -22,6 +22,7 @@ import { CameraService } from "./gameplay/camera-service.js";
 import { SpawnPointService } from "../../game/services/gameplay/spawn-point-service.js";
 import { ChatService } from "../../game/services/network/chat-service.js";
 import { AnimationLogService } from "./gameplay/animation-log-service.js";
+import { MatchActionsLogService } from "../../game/services/gameplay/match-actions-log-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -75,6 +76,10 @@ export class ServiceRegistry {
     container.bind({ provide: AnimationLogService, useClass: AnimationLogService });
     container.bind({ provide: CameraService, useClass: CameraService });
     container.bind({ provide: SpawnPointService, useClass: SpawnPointService });
+    container.bind({
+      provide: MatchActionsLogService,
+      useClass: MatchActionsLogService,
+    });
     container.bind({
       provide: PendingIdentitiesToken,
       useValue: new Map<string, boolean>(),

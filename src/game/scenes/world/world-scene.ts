@@ -8,6 +8,7 @@ import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
 import { ChatHistoryEntity } from "../../entities/chat-history-entity.js";
+import { MatchActionsHistoryEntity } from "../../entities/match-actions-history-entity.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { EntityStateType } from "../../../core/enums/entity-state-type.js";
@@ -40,6 +41,7 @@ import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
+import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
@@ -62,6 +64,11 @@ export class WorldScene extends BaseCollidingGameScene {
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
   private chatHistoryEntity: ChatHistoryEntity | null = null;
+  private matchActionsHistoryEntity: MatchActionsHistoryEntity | null = null;
+
+  private readonly matchActionsLogService: MatchActionsLogService;
+  private matchActionsLogUnsubscribe: (() => void) | null = null;
+  private chatMessageUnsubscribe: (() => void) | null = null;
 
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
@@ -81,6 +88,8 @@ export class WorldScene extends BaseCollidingGameScene {
     this.eventProcessorService = container.get(EventProcessorService);
     this.spawnPointService = container.get(SpawnPointService);
     this.chatService = container.get(ChatService);
+    this.matchActionsLogService = container.get(MatchActionsLogService);
+    this.matchActionsLogService.clear();
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -104,6 +113,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.boostPadsEntities = entities.boostPadsEntities;
     this.spawnPointEntities = entities.spawnPointEntities;
 
+    this.setupMatchActionsHistory();
     this.setupChatUI();
 
     // Set total spawn points created to service
@@ -119,6 +129,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.ballEntity,
       this.localCarEntity,
       this.alertEntity,
+      this.matchActionsLogService,
       this.boostPadsEntities,
       this.spawnPointEntities,
       this.getEntitiesByOwner.bind(this)
@@ -130,6 +141,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.goalEntity,
       this.scoreboardEntity,
       this.alertEntity,
+      this.matchActionsLogService,
       this.timerManagerService,
       this.eventProcessorService,
       this.matchmakingService,
@@ -334,8 +346,6 @@ export class WorldScene extends BaseCollidingGameScene {
     // Make chat input visible now that the game has started
     chatInputElement.removeAttribute("hidden");
 
-    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
-
     const boostMeterEntity = this.localCarEntity?.getBoostMeterEntity();
     if (!boostMeterEntity) {
       console.error("Boost meter entity not found");
@@ -344,6 +354,16 @@ export class WorldScene extends BaseCollidingGameScene {
 
     if (!this.uiEntities.includes(boostMeterEntity)) {
       this.uiEntities.push(boostMeterEntity);
+    }
+
+    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
+    // If there are existing messages, render them immediately
+    const initialMsgs = this.chatService.getMessages();
+    if (initialMsgs.length > 0) {
+      this.chatHistoryEntity.show(
+        initialMsgs,
+        this.gameState.getGamePlayer().getName()
+      );
     }
 
     this.chatButtonEntity = new ChatButtonEntity(
@@ -355,11 +375,26 @@ export class WorldScene extends BaseCollidingGameScene {
       this.helpEntity as HelpEntity
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
-    this.chatService.onMessage((msgs) =>
+    this.chatMessageUnsubscribe?.();
+    this.chatMessageUnsubscribe = this.chatService.onMessage((msgs) =>
       this.chatHistoryEntity?.show(
         msgs,
         this.gameState.getGamePlayer().getName()
       )
+    );
+  }
+
+  private setupMatchActionsHistory(): void {
+    if (this.matchActionsHistoryEntity) {
+      return;
+    }
+    this.matchActionsHistoryEntity = new MatchActionsHistoryEntity(
+      this.canvas,
+      this.gameState
+    );
+    this.uiEntities.push(this.matchActionsHistoryEntity);
+    this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
+      (actions) => this.matchActionsHistoryEntity?.show(actions)
     );
   }
 
@@ -443,6 +478,12 @@ export class WorldScene extends BaseCollidingGameScene {
     if (chatInputElement) {
       chatInputElement.setAttribute("hidden", "");
     }
+
+    this.matchActionsLogUnsubscribe?.();
+    this.matchActionsLogUnsubscribe = null;
+    this.matchActionsLogService.clear();
+    this.chatMessageUnsubscribe?.();
+    this.chatMessageUnsubscribe = null;
 
     super.dispose();
   }

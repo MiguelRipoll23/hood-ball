@@ -5,6 +5,7 @@ import { TeamType } from "../../enums/team-type.js";
 import { RemoteEvent } from "../../../core/models/remote-event.js";
 import { GameState } from "../../../core/models/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
+import { MatchAction } from "../../models/match-action.js";
 
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
@@ -17,6 +18,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import { MatchActionsLogService } from "./match-actions-log-service.js";
 
 export class ScoreManagerService {
   constructor(
@@ -25,6 +27,7 @@ export class ScoreManagerService {
     private readonly goalEntity: GoalEntity,
     private readonly scoreboardUI: ScoreboardUI,
     private readonly alertEntity: AlertEntity,
+    private readonly matchActionsLogService: MatchActionsLogService,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
     private readonly matchmakingService: IMatchmakingService,
@@ -89,6 +92,8 @@ export class ScoreManagerService {
 
     player?.setScore(playerScore);
     this.updateScoreboard();
+
+    this.matchActionsLogService.addAction(MatchAction.goal(playerId));
 
     let team: TeamType = TeamType.Red;
 
@@ -162,6 +167,10 @@ export class ScoreManagerService {
     } else {
       this.scoreboardUI.incrementRedScore();
     }
+
+    this.matchActionsLogService.addAction(
+      MatchAction.goal(player.getNetworkId())
+    );
 
     this.showGoalAlert(player, goalTeam);
     this.explosionCallback(
