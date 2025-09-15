@@ -90,7 +90,7 @@ export class MatchFinderService {
     const pingMedian = match.getPingMedianMilliseconds();
 
     if (pingMedian !== null) {
-      body.ping_median_milliseconds = pingMedian;
+      body.pingMedianMilliseconds = pingMedian;
     }
 
     await this.apiService.advertiseMatch(body);
