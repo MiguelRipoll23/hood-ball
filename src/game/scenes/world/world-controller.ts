@@ -15,10 +15,12 @@ import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.
 import { CarEntity } from "../../entities/car-entity.js";
 import type { GameEntity } from "../../../core/models/game-entity.js";
 import type { GamePlayer } from "../../models/game-player.js";
+import { MatchAction } from "../../models/match-action.js";
 import type { BaseMultiplayerGameEntity } from "../../../core/entities/base-multiplayer-entity.js";
 import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
+import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -34,6 +36,7 @@ export class WorldController {
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,
     private readonly alertEntity: AlertEntity,
+    private readonly matchActionsLogService: MatchActionsLogService,
     private readonly boostPadsEntities: BoostPadEntity[],
     private readonly spawnPointEntities: SpawnPointEntity[],
     private readonly getEntitiesByOwner: (
@@ -241,6 +244,10 @@ export class WorldController {
       victimId: binaryReader.fixedLengthString(32),
     };
 
+    this.matchActionsLogService.addAction(
+      MatchAction.demolition(payload.attackerId, payload.victimId)
+    );
+
     const attacker =
       this.gameState.getMatch()?.getPlayerByNetworkId(payload.attackerId) ??
       null;
@@ -376,6 +383,13 @@ export class WorldController {
             event.setData(payload);
 
             this.eventProcessorService.sendEvent(event);
+
+            this.matchActionsLogService.addAction(
+              MatchAction.demolition(
+                attackerPlayer.getNetworkId(),
+                victimPlayer.getNetworkId()
+              )
+            );
           }
         }
       });
