@@ -3,6 +3,7 @@ import { BaseWindow } from "../../core/debug/base-window.js";
 import { WebRTCService } from "../services/network/webrtc-service.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
+import { getPingTextColor } from "../utils/ping-utils.js";
 
 @injectable()
 export class PeerInspectorWindow extends BaseWindow {
@@ -47,10 +48,16 @@ export class PeerInspectorWindow extends BaseWindow {
         ImGui.TableSetColumnIndex(0);
         ImGui.Text(peer.getPlayer()?.getId() ?? peer.getToken());
 
-        const pingTime = peer.getPingTime()?.toFixed(0) ?? "--";
+        const pingTime = peer.getPingTime();
 
         ImGui.TableSetColumnIndex(1);
-        ImGui.Text(pingTime);
+        if (pingTime === null) {
+          ImGui.Text("--");
+        } else {
+          ImGui.PushStyleColor(ImGui.Col.Text, getPingTextColor(pingTime));
+          ImGui.Text(pingTime.toFixed(0));
+          ImGui.PopStyleColor();
+        }
 
         ImGui.TableSetColumnIndex(2);
         const isConnected = peer.isConnected();

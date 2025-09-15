@@ -3,6 +3,7 @@ import { BaseWindow } from "../../core/debug/base-window.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { GameState } from "../../core/models/game-state.js";
+import { getPingTextColor } from "../utils/ping-utils.js";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;
@@ -23,8 +24,15 @@ export class MatchInspectorWindow extends BaseWindow {
     ImGui.Text(`State: ${MatchStateType[match.getState()]}`);
     ImGui.Text(`Slots: ${match.getPlayers().length}/${match.getTotalSlots()}`);
     const pingMedian = match.getPingMedianMilliseconds();
-    const displayPingMedian = pingMedian === null ? "--" : `${pingMedian} ms`;
-    ImGui.Text(`Ping median (milliseconds): ${displayPingMedian}`);
+    ImGui.Text("Ping median (milliseconds):");
+    ImGui.SameLine();
+    if (pingMedian === null) {
+      ImGui.Text("--");
+    } else {
+      ImGui.PushStyleColor(ImGui.Col.Text, getPingTextColor(pingMedian));
+      ImGui.Text(`${pingMedian} ms`);
+      ImGui.PopStyleColor();
+    }
 
     if (ImGui.CollapsingHeader("Attributes", ImGui.TreeNodeFlags.DefaultOpen)) {
       this.renderMatchAttributes(match.getAttributes());
