@@ -58,18 +58,22 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
 
     const lastAction = this.actions[this.actions.length - 1];
 
-    if (
-      lastAction?.isFadingOut() &&
-      !this.isFadingOut &&
-      this.opacity > 0
-    ) {
+    if (lastAction.isFadingOut() && !this.isFadingOut && this.getOpacity() > 0) {
       const fadeDurationMs = lastAction.getFadeOutDurationMs();
-      const fadeDurationSeconds =
-        fadeDurationMs > 0
-          ? fadeDurationMs / 1000
-          : this.fallbackFadeOutDurationSeconds;
+      const fadeStartTimestamp = lastAction.getFadeOutStartTimestamp();
 
-      this.startFadeOut(fadeDurationSeconds);
+      let remainingSeconds = this.fallbackFadeOutDurationSeconds;
+
+      if (fadeStartTimestamp !== null && fadeDurationMs > 0) {
+        const elapsedMs = Date.now() - fadeStartTimestamp;
+        const remainingMs = Math.max(0, fadeDurationMs - elapsedMs);
+
+        if (remainingMs > 0) {
+          remainingSeconds = remainingMs / 1000;
+        }
+      }
+
+      this.startFadeOut(remainingSeconds);
     }
   }
 
