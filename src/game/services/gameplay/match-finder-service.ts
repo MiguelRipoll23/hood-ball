@@ -20,7 +20,6 @@ import { GameState } from "../../../core/models/game-state.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
-import type { GamePlayer } from "../../models/game-player.js";
 
 @injectable()
 export class MatchFinderService {
@@ -78,7 +77,7 @@ export class MatchFinderService {
       return;
     }
 
-    this.updatePlayersPingMedian();
+    match.updatePingMedianMilliseconds();
 
     const body: AdvertiseMatchRequest = {
       version: GAME_VERSION,
@@ -96,35 +95,6 @@ export class MatchFinderService {
     await this.apiService.advertiseMatch(body);
     const localEvent = new LocalEvent(EventType.MatchAdvertised);
     this.eventProcessorService.addLocalEvent(localEvent);
-  }
-
-  public updatePlayersPingMedian(): void {
-    const match = this.gameState.getMatch();
-
-    if (match === null) {
-      console.warn("Game match is null");
-      return;
-    }
-
-    const pings = match
-      .getPlayers()
-      .map((player: GamePlayer) => player.getPingTime())
-      .filter((ping: number | null): ping is number => ping !== null);
-
-    if (pings.length === 0) {
-      match.setPingMedianMilliseconds(null);
-      return;
-    }
-
-    pings.sort((a: number, b: number) => a - b);
-    const middle = Math.floor(pings.length / 2);
-
-    const median =
-      pings.length % 2 === 0
-        ? Math.round((pings[middle - 1] + pings[middle]) / 2)
-        : Math.round(pings[middle]);
-
-    match.setPingMedianMilliseconds(median);
   }
 
   private async joinMatch(match: MatchData): Promise<void> {

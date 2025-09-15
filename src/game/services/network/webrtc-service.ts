@@ -11,7 +11,6 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../core/models/game-state.js";
-import { MatchFinderService } from "../gameplay/match-finder-service.js";
 import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { container } from "../../../core/services/di-container.js";
@@ -30,8 +29,7 @@ export class WebRTCService implements WebRTCServiceContract {
   private connectionListener: PeerConnectionListener | null = null;
 
   constructor(
-    private gameState = container.get(GameState),
-    private matchFinderService = container.get(MatchFinderService)
+    private gameState = container.get(GameState)
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
@@ -174,7 +172,7 @@ export class WebRTCService implements WebRTCServiceContract {
     }
 
     peer.setPingTime(performance.now() - pingRequestTime);
-    this.matchFinderService.updatePlayersPingMedian();
+    this.gameState.getMatch()?.updatePingMedianMilliseconds();
   }
 
   public resetNetworkStats(): void {
