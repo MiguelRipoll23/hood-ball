@@ -8,6 +8,7 @@ import { injectable } from "@needle-di/core";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { ChatMessage } from "../../models/chat-message.js";
+import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
@@ -15,10 +16,12 @@ import { EventProcessorService } from "../../../core/services/gameplay/event-pro
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { GameState } from "../../../core/models/game-state.js";
+import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 
 @injectable()
 export class ChatService {
   private static readonly MAX_HISTORY_SIZE = 50;
+  private static readonly LOG_THROTTLE_MS = 500;
 
   private readonly messages: ChatMessage[] = [];
   private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
@@ -27,6 +30,8 @@ export class ChatService {
   private readonly signatureService: SignatureService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly localPlayerId: string;
+  private readonly matchActionsLogService: MatchActionsLogService;
+  private readonly commandLogTimestamps = new Map<string, number>();
 
   constructor() {
     this.webSocketService = container.get(WebSocketService);
@@ -35,6 +40,7 @@ export class ChatService {
     this.eventProcessorService = container.get(EventProcessorService);
     const gameState = container.get(GameState);
     this.localPlayerId = gameState.getGamePlayer().getNetworkId();
+    this.matchActionsLogService = container.get(MatchActionsLogService);
     this.webrtcService.registerCommandHandlers(this);
     this.webSocketService.registerCommandHandlers(this);
   }
@@ -74,7 +80,7 @@ export class ChatService {
     }
 
     // Execute local command effects immediately
-    this.handleCommand(trimmed);
+    this.handleCommand(trimmed, undefined, Date.now());
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebSocketType.ChatMessage)
@@ -105,7 +111,7 @@ export class ChatService {
     });
 
     // Execute command and skip chat output if handled
-    if (this.handleCommand(text, userId)) {
+    if (this.handleCommand(text, userId, timestamp)) {
       return;
     }
 
@@ -140,7 +146,7 @@ export class ChatService {
     }
 
     // Execute command and skip chat output if handled
-    if (this.handleCommand(text, userId)) {
+    if (this.handleCommand(text, userId, timestampSeconds)) {
       return;
     }
 
@@ -163,7 +169,11 @@ export class ChatService {
     });
   }
 
-  private handleCommand(text: string, senderId?: string): boolean {
+  private handleCommand(
+    text: string,
+    senderId?: string,
+    timestamp?: number
+  ): boolean {
     if (!text.startsWith("/")) {
       return false;
     }
@@ -177,9 +187,33 @@ export class ChatService {
           const event = new LocalEvent<void>(EventType.Rainbow);
           this.eventProcessorService.addLocalEvent(event);
         }
+        this.logChatCommand(senderId, command, timestamp);
         return true;
       default:
         return false;
     }
+  }
+
+  private logChatCommand(
+    senderId: string | undefined,
+    command: string,
+    timestamp?: number
+  ): void {
+    const playerId = senderId ?? this.localPlayerId;
+    const key = `${playerId}:${command}`;
+    const now = timestamp ?? Date.now();
+    const lastLoggedAt = this.commandLogTimestamps.get(key);
+
+    if (
+      lastLoggedAt !== undefined &&
+      now - lastLoggedAt < ChatService.LOG_THROTTLE_MS
+    ) {
+      return;
+    }
+
+    this.commandLogTimestamps.set(key, now);
+    this.matchActionsLogService.addAction(
+      MatchAction.chatCommand(playerId, command, now)
+    );
   }
 }

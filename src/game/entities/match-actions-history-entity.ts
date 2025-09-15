@@ -2,6 +2,7 @@ import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity
 import { GameState } from "../../core/models/game-state.js";
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";
+import { MatchActionType } from "../enums/match-action-type.js";
 
 interface TextPart {
   text: string;
@@ -160,30 +161,65 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
   }
 
   private getTextParts(action: MatchAction): TextPart[] {
-    if (action.isGoal()) {
-      const scorerId = action.getScorerId();
-      const playerName = this.getPlayerName(scorerId);
-      const playerColor = this.getPlayerColor(scorerId);
+    switch (action.getType()) {
+      case MatchActionType.Goal: {
+        const scorerId = action.getScorerId();
+        const playerName = this.getPlayerName(scorerId);
+        const playerColor = this.getPlayerColor(scorerId);
 
-      return [
-        { text: "⚽️ ", color: "white" },
-        { text: playerName, color: playerColor },
-        { text: " scored!", color: "white" },
-      ];
+        return [
+          { text: playerName, color: playerColor },
+          { text: " ⚽️ scored!", color: "white" },
+        ];
+      }
+      case MatchActionType.Demolition: {
+        const attackerId = action.getAttackerId();
+        const victimId = action.getVictimId();
+        const attackerName = this.getPlayerName(attackerId);
+        const victimName = this.getPlayerName(victimId);
+        const attackerColor = this.getPlayerColor(attackerId);
+        const victimColor = this.getPlayerColor(victimId);
+
+        return [
+          { text: attackerName, color: attackerColor },
+          { text: " 💣 ", color: "white" },
+          { text: victimName, color: victimColor },
+        ];
+      }
+      case MatchActionType.PlayerJoined: {
+        const playerId = action.getActorId();
+        const playerName = this.getPlayerName(playerId);
+        const playerColor = this.getPlayerColor(playerId);
+
+        return [
+          { text: playerName, color: playerColor },
+          { text: " 🤝 joined the match", color: "white" },
+        ];
+      }
+      case MatchActionType.PlayerLeft: {
+        const playerId = action.getActorId();
+        const playerName = this.getPlayerName(playerId);
+        const playerColor = this.getPlayerColor(playerId);
+
+        return [
+          { text: playerName, color: playerColor },
+          { text: " 👋 left the match", color: "white" },
+        ];
+      }
+      case MatchActionType.ChatCommand: {
+        const playerId = action.getActorId();
+        const playerName = this.getPlayerName(playerId);
+        const playerColor = this.getPlayerColor(playerId);
+        const commandName = action.getCommandName() ?? "command";
+
+        return [
+          { text: playerName, color: playerColor },
+          { text: ` ✨ used /${commandName}`, color: "white" },
+        ];
+      }
+      default:
+        return [{ text: "Unknown action", color: "white" }];
     }
-
-    const attackerId = action.getAttackerId();
-    const victimId = action.getVictimId();
-    const attackerName = this.getPlayerName(attackerId);
-    const victimName = this.getPlayerName(victimId);
-    const attackerColor = this.getPlayerColor(attackerId);
-    const victimColor = this.getPlayerColor(victimId);
-
-    return [
-      { text: attackerName, color: attackerColor },
-      { text: " 💣 ", color: "white" },
-      { text: victimName, color: victimColor },
-    ];
   }
 
   private getPlayerName(playerId: string | null): string {
