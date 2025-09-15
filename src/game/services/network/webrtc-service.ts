@@ -11,6 +11,7 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../core/models/game-state.js";
+import type { GamePlayer } from "../../models/game-player.js";
 import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { container } from "../../../core/services/di-container.js";
@@ -172,7 +173,7 @@ export class WebRTCService implements WebRTCServiceContract {
     }
 
     peer.setPingTime(performance.now() - pingRequestTime);
-    this.gameState.getMatch()?.updatePingMedianMilliseconds();
+    this.updatePingMedianMilliseconds();
   }
 
   public resetNetworkStats(): void {
@@ -328,5 +329,33 @@ export class WebRTCService implements WebRTCServiceContract {
       (total, peer) => total + peer.getUploadBytes(),
       0
     );
+  }
+
+  private updatePingMedianMilliseconds(): void {
+    const match = this.gameState.getMatch();
+
+    if (match === null) {
+      return;
+    }
+
+    const pings = match
+      .getPlayers()
+      .map((player: GamePlayer) => player.getPingTime())
+      .filter((ping: number | null): ping is number => ping !== null);
+
+    if (pings.length === 0) {
+      match.setPingMedianMilliseconds(null);
+      return;
+    }
+
+    pings.sort((a: number, b: number) => a - b);
+    const middle = Math.floor(pings.length / 2);
+
+    const median =
+      pings.length % 2 === 0
+        ? Math.round((pings[middle - 1] + pings[middle]) / 2)
+        : Math.round(pings[middle]);
+
+    match.setPingMedianMilliseconds(median);
   }
 }

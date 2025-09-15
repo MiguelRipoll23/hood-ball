@@ -62,27 +62,6 @@ export class Match {
     this.pingMedianMilliseconds = ping;
   }
 
-  public updatePingMedianMilliseconds(): void {
-    const pings = this.getPlayers()
-      .map((player: GamePlayer) => player.getPingTime())
-      .filter((ping: number | null): ping is number => ping !== null);
-
-    if (pings.length === 0) {
-      this.pingMedianMilliseconds = null;
-      return;
-    }
-
-    pings.sort((a: number, b: number) => a - b);
-    const middle = Math.floor(pings.length / 2);
-
-    const median =
-      pings.length % 2 === 0
-        ? Math.round((pings[middle - 1] + pings[middle]) / 2)
-        : Math.round(pings[middle]);
-
-    this.pingMedianMilliseconds = median;
-  }
-
   public getPlayerByNetworkId(networkId: string): GamePlayer | null {
     return this.players.get(networkId) ?? null;
   }

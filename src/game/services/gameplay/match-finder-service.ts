@@ -77,8 +77,6 @@ export class MatchFinderService {
       return;
     }
 
-    match.updatePingMedianMilliseconds();
-
     const body: AdvertiseMatchRequest = {
       version: GAME_VERSION,
       totalSlots: match.getTotalSlots(),
