@@ -357,6 +357,14 @@ export class WorldScene extends BaseCollidingGameScene {
     }
 
     this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
+    // If there are existing messages, render them immediately
+    const initialMsgs = this.chatService.getMessages();
+    if (initialMsgs.length > 0) {
+      this.chatHistoryEntity.show(
+        initialMsgs,
+        this.gameState.getGamePlayer().getName()
+      );
+    }
 
     this.chatButtonEntity = new ChatButtonEntity(
       boostMeterEntity,

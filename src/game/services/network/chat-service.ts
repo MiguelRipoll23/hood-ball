@@ -45,6 +45,10 @@ export class ChatService {
 
   public onMessage(listener: (messages: ChatMessage[]) => void): () => void {
     this.listeners.push(listener);
+    // Deliver current snapshot if available (prevents blank UI on first subscribe)
+    if (this.messages.length > 0) {
+      listener([...this.messages]);
+    }
 
     return () => {
       const index = this.listeners.indexOf(listener);
@@ -56,6 +60,9 @@ export class ChatService {
 
   public clearMessages(): void {
     this.messages.length = 0;
+    this.listeners.forEach((listener) => {
+      listener([]);
+    });
   }
 
   public sendMessage(text: string): void {

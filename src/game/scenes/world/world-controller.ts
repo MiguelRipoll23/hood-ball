@@ -270,9 +270,7 @@ export class WorldController {
     }
     triggerCarExplosion(victimCar.getX(), victimCar.getY());
 
-    this.matchActionsLogService.addAction(
-      MatchAction.demolition(payload.attackerId, payload.victimId)
-    );
+    this.logDemolition(payload.attackerId, payload.victimId);
 
     const attackerName = attacker?.getName() ?? "Unknown";
     const victimName = victim.getName();
@@ -384,11 +382,9 @@ export class WorldController {
 
             this.eventProcessorService.sendEvent(event);
 
-            this.matchActionsLogService.addAction(
-              MatchAction.demolition(
-                attackerPlayer.getNetworkId(),
-                victimPlayer.getNetworkId()
-              )
+            this.logDemolition(
+              attackerPlayer.getNetworkId(),
+              victimPlayer.getNetworkId()
             );
           }
         }
@@ -417,5 +413,11 @@ export class WorldController {
     }
 
     return player === this.gameState.getGamePlayer() ? "blue" : "red";
+  }
+
+  private logDemolition(attackerId: string, victimId: string): void {
+    this.matchActionsLogService.addAction(
+      MatchAction.demolition(attackerId, victimId)
+    );
   }
 }
