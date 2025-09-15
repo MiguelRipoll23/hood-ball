@@ -213,29 +213,6 @@ export function buildApp() {
 
 ---
 
-## Suggested Folder Structure
-
-```
-src/
-  domain/
-    entities/
-    services/
-    contracts/
-    events/
-  application/
-    use-cases/
-    subscribers/
-  infrastructure/
-    repositories/
-    gateways/
-    messaging/
-  shared/
-    utils/
-    types/
-```
-
----
-
 ## Anti‑Patterns to Avoid
 
 - ❌ Importing from **Infrastructure** anywhere except the **composition root**.
