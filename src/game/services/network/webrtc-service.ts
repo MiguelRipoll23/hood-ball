@@ -11,6 +11,7 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../core/models/game-state.js";
+import type { GamePlayer } from "../../models/game-player.js";
 import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { container } from "../../../core/services/di-container.js";
@@ -28,7 +29,9 @@ export class WebRTCService implements WebRTCServiceContract {
   private webSocketService: WebSocketService | null = null;
   private connectionListener: PeerConnectionListener | null = null;
 
-  constructor(private gameState = container.get(GameState)) {
+  constructor(
+    private gameState = container.get(GameState)
+  ) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
   }
@@ -170,6 +173,7 @@ export class WebRTCService implements WebRTCServiceContract {
     }
 
     peer.setPingTime(performance.now() - pingRequestTime);
+    this.updatePingMedianMilliseconds();
   }
 
   public resetNetworkStats(): void {
@@ -325,5 +329,33 @@ export class WebRTCService implements WebRTCServiceContract {
       (total, peer) => total + peer.getUploadBytes(),
       0
     );
+  }
+
+  private updatePingMedianMilliseconds(): void {
+    const match = this.gameState.getMatch();
+
+    if (match === null) {
+      return;
+    }
+
+    const players = match.getPlayers();
+
+    const nonHostPings = players
+      .filter((p: GamePlayer) => !p.isHost())
+      .map((player: GamePlayer) => player.getPingTime())
+      .filter((ping: number | null): ping is number => ping !== null);
+
+    const computeMedian = (values: number[]): number | null => {
+      if (values.length === 0) {
+        return null;
+      }
+      values.sort((a: number, b: number) => a - b);
+      const middle = Math.floor(values.length / 2);
+      return values.length % 2 === 0
+        ? Math.round((values[middle - 1] + values[middle]) / 2)
+        : Math.round(values[middle]);
+    };
+
+    match.setPingMedianMilliseconds(computeMedian(nonHostPings));
   }
 }

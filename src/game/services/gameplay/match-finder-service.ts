@@ -20,7 +20,6 @@ import { GameState } from "../../../core/models/game-state.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
-import type { GamePlayer } from "../../models/game-player.js";
 
 @injectable()
 export class MatchFinderService {
@@ -85,42 +84,16 @@ export class MatchFinderService {
       attributes: match.getAttributes(),
     };
 
-    const pingMedian = this.calculatePlayersPingMedian();
-
-    if (pingMedian !== null) {
-      body.ping_median_milliseconds = pingMedian;
+    if (match.getPlayers().length >= 2) {
+      const pingMedian = match.getPingMedianMilliseconds();
+      if (pingMedian !== null) {
+        body.pingMedianMilliseconds = pingMedian;
+      }
     }
 
     await this.apiService.advertiseMatch(body);
     const localEvent = new LocalEvent(EventType.MatchAdvertised);
     this.eventProcessorService.addLocalEvent(localEvent);
-  }
-
-  private calculatePlayersPingMedian(): number | null {
-    const match = this.gameState.getMatch();
-
-    if (match === null) {
-      console.warn("Game match is null");
-      return null;
-    }
-
-    const pings = match
-      .getPlayers()
-      .map((player: GamePlayer) => player.getPingTime())
-      .filter((ping: number | null): ping is number => ping !== null);
-
-    if (pings.length === 0) {
-      return null;
-    }
-
-    pings.sort((a: number, b: number) => a - b);
-    const middle = Math.floor(pings.length / 2);
-
-    if (pings.length % 2 === 0) {
-      return Math.round((pings[middle - 1] + pings[middle]) / 2);
-    }
-
-    return Math.round(pings[middle]);
   }
 
   private async joinMatch(match: MatchData): Promise<void> {
