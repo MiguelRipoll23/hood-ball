@@ -66,8 +66,9 @@ export class WorldScene extends BaseCollidingGameScene {
   private chatHistoryEntity: ChatHistoryEntity | null = null;
   private matchActionsHistoryEntity: MatchActionsHistoryEntity | null = null;
 
-  private readonly matchActionsLogService = new MatchActionsLogService();
+  private readonly matchActionsLogService: MatchActionsLogService;
   private matchActionsLogUnsubscribe: (() => void) | null = null;
+  private chatMessageUnsubscribe: (() => void) | null = null;
 
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
@@ -87,6 +88,8 @@ export class WorldScene extends BaseCollidingGameScene {
     this.eventProcessorService = container.get(EventProcessorService);
     this.spawnPointService = container.get(SpawnPointService);
     this.chatService = container.get(ChatService);
+    this.matchActionsLogService = container.get(MatchActionsLogService);
+    this.matchActionsLogService.clear();
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -364,7 +367,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.helpEntity as HelpEntity
     );
     this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
-    this.chatService.onMessage((msgs) =>
+    this.chatMessageUnsubscribe?.();
+    this.chatMessageUnsubscribe = this.chatService.onMessage((msgs) =>
       this.chatHistoryEntity?.show(
         msgs,
         this.gameState.getGamePlayer().getName()
@@ -373,6 +377,9 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private setupMatchActionsHistory(): void {
+    if (this.matchActionsHistoryEntity) {
+      return;
+    }
     this.matchActionsHistoryEntity = new MatchActionsHistoryEntity(
       this.canvas,
       this.gameState
@@ -466,6 +473,9 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
+    this.matchActionsLogService.clear();
+    this.chatMessageUnsubscribe?.();
+    this.chatMessageUnsubscribe = null;
 
     super.dispose();
   }

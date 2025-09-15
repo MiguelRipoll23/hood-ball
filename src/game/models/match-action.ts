@@ -31,6 +31,14 @@ export class MatchAction {
     return this.type;
   }
 
+  public isGoal(): boolean {
+    return this.type === MatchActionType.Goal;
+  }
+
+  public isDemolition(): boolean {
+    return this.type === MatchActionType.Demolition;
+  }
+
   public getTimestamp(): number {
     return this.timestamp;
   }

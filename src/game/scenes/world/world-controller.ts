@@ -244,10 +244,6 @@ export class WorldController {
       victimId: binaryReader.fixedLengthString(32),
     };
 
-    this.matchActionsLogService.addAction(
-      MatchAction.demolition(payload.attackerId, payload.victimId)
-    );
-
     const attacker =
       this.gameState.getMatch()?.getPlayerByNetworkId(payload.attackerId) ??
       null;
@@ -273,6 +269,10 @@ export class WorldController {
       victimCar.demolish(spawn.x, spawn.y, 3000);
     }
     triggerCarExplosion(victimCar.getX(), victimCar.getY());
+
+    this.matchActionsLogService.addAction(
+      MatchAction.demolition(payload.attackerId, payload.victimId)
+    );
 
     const attackerName = attacker?.getName() ?? "Unknown";
     const victimName = victim.getName();

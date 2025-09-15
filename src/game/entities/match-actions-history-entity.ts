@@ -1,7 +1,7 @@
 import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
 import { GameState } from "../../core/models/game-state.js";
 import { MatchAction } from "../models/match-action.js";
-import { MatchActionType } from "../enums/match-action-type.js";
+import { TeamType } from "../enums/team-type.js";
 
 interface TextPart {
   text: string;
@@ -17,18 +17,14 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
   private readonly maxActions = 5;
 
   private actions: MatchAction[] = [];
-  private context: CanvasRenderingContext2D;
+  private isFadingIn = false;
+  private isFadingOut = false;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly gameState: GameState
   ) {
     super();
-    const context = this.canvas.getContext("2d");
-    if (!context) {
-      throw new Error("Canvas context not available");
-    }
-    this.context = context;
     this.opacity = 0;
   }
 
@@ -38,8 +34,8 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
     if (this.actions.length === 0) {
       this.width = 0;
       this.height = 0;
-      if (this.opacity > 0) {
-        this.fadeOut(0.2);
+      if ((this.opacity > 0 || this.isFadingIn) && !this.isFadingOut) {
+        this.startFadeOut();
       }
       return;
     }
@@ -47,8 +43,20 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
     this.measure();
     this.setPosition();
 
-    if (this.opacity === 0) {
-      this.fadeIn(0.2);
+    if (!this.isFadingIn && (this.opacity < 1 || this.isFadingOut)) {
+      this.startFadeIn();
+    }
+  }
+
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    super.update(deltaTimeStamp);
+
+    if (this.isFadingIn && this.getOpacity() >= 1) {
+      this.isFadingIn = false;
+    }
+
+    if (this.isFadingOut && this.getOpacity() <= 0) {
+      this.isFadingOut = false;
     }
   }
 
@@ -71,14 +79,18 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
       return;
     }
 
-    this.context.font = `${this.fontSize}px system-ui`;
+    const context = this.getCanvasContext();
+    const previousFont = context.font;
+    context.font = `${this.fontSize}px system-ui`;
 
     const maxWidth = this.actions.reduce((acc, action) => {
       const text = this.getTextParts(action)
         .map((part) => part.text)
         .join("");
-      return Math.max(acc, this.context.measureText(text).width);
+      return Math.max(acc, context.measureText(text).width);
     }, 0);
+
+    context.font = previousFont;
 
     this.width = maxWidth + this.padding * 2;
     this.height =
@@ -148,7 +160,7 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
   }
 
   private getTextParts(action: MatchAction): TextPart[] {
-    if (action.getType() === MatchActionType.Goal) {
+    if (action.isGoal()) {
       const scorerId = action.getScorerId();
       const playerName = this.getPlayerName(scorerId);
       const playerColor = this.getPlayerColor(scorerId);
@@ -195,11 +207,60 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
   }
 
   private getPlayerColor(playerId: string | null): string {
+    const team = this.getPlayerTeam(playerId);
+    return this.getTeamColor(team);
+  }
+
+  private getPlayerTeam(playerId: string | null): TeamType | null {
     if (!playerId) {
-      return "white";
+      return null;
     }
 
-    const localPlayerId = this.gameState.getGamePlayer().getNetworkId();
-    return playerId === localPlayerId ? "#2196f3" : "#ff4d4d";
+    const localPlayer = this.gameState.getGamePlayer();
+    if (playerId === localPlayer.getNetworkId()) {
+      return TeamType.Blue;
+    }
+
+    const match = this.gameState.getMatch();
+    const player = match?.getPlayerByNetworkId(playerId) ?? null;
+
+    if (player === localPlayer) {
+      return TeamType.Blue;
+    }
+
+    return TeamType.Red;
+  }
+
+  private getTeamColor(team: TeamType | null): string {
+    switch (team) {
+      case TeamType.Blue:
+        return "#2196f3";
+      case TeamType.Red:
+        return "#ff4d4d";
+      default:
+        return "white";
+    }
+  }
+
+  private startFadeIn(): void {
+    this.isFadingOut = false;
+    this.isFadingIn = true;
+    this.animationTasks.length = 0;
+    this.fadeIn(0.2);
+  }
+
+  private startFadeOut(): void {
+    this.isFadingIn = false;
+    this.isFadingOut = true;
+    this.animationTasks.length = 0;
+    this.fadeOut(0.2);
+  }
+
+  private getCanvasContext(): CanvasRenderingContext2D {
+    const context = this.canvas.getContext("2d");
+    if (!context) {
+      throw new Error("Canvas context not available");
+    }
+    return context;
   }
 }
