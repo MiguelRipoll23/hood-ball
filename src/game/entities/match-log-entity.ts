@@ -9,7 +9,7 @@ interface TextPart {
   color: string;
 }
 
-export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
+export class MatchLogEntity extends BaseAnimatedGameEntity {
   private readonly padding = 10;
   private readonly cornerRadius = 8;
   private readonly fontSize = 16;
@@ -255,6 +255,18 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
         return [
           { text: playerName, color: playerColor },
           { text: ` ✨ used /${commandName}`, color: "white" },
+        ];
+      }
+      case MatchActionType.ChatMessage: {
+        const playerId = action.getActorId();
+        const playerName =
+          action.getActorName() ?? this.getPlayerName(playerId);
+        const playerColor = this.getPlayerColor(playerId);
+        const messageText = action.getMessageText() ?? "";
+
+        return [
+          { text: `${playerName}: `, color: playerColor },
+          { text: messageText, color: "white" },
         ];
       }
       default:
