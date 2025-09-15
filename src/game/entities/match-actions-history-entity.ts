@@ -17,6 +17,8 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
   private readonly actionMargin = 4;
   private readonly maxActions = 5;
   private readonly defaultActionOpacity = 1;
+  private readonly fadeInDurationSeconds = 0.2;
+  private readonly fallbackFadeOutDurationSeconds = 0.2;
 
   private actions: MatchAction[] = [];
   private isFadingIn = false;
@@ -45,8 +47,33 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
     this.measure();
     this.setPosition();
 
-    if (!this.isFadingIn && (this.opacity < 1 || this.isFadingOut)) {
-      this.startFadeIn();
+    const hasActiveActions = this.actions.some((action) => !action.isFadingOut());
+
+    if (hasActiveActions) {
+      if (!this.isFadingIn && (this.opacity < 1 || this.isFadingOut)) {
+        this.startFadeIn();
+      }
+      return;
+    }
+
+    const lastAction = this.actions[this.actions.length - 1];
+
+    if (lastAction.isFadingOut() && !this.isFadingOut && this.getOpacity() > 0) {
+      const fadeDurationMs = lastAction.getFadeOutDurationMs();
+      const fadeStartTimestamp = lastAction.getFadeOutStartTimestamp();
+
+      let remainingSeconds = this.fallbackFadeOutDurationSeconds;
+
+      if (fadeStartTimestamp !== null && fadeDurationMs > 0) {
+        const elapsedMs = Date.now() - fadeStartTimestamp;
+        const remainingMs = Math.max(0, fadeDurationMs - elapsedMs);
+
+        if (remainingMs > 0) {
+          remainingSeconds = remainingMs / 1000;
+        }
+      }
+
+      this.startFadeOut(remainingSeconds);
     }
   }
 
@@ -321,14 +348,18 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
     this.isFadingOut = false;
     this.isFadingIn = true;
     this.animationTasks.length = 0;
-    this.fadeIn(0.2);
+    this.fadeIn(this.fadeInDurationSeconds);
   }
 
-  private startFadeOut(): void {
+  private startFadeOut(durationSeconds?: number): void {
     this.isFadingIn = false;
     this.isFadingOut = true;
     this.animationTasks.length = 0;
-    this.fadeOut(0.2);
+    const fadeDuration =
+      durationSeconds !== undefined && durationSeconds > 0
+        ? durationSeconds
+        : this.fallbackFadeOutDurationSeconds;
+    this.fadeOut(fadeDuration);
   }
 
   private getCanvasContext(): CanvasRenderingContext2D {
