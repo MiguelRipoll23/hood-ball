@@ -5,4 +5,5 @@ export interface AdvertiseMatchRequest {
   totalSlots: number;
   availableSlots: number;
   attributes: MatchAttributes;
+  ping_median_milliseconds?: number;
 }

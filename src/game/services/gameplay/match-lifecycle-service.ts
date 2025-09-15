@@ -82,6 +82,7 @@ export class MatchLifecycleService {
       });
 
       this.networkService.removePingCheckInterval();
+      this.networkService.removeAdvertiseMatchInterval();
       await this.apiService
         .removeMatch()
         .catch((error: unknown) => console.error(error));
