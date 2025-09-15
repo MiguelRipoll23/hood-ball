@@ -7,8 +7,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
-import { ChatHistoryEntity } from "../../entities/chat-history-entity.js";
-import { MatchActionsHistoryEntity } from "../../entities/match-actions-history-entity.js";
+import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
@@ -64,12 +63,10 @@ export class WorldScene extends BaseCollidingGameScene {
   private toastEntity: ToastEntity | null = null;
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
-  private chatHistoryEntity: ChatHistoryEntity | null = null;
-  private matchActionsHistoryEntity: MatchActionsHistoryEntity | null = null;
+  private matchLogEntity: MatchLogEntity | null = null;
 
   private readonly matchActionsLogService: MatchActionsLogService;
   private matchActionsLogUnsubscribe: (() => void) | null = null;
-  private chatMessageUnsubscribe: (() => void) | null = null;
 
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
@@ -114,7 +111,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.boostPadsEntities = entities.boostPadsEntities;
     this.spawnPointEntities = entities.spawnPointEntities;
 
-    this.setupMatchActionsHistory();
+    this.setupMatchLog();
     this.setupChatUI();
 
     // Set total spawn points created to service
@@ -369,14 +366,16 @@ export class WorldScene extends BaseCollidingGameScene {
       this.uiEntities.push(boostMeterEntity);
     }
 
-    this.chatHistoryEntity = new ChatHistoryEntity(this.canvas, this.gameState);
-    // If there are existing messages, render them immediately
     const initialMsgs = this.chatService.getMessages();
     if (initialMsgs.length > 0) {
-      this.chatHistoryEntity.show(
-        initialMsgs,
-        this.gameState.getGamePlayer().getName()
-      );
+      const recentMessages = initialMsgs.slice(-5);
+      recentMessages.forEach((message) => {
+        this.matchActionsLogService.addAction(
+          MatchAction.chatMessage(message.getUserId(), message.getText(), {
+            timestamp: message.getTimestamp(),
+          })
+        );
+      });
     }
 
     this.chatButtonEntity = new ChatButtonEntity(
@@ -387,27 +386,20 @@ export class WorldScene extends BaseCollidingGameScene {
       this.gameState.getGameKeyboard(),
       this.helpEntity as HelpEntity
     );
-    this.uiEntities.push(this.chatButtonEntity, this.chatHistoryEntity);
-    this.chatMessageUnsubscribe?.();
-    this.chatMessageUnsubscribe = this.chatService.onMessage((msgs) =>
-      this.chatHistoryEntity?.show(
-        msgs,
-        this.gameState.getGamePlayer().getName()
-      )
-    );
+    this.uiEntities.push(this.chatButtonEntity);
   }
 
-  private setupMatchActionsHistory(): void {
-    if (this.matchActionsHistoryEntity) {
+  private setupMatchLog(): void {
+    if (this.matchLogEntity) {
       return;
     }
-    this.matchActionsHistoryEntity = new MatchActionsHistoryEntity(
+    this.matchLogEntity = new MatchLogEntity(
       this.canvas,
       this.gameState
     );
-    this.uiEntities.push(this.matchActionsHistoryEntity);
+    this.uiEntities.push(this.matchLogEntity);
     this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
-      (actions) => this.matchActionsHistoryEntity?.show(actions)
+      (actions) => this.matchLogEntity?.show(actions)
     );
   }
 
@@ -495,8 +487,6 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
     this.matchActionsLogService.clear();
-    this.chatMessageUnsubscribe?.();
-    this.chatMessageUnsubscribe = null;
 
     super.dispose();
   }

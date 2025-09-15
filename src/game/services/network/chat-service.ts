@@ -163,6 +163,16 @@ export class ChatService {
       this.messages.shift();
     }
 
+    this.matchActionsLogService.addAction(
+      MatchAction.chatMessage(
+        chatMessage.getUserId(),
+        chatMessage.getText(),
+        {
+          timestamp: chatMessage.getTimestamp(),
+        }
+      )
+    );
+
     // Notify all listeners
     this.listeners.forEach((listener) => {
       listener([...this.messages]);
