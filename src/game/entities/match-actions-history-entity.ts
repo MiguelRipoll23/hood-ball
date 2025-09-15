@@ -16,6 +16,7 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
   private readonly lineHeight = 16;
   private readonly actionMargin = 4;
   private readonly maxActions = 5;
+  private readonly defaultActionOpacity = 1;
 
   private actions: MatchAction[] = [];
   private isFadingIn = false;
@@ -147,11 +148,17 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
       const parts = this.getTextParts(action);
       let x = baseX;
 
+      const previousAlpha = ctx.globalAlpha;
+      const actionOpacity = this.getActionOpacity(action);
+      ctx.globalAlpha = previousAlpha * actionOpacity;
+
       for (const part of parts) {
         ctx.fillStyle = part.color;
         ctx.fillText(part.text, x, y);
         x += ctx.measureText(part.text).width;
       }
+
+      ctx.globalAlpha = previousAlpha;
 
       y += this.lineHeight;
       if (i < this.actions.length - 1) {
@@ -164,7 +171,8 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
     switch (action.getType()) {
       case MatchActionType.Goal: {
         const scorerId = action.getScorerId();
-        const playerName = this.getPlayerName(scorerId);
+        const playerName =
+          action.getScorerName() ?? this.getPlayerName(scorerId);
         const playerColor = this.getPlayerColor(scorerId);
 
         return [
@@ -175,20 +183,23 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
       case MatchActionType.Demolition: {
         const attackerId = action.getAttackerId();
         const victimId = action.getVictimId();
-        const attackerName = this.getPlayerName(attackerId);
-        const victimName = this.getPlayerName(victimId);
+        const attackerName =
+          action.getAttackerName() ?? this.getPlayerName(attackerId);
+        const victimName =
+          action.getVictimName() ?? this.getPlayerName(victimId);
         const attackerColor = this.getPlayerColor(attackerId);
         const victimColor = this.getPlayerColor(victimId);
 
         return [
           { text: attackerName, color: attackerColor },
-          { text: " 💣 ", color: "white" },
+          { text: " 💣 destroyed ", color: "white" },
           { text: victimName, color: victimColor },
         ];
       }
       case MatchActionType.PlayerJoined: {
         const playerId = action.getActorId();
-        const playerName = this.getPlayerName(playerId);
+        const playerName =
+          action.getActorName() ?? this.getPlayerName(playerId);
         const playerColor = this.getPlayerColor(playerId);
 
         return [
@@ -198,7 +209,8 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
       }
       case MatchActionType.PlayerLeft: {
         const playerId = action.getActorId();
-        const playerName = this.getPlayerName(playerId);
+        const playerName =
+          action.getActorName() ?? this.getPlayerName(playerId);
         const playerColor = this.getPlayerColor(playerId);
 
         return [
@@ -208,7 +220,8 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
       }
       case MatchActionType.ChatCommand: {
         const playerId = action.getActorId();
-        const playerName = this.getPlayerName(playerId);
+        const playerName =
+          action.getActorName() ?? this.getPlayerName(playerId);
         const playerColor = this.getPlayerColor(playerId);
         const commandName = action.getCommandName() ?? "command";
 
@@ -276,6 +289,32 @@ export class MatchActionsHistoryEntity extends BaseAnimatedGameEntity {
       default:
         return "white";
     }
+  }
+
+  private getActionOpacity(action: MatchAction): number {
+    if (!action.isFadingOut()) {
+      return this.defaultActionOpacity;
+    }
+
+    const fadeStart = action.getFadeOutStartTimestamp();
+    const fadeDuration = action.getFadeOutDurationMs();
+
+    if (!fadeStart || fadeDuration <= 0) {
+      return 0;
+    }
+
+    const elapsed = Date.now() - fadeStart;
+
+    if (elapsed <= 0) {
+      return this.defaultActionOpacity;
+    }
+
+    if (elapsed >= fadeDuration) {
+      return 0;
+    }
+
+    const remaining = Math.max(fadeDuration - elapsed, 0);
+    return Math.max(remaining / fadeDuration, 0);
   }
 
   private startFadeIn(): void {

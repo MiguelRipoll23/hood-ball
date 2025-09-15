@@ -6,21 +6,29 @@ type MatchActionListener = (actions: MatchAction[]) => void;
 @injectable()
 export class MatchActionsLogService {
   private readonly maxActions = 5;
-  private readonly removalDelayMs = 3000;
+  private readonly displayDurationMs = 3000;
+  private readonly fadeDurationMs = 500;
+  private readonly removalDelayMs = this.displayDurationMs + this.fadeDurationMs;
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];
   private readonly removalTimeouts = new Map<
     MatchAction,
     ReturnType<typeof setTimeout>
   >();
+  private readonly fadeTimeouts = new Map<
+    MatchAction,
+    ReturnType<typeof setTimeout>
+  >();
 
   public addAction(action: MatchAction): void {
     this.actions.push(action);
+    this.scheduleFadeOut(action);
     this.scheduleRemoval(action);
 
     while (this.actions.length > this.maxActions) {
       const removedAction = this.actions.shift();
       if (removedAction) {
+        this.cancelFadeTimeout(removedAction);
         this.cancelRemovalTimeout(removedAction);
       }
     }
@@ -37,7 +45,10 @@ export class MatchActionsLogService {
       return;
     }
 
-    this.actions.forEach((action) => this.cancelRemovalTimeout(action));
+    this.actions.forEach((action) => {
+      this.cancelFadeTimeout(action);
+      this.cancelRemovalTimeout(action);
+    });
     this.actions.length = 0;
     this.notifyListeners();
   }
@@ -54,6 +65,17 @@ export class MatchActionsLogService {
     };
   }
 
+  private scheduleFadeOut(action: MatchAction): void {
+    const timeoutId = setTimeout(() => {
+      action.startFadeOut(this.fadeDurationMs);
+      this.fadeTimeouts.delete(action);
+      this.notifyListeners();
+    }, this.displayDurationMs);
+
+    this.cancelFadeTimeout(action);
+    this.fadeTimeouts.set(action, timeoutId);
+  }
+
   private scheduleRemoval(action: MatchAction): void {
     const timeoutId = setTimeout(() => {
       this.removeAction(action);
@@ -67,13 +89,24 @@ export class MatchActionsLogService {
     const index = this.actions.indexOf(action);
 
     if (index === -1) {
+      this.cancelFadeTimeout(action);
       this.cancelRemovalTimeout(action);
       return;
     }
 
     this.actions.splice(index, 1);
+    this.cancelFadeTimeout(action);
     this.cancelRemovalTimeout(action);
     this.notifyListeners();
+  }
+
+  private cancelFadeTimeout(action: MatchAction): void {
+    const timeoutId = this.fadeTimeouts.get(action);
+
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+      this.fadeTimeouts.delete(action);
+    }
   }
 
   private cancelRemovalTimeout(action: MatchAction): void {
