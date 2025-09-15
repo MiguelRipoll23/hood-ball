@@ -37,6 +37,7 @@ export class MatchmakingNetworkService
 {
   private findMatchesTimerService: ITimerService | null = null;
   private pingCheckInterval: IIntervalService | null = null;
+  private advertiseMatchInterval: IIntervalService | null = null;
 
   constructor(
     private readonly gameState: GameState = inject(GameState),
@@ -87,6 +88,23 @@ export class MatchmakingNetworkService
   public removePingCheckInterval(): void {
     if (this.pingCheckInterval !== null) {
       this.intervalManagerService.removeInterval(this.pingCheckInterval);
+    }
+  }
+
+  public startAdvertiseMatchInterval(): void {
+    this.advertiseMatchInterval = this.intervalManagerService.createInterval(
+      60,
+      () => {
+        this.matchFinderService
+          .advertiseMatch()
+          .catch((error: unknown) => console.error(error));
+      }
+    );
+  }
+
+  public removeAdvertiseMatchInterval(): void {
+    if (this.advertiseMatchInterval !== null) {
+      this.intervalManagerService.removeInterval(this.advertiseMatchInterval);
     }
   }
 

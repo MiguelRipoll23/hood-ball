@@ -42,6 +42,7 @@ export class MatchmakingService implements IMatchmakingService {
       console.log("No matches found");
       await this.matchFinderService.createAndAdvertiseMatch();
       this.networkService.startPingCheckInterval();
+      this.networkService.startAdvertiseMatchInterval();
       return;
     }
 
@@ -53,6 +54,7 @@ export class MatchmakingService implements IMatchmakingService {
 
     await this.matchFinderService.createAndAdvertiseMatch();
     this.networkService.startPingCheckInterval();
+    this.networkService.startAdvertiseMatchInterval();
   }
 
   public async savePlayerScore(): Promise<void> {
