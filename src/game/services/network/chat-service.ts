@@ -3,8 +3,7 @@ import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { ChatMessage } from "../../models/chat-message.js";
@@ -12,35 +11,31 @@ import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventProcessorService } from "../../../engine/services/events/event-processor-service.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 
 @injectable()
 export class ChatService {
   private static readonly MAX_HISTORY_SIZE = 50;
+  private readonly localPlayerId: string;
   private static readonly LOG_THROTTLE_MS = 500;
 
   private readonly messages: ChatMessage[] = [];
   private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
-  private readonly webSocketService: WebSocketService;
-  private readonly webrtcService: WebRTCService;
-  private readonly signatureService: SignatureService;
-  private readonly eventProcessorService: EventProcessorService;
-  private readonly localPlayerId: string;
-  private readonly matchActionsLogService: MatchActionsLogService;
   private readonly commandLogTimestamps = new Map<string, number>();
 
-  constructor() {
-    this.webSocketService = container.get(WebSocketService);
-    this.webrtcService = container.get(WebRTCService);
-    this.signatureService = container.get(SignatureService);
-    this.eventProcessorService = container.get(EventProcessorService);
-    const gameState = container.get(GameState);
-    this.localPlayerId = gameState.getGamePlayer().getNetworkId();
-    this.matchActionsLogService = container.get(MatchActionsLogService);
+  constructor(
+    private readonly webSocketService: WebSocketService = inject(WebSocketService),
+    private readonly webrtcService: WebRTCService = inject(WebRTCService),
+    private readonly signatureService: SignatureService = inject(SignatureService),
+    private readonly eventProcessorService: EventProcessorService = inject(EventProcessorService),
+    private readonly gameState: GameState = inject(GameState),
+    private readonly matchActionsLogService: MatchActionsLogService = inject(MatchActionsLogService)
+  ) {
+    this.localPlayerId = this.gameState.getGamePlayer().getNetworkId();
     this.webrtcService.registerCommandHandlers(this);
     this.webSocketService.registerCommandHandlers(this);
   }
@@ -227,3 +222,5 @@ export class ChatService {
     );
   }
 }
+
+

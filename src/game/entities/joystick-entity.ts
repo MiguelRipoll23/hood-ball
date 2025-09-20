@@ -1,4 +1,4 @@
-import { GamePointer } from "../../core/models/game-pointer.js";
+import { GamePointer } from "../../engine/models/game-pointer.js";
 import { BaseGameEntity } from "../../core/entities/base-game-entity.js";
 
 export class JoystickEntity extends BaseGameEntity {

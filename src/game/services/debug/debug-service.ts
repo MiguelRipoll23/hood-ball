@@ -1,8 +1,7 @@
 import { ImGui, ImGuiImplWeb, ImVec2 } from "@mori2003/jsimgui";
 import { DebugWindow } from "../../debug/debug-window.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { GameState } from "../../state/game-state.js";
+import { injectable, inject } from "@needle-di/core";
 
 @injectable()
 export class DebugService {
@@ -17,7 +16,7 @@ export class DebugService {
   private errorMessages: string[] = [];
   private readonly originalConsoleError = console.error.bind(console);
 
-  constructor(private gameState = container.get(GameState)) {
+  constructor(private readonly gameState = inject(GameState)) {
     console.log(`${this.constructor.name} created`);
     this.debugCanvas = this.getDebugCanvas();
     this.gameCanvas = this.gameState.getCanvas();

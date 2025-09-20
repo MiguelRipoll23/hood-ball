@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import type { ITimerService } from "../../../core/interfaces/services/gameplay/timer-service-interface.js";
+import type { ITimerService } from "../../../engine/contracts/gameplay/timer-service-interface.js";
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 
 @injectable()

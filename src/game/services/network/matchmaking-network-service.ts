@@ -1,7 +1,7 @@
-import type { ITimerService } from "../../../core/interfaces/services/gameplay/timer-service-interface.js";
+import type { ITimerService } from "../../../engine/contracts/gameplay/timer-service-interface.js";
 import { Match } from "../../models/match.js";
 import { GamePlayer } from "../../models/game-player.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
@@ -10,7 +10,7 @@ import { LocalEvent } from "../../../core/models/local-event.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import type { IIntervalService } from "../../../core/interfaces/services/gameplay/interval-service-interface.js";
+import type { IIntervalService } from "../../../engine/contracts/gameplay/interval-service-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
@@ -20,14 +20,16 @@ import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
-import { IntervalManagerService } from "../../../core/services/gameplay/interval-manager-service.js";
+import { EventProcessorService } from "../../../engine/services/events/event-processor-service.js";
+import { TimerManagerService } from "../../../engine/services/time/timer-manager-service.js";
+import { IntervalManagerService } from "../../../engine/services/time/interval-manager-service.js";
 import { MatchFinderService } from "../gameplay/match-finder-service.js";
 import { injectable, inject } from "@needle-di/core";
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
+  type PendingIdentityMap,
+  type ReceivedIdentityMap,
 } from "../gameplay/matchmaking-tokens.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 
@@ -60,8 +62,12 @@ export class MatchmakingNetworkService
     private readonly spawnPointService: SpawnPointService = inject(
       SpawnPointService
     ),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
+    private readonly pendingIdentities: PendingIdentityMap = inject(
+      PendingIdentitiesToken
+    ) as PendingIdentityMap,
+    private readonly receivedIdentities: ReceivedIdentityMap = inject(
+      ReceivedIdentitiesToken
+    ) as ReceivedIdentityMap
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
@@ -674,3 +680,4 @@ export class MatchmakingNetworkService
     peer.sendUnreliableUnorderedMessage(payload);
   }
 }
+

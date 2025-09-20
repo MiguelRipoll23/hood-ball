@@ -1,12 +1,11 @@
-import { GameState } from "../../../core/models/game-state.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { GameState } from "../../state/game-state.js";
+import { injectable, inject } from "@needle-di/core";
 
 @injectable()
 export class LoadingIndicatorService {
   private activeRequests = 0;
 
-  constructor(private gameState = container.get(GameState)) {}
+  constructor(private readonly gameState = inject(GameState)) {}
 
   public startLoading(): void {
     this.activeRequests++;

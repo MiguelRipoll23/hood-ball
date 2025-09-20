@@ -32,7 +32,11 @@ export class EntityAnimationService {
     this.durationMilliseconds = durationSeconds * 1000;
     this.animationType = animationType;
 
-    this.animationLogService.register(this, entity, animationType);
+    this.animationLogService.register(
+      this,
+      entity,
+      AnimationType[animationType] ?? "Unknown"
+    );
 
     console.log(
       `${this.constructor.name} [${AnimationType[animationType]}] created for ${entity.constructor.name}`

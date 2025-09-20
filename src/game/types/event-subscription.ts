@@ -1,6 +1,3 @@
-import { EventType } from "../enums/event-type.js";
+import type { EngineEventSubscription } from "../../engine/contracts/events/event-subscription.js";
 
-export type EventSubscription<T = unknown> = {
-  eventType: EventType;
-  eventCallback: (data: T) => void;
-};
+export type EventSubscription<T = unknown> = EngineEventSubscription<T>;

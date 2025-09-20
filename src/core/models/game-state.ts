@@ -1,106 +1,57 @@
 import { Match } from "../../game/models/match.js";
 import { GamePlayer } from "../../game/models/game-player.js";
 import { GameServer } from "../../game/models/game-server.js";
-import { GameFrame } from "./game-frame.js";
-import { GamePointer } from "./game-pointer.js";
-import { DebugSettings } from "./debug-settings.js";
-import { GameKeyboard } from "./game-keyboard.js";
-import { GameGamepad } from "./game-gamepad.js";
 import { MatchStateType } from "../../game/enums/match-state-type.js";
+import { EngineState } from "../../engine/state/engine-state.js";
 
-export class GameState {
-  private debugSettings: DebugSettings;
+export interface GameSessionStateContract {
+  getGameServer(): GameServer;
+  getGamePlayer(): GamePlayer;
+  getMatch(): Match | null;
+  setMatch(match: Match | null): void;
+  setMatchState(state: MatchStateType): void;
+  startMatch(): void;
+  endMatch(): void;
+}
 
-  private gameFrame: GameFrame;
-
-  private gamePointer: GamePointer;
-  private gameKeyboard: GameKeyboard;
-  private gameGamepad: GameGamepad;
-
-  private gameServer: GameServer;
-  private gamePlayer: GamePlayer;
-  private match: Match | null = null;
-
-  constructor(private readonly canvas: HTMLCanvasElement, debugging: boolean) {
-    this.debugSettings = new DebugSettings(debugging);
-    this.gameFrame = new GameFrame();
-    this.gamePointer = new GamePointer(this.canvas);
-    this.gameKeyboard = new GameKeyboard();
-    this.gameGamepad = new GameGamepad(this.gameFrame);
-    this.gameServer = new GameServer();
-    this.gamePlayer = new GamePlayer();
+export class GameState extends EngineState {
+  constructor(
+    canvas: HTMLCanvasElement,
+    debugging: boolean,
+    private readonly sessionState: GameSessionStateContract
+  ) {
+    super(canvas, debugging);
   }
 
-  public isDebugging(): boolean {
-    return this.debugSettings.isDebugging();
-  }
-
-  public getDebugSettings(): DebugSettings {
-    return this.debugSettings;
-  }
-
-  public getCanvas(): HTMLCanvasElement {
-    return this.canvas;
-  }
-
-  public getGameFrame(): GameFrame {
-    return this.gameFrame;
-  }
-
-  public getGamePointer(): GamePointer {
-    return this.gamePointer;
-  }
-
-  public getGameKeyboard(): GameKeyboard {
-    return this.gameKeyboard;
-  }
-
-  public getGameGamepad(): GameGamepad {
-    return this.gameGamepad;
+  public getSessionState(): GameSessionStateContract {
+    return this.sessionState;
   }
 
   public getGameServer(): GameServer {
-    return this.gameServer;
+    return this.sessionState.getGameServer();
   }
 
   public getGamePlayer(): GamePlayer {
-    return this.gamePlayer;
+    return this.sessionState.getGamePlayer();
   }
 
   public getMatch(): Match | null {
-    return this.match;
+    return this.sessionState.getMatch();
   }
 
   public setMatch(match: Match | null): void {
-    if (match === null) {
-      this.match = null;
-      console.log("Match removed from game state");
-      return;
-    }
-
-    this.match = match;
-
-    if (match.isHost()) {
-      console.log("Match created in game state", match);
-    } else {
-      console.log("Match set in game state", match);
-    }
+    this.sessionState.setMatch(match);
   }
 
   public setMatchState(state: MatchStateType): void {
-    if (this.match === null) {
-      console.warn("Cannot set state, match is null");
-      return;
-    }
-
-    this.match.setState(state);
+    this.sessionState.setMatchState(state);
   }
 
   public startMatch(): void {
-    this.setMatchState(MatchStateType.InProgress);
+    this.sessionState.startMatch();
   }
 
   public endMatch(): void {
-    this.setMatchState(MatchStateType.GameOver);
+    this.sessionState.endMatch();
   }
 }

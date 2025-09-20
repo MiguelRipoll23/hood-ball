@@ -3,7 +3,7 @@ import { EventType } from "../../enums/event-type.js";
 import { TeamType } from "../../enums/team-type.js";
 
 import { RemoteEvent } from "../../../core/models/remote-event.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
 
@@ -42,10 +42,11 @@ export class ScoreManagerService {
   ) {}
 
   public updateScoreboard(): void {
-    const players = this.gameState.getMatch()?.getPlayers() ?? [];
+    const players: GamePlayer[] =
+      this.gameState.getMatch()?.getPlayers() ?? [];
     let totalScore = 0;
 
-    players.forEach((player) => {
+    players.forEach((player: GamePlayer) => {
       const score = player.getScore();
 
       if (player === this.gameState.getGamePlayer()) {
@@ -229,7 +230,8 @@ export class ScoreManagerService {
   }
 
   private handleTimerEnd(): void {
-    const players = this.gameState.getMatch()?.getPlayers() || [];
+    const players: GamePlayer[] =
+      this.gameState.getMatch()?.getPlayers() || [];
     let winner = this.gameState.getGamePlayer();
 
     for (const player of players) {
@@ -239,7 +241,7 @@ export class ScoreManagerService {
     }
 
     const isTie = players.every(
-      (player) => player.getScore() === winner.getScore()
+      (player: GamePlayer) => player.getScore() === winner.getScore()
     );
 
     if (isTie) {

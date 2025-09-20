@@ -10,8 +10,8 @@ import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
-import type { GameState } from "../../../core/models/game-state.js";
-import type { GameEntity } from "../../../core/models/game-entity.js";
+import type { GameState } from "../../state/game-state.js";
+import type { GameEntity } from "../../../engine/models/game-entity.js";
 import { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 
 export interface WorldEntities {

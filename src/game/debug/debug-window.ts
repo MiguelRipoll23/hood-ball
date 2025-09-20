@@ -5,7 +5,7 @@ import { MatchInspectorWindow } from "./match-inspector-window.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
-import type { GameState } from "../../core/models/game-state.js";
+import type { GameState } from "../state/game-state.js";
 
 export class DebugWindow extends BaseWindow {
   private animationInspectorWindow: AnimationInspectorWindow;

@@ -26,7 +26,7 @@ export class LoadingScene extends BaseGameScene {
   ) {
     super(gameState, eventConsumerService);
     this.sceneTransitionService = sceneTransitionService;
-    this.controller = new LoadingController(gameState);
+    this.controller = new LoadingController(gameState, eventConsumerService);
   }
 
   public override load(): void {

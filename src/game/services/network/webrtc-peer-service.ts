@@ -5,9 +5,8 @@ import type { WebRTCServiceContract } from "../../interfaces/services/network/we
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
-import { container } from "../../../core/services/di-container.js";
+import { GameState } from "../../state/game-state.js";
+import { TimerManagerService } from "../../../engine/services/time/timer-manager-service.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -48,16 +47,16 @@ export class WebRTCPeerService implements WebRTCPeer {
   }> = [];
 
   constructor(
-    private token: string,
+    private readonly token: string,
     webrtcDelegate: WebRTCServiceContract,
     connectionListener: PeerConnectionListener,
-    private gameState = container.get(GameState),
-    private timerManagerService = container.get(TimerManagerService)
+    private readonly gameState: GameState,
+    private readonly timerManagerService: TimerManagerService
   ) {
     this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;
 
-    this.host = gameState.getMatch()?.isHost() ?? false;
+    this.host = this.gameState.getMatch()?.isHost() ?? false;
 
     this.peerConnection = new RTCPeerConnection({
       iceServers: this.gameState
@@ -99,6 +98,10 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   public hasJoined() {
     return this.joined;
+  }
+
+  public isHost(): boolean {
+    return this.host;
   }
 
   public setJoined(joined: boolean) {
@@ -632,3 +635,4 @@ export class WebRTCPeerService implements WebRTCPeer {
     return this.gameState.getDebugSettings().isWebRTCLoggingEnabled();
   }
 }
+

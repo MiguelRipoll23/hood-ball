@@ -1,3 +1,3 @@
-import { Container } from "@needle-di/core";
+import { createEngineContainer } from "../../engine/bootstrap/engine-container.js";
 
-export const container = new Container();
+export const container = createEngineContainer();

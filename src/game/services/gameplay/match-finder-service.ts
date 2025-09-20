@@ -16,10 +16,13 @@ import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIService } from "../network/api-service.js";
 import { WebSocketService } from "../network/websocket-service.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
-import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
+import {
+  PendingIdentitiesToken,
+  type PendingIdentityMap,
+} from "./matchmaking-tokens.js";
 
 @injectable()
 export class MatchFinderService {
@@ -27,7 +30,9 @@ export class MatchFinderService {
     private readonly gameState = inject(GameState),
     private readonly apiService = inject(APIService),
     private readonly webSocketService = inject(WebSocketService),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
+    private readonly pendingIdentities: PendingIdentityMap = inject(
+      PendingIdentitiesToken
+    ) as PendingIdentityMap,
     private readonly eventProcessorService = inject(EventProcessorService)
   ) {}
 

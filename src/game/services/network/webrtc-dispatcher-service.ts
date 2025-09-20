@@ -5,16 +5,16 @@ import type { PeerCommandHandlerFunction } from "../../types/peer-command-handle
 import type { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 
 export class WebRTCDispatcherService {
-  private commandHandlers = new Map<WebRTCType, PeerCommandHandlerFunction>();
+  private readonly commandHandlers = new Map<number, PeerCommandHandlerFunction>();
 
-  public registerCommandHandlers(instance: any): void {
+  public registerCommandHandlers(instance: unknown): void {
     const commandHandlers = getPeerCommandHandlers().filter(
       (commandHandler) =>
         commandHandler.target === Object.getPrototypeOf(instance)
     );
 
     for (const { commandId, methodName } of commandHandlers) {
-      const method = instance[methodName];
+      const method = (instance as Record<string, unknown>)[methodName];
 
       if (typeof method !== "function") {
         console.error(
@@ -23,33 +23,38 @@ export class WebRTCDispatcherService {
         continue;
       }
 
-      const boundMethod = instance[methodName].bind(instance);
-      this.bindCommandHandler(commandId, boundMethod);
+      const boundMethod = method.bind(instance) as PeerCommandHandlerFunction;
+      this.bindCommandHandler(
+        commandId,
+        boundMethod,
+        WebRTCType[commandId as WebRTCType] ?? `Command(${commandId})`
+      );
     }
   }
 
+  public bindCommandHandler(
+    commandId: number,
+    commandHandler: PeerCommandHandlerFunction,
+    label?: string
+  ): void {
+    this.commandHandlers.set(commandId, commandHandler);
+    const resolvedLabel = label ?? WebRTCType[commandId as WebRTCType] ?? `Command(${commandId})`;
+    console.log(`Peer command handler bound for ${resolvedLabel}`);
+  }
+
   public dispatchCommand(
-    commandId: WebRTCType,
+    commandId: number,
     webrtcPeer: WebRTCPeer,
     binaryReader: BinaryReader
   ): void {
     const commandHandler = this.commandHandlers.get(commandId);
 
     if (commandHandler === undefined) {
-      console.warn(
-        `No peer command handler found for ${WebRTCType[commandId]}`
-      );
+      const label = WebRTCType[commandId as WebRTCType] ?? `Command(${commandId})`;
+      console.warn(`No peer command handler found for ${label}`);
       return;
     }
 
     commandHandler(webrtcPeer, binaryReader);
-  }
-
-  private bindCommandHandler(
-    commandId: WebRTCType,
-    commandHandler: PeerCommandHandlerFunction
-  ): void {
-    this.commandHandlers.set(commandId, commandHandler);
-    console.log(`Peer command handler bound for ${WebRTCType[commandId]}`);
   }
 }

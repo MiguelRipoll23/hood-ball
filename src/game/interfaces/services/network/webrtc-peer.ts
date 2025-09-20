@@ -11,6 +11,7 @@ export interface WebRTCPeer {
   getPlayer(): GamePlayer | null;
   setPlayer(player: GamePlayer): void;
   hasJoined(): boolean;
+  isHost(): boolean;
   setJoined(joined: boolean): void;
   disconnect(graceful: boolean): void;
   disconnectGracefully(): void;

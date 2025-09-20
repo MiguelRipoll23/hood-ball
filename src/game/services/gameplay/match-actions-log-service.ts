@@ -1,5 +1,7 @@
-import { injectable } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 import { MatchAction } from "../../models/match-action.js";
+import { TimerManagerService } from "../../../engine/services/time/timer-manager-service.js";
+import type { ITimerService } from "../../../engine/contracts/gameplay/timer-service-interface.js";
 
 type MatchActionListener = (actions: MatchAction[]) => void;
 
@@ -9,16 +11,16 @@ export class MatchActionsLogService {
   private readonly displayDurationMs = 3000;
   private readonly fadeDurationMs = 500;
   private readonly removalDelayMs = this.displayDurationMs + this.fadeDurationMs;
+
+  private readonly fadeTimers = new Map<MatchAction, ITimerService>();
+  private readonly removalTimers = new Map<MatchAction, ITimerService>();
+
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];
-  private readonly removalTimeouts = new Map<
-    MatchAction,
-    ReturnType<typeof setTimeout>
-  >();
-  private readonly fadeTimeouts = new Map<
-    MatchAction,
-    ReturnType<typeof setTimeout>
-  >();
+
+  constructor(
+    private readonly timerManager = inject(TimerManagerService)
+  ) {}
 
   public addAction(action: MatchAction): void {
     this.actions.push(action);
@@ -28,8 +30,8 @@ export class MatchActionsLogService {
     while (this.actions.length > this.maxActions) {
       const removedAction = this.actions.shift();
       if (removedAction) {
-        this.cancelFadeTimeout(removedAction);
-        this.cancelRemovalTimeout(removedAction);
+        this.cancelFadeTimer(removedAction);
+        this.cancelRemovalTimer(removedAction);
       }
     }
 
@@ -46,8 +48,8 @@ export class MatchActionsLogService {
     }
 
     this.actions.forEach((action) => {
-      this.cancelFadeTimeout(action);
-      this.cancelRemovalTimeout(action);
+      this.cancelFadeTimer(action);
+      this.cancelRemovalTimer(action);
     });
     this.actions.length = 0;
     this.notifyListeners();
@@ -66,56 +68,75 @@ export class MatchActionsLogService {
   }
 
   private scheduleFadeOut(action: MatchAction): void {
-    const timeoutId = setTimeout(() => {
-      action.startFadeOut(this.fadeDurationMs);
-      this.fadeTimeouts.delete(action);
-      this.notifyListeners();
-    }, this.displayDurationMs);
+    this.cancelFadeTimer(action);
 
-    this.cancelFadeTimeout(action);
-    this.fadeTimeouts.set(action, timeoutId);
+    const timer = this.timerManager.createTimer(
+      this.displayDurationMs / 1000,
+      () => {
+        action.startFadeOut(this.fadeDurationMs);
+        this.fadeTimers.delete(action);
+        this.notifyListeners();
+      }
+    );
+
+    this.fadeTimers.set(action, timer);
   }
 
   private scheduleRemoval(action: MatchAction): void {
-    const timeoutId = setTimeout(() => {
-      this.removeAction(action);
-    }, this.removalDelayMs);
+    this.cancelRemovalTimer(action);
 
-    this.cancelRemovalTimeout(action);
-    this.removalTimeouts.set(action, timeoutId);
+    const timer = this.timerManager.createTimer(
+      this.removalDelayMs / 1000,
+      () => {
+        this.removalTimers.delete(action);
+        this.removeAction(action);
+      }
+    );
+
+    this.removalTimers.set(action, timer);
   }
 
   private removeAction(action: MatchAction): void {
     const index = this.actions.indexOf(action);
 
     if (index === -1) {
-      this.cancelFadeTimeout(action);
-      this.cancelRemovalTimeout(action);
+      this.cancelFadeTimer(action);
+      this.cancelRemovalTimer(action);
       return;
     }
 
     this.actions.splice(index, 1);
-    this.cancelFadeTimeout(action);
-    this.cancelRemovalTimeout(action);
+    this.cancelFadeTimer(action);
+    this.cancelRemovalTimer(action);
     this.notifyListeners();
   }
 
-  private cancelFadeTimeout(action: MatchAction): void {
-    const timeoutId = this.fadeTimeouts.get(action);
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId);
-      this.fadeTimeouts.delete(action);
+  private cancelFadeTimer(action: MatchAction): void {
+    const timer = this.fadeTimers.get(action);
+    if (!timer) {
+      return;
     }
+
+    if (!timer.hasCompleted()) {
+      timer.stop(false);
+    }
+
+    this.timerManager.removeTimer(timer);
+    this.fadeTimers.delete(action);
   }
 
-  private cancelRemovalTimeout(action: MatchAction): void {
-    const timeoutId = this.removalTimeouts.get(action);
-
-    if (timeoutId !== undefined) {
-      clearTimeout(timeoutId);
-      this.removalTimeouts.delete(action);
+  private cancelRemovalTimer(action: MatchAction): void {
+    const timer = this.removalTimers.get(action);
+    if (!timer) {
+      return;
     }
+
+    if (!timer.hasCompleted()) {
+      timer.stop(false);
+    }
+
+    this.timerManager.removeTimer(timer);
+    this.removalTimers.delete(action);
   }
 
   private notifyListeners(): void {

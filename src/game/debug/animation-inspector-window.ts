@@ -1,6 +1,5 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../core/debug/base-window.js";
-import { AnimationType } from "../enums/animation-type.js";
 import { AnimationLogService } from "../../core/services/gameplay/animation-log-service.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
@@ -41,7 +40,7 @@ export class AnimationInspectorWindow extends BaseWindow {
         ImGui.TableSetColumnIndex(0);
         ImGui.Text(entry.entityName);
         ImGui.TableSetColumnIndex(1);
-        ImGui.Text(AnimationType[entry.type]);
+        ImGui.Text(entry.type);
         ImGui.TableSetColumnIndex(2);
         const progressText = `${(entry.progress * 100).toFixed(0)}%`;
         const color = entry.finished

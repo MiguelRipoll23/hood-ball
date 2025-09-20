@@ -7,13 +7,12 @@ import type { ServerNotificationPayload } from "../../interfaces/events/server-n
 import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 
 @injectable()
 export class WebSocketService {
@@ -22,7 +21,6 @@ export class WebSocketService {
 
   private onlinePlayers = 0;
 
-  private eventProcessorService: EventProcessorService;
   private dispatcherService: WebSocketDispatcherService;
 
   // Reconnection properties
@@ -31,11 +29,13 @@ export class WebSocketService {
   private baseReconnectDelay = 1000; // Start with 1 second
   private maxReconnectDelay = 30000; // Max 30 seconds between attempts
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
-  private reconnectTimeoutId: number | null = null;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private gameState = container.get(GameState)) {
+  constructor(
+    private readonly gameState: GameState = inject(GameState),
+    private readonly eventProcessorService: EventProcessorService = inject(EventProcessorService)
+  ) {
     this.baseURL = APIUtils.getWSBaseURL();
-    this.eventProcessorService = container.get(EventProcessorService);
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
   }

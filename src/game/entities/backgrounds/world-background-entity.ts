@@ -1,6 +1,6 @@
 import { BaseStaticCollidingGameEntity } from "../../../core/entities/base-static-colliding-game-entity.js";
 import { HitboxEntity } from "../../../core/entities/hitbox-entity.js";
-import type { GameEntity } from "../../../core/models/game-entity.js";
+import type { GameEntity } from "../../../engine/models/game-entity.js";
 
 export class WorldBackgroundEntity extends BaseStaticCollidingGameEntity {
   private readonly BACKGROUND_COLOR: string = "#00a000";

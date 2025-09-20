@@ -10,13 +10,12 @@ import { WebRTCType } from "../../enums/webrtc-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
+import { TimerManagerService } from "../../../engine/services/time/timer-manager-service.js";
 import type { GamePlayer } from "../../models/game-player.js";
 import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
-
+import { inject, injectable } from "@needle-di/core";
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {
   private peers: Map<string, WebRTCPeer> = new Map();
@@ -26,25 +25,36 @@ export class WebRTCService implements WebRTCServiceContract {
   private uploadKilobytesPerSecond: number = 0;
 
   private readonly dispatcherService: WebRTCDispatcherService;
-  private webSocketService: WebSocketService | null = null;
   private connectionListener: PeerConnectionListener | null = null;
 
   constructor(
-    private gameState = container.get(GameState)
+    private readonly gameState: GameState = inject(GameState),
+    private readonly webSocketService: WebSocketService = inject(WebSocketService),
+    private readonly timerManagerService: TimerManagerService = inject(TimerManagerService)
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
+    this.webSocketService.registerCommandHandlers(this);
   }
 
-  public initialize(listener: PeerConnectionListener): void {
-    this.webSocketService = container.get(WebSocketService);
-    this.webSocketService!.registerCommandHandlers(this);
+  public setConnectionListener(listener: PeerConnectionListener): void {
+    if (this.connectionListener !== null) {
+      console.warn("WebRTC connection listener is being replaced");
+    }
+
     this.connectionListener = listener;
-    console.log("WebRTC service initialized");
   }
 
   public registerCommandHandlers(instance: object): void {
     this.dispatcherService.registerCommandHandlers(instance);
+  }
+
+  public bindCommandHandler(
+    commandId: number,
+    commandHandler: (peer: WebRTCPeer, binaryReader: BinaryReader) => void,
+    label?: string
+  ): void {
+    this.dispatcherService.bindCommandHandler(commandId, commandHandler, label);
   }
 
   public dispatchCommand(
@@ -233,7 +243,8 @@ export class WebRTCService implements WebRTCServiceContract {
       token,
       this,
       this.connectionListener,
-      this.gameState
+      this.gameState,
+      this.timerManagerService
     );
     this.peers.set(token, peer);
 
@@ -359,3 +370,8 @@ export class WebRTCService implements WebRTCServiceContract {
     match.setPingMedianMilliseconds(computeMedian(nonHostPings));
   }
 }
+
+
+
+
+

@@ -11,7 +11,7 @@ import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
 import { BaseCollidingGameScene } from "../../../core/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../core/models/game-state.js";
-import { EntityStateType } from "../../../core/enums/entity-state-type.js";
+import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { EventType } from "../../enums/event-type.js";
 import { SceneType } from "../../enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";

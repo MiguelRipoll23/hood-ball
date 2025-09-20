@@ -1,4 +1,4 @@
-import { GamePointer } from "../models/game-pointer.js";
+import { GamePointer } from "../../engine/models/game-pointer.js";
 import { LayerType } from "../enums/layer-type.js";
 import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
 import type { GameEntity } from "../models/game-entity.js";
@@ -35,15 +35,13 @@ export class BaseGameScene implements GameScene {
    * after handling input in {@link update}. Subclasses can override
    * {@link shouldClearPointerEvents} to delay or disable clearing
    * when delegating events to nested scenes.
-   */
-  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  */
   protected clearPointerEventsAutomatically = true;
 
   /**
    * Determines if pointer events should be cleared at the end of
    * the default update cycle.
-   */
-  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  */
   protected shouldClearPointerEvents(): boolean {
     return this.clearPointerEventsAutomatically;
   }
@@ -51,8 +49,7 @@ export class BaseGameScene implements GameScene {
   /**
    * Clears the current pressed state of the game pointer. Subclasses may call
    * this manually when deferring pointer handling to nested scenes.
-   */
-  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
+  */
   protected clearPointerEvents(): void {
     this.gamePointer.clearPressed();
   }

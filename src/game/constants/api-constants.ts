@@ -1,4 +1,9 @@
-export const API_HOST = import.meta.env.VITE_API_HOST;
+const metaEnv =
+  typeof import.meta !== "undefined" && (import.meta as Record<string, any>).env
+    ? (import.meta as Record<string, any>).env
+    : (globalThis as { process?: { env?: Record<string, string> } }).process?.env ?? {} as Record<string, string>;
+
+export const API_HOST = metaEnv.VITE_API_HOST ?? "";
 export const API_PATH = "/api";
 export const API_VERSION = "/v1";
 
@@ -17,3 +22,4 @@ export const MATCHES_FIND_ENDPOINT = `${MATCHES_ENDPOINT}/find`;
 export const MATCHES_ADVERTISE_ENDPOINT = `${MATCHES_ENDPOINT}/advertise`;
 export const MATCHES_REMOVE_ENDPOINT = `${MATCHES_ENDPOINT}/owned`;
 export const USER_SCORES_PATH = "/user-scores";
+

@@ -25,23 +25,21 @@ import type { RegistrationOptionsRequest } from "../../interfaces/requests/regis
 import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options.js";
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
 import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response.js";
-import { CryptoService } from "../../../core/services/security/crypto-service.js";
+import { CryptoService } from "../security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 
 @injectable()
 export class APIService {
   private baseURL: string;
   private authenticationToken: string | null = null;
-  private readonly cryptoService: CryptoService;
-  private readonly loadingIndicatorService: LoadingIndicatorService;
 
-  constructor() {
+  constructor(
+    private readonly cryptoService: CryptoService = inject(CryptoService),
+    private readonly loadingIndicatorService: LoadingIndicatorService = inject(LoadingIndicatorService)
+  ) {
     this.baseURL = APIUtils.getBaseURL();
-    this.cryptoService = container.get(CryptoService);
-    this.loadingIndicatorService = container.get(LoadingIndicatorService);
   }
 
   private async fetchWithLoading(

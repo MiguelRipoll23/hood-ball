@@ -1,20 +1,17 @@
-import type { WebRTCType } from "../enums/webrtc-type.js";
 import type { PeerCommandHandlerMetadata } from "../interfaces/services/network/peer-command-handler-metadata.js";
 
 const commandHandlers: PeerCommandHandlerMetadata[] = [];
 
-export function PeerCommandHandler(commandId: WebRTCType) {
+export function PeerCommandHandler(commandId: number) {
   return function (
     target: object,
     propertyKey: string,
     propertyDescriptor: PropertyDescriptor
   ) {
-    // Validate method signature if possible
     if (typeof propertyDescriptor.value !== "function") {
       throw new Error(`@PeerCommandHandler can only be applied to methods`);
     }
 
-    // Prevent duplicate registrations
     if (hasPeerCommandHandler(target, propertyKey, commandId)) {
       console.warn(
         `Duplicate @PeerCommandHandler registration for ${propertyKey} with command ${commandId}`
@@ -23,7 +20,7 @@ export function PeerCommandHandler(commandId: WebRTCType) {
     }
 
     commandHandlers.push({
-      commandId: commandId,
+      commandId,
       methodName: propertyKey,
       target,
     });
@@ -41,12 +38,12 @@ export function clearPeerCommandHandlers(): void {
 export function hasPeerCommandHandler(
   target: object,
   methodName: string,
-  commandId: WebRTCType
+  commandId: number
 ): boolean {
   return commandHandlers.some(
-    (h) =>
-      h.target === target &&
-      h.methodName === methodName &&
-      h.commandId === commandId
+    (handler) =>
+      handler.target === target &&
+      handler.methodName === methodName &&
+      handler.commandId === commandId
   );
 }

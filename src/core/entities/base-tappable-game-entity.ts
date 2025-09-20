@@ -1,4 +1,4 @@
-import { GamePointer } from "../models/game-pointer.js";
+import { GamePointer } from "../../engine/models/game-pointer.js";
 import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
 
 export class BaseTappableGameEntity extends BaseAnimatedGameEntity {

@@ -1,5 +1,5 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { APIService } from "../network/api-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
@@ -11,7 +11,12 @@ import { GamePlayer } from "../../models/game-player.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import { DisconnectionMonitor } from "./disconnection-monitor.js";
-import { PendingIdentitiesToken, ReceivedIdentitiesToken } from "./matchmaking-tokens.js";
+import {
+  PendingIdentitiesToken,
+  ReceivedIdentitiesToken,
+  type PendingIdentityMap,
+  type ReceivedIdentityMap,
+} from "./matchmaking-tokens.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 
@@ -30,8 +35,12 @@ export class MatchLifecycleService {
     private readonly eventProcessor = inject(EventProcessorService),
     private readonly eventConsumer = inject(EventConsumerService),
     private readonly disconnectionMonitor = inject(DisconnectionMonitor),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
+    private readonly pendingIdentities: PendingIdentityMap = inject(
+      PendingIdentitiesToken
+    ) as PendingIdentityMap,
+    private readonly receivedIdentities: ReceivedIdentityMap = inject(
+      ReceivedIdentitiesToken
+    ) as ReceivedIdentityMap
   ) {
     this.eventConsumer.subscribeToLocalEvent(
       EventType.PlayerDisconnected,

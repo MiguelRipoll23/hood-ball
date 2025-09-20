@@ -4,7 +4,7 @@ import type { RegistrationOptionsRequest } from "../../interfaces/requests/regis
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
 import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
 import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { ServerError } from "../../models/server-error.js";
 import { ServerRegistration } from "../../models/server-registration.js";

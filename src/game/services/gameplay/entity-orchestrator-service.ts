@@ -1,33 +1,30 @@
 import type { MultiplayerGameEntity } from "../../../core/interfaces/entities/multiplayer-game-entity.js";
 import { WebRTCService } from "../network/webrtc-service.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../state/game-state.js";
 import { EntityUtils } from "../../../core/utils/entity-utils.js";
 import type { MultiplayerScene } from "../../../core/interfaces/scenes/multiplayer-scene.js";
-import { EntityStateType } from "../../../core/enums/entity-state-type.js";
+import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { SceneUtils } from "../../../core/utils/scene-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import type { EntityType } from "../../enums/entity-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 
 @injectable()
 export class EntityOrchestratorService {
   private readonly PERIODIC_MILLISECONDS = 500;
 
-  private webrtcService: WebRTCService | null = null;
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
-  constructor(private gameState = container.get(GameState)) {}
-
-  public initialize(webrtcService: WebRTCService): void {
-    this.webrtcService = webrtcService;
+  constructor(
+    private readonly gameState: GameState = inject(GameState),
+    private readonly webrtcService: WebRTCService = inject(WebRTCService)
+  ) {
     this.webrtcService.registerCommandHandlers(this);
-    console.log("Entity orchestrator service initialized");
   }
 
   public sendLocalData(
@@ -109,13 +106,6 @@ export class EntityOrchestratorService {
     }
   }
 
-  private getWebRTCService(): WebRTCService {
-    if (this.webrtcService === null) {
-      throw new Error("WebRTCService is not initialized");
-    }
-
-    return this.webrtcService;
-  }
 
   // Local
   private sendLocalEntityData(
@@ -135,7 +125,7 @@ export class EntityOrchestratorService {
       multiplayerEntity
     );
 
-    this.getWebRTCService()
+    this.webrtcService
       .getPeers()
       .forEach((webrtcPeer) => {
         if (webrtcPeer.hasJoined()) {
@@ -314,3 +304,9 @@ export class EntityOrchestratorService {
     entity.setRemoved(true);
   }
 }
+
+
+
+
+
+

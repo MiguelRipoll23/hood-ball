@@ -3,7 +3,7 @@ import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../../core/models/remote-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import type { GameState } from "../../../core/models/game-state.js";
+import type { GameState } from "../../state/game-state.js";
 import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
@@ -13,7 +13,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { CarEntity } from "../../entities/car-entity.js";
-import type { GameEntity } from "../../../core/models/game-entity.js";
+import type { GameEntity } from "../../../engine/models/game-entity.js";
 import type { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
 import type { BaseMultiplayerGameEntity } from "../../../core/entities/base-multiplayer-entity.js";
@@ -211,7 +211,7 @@ export class WorldController {
 
   private markRemoteCarsForSpawn(): void {
     const players = this.gameState.getMatch()?.getPlayers() ?? [];
-    players.forEach((player) => {
+    players.forEach((player: GamePlayer) => {
       if (player === this.gameState.getGamePlayer()) {
         return;
       }
