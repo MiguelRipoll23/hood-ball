@@ -3,32 +3,41 @@
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "skipLibCheck": true,
     "experimentalDecorators": true,
-
-    /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
     "noEmit": true,
-
-    /* Linting */
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": false, // (disabled)
+    "erasableSyntaxOnly": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-
-    /* Aliases */
     "baseUrl": ".",
     "paths": {
-      "@engine/*": ["src/engine/*"],
-      "@game/*": ["src/game/*"],
-      "@core/*": ["src/core/*"]
+      "@engine/*": [
+        "packages/engine/src/*"
+      ],
+      "@game/*": [
+        "packages/game/src/*"
+      ],
+      "@core/*": [
+        "packages/core/src/*"
+      ]
     }
   },
-  "include": ["src"]
+  "include": [
+    "packages",
+    "scripts",
+    "vite.config.ts",
+    "eslint.config.js"
+  ]
 }

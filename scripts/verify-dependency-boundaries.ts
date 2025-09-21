@@ -5,8 +5,8 @@ import madge from "madge";
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = path.resolve(currentDirectory, "..");
-const engineDirectory = path.join(repositoryRoot, "src", "engine");
-const gameDirectory = path.join(repositoryRoot, "src", "game");
+const engineDirectory = path.join(repositoryRoot, "packages", "engine", "src");
+const gameDirectory = path.join(repositoryRoot, "packages", "game", "src");
 
 async function main(): Promise<void> {
   const dependencyGraph = await madge(engineDirectory, {
@@ -57,7 +57,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  console.log("Dependency boundary check passed: src/engine imports stay isolated from src/game.");
+  console.log("Dependency boundary check passed: packages/engine/src imports stay isolated from packages/game/src.");
 }
 
 await main();
+

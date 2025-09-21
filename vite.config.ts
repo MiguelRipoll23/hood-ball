@@ -4,9 +4,9 @@ import { fileURLToPath, URL } from "node:url";
 export default defineConfig({
   resolve: {
     alias: {
-      "@engine": fileURLToPath(new URL("./src/engine", import.meta.url)),
-      "@game": fileURLToPath(new URL("./src/game", import.meta.url)),
-      "@core": fileURLToPath(new URL("./src/core", import.meta.url)),
+      "@engine": fileURLToPath(new URL("./packages/engine/src", import.meta.url)),
+      "@game": fileURLToPath(new URL("./packages/game/src", import.meta.url)),
+      "@core": fileURLToPath(new URL("./packages/core/src", import.meta.url)),
     },
   },
   server: {
@@ -20,3 +20,4 @@ export default defineConfig({
     keepNames: true,
   },
 });
+

@@ -1,6 +1,6 @@
 import { performance } from "node:perf_hooks";
-import { createEngineContainer } from "../src/engine/bootstrap/engine-container.js";
-import { EngineLoopService } from "../src/engine/loop/engine-loop-service.js";
+import { createEngineContainer } from "../packages/engine/src/bootstrap/engine-container.js";
+import { EngineLoopService } from "../packages/engine/src/loop/engine-loop-service.js";
 
 const noop = () => undefined;
 
@@ -74,3 +74,4 @@ if (updateCount === 0) {
 }
 
 console.log("Engine smoke test completed without errors.");
+

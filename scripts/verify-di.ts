@@ -1,16 +1,16 @@
-import { createEngineContainer } from "../src/engine/bootstrap/engine-container.js";
-import { EventProcessorService } from "../src/engine/services/events/event-processor-service.js";
-import { ENGINE_CONTEXT_TOKEN } from "../src/engine/state/engine-context.js";
-import { EVENT_IDENTIFIER_RESOLVER_TOKEN } from "../src/engine/contracts/events/event-identifier.js";
-import type { EngineContext } from "../src/engine/state/engine-context.js";
-import { LocalEvent } from "../src/core/models/local-event.js";
-import { RemoteEvent } from "../src/core/models/remote-event.js";
-import { EventNetworkBridge } from "../src/game/services/network/event-network-bridge.js";
-import { MatchmakingCoordinator } from "../src/game/services/gameplay/matchmaking-coordinator.js";
-import { EventType } from "../src/game/enums/event-type.js";
-import type { WebRTCPeer } from "../src/game/interfaces/services/network/webrtc-peer.js";
-import { BinaryReader } from "../src/engine/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../src/engine/utils/binary-writer-utils.js";
+import { createEngineContainer } from "../packages/engine/src/bootstrap/engine-container.js";
+import { EventProcessorService } from "../packages/engine/src/services/events/event-processor-service.js";
+import { ENGINE_CONTEXT_TOKEN } from "../packages/engine/src/state/engine-context.js";
+import { EVENT_IDENTIFIER_RESOLVER_TOKEN } from "../packages/engine/src/contracts/events/event-identifier.js";
+import type { EngineContext } from "../packages/engine/src/state/engine-context.js";
+import { LocalEvent } from "../packages/core/src/models/local-event.js";
+import { RemoteEvent } from "../packages/core/src/models/remote-event.js";
+import { EventNetworkBridge } from "../packages/game/src/services/network/event-network-bridge.js";
+import { MatchmakingCoordinator } from "../packages/game/src/services/gameplay/matchmaking-coordinator.js";
+import { EventType } from "../packages/game/src/enums/event-type.js";
+import type { WebRTCPeer } from "../packages/game/src/interfaces/services/network/webrtc-peer.js";
+import { BinaryReader } from "../packages/engine/src/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../packages/engine/src/utils/binary-writer-utils.js";
 
 class MockWebRTCService {
   public readonly registeredHandlers = new Set<object>();
@@ -269,3 +269,4 @@ if (webRtcService.connectionListener !== matchmakingService.networkService) {
 }
 
 console.log("Dependency injection wiring verified successfully.");
+

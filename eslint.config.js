@@ -9,7 +9,7 @@ export default [
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["src/engine/**/*.ts"],
+    files: ["packages/engine/src/**/*.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -31,7 +31,7 @@ export default [
     },
   },
   {
-    files: ["src/**/*.ts"],
+    files: ["packages/**/*.ts"],
     rules: {
       "no-restricted-syntax": [
         "error",
@@ -67,3 +67,5 @@ export default [
     },
   },
 ];
+
+
