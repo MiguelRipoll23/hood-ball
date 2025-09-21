@@ -26,6 +26,7 @@ import {
   type PendingIdentityMap,
   type ReceivedIdentityMap,
 } from "../services/gameplay/matchmaking-tokens.js";
+import { DebugService } from "../services/debug/debug-service.js";
 
 type ValueProvider = {
   provide: unknown;
@@ -65,6 +66,7 @@ export function registerGameServices(container: BindableContainer): void {
   container.bind({ provide: SpawnPointService, useClass: SpawnPointService });
   container.bind({ provide: MatchActionsLogService, useClass: MatchActionsLogService });
   container.bind({ provide: GameLoopFacade, useClass: GameLoopFacade });
+  container.bind({ provide: DebugService, useClass: DebugService });
   container.bind({
     provide: EVENT_IDENTIFIER_RESOLVER_TOKEN,
     useValue: {
