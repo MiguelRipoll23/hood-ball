@@ -3,7 +3,7 @@ import { EntityType } from "../../game/enums/entity-type.js";
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
-} from "../interfaces/entities/multiplayer-game-entity.js";
+} from "@engine/interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameScene } from "./base-game-scene.js";
 import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene.js";
 import { SceneType } from "../../game/enums/scene-type.js";
@@ -13,26 +13,28 @@ export class BaseMultiplayerScene
   extends BaseGameScene
   implements MultiplayerScene
 {
-  protected syncableEntityTypes: Map<EntityType, StaticMultiplayerGameEntity> =
+  protected syncableEntityTypes: Map<EntityType, StaticMultiplayerGameEntity<EntityType, GamePlayer>> =
     new Map();
 
   public getTypeId(): SceneType {
     return SceneType.Unknown;
   }
 
-  public addSyncableEntity(entityClass: StaticMultiplayerGameEntity): void {
+  public addSyncableEntity(
+    entityClass: StaticMultiplayerGameEntity<EntityType, GamePlayer>
+  ): void {
     const typeId = entityClass.getTypeId();
     this.syncableEntityTypes.set(typeId, entityClass);
   }
 
   public getSyncableEntityClass(
     typeId: EntityType
-  ): StaticMultiplayerGameEntity | null {
+  ): StaticMultiplayerGameEntity<EntityType, GamePlayer> | null {
     return this.syncableEntityTypes.get(typeId) ?? null;
   }
 
-  public getSyncableEntities(): MultiplayerGameEntity[] {
-    const result: MultiplayerGameEntity[] = [];
+  public getSyncableEntities(): MultiplayerGameEntity<EntityType, GamePlayer>[] {
+    const result: MultiplayerGameEntity<EntityType, GamePlayer>[] = [];
 
     for (const entity of this.uiEntities) {
       if (

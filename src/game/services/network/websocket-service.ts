@@ -1,5 +1,5 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
@@ -8,8 +8,8 @@ import type { OnlinePlayersPayload } from "../../interfaces/events/online-player
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { GameState } from "../../state/game-state.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
+import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
+import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { inject, injectable } from "@needle-di/core";

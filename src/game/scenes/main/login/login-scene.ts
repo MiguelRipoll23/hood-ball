@@ -7,7 +7,7 @@ import { GameState } from "../../../../core/models/game-state.js";
 import { EventType } from "../../../enums/event-type.js";
 import { CredentialService } from "../../../services/security/credential-service.js";
 import { container } from "../../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../../core/services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginEntities } from "./login-entity-factory.js";
 import { LoginController } from "./login-controller.js";

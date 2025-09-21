@@ -13,7 +13,7 @@ import type { GameState } from "../../../../core/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload.js";
 import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload.js";
 import { container } from "../../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../../core/services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";

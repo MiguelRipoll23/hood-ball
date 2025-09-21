@@ -1,17 +1,22 @@
-import type { MultiplayerGameEntity } from "../../../core/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "@engine/interfaces/entities/multiplayer-game-entity.js";
+import type { GamePlayer } from "../../models/game-player.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../state/game-state.js";
-import { EntityUtils } from "../../../core/utils/entity-utils.js";
+import { EntityUtils } from "@game/utils/entity-utils.js";
+
 import type { MultiplayerScene } from "../../../core/interfaces/scenes/multiplayer-scene.js";
-import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
-import { SceneUtils } from "../../../core/utils/scene-utils.js";
+import { EntityStateType } from "@engine/enums/entity-state-type.js";
+import { SceneUtils } from "@game/utils/scene-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
+import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
+import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import type { EntityType } from "../../enums/entity-type.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import { inject, injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+
+type GameMultiplayerEntity = MultiplayerGameEntity<EntityType, GamePlayer>;
+
 
 @injectable()
 export class EntityOrchestratorService {
@@ -110,7 +115,7 @@ export class EntityOrchestratorService {
   // Local
   private sendLocalEntityData(
     multiplayerScene: MultiplayerScene,
-    multiplayerEntity: MultiplayerGameEntity
+    multiplayerEntity: GameMultiplayerEntity
   ): void {
     this.updateOwnerToSharedEntities(multiplayerEntity);
 
@@ -142,7 +147,7 @@ export class EntityOrchestratorService {
   }
 
   private updateOwnerToSharedEntities(
-    multiplayerEntity: MultiplayerGameEntity
+    multiplayerEntity: GameMultiplayerEntity
   ) {
     const syncableByHost = multiplayerEntity.isSyncableByHost();
     const unowned = multiplayerEntity.getOwner() === null;
@@ -153,7 +158,7 @@ export class EntityOrchestratorService {
     }
   }
 
-  private skipUnownedEntity(multiplayerEntity: MultiplayerGameEntity): boolean {
+  private skipUnownedEntity(multiplayerEntity: GameMultiplayerEntity): boolean {
     // If host, don't skip entities from other players
     if (this.gameState.getMatch()?.isHost()) {
       return false;
@@ -167,7 +172,7 @@ export class EntityOrchestratorService {
   }
 
   private markAsRemovedIfEntityInactive(
-    multiplayerEntity: MultiplayerGameEntity
+    multiplayerEntity: GameMultiplayerEntity
   ): void {
     if (multiplayerEntity.getState() === EntityStateType.Inactive) {
       multiplayerEntity.setRemoved(true);
@@ -176,7 +181,7 @@ export class EntityOrchestratorService {
 
   private getEntityDataArrayBuffer(
     multiplayerScene: MultiplayerScene,
-    multiplayerEntity: MultiplayerGameEntity
+    multiplayerEntity: GameMultiplayerEntity
   ): ArrayBuffer {
     const sceneTypeId = multiplayerScene.getTypeId();
     const entityStateId = multiplayerEntity.getState();
@@ -202,7 +207,7 @@ export class EntityOrchestratorService {
   }
 
   private sendLocalEntityDataToPeer(
-    multiplayerEntity: MultiplayerGameEntity,
+    multiplayerEntity: GameMultiplayerEntity,
     webrtcPeer: WebRTCPeer,
     dataBuffer: ArrayBuffer
   ): void {

@@ -12,12 +12,12 @@ import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
 import { GAME_VERSION } from "../../constants/game-constants.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
+import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIService } from "../network/api-service.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { GameState } from "../../state/game-state.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import {
   PendingIdentitiesToken,

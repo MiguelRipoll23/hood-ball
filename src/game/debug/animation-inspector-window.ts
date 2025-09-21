@@ -1,6 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../core/debug/base-window.js";
-import { AnimationLogService } from "../../core/services/gameplay/animation-log-service.js";
+import { AnimationLogService } from "@engine/services/debug/animation-log-service.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 

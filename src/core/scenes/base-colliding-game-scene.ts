@@ -3,8 +3,8 @@ import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-collidi
 import { HitboxEntity } from "../entities/hitbox-entity.js";
 import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
 import type { GameState } from "../models/game-state.js";
-import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
-import type { GameEntity } from "../models/game-entity.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
+import type { GameEntity } from "@engine/models/game-entity.js";
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   constructor(

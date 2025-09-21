@@ -2,7 +2,7 @@ import { Match } from "../../game/models/match.js";
 import { GamePlayer } from "../../game/models/game-player.js";
 import { GameServer } from "../../game/models/game-server.js";
 import { MatchStateType } from "../../game/enums/match-state-type.js";
-import { EngineState } from "../../engine/state/engine-state.js";
+import { EngineState } from "@engine/state/engine-state.js";
 
 export interface GameSessionStateContract {
   getGameServer(): GameServer;

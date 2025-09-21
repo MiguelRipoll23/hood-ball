@@ -4,7 +4,7 @@ import type { GameState } from "../../../../core/models/game-state.js";
 import { APIService } from "../../../services/network/api-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../../core/services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { ScoreboardEntityFactory } from "./scoreboard-entity-factory.js";
 import type { ScoreboardEntities } from "./scoreboard-entity-factory.js";
 import { ScoreboardController } from "./scoreboard-controller.js";

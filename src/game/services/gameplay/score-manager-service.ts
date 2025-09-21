@@ -7,16 +7,16 @@ import { GameState } from "../../state/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
 
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
+import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 
 import { BallEntity } from "../../entities/ball-entity.js";
 import { GoalEntity } from "../../entities/goal-entity.js";
 import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { TimerManagerService } from "@engine/services/time/timer-manager-service.js";
+import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import { MatchActionsLogService } from "./match-actions-log-service.js";
 

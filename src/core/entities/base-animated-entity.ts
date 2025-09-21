@@ -1,8 +1,11 @@
-import { AnimationType } from "../../game/enums/animation-type.js";
-import { EntityAnimationService } from "../services/gameplay/entity-animation-service.js";
+import { AnimationType } from "@engine/enums/animation-type.js";
+import { EntityAnimationService } from "@engine/services/animation/entity-animation-service.js";
 import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
+import { AnimationLogService } from "@engine/services/debug/animation-log-service.js";
+import { container } from "../services/di-container.js";
 
 export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
+  private readonly animationLogService = container.get(AnimationLogService);
   protected scale: number = 1;
 
   protected animationTasks: EntityAnimationService[] = [];
@@ -21,13 +24,27 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
 
   public fadeIn(seconds: number): void {
     this.animationTasks.push(
-      new EntityAnimationService(this, AnimationType.FadeIn, 0, 1, seconds)
+      new EntityAnimationService(
+        this,
+        AnimationType.FadeIn,
+        0,
+        1,
+        seconds,
+        this.animationLogService
+      )
     );
   }
 
   public fadeOut(seconds: number): void {
     this.animationTasks.push(
-      new EntityAnimationService(this, AnimationType.FadeOut, 1, 0, seconds)
+      new EntityAnimationService(
+        this,
+        AnimationType.FadeOut,
+        1,
+        0,
+        seconds,
+        this.animationLogService
+      )
     );
   }
 
@@ -38,7 +55,8 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         AnimationType.MoveX,
         this.x,
         newX,
-        seconds
+        seconds,
+        this.animationLogService
       )
     );
   }
@@ -50,7 +68,8 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         AnimationType.MoveY,
         this.y,
         newY,
-        seconds
+        seconds,
+        this.animationLogService
       )
     );
   }
@@ -62,7 +81,8 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         AnimationType.Rotate,
         this.angle,
         newAngle,
-        seconds
+        seconds,
+        this.animationLogService
       )
     );
   }
@@ -74,7 +94,8 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         AnimationType.Scale,
         this.scale,
         newScale,
-        seconds
+        seconds,
+        this.animationLogService
       )
     );
   }

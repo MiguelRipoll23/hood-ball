@@ -11,7 +11,7 @@ import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
 import type { GameState } from "../../state/game-state.js";
-import type { GameEntity } from "../../../engine/models/game-entity.js";
+import type { GameEntity } from "@engine/models/game-entity.js";
 import { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 
 export interface WorldEntities {

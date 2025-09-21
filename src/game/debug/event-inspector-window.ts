@@ -4,8 +4,8 @@ import type { GameEvent } from "../../core/interfaces/models/game-event.js";
 import { LocalEvent } from "../../core/models/local-event.js";
 import { RemoteEvent } from "../../core/models/remote-event.js";
 import { BaseWindow } from "../../core/debug/base-window.js";
-import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
-import { EventProcessorService } from "../../core/services/gameplay/event-processor-service.js";
+import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
+import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { container } from "../../core/services/di-container.js";
 import { injectable } from "@needle-di/core";
 

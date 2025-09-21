@@ -1,5 +1,5 @@
 import type { GameState } from "../../state/game-state.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { WorldScene } from "../world/world-scene.js";
 
 export class LoadingController {

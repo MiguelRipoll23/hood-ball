@@ -20,7 +20,15 @@
     "noUnusedParameters": true,
     "erasableSyntaxOnly": false, // (disabled)
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@engine/*": ["src/engine/*"],
+      "@game/*": ["src/game/*"],
+      "@core/*": ["src/core/*"]
+    }
   },
   "include": ["src"]
 }

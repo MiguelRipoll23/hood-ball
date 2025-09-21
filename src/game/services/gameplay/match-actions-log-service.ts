@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
 import { MatchAction } from "../../models/match-action.js";
-import { TimerManagerService } from "../../../engine/services/time/timer-manager-service.js";
-import type { ITimerService } from "../../../engine/contracts/gameplay/timer-service-interface.js";
+import { TimerManagerService } from "@engine/services/time/timer-manager-service.js";
+import type { ITimerService } from "@engine/contracts/gameplay/timer-service-interface.js";
 
 type MatchActionListener = (actions: MatchAction[]) => void;
 

@@ -5,7 +5,7 @@ import { SettingEntity } from "../../entities/setting-entity.js";
 import { DebugService } from "../../services/debug/debug-service.js";
 import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
 import { container } from "../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 
 export class SettingsScene extends BaseGameScene {
   private titleEntity: TitleEntity | null = null;

@@ -10,8 +10,8 @@ import {
   SCALE_FACTOR_FOR_SPEED,
   SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
-import { DebugUtils } from "../../core/utils/debug-utils.js";
-import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
+import { DebugUtils } from "@engine/utils/debug-utils.js";
+import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {

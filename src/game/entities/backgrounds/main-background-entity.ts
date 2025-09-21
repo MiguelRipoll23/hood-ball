@@ -1,4 +1,4 @@
-import { BaseGameEntity } from "../../../core/entities/base-game-entity.js";
+import { BaseGameEntity } from "@engine/entities/base-game-entity.js";
 
 export class MainBackgroundEntity extends BaseGameEntity {
   private gradient: CanvasGradient | null = null;

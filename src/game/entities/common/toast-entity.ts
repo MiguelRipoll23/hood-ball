@@ -1,4 +1,4 @@
-import { TimerService } from "../../../core/services/gameplay/timer-service.js";
+import { TimerService } from "@engine/services/time/timer-service.js";
 import { BaseAnimatedGameEntity } from "../../../core/entities/base-animated-entity.js";
 
 export class ToastEntity extends BaseAnimatedGameEntity {

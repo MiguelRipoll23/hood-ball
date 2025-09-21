@@ -8,10 +8,10 @@ import { GameState } from "../../state/game-state.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { ServerError } from "../../models/server-error.js";
 import { ServerRegistration } from "../../models/server-registration.js";
-import { Base64Utils } from "../../../core/utils/base64-utils.js";
+import { Base64Utils } from "@engine/utils/base64-utils.js";
 import { WebAuthnUtils } from "../../utils/webauthn-utils.js";
 import { APIService } from "../network/api-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { SignatureService } from "./signature-service.js";
 

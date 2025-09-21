@@ -1,11 +1,11 @@
-import type { EntityType } from "../../game/enums/entity-type";
-import type { GamePlayer } from "../../game/models/game-player";
-import { BaseGameEntity } from "./base-game-entity";
-import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity";
+import type { EntityType } from "@game/enums/entity-type.js";
+import type { GamePlayer } from "@game/models/game-player.js";
+import { BaseGameEntity } from "@engine/entities/base-game-entity.js";
+import type { MultiplayerGameEntity } from "@engine/interfaces/entities/multiplayer-game-entity.js";
 
 export class BaseMultiplayerGameEntity
   extends BaseGameEntity
-  implements MultiplayerGameEntity
+  implements MultiplayerGameEntity<EntityType, GamePlayer>
 {
   protected id: string | null = null;
   protected typeId: EntityType | null = null;

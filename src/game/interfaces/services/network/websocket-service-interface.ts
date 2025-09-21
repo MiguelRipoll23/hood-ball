@@ -1,4 +1,4 @@
-import type { BinaryReader } from "../../../../core/utils/binary-reader-utils";
+import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 
 export interface IWebSocketService {
   registerCommandHandlers(instance: object): void;

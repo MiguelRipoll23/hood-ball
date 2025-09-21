@@ -1,14 +1,14 @@
 import { HitboxEntity } from "../../core/entities/hitbox-entity.js";
 import { BaseDynamicCollidingGameEntity } from "../../core/entities/base-dynamic-colliding-game-entity.js";
 import { CarEntity } from "./car-entity.js";
-import type { MultiplayerGameEntity } from "../../core/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
 import { EntityType } from "../enums/entity-type.js";
 import { GamePlayer } from "../models/game-player.js";
-import { EntityUtils } from "../../core/utils/entity-utils.js";
-import { DebugUtils } from "../../core/utils/debug-utils.js";
-import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
-import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
-import { MathUtils } from "../../core/utils/math-utils.js";
+import { EntityUtils } from "@game/utils/entity-utils.js";
+import { DebugUtils } from "@engine/utils/debug-utils.js";
+import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
+import { MathUtils } from "@engine/utils/math-utils.js";
 
 export class BallEntity
   extends BaseDynamicCollidingGameEntity

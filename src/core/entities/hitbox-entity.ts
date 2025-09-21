@@ -1,4 +1,4 @@
-import { BaseGameEntity } from "./base-game-entity.js";
+import { BaseGameEntity } from "@engine/entities/base-game-entity.js";
 
 export class HitboxEntity extends BaseGameEntity {
   private x: number = 0;

@@ -1,5 +1,5 @@
 import "./main.css";
-import { startGame } from "../game/bootstrap/start-game.js";
+import { startGame } from "@game/bootstrap/start-game.js";
 
 const canvas = document.querySelector("#game") as HTMLCanvasElement;
 

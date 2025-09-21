@@ -1,8 +1,8 @@
 import type { GameState } from "../../../core/models/game-state.js";
-import { SceneTransitionService } from "../../../core/services/gameplay/scene-transition-service.js";
+import { SceneTransitionService } from "@engine/services/scene/scene-transition-service.js";
 import { injectable } from "@needle-di/core";
 import { container } from "../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
 import { WorldScene } from "../world/world-scene.js";
 import { LoadingEntityFactory } from "./loading-entity-factory.js";

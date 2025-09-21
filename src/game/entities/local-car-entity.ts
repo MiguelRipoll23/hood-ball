@@ -1,11 +1,11 @@
-import { GamePointer } from "../../engine/models/game-pointer.js";
+import { GamePointer } from "@engine/models/game-pointer.js";
 import { EntityType } from "../enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
-import { GameKeyboard } from "../../engine/models/game-keyboard.js";
-import { EntityUtils } from "../../core/utils/entity-utils.js";
-import { GameGamepad } from "../../engine/models/game-gamepad.js";
-import { GamepadButton } from "../../core/enums/gamepad-button.js";
+import { GameKeyboard } from "@engine/models/game-keyboard.js";
+import { EntityUtils } from "@game/utils/entity-utils.js";
+import { GameGamepad } from "@engine/models/game-gamepad.js";
+import { GamepadButton } from "@engine/enums/gamepad-button.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 
 export class LocalCarEntity extends CarEntity {
