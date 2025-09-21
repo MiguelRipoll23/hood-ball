@@ -2,7 +2,6 @@ import type { GameScene } from "../../../core/interfaces/scenes/game-scene.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
 import type { SceneManagerServiceContract } from "../../contracts/scene/scene-manager-service-contract.js";
 import type { SceneTransitionServiceContract } from "../../contracts/scene/scene-transition-service-contract.js";
-import { inject } from "@needle-di/core";
 
 export class SceneManagerService implements SceneManagerServiceContract {
   private stack: GameScene[] = [];
@@ -12,7 +11,7 @@ export class SceneManagerService implements SceneManagerServiceContract {
   private transitionService: SceneTransitionServiceContract;
 
   constructor(
-    transitionService: SceneTransitionServiceContract = inject(SceneTransitionService)
+    transitionService: SceneTransitionServiceContract = new SceneTransitionService()
   ) {
     this.transitionService = transitionService;
   }

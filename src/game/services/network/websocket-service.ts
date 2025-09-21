@@ -1,5 +1,4 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
-import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
@@ -22,6 +21,7 @@ export class WebSocketService {
   private onlinePlayers = 0;
 
   private dispatcherService: WebSocketDispatcherService;
+  private readonly localEventListeners: Array<(event: LocalEvent<unknown>) => void> = [];
 
   // Reconnection properties
   private isReconnecting = false;
@@ -31,13 +31,27 @@ export class WebSocketService {
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(
-    private readonly gameState: GameState = inject(GameState),
-    private readonly eventProcessorService: EventProcessorService = inject(EventProcessorService)
-  ) {
+  constructor(private readonly gameState: GameState = inject(GameState)) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
+  }
+
+  public addLocalEventListener(listener: (event: LocalEvent<unknown>) => void): void {
+    this.localEventListeners.push(listener);
+  }
+
+  public removeLocalEventListener(listener: (event: LocalEvent<unknown>) => void): void {
+    const index = this.localEventListeners.indexOf(listener);
+    if (index !== -1) {
+      this.localEventListeners.splice(index, 1);
+    }
+  }
+
+  private emitLocalEvent(event: LocalEvent<unknown>): void {
+    this.localEventListeners.forEach((listener) => {
+      listener(event);
+    });
   }
 
   public getOnlinePlayers(): number {
@@ -189,7 +203,7 @@ export class WebSocketService {
       message,
     });
 
-    this.eventProcessorService.addLocalEvent(localEvent);
+    this.emitLocalEvent(localEvent);
   }
 
   @ServerCommandHandler(WebSocketType.OnlinePlayers)
@@ -205,7 +219,7 @@ export class WebSocketService {
       total,
     });
 
-    this.eventProcessorService.addLocalEvent(localEvent);
+    this.emitLocalEvent(localEvent);
   }
 
   private addEventListeners(webSocket: WebSocket): void {
@@ -222,7 +236,7 @@ export class WebSocketService {
     this.stopReconnection();
 
     this.gameState.getGameServer().setConnected(true);
-    this.eventProcessorService.addLocalEvent(
+    this.emitLocalEvent(
       new LocalEvent(EventType.ServerConnected)
     );
   }
@@ -244,7 +258,7 @@ export class WebSocketService {
       );
 
       localEvent.setData(payload);
-      this.eventProcessorService.addLocalEvent(localEvent);
+      this.emitLocalEvent(localEvent);
     }
 
     // Start or continue reconnection if this was an unexpected disconnection or failed reconnection attempt
@@ -276,7 +290,7 @@ export class WebSocketService {
       );
 
       localEvent.setData(payload);
-      this.eventProcessorService.addLocalEvent(localEvent);
+      this.emitLocalEvent(localEvent);
 
       this.startReconnection();
     } else if (this.isReconnecting) {

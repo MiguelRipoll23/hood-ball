@@ -19,8 +19,10 @@ import { SceneTransitionService } from "@engine/services/scene/scene-transition-
 import { TimerManagerService } from "@engine/services/time/timer-manager-service.js";
 import { IntervalManagerService } from "@engine/services/time/interval-manager-service.js";
 import { MatchmakingService } from "../services/gameplay/matchmaking-service.js";
+import { MatchmakingCoordinator } from "../services/gameplay/matchmaking-coordinator.js";
 import { DebugService } from "../services/debug/debug-service.js";
 import { WebRTCService } from "../services/network/webrtc-service.js";
+import { EventNetworkBridge } from "../services/network/event-network-bridge.js";
 import type { GameSceneProviderContract } from "../interfaces/services/ui/game-scene-provider-interface.js";
 import { GameSceneProvider } from "../services/ui/game-scene-provider.js";
 import { MainScene } from "../scenes/main/main-scene.js";
@@ -53,10 +55,14 @@ export class GameLoopFacade implements GameLoopServiceContract {
     private readonly intervalManagerService = inject(IntervalManagerService),
     private readonly sceneProvider: GameSceneProviderContract = inject(GameSceneProvider),
     private readonly matchmakingService = inject(MatchmakingService),
+    private readonly matchmakingCoordinator = inject(MatchmakingCoordinator),
     private readonly webrtcService = inject(WebRTCService),
+    private readonly eventNetworkBridge = inject(EventNetworkBridge),
     private readonly debugService = inject(DebugService)
   ) {
     this.gameFrame = this.engineContext.getGameFrame();
+    void this.eventNetworkBridge;
+    void this.matchmakingCoordinator;
   }
 
   public initialize(options: GameLoopFacadeInitializationOptions): void {

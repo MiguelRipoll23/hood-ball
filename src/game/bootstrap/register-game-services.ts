@@ -3,6 +3,7 @@ import { APIService } from "../services/network/api-service.js";
 import { ChatService } from "../services/network/chat-service.js";
 import { MatchmakingNetworkService } from "../services/network/matchmaking-network-service.js";
 import { WebRTCService } from "../services/network/webrtc-service.js";
+import { EventNetworkBridge } from "../services/network/event-network-bridge.js";
 import { MatchFinderService } from "../services/gameplay/match-finder-service.js";
 import { MatchmakingService } from "../services/gameplay/matchmaking-service.js";
 import { MatchLifecycleService } from "../services/gameplay/match-lifecycle-service.js";
@@ -60,6 +61,7 @@ export function registerGameServices(container: BindableContainer): void {
   container.bind({ provide: MatchmakingCoordinator, useClass: MatchmakingCoordinator });
   container.bind({ provide: EntityOrchestratorService, useClass: EntityOrchestratorService });
   container.bind({ provide: WebRTCService, useClass: WebRTCService });
+  container.bind({ provide: EventNetworkBridge, useClass: EventNetworkBridge });
   container.bind({ provide: ENGINE_WEBRTC_SERVICE_TOKEN, useExisting: WebRTCService });
   container.bind({ provide: ChatService, useClass: ChatService });
   container.bind({ provide: SpawnPointService, useClass: SpawnPointService });

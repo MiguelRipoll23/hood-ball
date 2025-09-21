@@ -3,13 +3,9 @@ import { RemoteEvent } from "../../../core/models/remote-event.js";
 import { LocalEvent } from "../../../core/models/local-event.js";
 import { EventQueueService } from "./event-queue-service.js";
 import { EVENT_IDENTIFIER_RESOLVER_TOKEN, type EventIdentifierResolver, type EngineEventId } from "../../contracts/events/event-identifier.js";
-import { WEBRTC_COMMAND_MAP_TOKEN, type WebRTCCommandMap } from "../../contracts/network/webrtc-command-map.js";
-import { ENGINE_WEBRTC_SERVICE_TOKEN } from "./event-tokens.js";
-import type { EngineWebRTCService } from "../../contracts/network/webrtc-service.js";
 import type { EngineWebRTCPeer } from "../../contracts/network/webrtc-peer.js";
 import type { IEventProcessorService } from "../../contracts/gameplay/event-processor-service-interface.js";
 import type { EventQueueServiceContract } from "../../contracts/gameplay/event-queue-service-interface.js";
-import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 
 export type EventSubscription = {
@@ -21,21 +17,21 @@ export type EventSubscription = {
 export class EventProcessorService implements IEventProcessorService {
   private readonly localQueue = new EventQueueService<LocalEvent>();
   private readonly remoteQueue = new EventQueueService<RemoteEvent>();
-  private readonly webrtcService: EngineWebRTCService;
   private readonly eventNameResolver: EventIdentifierResolver | undefined;
-  private readonly webRtcCommands: WebRTCCommandMap;
+  private networkEventSender: ((event: RemoteEvent) => void) | null = null;
 
   constructor() {
-    this.webrtcService = inject(ENGINE_WEBRTC_SERVICE_TOKEN) as EngineWebRTCService;
     this.eventNameResolver = inject(EVENT_IDENTIFIER_RESOLVER_TOKEN, { optional: true }) as EventIdentifierResolver | undefined;
-    this.webRtcCommands = inject(WEBRTC_COMMAND_MAP_TOKEN) as WebRTCCommandMap;
-    this.webrtcService.registerCommandHandlers(this);
-    this.webrtcService.bindCommandHandler(
-      this.webRtcCommands.eventData,
-      this.handleEventData.bind(this),
-      "EventData"
-    );
   }
+
+  public registerNetworkEventSender(sender: (event: RemoteEvent) => void): void {
+    if (this.networkEventSender !== null) {
+      throw new Error("EventProcessorService network sender has already been registered");
+    }
+
+    this.networkEventSender = sender;
+  }
+
   public getLocalQueue(): EventQueueServiceContract<LocalEvent> {
     return this.localQueue;
   }
@@ -67,13 +63,12 @@ export class EventProcessorService implements IEventProcessorService {
   public sendEvent(event: RemoteEvent): void {
     console.log(`Sending remote event ${this.describeEvent(event.getType())}`, event);
 
-    this.webrtcService
-      .getPeers()
-      .forEach((webrtcPeer) => {
-        if (webrtcPeer.hasJoined()) {
-          this.sendEventToPeer(webrtcPeer, event);
-        }
-      });
+    if (this.networkEventSender === null) {
+      console.warn("No network sender configured for EventProcessorService");
+      return;
+    }
+
+    this.networkEventSender(event);
   }
 
   private describeEvent(eventType: EngineEventId): string {
@@ -82,17 +77,5 @@ export class EventProcessorService implements IEventProcessorService {
     );
   }
 
-  private sendEventToPeer(webrtcPeer: EngineWebRTCPeer, event: RemoteEvent): void {
-    const eventTypeId = event.getType();
-    const eventData = event.getData();
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(this.webRtcCommands.eventData)
-      .unsignedInt8(eventTypeId)
-      .arrayBuffer(eventData ?? new ArrayBuffer(0))
-      .toArrayBuffer();
-
-    webrtcPeer.sendReliableOrderedMessage(payload);
-  }
 }
 
