@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const rootDir = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const distDir = resolve(rootDir, 'packages/engine/dist');
-for (const sub of ['core', 'game', 'src']) {
+for (const sub of ['src']) {
   const target = resolve(distDir, sub);
   if (existsSync(target)) {
     rmSync(target, { recursive: true, force: true });
