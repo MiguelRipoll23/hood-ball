@@ -1,5 +1,5 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "@core/debug/base-window.js";
+import { BaseWindow } from "@game/debug/base-window.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { GameState } from "../state/game-state.js";

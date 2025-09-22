@@ -4,7 +4,7 @@ import type {
 } from "@engine/interfaces/entities/multiplayer-game-entity.js";
 import { SceneType } from "@game/enums/scene-type.js";
 import type { GamePlayer } from "@game/models/game-player.js";
-import type { GameScene } from "./game-scene.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
 import type { EntityType } from "@game/enums/entity-type.js";
 
 export interface MultiplayerScene extends GameScene {

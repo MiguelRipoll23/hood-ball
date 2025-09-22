@@ -12,7 +12,7 @@ import { PeerCommandHandler } from "../../decorators/peer-command-handler-decora
 import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
-import { LocalEvent } from "@core/models/local-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { GameState } from "../../state/game-state.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";

@@ -6,7 +6,6 @@ export default defineConfig({
     alias: {
       "@engine": fileURLToPath(new URL("./packages/engine/src", import.meta.url)),
       "@game": fileURLToPath(new URL("./packages/game/src", import.meta.url)),
-      "@core": fileURLToPath(new URL("./packages/core/src", import.meta.url)),
     },
   },
   server: {

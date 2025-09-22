@@ -1,6 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
-import { RemoteEvent } from "@core/models/remote-event.js";
-import { LocalEvent } from "@core/models/local-event.js";
+import { RemoteEvent } from "@engine/models/events/remote-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 import { EventQueueService } from "./event-queue-service.js";
 import { EVENT_IDENTIFIER_RESOLVER_TOKEN, type EventIdentifierResolver, type EngineEventId } from "../../contracts/events/event-identifier.js";
 import type { EngineWebRTCPeer } from "../../contracts/network/webrtc-peer.js";

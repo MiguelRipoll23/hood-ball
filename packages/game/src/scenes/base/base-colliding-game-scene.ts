@@ -1,8 +1,8 @@
-import { BaseStaticCollidingGameEntity } from "../entities/base-static-colliding-game-entity.js";
-import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-colliding-game-entity.js";
-import { HitboxEntity } from "../entities/hitbox-entity.js";
-import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
-import type { GameState } from "../models/game-state.js";
+import { BaseStaticCollidingGameEntity } from "@engine/entities/base-static-colliding-game-entity.js";
+import { BaseDynamicCollidingGameEntity } from "@engine/entities/base-dynamic-colliding-game-entity.js";
+import { HitboxEntity } from "@engine/entities/hitbox-entity.js";
+import { BaseMultiplayerScene } from "@game/scenes/base/base-multiplayer-scene.js";
+import type { GameState } from "@game/state/game-state.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import type { GameEntity } from "@engine/models/game-entity.js";
 

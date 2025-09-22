@@ -1,4 +1,4 @@
-import { BaseTappableGameEntity } from "@core/entities/base-tappable-game-entity.js";
+import { BaseTappableGameEntity } from "@engine/entities/base-tappable-game-entity.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatService } from "../services/network/chat-service.js";
 import { GamePointer } from "@engine/models/game-pointer.js";

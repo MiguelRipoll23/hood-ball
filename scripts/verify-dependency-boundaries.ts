@@ -16,7 +16,7 @@ async function main(): Promise<void> {
     includeNpm: false,
   });
 
-  const graphEntries = dependencyGraph.obj();
+  const graphEntries = dependencyGraph.obj() as Record<string, string[]>;
   const violations: Array<{ source: string; targets: string[] }> = [];
 
   for (const [node, dependencies] of Object.entries(graphEntries)) {

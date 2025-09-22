@@ -3,8 +3,8 @@ import { EventProcessorService } from "../packages/engine/src/services/events/ev
 import { ENGINE_CONTEXT_TOKEN } from "../packages/engine/src/state/engine-context.js";
 import { EVENT_IDENTIFIER_RESOLVER_TOKEN } from "../packages/engine/src/contracts/events/event-identifier.js";
 import type { EngineContext } from "../packages/engine/src/state/engine-context.js";
-import { LocalEvent } from "../packages/core/src/models/local-event.js";
-import { RemoteEvent } from "../packages/core/src/models/remote-event.js";
+import { LocalEvent } from "../packages/engine/src/models/events/local-event.js";
+import { RemoteEvent } from "../packages/engine/src/models/events/remote-event.js";
 import { EventNetworkBridge } from "../packages/game/src/services/network/event-network-bridge.js";
 import { MatchmakingCoordinator } from "../packages/game/src/services/gameplay/matchmaking-coordinator.js";
 import { EventType } from "../packages/game/src/enums/event-type.js";
@@ -109,11 +109,11 @@ class MockWebRTCPeer {
   public disconnectGracefully(): void {}
 
   public async createOffer(): Promise<RTCSessionDescriptionInit> {
-    return {};
+    return { type: "offer", sdp: "" };
   }
 
   public async createAnswer(): Promise<RTCSessionDescriptionInit> {
-    return {};
+    return { type: "answer", sdp: "" };
   }
 
   public async connect(): Promise<void> {}

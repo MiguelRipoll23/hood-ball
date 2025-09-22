@@ -2,7 +2,7 @@ import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { SceneInspectorWindow } from "./scene-inspector-window.js";
 import { EventInspectorWindow } from "./event-inspector-window.js";
 import { MatchInspectorWindow } from "./match-inspector-window.js";
-import { BaseWindow } from "@core/debug/base-window.js";
+import { BaseWindow } from "@game/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
 import type { GameState } from "../state/game-state.js";

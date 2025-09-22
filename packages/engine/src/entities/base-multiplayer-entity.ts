@@ -1,21 +1,19 @@
-import type { EntityType } from "@game/enums/entity-type.js";
-import type { GamePlayer } from "@game/models/game-player.js";
 import { BaseGameEntity } from "@engine/entities/base-game-entity.js";
 import type { MultiplayerGameEntity } from "@engine/interfaces/entities/multiplayer-game-entity.js";
 
-export class BaseMultiplayerGameEntity
-  extends BaseGameEntity
-  implements MultiplayerGameEntity<EntityType, GamePlayer>
-{
+export class BaseMultiplayerGameEntity<
+  TTypeId = unknown,
+  TOwner = unknown
+> extends BaseGameEntity implements MultiplayerGameEntity<TTypeId, TOwner> {
   protected id: string | null = null;
-  protected typeId: EntityType | null = null;
-  protected syncableByHost: boolean = false;
-  protected owner: GamePlayer | null = null;
+  protected typeId: TTypeId | null = null;
+  protected syncableByHost = false;
+  protected owner: TOwner | null = null;
 
-  protected sync: boolean = false;
-  protected syncReliably: boolean = false;
+  protected sync = false;
+  protected syncReliably = false;
 
-  public static getTypeId(): EntityType {
+  public static getTypeId(): unknown {
     throw new Error("Method not implemented.");
   }
 
@@ -34,11 +32,11 @@ export class BaseMultiplayerGameEntity
     this.id = id;
   }
 
-  public getTypeId(): EntityType | null {
+  public getTypeId(): TTypeId | null {
     return this.typeId;
   }
 
-  public setTypeId(entityTypeId: EntityType): void {
+  public setTypeId(entityTypeId: TTypeId): void {
     this.typeId = entityTypeId;
   }
 
@@ -50,11 +48,11 @@ export class BaseMultiplayerGameEntity
     this.syncableByHost = syncableByHost;
   }
 
-  public getOwner(): GamePlayer | null {
+  public getOwner(): TOwner | null {
     return this.owner;
   }
 
-  public setOwner(playerOwner: GamePlayer | null): void {
+  public setOwner(playerOwner: TOwner | null): void {
     this.owner = playerOwner;
   }
 

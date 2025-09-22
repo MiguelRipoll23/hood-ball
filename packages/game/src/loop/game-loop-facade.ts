@@ -1,12 +1,12 @@
 import { inject, injectable } from "@needle-di/core";
 import { EngineLoopService } from "@engine/loop/engine-loop-service.js";
 import { ENGINE_CONTEXT_TOKEN } from "@engine/state/engine-context.js";
-import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@core/constants/canvas-constants.js";
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from "@game/constants/canvas-constants.js";
 import { DebugUtils } from "@engine/utils/debug-utils.js";
-import { NotificationEntity } from "@core/entities/notification-entity.js";
-import { DebugEntity } from "@core/entities/debug-entity.js";
-import { LoadingIndicatorEntity } from "@core/entities/loading-indicator-entity.js";
-import type { GameScene } from "@core/interfaces/scenes/game-scene.js";
+import { NotificationEntity } from "@engine/entities/notification-entity.js";
+import { DebugEntity } from "@engine/entities/debug-entity.js";
+import { LoadingIndicatorEntity } from "@engine/entities/loading-indicator-entity.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
 import type { GameLoopServiceContract } from "@engine/contracts/gameplay/game-loop-service-interface.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { EventType } from "../enums/event-type.js";

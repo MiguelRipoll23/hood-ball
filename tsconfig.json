@@ -28,13 +28,11 @@
       ],
       "@game/*": [
         "packages/game/src/*"
-      ],
-      "@core/*": [
-        "packages/core/src/*"
       ]
     }
   },
   "include": [
+    "src",
     "packages",
     "scripts",
     "vite.config.ts",

@@ -1,10 +1,10 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameEntity } from "@engine/models/game-entity.js";
-import type { GameScene } from "@core/interfaces/scenes/game-scene.js";
-import { BaseAnimatedGameEntity } from "@core/entities/base-animated-entity.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
+import { BaseAnimatedGameEntity } from "@engine/entities/base-animated-entity.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
-import { BaseWindow } from "@core/debug/base-window.js";
+import { BaseWindow } from "@game/debug/base-window.js";
 import type { GameState } from "../state/game-state.js";
 
 export class SceneInspectorWindow extends BaseWindow {

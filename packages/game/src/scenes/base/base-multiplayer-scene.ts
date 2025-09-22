@@ -4,10 +4,11 @@ import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
 } from "@engine/interfaces/entities/multiplayer-game-entity.js";
-import { BaseGameScene } from "./base-game-scene.js";
-import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene.js";
+import type { GameEntity } from "@engine/models/game-entity.js";
+import { BaseGameScene } from "@game/scenes/base/base-game-scene.js";
+import type { MultiplayerScene } from "@game/interfaces/scenes/multiplayer-scene.js";
 import { SceneType } from "@game/enums/scene-type.js";
-import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
+import { BaseMultiplayerGameEntity } from "@engine/entities/base-multiplayer-entity.js";
 
 export class BaseMultiplayerScene
   extends BaseGameScene
@@ -36,34 +37,34 @@ export class BaseMultiplayerScene
   public getSyncableEntities(): MultiplayerGameEntity<EntityType, GamePlayer>[] {
     const result: MultiplayerGameEntity<EntityType, GamePlayer>[] = [];
 
-    for (const entity of this.uiEntities) {
+    const collect = (candidate: GameEntity): void => {
       if (
-        entity instanceof BaseMultiplayerGameEntity &&
-        entity.getId() !== null
+        candidate instanceof BaseMultiplayerGameEntity &&
+        candidate.getId() !== null
       ) {
-        result.push(entity);
+        result.push(this.castToGameMultiplayerEntity(candidate));
       }
-    }
+    };
 
-    for (const entity of this.worldEntities) {
-      if (
-        entity instanceof BaseMultiplayerGameEntity &&
-        entity.getId() !== null
-      ) {
-        result.push(entity);
-      }
-    }
+    this.uiEntities.forEach(collect);
+    this.worldEntities.forEach(collect);
 
     return result;
   }
 
-  public getSyncableEntity(id: string): BaseMultiplayerGameEntity | null {
+  private castToGameMultiplayerEntity(
+    entity: BaseMultiplayerGameEntity
+  ): MultiplayerGameEntity<EntityType, GamePlayer> {
+    return entity as unknown as MultiplayerGameEntity<EntityType, GamePlayer>;
+  }
+
+  public getSyncableEntity(id: string): MultiplayerGameEntity<EntityType, GamePlayer> | null {
     for (const entity of this.uiEntities) {
       if (
         entity instanceof BaseMultiplayerGameEntity &&
         entity.getId() === id
       ) {
-        return entity;
+        return this.castToGameMultiplayerEntity(entity);
       }
     }
 
@@ -72,7 +73,7 @@ export class BaseMultiplayerScene
         entity instanceof BaseMultiplayerGameEntity &&
         entity.getId() === id
       ) {
-        return entity;
+        return this.castToGameMultiplayerEntity(entity);
       }
     }
 

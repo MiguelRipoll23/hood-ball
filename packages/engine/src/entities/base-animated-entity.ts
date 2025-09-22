@@ -1,13 +1,29 @@
 import { AnimationType } from "@engine/enums/animation-type.js";
 import { EntityAnimationService } from "@engine/services/animation/entity-animation-service.js";
+import type { AnimationLogService } from "@engine/services/debug/animation-log-service.js";
 import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
-import { AnimationLogService } from "@engine/services/debug/animation-log-service.js";
-import { container } from "../services/di-container.js";
 
-export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
-  private readonly animationLogService = container.get(AnimationLogService);
-  protected scale: number = 1;
+export class BaseAnimatedGameEntity<
+  TTypeId = unknown,
+  TOwner = unknown
+> extends BaseMoveableGameEntity<TTypeId, TOwner> {
+  private static animationLogService: AnimationLogService | null = null;
 
+  public static configureAnimationLogService(
+    service: AnimationLogService | null
+  ): void {
+    BaseAnimatedGameEntity.animationLogService = service;
+  }
+
+  protected static getAnimationLogService(): AnimationLogService | null {
+    return BaseAnimatedGameEntity.animationLogService;
+  }
+
+  protected get animationLogService(): AnimationLogService | null {
+    return BaseAnimatedGameEntity.getAnimationLogService();
+  }
+
+  protected scale = 1;
   protected animationTasks: EntityAnimationService[] = [];
 
   constructor() {
@@ -30,7 +46,7 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         0,
         1,
         seconds,
-        this.animationLogService
+        this.animationLogService ?? undefined
       )
     );
   }
@@ -43,12 +59,12 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         1,
         0,
         seconds,
-        this.animationLogService
+        this.animationLogService ?? undefined
       )
     );
   }
 
-  public moveToX(newX: number, seconds: number) {
+  public moveToX(newX: number, seconds: number): void {
     this.animationTasks.push(
       new EntityAnimationService(
         this,
@@ -56,12 +72,12 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         this.x,
         newX,
         seconds,
-        this.animationLogService
+        this.animationLogService ?? undefined
       )
     );
   }
 
-  public moveToY(newY: number, seconds: number) {
+  public moveToY(newY: number, seconds: number): void {
     this.animationTasks.push(
       new EntityAnimationService(
         this,
@@ -69,12 +85,12 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         this.y,
         newY,
         seconds,
-        this.animationLogService
+        this.animationLogService ?? undefined
       )
     );
   }
 
-  public rotateTo(newAngle: number, seconds: number) {
+  public rotateTo(newAngle: number, seconds: number): void {
     this.animationTasks.push(
       new EntityAnimationService(
         this,
@@ -82,12 +98,12 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         this.angle,
         newAngle,
         seconds,
-        this.animationLogService
+        this.animationLogService ?? undefined
       )
     );
   }
 
-  public scaleTo(newScale: number, seconds: number) {
+  public scaleTo(newScale: number, seconds: number): void {
     this.animationTasks.push(
       new EntityAnimationService(
         this,
@@ -95,7 +111,7 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
         this.scale,
         newScale,
         seconds,
-        this.animationLogService
+        this.animationLogService ?? undefined
       )
     );
   }
@@ -109,7 +125,6 @@ export class BaseAnimatedGameEntity extends BaseMoveableGameEntity {
     this.animationTasks.forEach((animation) => {
       animation.update(deltaTimeStamp);
 
-      // Remove completed animations
       if (animation.isCompleted()) {
         const index = this.animationTasks.indexOf(animation);
         this.animationTasks.splice(index, 1);

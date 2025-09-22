@@ -1,6 +1,6 @@
 import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
-import { RemoteEvent } from "@core/models/remote-event.js";
+import { RemoteEvent } from "@engine/models/events/remote-event.js";
 import { EventType } from "../../enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { GameState } from "../../state/game-state.js";
@@ -16,7 +16,7 @@ import { CarEntity } from "../../entities/car-entity.js";
 import type { GameEntity } from "@engine/models/game-entity.js";
 import type { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
-import type { BaseMultiplayerGameEntity } from "@core/entities/base-multiplayer-entity.js";
+import type { BaseMultiplayerGameEntity } from "@engine/entities/base-multiplayer-entity.js";
 import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";

@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "@core/entities/base-animated-entity.js";
+import { BaseAnimatedGameEntity } from "@engine/entities/base-animated-entity.js";
 import { TimerService } from "@engine/services/time/timer-service.js";
 
 export class HelpEntity extends BaseAnimatedGameEntity {

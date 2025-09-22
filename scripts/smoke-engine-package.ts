@@ -74,8 +74,8 @@ async function writeSmokeProject(tarballPath: string): Promise<string> {
   await writeFile(join(projectDir, "tsconfig.json"), JSON.stringify(tsconfig, null, 2));
   await mkdir(join(projectDir, "src"));
 
-  const sample = `import { performance } from \"node:perf_hooks\";
-import { createEngineContainer, EngineLoopService } from \"@hood-ball/engine\";
+  const sample = `import { performance } from "node:perf_hooks";
+import { createEngineContainer, EngineLoopService } from "@hood-ball/engine";
 
 const noop = () => undefined;
 

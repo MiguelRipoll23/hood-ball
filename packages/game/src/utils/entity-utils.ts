@@ -2,8 +2,8 @@ import type { WebRTCPeer } from "@game/interfaces/services/network/webrtc-peer.j
 import {
   CANVAS_EXTRA_MARGIN,
   CANVAS_MARGIN,
-} from "@core/constants/canvas-constants.js";
-import { BaseMoveableGameEntity } from "@core/entities/base-moveable-game-entity.js";
+} from "@game/constants/canvas-constants.js";
+import { BaseMoveableGameEntity } from "@engine/entities/base-moveable-game-entity.js";
 
 export class EntityUtils {
   public static hasInvalidOwner(

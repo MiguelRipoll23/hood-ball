@@ -5,7 +5,7 @@ import type { VerifyAuthenticationRequest } from "../../interfaces/requests/veri
 import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
 import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
 import { GameState } from "../../state/game-state.js";
-import { LocalEvent } from "@core/models/local-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 import { ServerError } from "../../models/server-error.js";
 import { ServerRegistration } from "../../models/server-registration.js";
 import { Base64Utils } from "@engine/utils/base64-utils.js";

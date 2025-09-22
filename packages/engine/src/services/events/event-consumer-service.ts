@@ -2,8 +2,8 @@ import type { EventQueueServiceContract } from "../../contracts/gameplay/event-q
 import type { EngineEventSubscription } from "../../contracts/events/event-subscription.js";
 import type { EngineEventId, EventIdentifierResolver } from "../../contracts/events/event-identifier.js";
 import { EVENT_IDENTIFIER_RESOLVER_TOKEN } from "../../contracts/events/event-identifier.js";
-import { LocalEvent } from "@core/models/local-event.js";
-import { RemoteEvent } from "@core/models/remote-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
+import { RemoteEvent } from "@engine/models/events/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
 import { inject, injectable } from "@needle-di/core";
 

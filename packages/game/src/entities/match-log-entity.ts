@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "@core/entities/base-animated-entity.js";
+import { BaseAnimatedGameEntity } from "@engine/entities/base-animated-entity.js";
 import { GameState } from "../state/game-state.js";
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";

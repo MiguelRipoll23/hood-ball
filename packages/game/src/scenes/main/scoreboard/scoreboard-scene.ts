@@ -1,9 +1,9 @@
 import type { RankingResponse } from "../../../interfaces/responses/ranking-response.js";
-import { BaseGameScene } from "@core/scenes/base-game-scene.js";
-import type { GameState } from "@core/models/game-state.js";
+import { BaseGameScene } from "@game/scenes/base/base-game-scene.js";
+import type { GameState } from "@game/state/game-state.js";
 import { APIService } from "../../../services/network/api-service.js";
 import { injectable } from "@needle-di/core";
-import { container } from "@core/services/di-container.js";
+import { container } from "@game/services/di-container.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { ScoreboardEntityFactory } from "./scoreboard-entity-factory.js";
 import type { ScoreboardEntities } from "./scoreboard-entity-factory.js";

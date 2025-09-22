@@ -1,6 +1,9 @@
 import { BaseStaticCollidingGameEntity } from "./base-static-colliding-game-entity.js";
 
-export class BaseDynamicCollidingGameEntity extends BaseStaticCollidingGameEntity {
+export class BaseDynamicCollidingGameEntity<
+  TTypeId = unknown,
+  TOwner = unknown
+> extends BaseStaticCollidingGameEntity<TTypeId, TOwner> {
   private static readonly LINE_LENGTH = 50;
   private static readonly ARROW_SIZE = 15;
   private static readonly CENTER_CIRCLE_RADIUS = 7;

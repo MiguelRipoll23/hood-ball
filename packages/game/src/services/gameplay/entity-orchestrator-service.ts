@@ -4,7 +4,7 @@ import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../state/game-state.js";
 import { EntityUtils } from "@game/utils/entity-utils.js";
 
-import type { MultiplayerScene } from "@core/interfaces/scenes/multiplayer-scene.js";
+import type { MultiplayerScene } from "@game/interfaces/scenes/multiplayer-scene.js";
 import { EntityStateType } from "@engine/enums/entity-state-type.js";
 import { SceneUtils } from "@game/utils/scene-utils.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";

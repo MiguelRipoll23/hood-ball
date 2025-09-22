@@ -4,7 +4,7 @@ import { APIService } from "../network/api-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
-import { LocalEvent } from "@core/models/local-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import { GamePlayer } from "../../models/game-player.js";

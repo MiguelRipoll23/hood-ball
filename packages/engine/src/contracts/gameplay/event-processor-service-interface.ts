@@ -1,6 +1,6 @@
 import type { EventQueueServiceContract } from "./event-queue-service-interface.js";
-import type { LocalEvent } from "@core/models/local-event.js";
-import type { RemoteEvent } from "@core/models/remote-event.js";
+import type { LocalEvent } from "@engine/models/events/local-event.js";
+import type { RemoteEvent } from "@engine/models/events/remote-event.js";
 import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import type { EngineWebRTCPeer } from "../network/webrtc-peer.js";
 

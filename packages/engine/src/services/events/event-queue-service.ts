@@ -1,6 +1,6 @@
-import type { GameEvent } from "@core/interfaces/models/game-event.js";
+import type { EngineEvent } from "@engine/models/engine-event.js";
 
-export class EventQueueService<T extends GameEvent> {
+export class EventQueueService<T extends EngineEvent = EngineEvent> {
   private static readonly MAX_CONSUMED_EVENTS = 50;
 
   protected events: T[] = [];

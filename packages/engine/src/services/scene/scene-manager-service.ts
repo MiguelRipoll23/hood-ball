@@ -1,4 +1,4 @@
-import type { GameScene } from "@core/interfaces/scenes/game-scene.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
 import type { SceneManagerServiceContract } from "../../contracts/scene/scene-manager-service-contract.js";
 import type { SceneTransitionServiceContract } from "../../contracts/scene/scene-transition-service-contract.js";

@@ -2,16 +2,17 @@ import {
   BLUE_TEAM_COLOR,
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "@engine/interfaces/entities/multiplayer-game-entity.js";
+import type { GamePlayer } from "../models/game-player.js";
 import { EntityType } from "../enums/entity-type.js";
 import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui.js";
-import { BaseMultiplayerGameEntity } from "@core/entities/base-multiplayer-entity.js";
+import { BaseMultiplayerGameEntity } from "@engine/entities/base-multiplayer-entity.js";
 
 export class ScoreboardEntity
-  extends BaseMultiplayerGameEntity
-  implements MultiplayerGameEntity, ScoreboardUI
+  extends BaseMultiplayerGameEntity<EntityType, GamePlayer>
+  implements MultiplayerGameEntity<EntityType, GamePlayer>, ScoreboardUI
 {
   private readonly SQUARE_SIZE: number = 50;
   private readonly SPACE_BETWEEN: number = 10;

@@ -9,8 +9,8 @@ import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
 import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
-import { BaseCollidingGameScene } from "@core/scenes/base-colliding-game-scene.js";
-import { GameState } from "@core/models/game-state.js";
+import { BaseCollidingGameScene } from "@game/scenes/base/base-colliding-game-scene.js";
+import { GameState } from "@game/state/game-state.js";
 import { EntityStateType } from "@engine/enums/entity-state-type.js";
 import { EventType } from "../../enums/event-type.js";
 import { SceneType } from "../../enums/scene-type.js";
@@ -18,6 +18,7 @@ import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
+import type { MultiplayerScene } from "@game/interfaces/scenes/multiplayer-scene.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
@@ -26,7 +27,7 @@ import { SceneTransitionService } from "@engine/services/scene/scene-transition-
 import { TimerManagerService } from "@engine/services/time/timer-manager-service.js";
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
-import { container } from "@core/services/di-container.js";
+import { container } from "@game/services/di-container.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
@@ -184,7 +185,10 @@ export class WorldScene extends BaseCollidingGameScene {
     this.worldController?.handleMatchState();
     this.scoreManagerService?.detectScoresIfHost();
 
-    this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
+    this.entityOrchestrator.sendLocalData(
+      this as unknown as MultiplayerScene,
+      deltaTimeStamp
+    );
   }
 
   private handleMatchmakingError(error: Error) {

@@ -1,5 +1,5 @@
-import { BaseStaticCollidingGameEntity } from "@core/entities/base-static-colliding-game-entity.js";
-import { HitboxEntity } from "@core/entities/hitbox-entity.js";
+import { BaseStaticCollidingGameEntity } from "@engine/entities/base-static-colliding-game-entity.js";
+import { HitboxEntity } from "@engine/entities/hitbox-entity.js";
 import type { GameEntity } from "@engine/models/game-entity.js";
 
 export class WorldBackgroundEntity extends BaseStaticCollidingGameEntity {

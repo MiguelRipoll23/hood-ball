@@ -1,7 +1,7 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "@core/debug/base-window.js";
+import { BaseWindow } from "@game/debug/base-window.js";
 import { WebRTCService } from "../services/network/webrtc-service.js";
-import { container } from "@core/services/di-container.js";
+import { container } from "@game/services/di-container.js";
 import { injectable } from "@needle-di/core";
 import { getPingTextColor } from "../utils/ping-utils.js";
 

@@ -1,16 +1,16 @@
 import { GamePointer } from "@engine/models/game-pointer.js";
-import { LayerType } from "../enums/layer-type.js";
-import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
+import { LayerType } from "@engine/enums/layer-type.js";
+import { BaseTappableGameEntity } from "@engine/entities/base-tappable-game-entity.js";
 import type { GameEntity } from "@engine/models/game-entity.js";
-import type { GameScene } from "../interfaces/scenes/game-scene.js";
-import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
+import type { SceneManager } from "@engine/interfaces/scenes/scene-manager.js";
 import { SceneManagerService } from "@engine/services/scene/scene-manager-service.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 import type { EventSubscription } from "@game/types/event-subscription.js";
 import { CameraService } from "@engine/services/render/camera-service.js";
-import { container } from "../services/di-container.js";
+import { container } from "@game/services/di-container.js";
 import { EventType } from "@game/enums/event-type.js";
-import type { GameState } from "../models/game-state.js";
+import type { GameState } from "@game/state/game-state.js";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerService;

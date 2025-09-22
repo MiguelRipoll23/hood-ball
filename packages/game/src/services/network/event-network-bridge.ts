@@ -5,7 +5,7 @@ import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import { WEBRTC_COMMAND_MAP_TOKEN, type WebRTCCommandMap } from "@engine/contracts/network/webrtc-command-map.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
-import type { RemoteEvent } from "@core/models/remote-event.js";
+import type { RemoteEvent } from "@engine/models/events/remote-event.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 
 @injectable()

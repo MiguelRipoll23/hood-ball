@@ -16,11 +16,6 @@ This guide outlines how the reusable engine package is versioned, validated, and
 6. Tag the release in git (`engine-vX.Y.Z`) and push both the tag and commits. If the release is a hotfix, also cherry-pick the change set into the active release branch before tagging.
 7. Publish the engine package to the internal registry and update downstream applications by bumping their `@hood-ball/engine` dependency. Document the change in `docs/migration-notes.md` when it requires consumer action.
 
-## Sample integration
-- Maintain the minimal playground under `samples/minimal-engine-game` to showcase container bootstrap, loop configuration, and dependency resolution in isolation.
-- Keep the sample free of Hood Ball assets so downstream teams can reuse it as a template. It links the local engine workspace via a `file:` dependency.
-- Update the sample whenever a contract or bootstrap signature changes and re-run both smoke scripts so packaging and consumer scenarios stay green.
-
 ## CI compatibility smoke build
 - Run `npm run smoke:engine-package` to build the engine workspace, pack the distributable, install it into a throw-away consumer project, and execute its harness. The command exercises the exact tarball that CI will publish.
 - Wire this script into CI release pipelines so the game is always validated against the packaged artifact instead of source imports.

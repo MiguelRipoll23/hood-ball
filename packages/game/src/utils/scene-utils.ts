@@ -1,6 +1,6 @@
 import { GameFrame } from "@engine/models/game-frame.js";
-import { BaseMultiplayerScene } from "@core/scenes/base-multiplayer-scene.js";
-import type { MultiplayerScene } from "@core/interfaces/scenes/multiplayer-scene.js";
+import { BaseMultiplayerScene } from "@game/scenes/base/base-multiplayer-scene.js";
+import type { MultiplayerScene } from "@game/interfaces/scenes/multiplayer-scene.js";
 import type { SceneType } from "@game/enums/scene-type.js";
 
 export class SceneUtils {
@@ -11,13 +11,17 @@ export class SceneUtils {
     const currentScene = gameFrame.getCurrentScene();
 
     if (currentScene instanceof BaseMultiplayerScene) {
-      return currentScene.getTypeId() === sceneId ? currentScene : null;
+      return currentScene.getTypeId() === sceneId
+        ? (currentScene as MultiplayerScene)
+        : null;
     }
 
     const nextScene = gameFrame.getNextScene();
 
     if (nextScene instanceof BaseMultiplayerScene) {
-      return nextScene.getTypeId() === sceneId ? nextScene : null;
+      return nextScene.getTypeId() === sceneId
+        ? (nextScene as MultiplayerScene)
+        : null;
     }
 
     return null;

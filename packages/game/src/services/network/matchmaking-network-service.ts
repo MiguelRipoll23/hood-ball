@@ -6,7 +6,7 @@ import { MatchStateType } from "../../enums/match-state-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { EventType } from "../../enums/event-type.js";
-import { LocalEvent } from "@core/models/local-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";

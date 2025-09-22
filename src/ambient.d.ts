@@ -1,4 +1,5 @@
 declare module '@needle-di/core';
+declare module 'madge';
 
 declare module '*.css';
 

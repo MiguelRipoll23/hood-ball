@@ -1,4 +1,4 @@
-import type { GameScene } from "@core/interfaces/scenes/game-scene.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
 import type { GameState } from "../../../state/game-state.js";
 import type { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 

@@ -1,7 +1,7 @@
-import { HitboxEntity } from "@core/entities/hitbox-entity.js";
-import { BaseDynamicCollidingGameEntity } from "@core/entities/base-dynamic-colliding-game-entity.js";
+import { HitboxEntity } from "@engine/entities/hitbox-entity.js";
+import { BaseDynamicCollidingGameEntity } from "@engine/entities/base-dynamic-colliding-game-entity.js";
 import { CarEntity } from "./car-entity.js";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "@engine/interfaces/entities/multiplayer-game-entity.js";
 import { EntityType } from "../enums/entity-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { EntityUtils } from "@game/utils/entity-utils.js";
@@ -11,8 +11,8 @@ import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import { MathUtils } from "@engine/utils/math-utils.js";
 
 export class BallEntity
-  extends BaseDynamicCollidingGameEntity
-  implements MultiplayerGameEntity
+  extends BaseDynamicCollidingGameEntity<EntityType, GamePlayer>
+  implements MultiplayerGameEntity<EntityType, GamePlayer>
 {
   private readonly MASS: number = 1;
   private readonly RADIUS: number = 20;

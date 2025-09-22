@@ -5,7 +5,10 @@ type CollidingGameEntityConstructor = new (
   ...args: never[]
 ) => BaseStaticCollidingGameEntity;
 
-export class BaseStaticCollidingGameEntity extends BaseAnimatedGameEntity {
+export class BaseStaticCollidingGameEntity<
+  TTypeId = unknown,
+  TOwner = unknown
+> extends BaseAnimatedGameEntity<TTypeId, TOwner> {
   protected rigidBody = true;
   protected hitboxEntities: HitboxEntity[] = [];
 

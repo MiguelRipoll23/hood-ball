@@ -1,12 +1,12 @@
-import { BaseStaticCollidingGameEntity } from "@core/entities/base-static-colliding-game-entity.js";
-import { HitboxEntity } from "@core/entities/hitbox-entity.js";
+import { BaseStaticCollidingGameEntity } from "@engine/entities/base-static-colliding-game-entity.js";
+import { HitboxEntity } from "@engine/entities/hitbox-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
-import { RemoteEvent } from "@core/models/remote-event.js";
+import { RemoteEvent } from "@engine/models/events/remote-event.js";
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { GameState } from "../state/game-state.js";
 import { EventType } from "../enums/event-type.js";
-import { container } from "@core/services/di-container.js";
+import { container } from "@game/services/di-container.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {
   const bigint = parseInt(hex.replace("#", ""), 16);

@@ -1,6 +1,6 @@
-import type { GameEvent } from "@core/interfaces/models/game-event.js";
+import type { EngineEvent } from "@engine/models/engine-event.js";
 
-export interface EventQueueServiceContract<T extends GameEvent> {
+export interface EventQueueServiceContract<T extends EngineEvent = EngineEvent> {
   getEvents(): T[];
   getPendingEvents(): T[];
   addEvent(event: T): void;

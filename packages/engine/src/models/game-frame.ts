@@ -1,8 +1,8 @@
-import { NotificationEntity } from "@core/entities/notification-entity.js";
-import type { GameScene } from "@core/interfaces/scenes/game-scene.js";
-import type { SceneManager } from "@core/interfaces/scenes/scene-manager.js";
-import { DebugEntity } from "@core/entities/debug-entity.js";
-import { LoadingIndicatorEntity } from "@core/entities/loading-indicator-entity.js";
+import { NotificationEntity } from "@engine/entities/notification-entity.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
+import type { SceneManager } from "@engine/interfaces/scenes/scene-manager.js";
+import { DebugEntity } from "@engine/entities/debug-entity.js";
+import { LoadingIndicatorEntity } from "@engine/entities/loading-indicator-entity.js";
 
 export class GameFrame implements SceneManager {
   private currentScene: GameScene | null = null;

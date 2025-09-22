@@ -1,8 +1,8 @@
-import { BaseGameScene } from "@core/scenes/base-game-scene.js";
+import { BaseGameScene } from "@game/scenes/base/base-game-scene.js";
 import { SceneManagerService } from "@engine/services/scene/scene-manager-service.js";
 import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
-import type { GameScene } from "@core/interfaces/scenes/game-scene.js";
-import type { GameState } from "@core/models/game-state.js";
+import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
+import type { GameState } from "@game/state/game-state.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
 
 export class MainScene extends BaseGameScene {

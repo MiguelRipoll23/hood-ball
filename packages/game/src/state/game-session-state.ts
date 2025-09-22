@@ -2,7 +2,7 @@ import { Match } from "../models/match.js";
 import { GamePlayer } from "../models/game-player.js";
 import { GameServer } from "../models/game-server.js";
 import { MatchStateType } from "../enums/match-state-type.js";
-import type { GameSessionStateContract } from "@core/models/game-state.js";
+import type { GameSessionStateContract } from "@game/state/game-state.js";
 
 export class GameSessionState implements GameSessionStateContract {
   private readonly gameServer: GameServer = new GameServer();

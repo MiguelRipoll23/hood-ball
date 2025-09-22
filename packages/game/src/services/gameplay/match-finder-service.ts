@@ -4,7 +4,7 @@ import type {
 } from "../../interfaces/responses/find-matches-response.js";
 import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
 import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
-import { LocalEvent } from "@core/models/local-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 import { Match } from "../../models/match.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { EventType } from "../../enums/event-type.js";

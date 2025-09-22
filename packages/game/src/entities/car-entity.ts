@@ -1,6 +1,7 @@
-import { HitboxEntity } from "@core/entities/hitbox-entity.js";
-import { BaseDynamicCollidingGameEntity } from "@core/entities/base-dynamic-colliding-game-entity.js";
+import { HitboxEntity } from "@engine/entities/hitbox-entity.js";
+import { BaseDynamicCollidingGameEntity } from "@engine/entities/base-dynamic-colliding-game-entity.js";
 import { GamePlayer } from "../models/game-player.js";
+import { EntityType } from "../enums/entity-type.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
   RED_TEAM_TRANSPARENCY_COLOR,
@@ -14,7 +15,7 @@ import { DebugUtils } from "@engine/utils/debug-utils.js";
 import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
-export class CarEntity extends BaseDynamicCollidingGameEntity {
+export class CarEntity extends BaseDynamicCollidingGameEntity<EntityType, GamePlayer> {
   protected readonly TOP_SPEED: number = 0.3;
   protected readonly ACCELERATION: number = 0.002;
   protected readonly HANDLING: number = 0.007;

@@ -1,18 +1,20 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { EventType } from "../enums/event-type.js";
-import type { GameEvent } from "@core/interfaces/models/game-event.js";
-import { LocalEvent } from "@core/models/local-event.js";
-import { RemoteEvent } from "@core/models/remote-event.js";
-import { BaseWindow } from "@core/debug/base-window.js";
+import type { EngineEvent } from "@engine/models/engine-event.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
+import { RemoteEvent } from "@engine/models/events/remote-event.js";
+import { BaseWindow } from "@game/debug/base-window.js";
 import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
-import { container } from "@core/services/di-container.js";
+import { container } from "@game/services/di-container.js";
 import { injectable } from "@needle-di/core";
+
+type InspectableEvent = EngineEvent<EventType>;
 
 @injectable()
 export class EventInspectorWindow extends BaseWindow {
-  private selectedEvent: GameEvent | null = null;
-  private detailEvent: GameEvent | null = null;
+  private selectedEvent: InspectableEvent | null = null;
+  private detailEvent: InspectableEvent | null = null;
   private shouldOpenDetails = false;
   private readonly eventProcessorService: EventProcessorService;
 
@@ -40,7 +42,7 @@ export class EventInspectorWindow extends BaseWindow {
   private renderTab(
     tabName: string,
     tableId: string,
-    getEvents: () => GameEvent[]
+    getEvents: () => InspectableEvent[]
   ): void {
     if (ImGui.BeginTabItem(tabName)) {
       this.renderEventTable(tableId, getEvents());
@@ -48,7 +50,7 @@ export class EventInspectorWindow extends BaseWindow {
     }
   }
 
-  private getReversedEvents(type: "local" | "remote"): GameEvent[] {
+  private getReversedEvents(type: "local" | "remote"): InspectableEvent[] {
     const queue =
       type === "local"
         ? this.eventProcessorService.getLocalQueue()
@@ -57,7 +59,7 @@ export class EventInspectorWindow extends BaseWindow {
     return queue.getEvents().toReversed();
   }
 
-  private renderEventTable(tableId: string, events: GameEvent[]): void {
+  private renderEventTable(tableId: string, events: InspectableEvent[]): void {
     const tableFlags =
       ImGui.TableFlags.Borders |
       ImGui.TableFlags.RowBg |
@@ -114,7 +116,7 @@ export class EventInspectorWindow extends BaseWindow {
     ImGui.EndGroup();
   }
 
-  private replayEvent(event: GameEvent): void {
+  private replayEvent(event: InspectableEvent): void {
     console.log(`Replaying event: ${event.getType()}`);
 
     const newEvent = this.createEventClone(event);
@@ -126,7 +128,7 @@ export class EventInspectorWindow extends BaseWindow {
     }
   }
 
-  private renderEventDetails(event: GameEvent): void {
+  private renderEventDetails(event: InspectableEvent): void {
     if (event instanceof LocalEvent) {
       const data = event.getData();
       if (data && typeof data === "object") {
@@ -189,7 +191,7 @@ export class EventInspectorWindow extends BaseWindow {
     }
   }
 
-  private createEventClone(event: GameEvent): GameEvent {
+  private createEventClone(event: InspectableEvent): InspectableEvent {
     if (event instanceof LocalEvent) {
       const localClone = new LocalEvent(event.getType());
       localClone.setData(event.getData());

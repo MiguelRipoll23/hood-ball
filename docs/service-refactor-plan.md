@@ -109,7 +109,6 @@ This document captures the current coupling between the reusable engine layer an
 
 - [x] Publish the engine as an internal npm package or workspace with its own package.json, build targets, and typed exports. (See packages/engine/tsconfig.build.json, packages/engine/package.json, and the aggregated exports in src/engine/index.ts; build via "npm run build:engine".)
 - [x] Add a CI smoke build that runs the Hood Ball game against the packaged engine artifact to verify compatibility before release.
-- [x] Provide a minimal sample game (or playground) plus docs showing how to embed the engine outside Hood Ball.
 - [x] Document versioning and dependency update workflow for the engine package, including how hotfixes flow back into the game repo.
   - Added a detailed "Versioning and dependency workflow" section to `docs/engine-release-guidelines.md` covering bump, build, verification, tagging, and publication steps.
 - [x] Automate dependency graph checks (e.g., `madge`) so future changes cannot introduce engine -> game import regressions.
@@ -127,7 +126,7 @@ This document captures the current coupling between the reusable engine layer an
 - [ ] Script a codemod to rewrite imports when moving files out of `src/core`, keeping commit diffs manageable.
 - [x] Refactor `GameSceneProvider` to rely on engine contracts and constructor injection instead of `@needle-di/core` property lookups.
 - [x] Scaffold `packages/engine/package.json` and update root build/test scripts to publish the engine workspace.
-- [x] Draft contributor guidelines covering engine release cadence, sample integration, and roll-back procedures once packaging lands.
+- [x] Draft contributor guidelines covering engine release cadence and roll-back procedures once packaging lands.
 
 ## Initialization Ordering Blueprint
 1. **Create container:** `createEngineContainer()` returns a new `Container` instance with no implicit singletons.
