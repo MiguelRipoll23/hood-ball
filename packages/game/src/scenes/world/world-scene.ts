@@ -116,7 +116,30 @@ export class WorldScene extends BaseCollidingGameScene {
     this.setupChatUI();
 
     // Set total spawn points created to service
-    this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
+    const localPlayer = this.gameState.getGamePlayer();
+    const match = this.gameState.getMatch();
+
+    const usedSpawnPointIndexes = match
+      ? Array.from(
+          new Set(
+            match
+              .getPlayers()
+              .filter((player) => player !== localPlayer)
+              .map((player) => player.getSpawnPointIndex())
+              .filter((index) => Number.isInteger(index) && index >= 0)
+          )
+        )
+      : [];
+
+    this.spawnPointService.setTotalSpawnPoints(
+      this.spawnPointEntities.length,
+      usedSpawnPointIndexes
+    );
+
+    console.log("[WorldScene] Spawn service seeded", {
+      total: this.spawnPointEntities.length,
+      reserved: usedSpawnPointIndexes,
+    });
 
     this.worldController = new WorldController(
       this.gameState,
@@ -495,4 +518,3 @@ export class WorldScene extends BaseCollidingGameScene {
     super.dispose();
   }
 }
-

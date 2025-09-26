@@ -1,14 +1,18 @@
 {
   "name": "hood-ball",
+  "private": true,
   "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "build:engine": "npm run build --prefix packages/engine",
-    "preview": "vite preview",
+    "dev": "npm run dev --workspace @hood-ball/game",
+    "build": "npm run build --workspace @hood-ball/game",
+    "build:engine": "npm run build --workspace @hood-ball/engine",
+    "preview": "npm run preview --workspace @hood-ball/game",
     "verify:di": "tsx scripts/verify-di.ts",
     "verify:deps": "tsx scripts/verify-dependency-boundaries.ts",
     "smoke:engine": "tsx scripts/smoke-engine.ts",

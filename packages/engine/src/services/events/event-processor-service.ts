@@ -46,12 +46,16 @@ export class EventProcessorService implements IEventProcessorService {
   }
 
   public handleEventData(webrtcPeer: EngineWebRTCPeer, binaryReader: BinaryReader) {
+    const eventTypeId = binaryReader.unsignedInt8();
+
     if (!webrtcPeer.isHost()) {
-      console.warn("Received event from non-host player");
+      console.warn("Received event from non-host player", {
+        eventId: eventTypeId,
+        eventName: this.describeEvent(eventTypeId),
+      });
       return;
     }
 
-    const eventTypeId = binaryReader.unsignedInt8();
     const eventData = binaryReader.bytesAsArrayBuffer();
 
     const event = new RemoteEvent(eventTypeId);
@@ -78,5 +82,4 @@ export class EventProcessorService implements IEventProcessorService {
   }
 
 }
-
 

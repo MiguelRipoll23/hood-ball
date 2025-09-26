@@ -200,11 +200,36 @@ export class MatchmakingNetworkService
     const gamePlayer = new GamePlayer(playerId, playerName);
     peer.setPlayer(gamePlayer);
 
-    const spawnPointIndex =
+    let spawnPointIndex =
       this.spawnPointService.getAndConsumeSpawnPointIndex();
-    if (spawnPointIndex === -1) {
+
+    let usedFallback = false;
+
+    if (
+      spawnPointIndex === -1 ||
+      this.isSpawnPointAlreadyUsed(match, spawnPointIndex)
+    ) {
+      spawnPointIndex = this.allocateFallbackSpawnPoint(match);
+      usedFallback = true;
+    }
+
+    const indexAlreadyUsed = this.isSpawnPointAlreadyUsed(
+      match,
+      spawnPointIndex
+    );
+
+    if (spawnPointIndex === -1 || indexAlreadyUsed) {
       console.warn("No spawn points available for joining player");
     } else {
+      console.log("[MatchmakingNetworkService] Assigned spawn point", {
+        player: playerName,
+        index: spawnPointIndex,
+        fallback: usedFallback,
+        players: match.getPlayers().map((p) => ({
+          name: p.getName(),
+          index: p.getSpawnPointIndex(),
+        })),
+      });
       gamePlayer.setSpawnPointIndex(spawnPointIndex);
     }
 
@@ -250,19 +275,38 @@ export class MatchmakingNetworkService
     const playerSpawnIndex = binaryReader.unsignedInt8();
     const playerScore = binaryReader.unsignedInt8();
 
+    const localNetworkId = this.gameState.getGamePlayer().getNetworkId();
+
+    console.log("[MatchmakingNetworkService] PlayerConnection received", {
+      playerId,
+      playerName,
+      playerSpawnIndex,
+      isHost,
+      localNetworkId,
+    });
+
     if (isConnected === false) {
       this.handlePlayerDisconnectedById(playerId);
       return;
     }
 
-    const isLocalPlayer =
-      this.gameState.getGamePlayer().getNetworkId() === playerId;
+    const isLocalPlayer = localNetworkId === playerId;
+
+    console.log("[MatchmakingNetworkService] Comparing network ids", {
+      localNetworkId,
+      incomingNetworkId: playerId,
+      isLocalPlayer,
+    });
 
     let gamePlayer: GamePlayer;
 
     if (isLocalPlayer) {
       gamePlayer = this.gameState.getGamePlayer();
       gamePlayer.setSpawnPointIndex(playerSpawnIndex);
+      console.log("[MatchmakingNetworkService] Local player spawn index applied", {
+        index: playerSpawnIndex,
+        playerId,
+      });
     } else {
       gamePlayer = new GamePlayer(
         playerId,
@@ -271,6 +315,11 @@ export class MatchmakingNetworkService
         playerScore,
         playerSpawnIndex
       );
+      console.log("[MatchmakingNetworkService] Remote player spawn index applied", {
+        player: playerName,
+        index: playerSpawnIndex,
+        playerId,
+      });
     }
 
     if (isHost) {
@@ -573,6 +622,76 @@ export class MatchmakingNetworkService
     peer.sendReliableOrderedMessage(payload, skipQueue);
   }
 
+  private allocateFallbackSpawnPoint(match: Match): number {
+    const fallbackIndex = this.findFallbackSpawnPointIndex(match);
+
+    if (fallbackIndex === -1) {
+      return -1;
+    }
+
+    const reserved = this.spawnPointService.consumeSpawnPointIndex(
+      fallbackIndex
+    );
+
+    if (!reserved) {
+      console.warn(
+        `Spawn point ${fallbackIndex} could not be reserved for joining player`
+      );
+      return -1;
+    }
+
+    console.log("[MatchmakingNetworkService] Fallback spawn reserved", {
+      index: fallbackIndex,
+    });
+
+    return fallbackIndex;
+  }
+
+  private findFallbackSpawnPointIndex(match: Match): number {
+    const usedIndexes = new Set<number>();
+
+    match.getPlayers().forEach((player) => {
+      const index = player.getSpawnPointIndex();
+      if (Number.isInteger(index)) {
+        usedIndexes.add(index);
+      }
+    });
+
+    const totalSpawnPoints = this.spawnPointService.getTotalSpawnPoints();
+
+    if (totalSpawnPoints > 0) {
+      for (let index = 0; index < totalSpawnPoints; index += 1) {
+        if (!usedIndexes.has(index)) {
+          return index;
+        }
+      }
+
+      return -1;
+    }
+
+    let fallbackIndex = 0;
+
+    while (usedIndexes.has(fallbackIndex)) {
+      fallbackIndex += 1;
+    }
+
+    console.log("[MatchmakingNetworkService] Fallback index computed outside configured range", {
+      index: fallbackIndex,
+    });
+
+    return fallbackIndex;
+  }
+
+  private isSpawnPointAlreadyUsed(match: Match, index: number): boolean {
+    if (!Number.isInteger(index) || index < 0) {
+      return true;
+    }
+
+    return match
+      .getPlayers()
+      .some((player) => player.getSpawnPointIndex() === index);
+  }
+
   private isHostIdentityUnverified(
     peer: WebRTCPeer,
     gamePlayer: GamePlayer
@@ -680,5 +799,3 @@ export class MatchmakingNetworkService
     peer.sendUnreliableUnorderedMessage(payload);
   }
 }
-
-

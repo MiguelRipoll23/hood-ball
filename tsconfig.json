@@ -32,10 +32,8 @@
     }
   },
   "include": [
-    "src",
     "packages",
     "scripts",
-    "vite.config.ts",
     "eslint.config.js"
   ]
 }

@@ -7,10 +7,22 @@ import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
 import type { RemoteEvent } from "@engine/models/events/remote-event.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+import { GameState } from "../../state/game-state.js";
+import { EventType } from "../../enums/event-type.js";
 
 @injectable()
 export class EventNetworkBridge {
   private readonly broadcastEvent = (event: RemoteEvent): void => {
+    if (!this.gameState.getMatch()?.isHost()) {
+      const eventDetails = {
+        eventId: event.getType(),
+        eventName: this.getEventName(event),
+      };
+
+      console.warn("Ignoring remote event broadcast from non-host client", eventDetails);
+      return;
+    }
+
     this.webRtcService
       .getPeers()
       .forEach((peer) => {
@@ -28,7 +40,8 @@ export class EventNetworkBridge {
     private readonly eventProcessorService: EventProcessorService = inject(EventProcessorService),
     private readonly webRtcService: WebRTCService = inject(WebRTCService),
     private readonly webSocketService: WebSocketService = inject(WebSocketService),
-    private readonly webRtcCommands: WebRTCCommandMap = inject(WEBRTC_COMMAND_MAP_TOKEN)
+    private readonly webRtcCommands: WebRTCCommandMap = inject(WEBRTC_COMMAND_MAP_TOKEN),
+    private readonly gameState: GameState = inject(GameState)
   ) {
     this.eventProcessorService.registerNetworkEventSender(this.broadcastEvent);
 
@@ -56,5 +69,10 @@ export class EventNetworkBridge {
 
     peer.sendReliableOrderedMessage(payload);
   }
-}
 
+  private getEventName(event: RemoteEvent): string {
+    const eventTypeId = event.getType();
+    const eventName = (EventType as unknown as Record<number, string>)[eventTypeId];
+    return eventName ?? `Event(${eventTypeId})`;
+  }
+}

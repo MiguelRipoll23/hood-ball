@@ -1,11 +1,16 @@
 import { defineConfig } from "vite";
 import { fileURLToPath, URL } from "node:url";
 
+const engineSource = fileURLToPath(new URL("../engine/src", import.meta.url));
+const gameSource = fileURLToPath(new URL("./src", import.meta.url));
+const workspaceRoot = fileURLToPath(new URL("../..", import.meta.url));
+
 export default defineConfig({
+  envDir: workspaceRoot,
   resolve: {
     alias: {
-      "@engine": fileURLToPath(new URL("./packages/engine/src", import.meta.url)),
-      "@game": fileURLToPath(new URL("./packages/game/src", import.meta.url)),
+      "@engine": engineSource,
+      "@game": gameSource,
     },
   },
   server: {
@@ -19,4 +24,3 @@ export default defineConfig({
     keepNames: true,
   },
 });
-

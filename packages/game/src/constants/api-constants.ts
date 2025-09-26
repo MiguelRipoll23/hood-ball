@@ -1,9 +1,32 @@
-const metaEnv =
-  typeof import.meta !== "undefined" && (import.meta as Record<string, any>).env
-    ? (import.meta as Record<string, any>).env
-    : (globalThis as { process?: { env?: Record<string, string> } }).process?.env ?? {} as Record<string, string>;
+type EnvironmentRecord = Record<string, string | undefined>;
 
-export const API_HOST = metaEnv.VITE_API_HOST ?? "";
+const resolveEnvironment = (): EnvironmentRecord => {
+  if (
+    typeof import.meta !== "undefined" &&
+    (import.meta as Record<string, unknown>).env !== undefined
+  ) {
+    return (import.meta as { env: EnvironmentRecord }).env;
+  }
+
+  const processEnv =
+    (globalThis as { process?: { env?: EnvironmentRecord } }).process?.env;
+
+  return processEnv ?? {};
+};
+
+const environment = resolveEnvironment();
+
+const requireEnvironmentValue = (key: string): string => {
+  const value = environment[key];
+
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+
+  return value;
+};
+
+export const API_HOST = requireEnvironmentValue("VITE_API_HOST");
 export const API_PATH = "/api";
 export const API_VERSION = "/v1";
 

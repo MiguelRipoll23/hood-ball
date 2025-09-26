@@ -11,6 +11,10 @@ import { EventType } from "../packages/game/src/enums/event-type.js";
 import type { WebRTCPeer } from "../packages/game/src/interfaces/services/network/webrtc-peer.js";
 import { BinaryReader } from "../packages/engine/src/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../packages/engine/src/utils/binary-writer-utils.js";
+import { GameState } from "../packages/game/src/state/game-state.js";
+import type { GameSessionStateContract } from "../packages/game/src/state/game-state.js";
+import { GamePlayer } from "../packages/game/src/models/game-player.js";
+import type { Match } from "../packages/game/src/models/match.js";
 
 class MockWebRTCService {
   public readonly registeredHandlers = new Set<object>();
@@ -187,11 +191,24 @@ const webRtcService = new MockWebRTCService();
 const webSocketService = new MockWebSocketService();
 const webRtcCommands = { eventData: 42 };
 
+const hostMatch = { isHost: () => true } as unknown as Match;
+const mockSessionState: GameSessionStateContract = {
+  getGameServer: () => ({} as never),
+  getGamePlayer: () => new GamePlayer(),
+  getMatch: () => hostMatch,
+  setMatch: () => undefined,
+  setMatchState: () => undefined,
+  startMatch: () => undefined,
+  endMatch: () => undefined,
+};
+const gameState = new GameState(mockCanvas, false, mockSessionState);
+
 new EventNetworkBridge(
   eventProcessor,
   webRtcService as unknown as any,
   webSocketService as unknown as any,
-  webRtcCommands
+  webRtcCommands,
+  gameState
 );
 
 if (!webRtcService.registeredHandlers.has(eventProcessor)) {
@@ -269,4 +286,3 @@ if (webRtcService.connectionListener !== matchmakingService.networkService) {
 }
 
 console.log("Dependency injection wiring verified successfully.");
-

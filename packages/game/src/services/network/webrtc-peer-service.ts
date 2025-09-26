@@ -94,6 +94,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
   public setPlayer(player: GamePlayer): void {
     this.player = player;
+    this.host = player.isHost();
   }
 
   public hasJoined() {
@@ -635,4 +636,3 @@ export class WebRTCPeerService implements WebRTCPeer {
     return this.gameState.getDebugSettings().isWebRTCLoggingEnabled();
   }
 }
-

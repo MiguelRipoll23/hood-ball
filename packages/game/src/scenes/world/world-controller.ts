@@ -25,6 +25,7 @@ import { MatchActionsLogService } from "../../services/gameplay/match-actions-lo
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+  private lastAppliedSpawnPointIndex = -1;
 
   constructor(
     private readonly gameState: GameState,
@@ -45,9 +46,13 @@ export class WorldController {
   ) {
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
+    this.lastAppliedSpawnPointIndex =
+      this.gameState.getGamePlayer().getSpawnPointIndex();
   }
 
   public handleMatchState(): void {
+    this.ensureLocalSpawnPointApplied();
+
     const matchState = this.gameState.getMatch()?.getState();
 
     if (matchState === MatchStateType.InProgress) {
@@ -176,7 +181,13 @@ export class WorldController {
 
     gamePlayer.setSpawnPointIndex(spawnPointIndex);
 
+    console.log("[WorldController] Local player assigned spawn point", {
+      player: gamePlayer.getName(),
+      index: spawnPointIndex,
+    });
+
     this.updateLocalCarPosition(spawnPointIndex);
+    this.lastAppliedSpawnPointIndex = spawnPointIndex;
   }
 
   private moveCarToSpawnPoint(): void {
@@ -189,12 +200,15 @@ export class WorldController {
     }
 
     console.log(
-      "Moving local car to spawn point index",
-      gamePlayer,
-      spawnPointIndex
+      "[WorldController] Moving local car to spawn point",
+      {
+        player: gamePlayer.getName(),
+        index: spawnPointIndex,
+      }
     );
 
     this.updateLocalCarPosition(spawnPointIndex);
+    this.lastAppliedSpawnPointIndex = spawnPointIndex;
   }
 
   private updateLocalCarPosition(spawnPointIndex: number): void {
@@ -207,6 +221,28 @@ export class WorldController {
         this.localCarEntity.setSkipInterpolation();
       }
     });
+  }
+
+  private ensureLocalSpawnPointApplied(): void {
+    const gamePlayer = this.gameState.getGamePlayer();
+    const spawnPointIndex = gamePlayer.getSpawnPointIndex();
+
+    if (spawnPointIndex === -1) {
+      return;
+    }
+
+    if (this.lastAppliedSpawnPointIndex === spawnPointIndex) {
+      return;
+    }
+
+    console.log("[WorldController] Spawn index changed, repositioning", {
+      player: gamePlayer.getName(),
+      from: this.lastAppliedSpawnPointIndex,
+      to: spawnPointIndex,
+    });
+
+    this.updateLocalCarPosition(spawnPointIndex);
+    this.lastAppliedSpawnPointIndex = spawnPointIndex;
   }
 
   private markRemoteCarsForSpawn(): void {
@@ -436,4 +472,3 @@ export class WorldController {
     );
   }
 }
-
