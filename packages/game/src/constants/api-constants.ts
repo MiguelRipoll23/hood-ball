@@ -1,11 +1,12 @@
 type EnvironmentRecord = Record<string, string | undefined>;
 
 const resolveEnvironment = (): EnvironmentRecord => {
-  if (
-    typeof import.meta !== "undefined" &&
-    (import.meta as Record<string, unknown>).env !== undefined
-  ) {
-    return (import.meta as { env: EnvironmentRecord }).env;
+  if (typeof import.meta !== "undefined") {
+    const importMetaEnv = (import.meta as unknown as { env?: EnvironmentRecord }).env;
+
+    if (importMetaEnv !== undefined) {
+      return importMetaEnv;
+    }
   }
 
   const processEnv =
