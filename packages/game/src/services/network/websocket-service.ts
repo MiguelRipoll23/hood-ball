@@ -1,3 +1,4 @@
+import { injectable } from "@needle-di/core";
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
 import { LocalEvent } from "@engine/models/events/local-event.js";
 import { EventType } from "../../enums/event-type.js";
@@ -11,47 +12,38 @@ import { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { inject, injectable } from "@needle-di/core";
+import { WebSocketReconnectionManager } from "./websocket-reconnection-manager.js";
+
+type LocalEventListener = (event: LocalEvent<unknown>) => void;
 
 @injectable()
 export class WebSocketService {
-  private baseURL: string;
-  private webSocket: WebSocket | null = null;
+  private readonly baseURL: string;
+  private readonly dispatcherService: WebSocketDispatcherService;
+  private readonly localEventListeners: LocalEventListener[] = [];
 
+  private webSocket: WebSocket | null = null;
   private onlinePlayers = 0;
 
-  private dispatcherService: WebSocketDispatcherService;
-  private readonly localEventListeners: Array<(event: LocalEvent<unknown>) => void> = [];
-
-  // Reconnection properties
-  private isReconnecting = false;
-  private reconnectAttempts = 0;
-  private baseReconnectDelay = 1000; // Start with 1 second
-  private maxReconnectDelay = 30000; // Max 30 seconds between attempts
-  private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
-  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  constructor(private readonly gameState: GameState = inject(GameState)) {
+  constructor(
+    private readonly gameState: GameState,
+    dispatcherService: WebSocketDispatcherService,
+    private readonly reconnectionManager: WebSocketReconnectionManager
+  ) {
     this.baseURL = APIUtils.getWSBaseURL();
-    this.dispatcherService = new WebSocketDispatcherService();
+    this.dispatcherService = dispatcherService;
     this.dispatcherService.registerCommandHandlers(this);
   }
 
-  public addLocalEventListener(listener: (event: LocalEvent<unknown>) => void): void {
+  public addLocalEventListener(listener: LocalEventListener): void {
     this.localEventListeners.push(listener);
   }
 
-  public removeLocalEventListener(listener: (event: LocalEvent<unknown>) => void): void {
+  public removeLocalEventListener(listener: LocalEventListener): void {
     const index = this.localEventListeners.indexOf(listener);
     if (index !== -1) {
       this.localEventListeners.splice(index, 1);
     }
-  }
-
-  private emitLocalEvent(event: LocalEvent<unknown>): void {
-    this.localEventListeners.forEach((listener) => {
-      listener(event);
-    });
   }
 
   public getOnlinePlayers(): number {
@@ -67,30 +59,74 @@ export class WebSocketService {
   }
 
   public disconnect(): void {
-    this.stopReconnection();
+    this.reconnectionManager.stop();
 
-    if (this.webSocket) {
+    if (this.webSocket !== null) {
       this.webSocket.close();
       this.webSocket = null;
     }
   }
 
+  public sendMessage(arrayBuffer: ArrayBuffer): void {
+    if (this.webSocket === null || this.webSocket.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    try {
+      this.webSocket.send(arrayBuffer);
+
+      if (this.isLoggingEnabled()) {
+        console.debug(
+          "%cSent message to server:\n" + BinaryWriter.preview(arrayBuffer),
+          "color: purple"
+        );
+      }
+    } catch (error) {
+      console.error("Failed to send message to server", error);
+    }
+  }
+
+  @ServerCommandHandler(WebSocketType.Notification)
+  public handleNotificationMessage(binaryReader: BinaryReader): void {
+    const textBytes = binaryReader.bytesAsArrayBuffer();
+
+    const message = new TextDecoder("utf-8").decode(textBytes);
+    const localEvent = new LocalEvent<ServerNotificationPayload>(
+      EventType.ServerNotification
+    );
+
+    localEvent.setData({ message });
+    this.emitLocalEvent(localEvent);
+  }
+
+  @ServerCommandHandler(WebSocketType.OnlinePlayers)
+  public handleOnlinePlayers(binaryReader: BinaryReader): void {
+    const total = binaryReader.unsignedInt16();
+
+    this.onlinePlayers = total;
+
+    const localEvent = new LocalEvent<OnlinePlayersPayload>(
+      EventType.OnlinePlayers
+    );
+    localEvent.setData({ total });
+
+    this.emitLocalEvent(localEvent);
+  }
+
   private attemptConnection(): void {
-    const gameServer = this.gameState.getGameServer();
-    const serverRegistration = gameServer.getServerRegistration();
+    const serverRegistration = this.gameState
+      .getGameServer()
+      .getServerRegistration();
 
     if (serverRegistration === null) {
       console.error("Game registration not found, cannot connect to server");
-      if (this.isReconnecting) {
-        this.scheduleReconnection();
-      }
+      this.scheduleReconnection();
       return;
     }
 
     const authenticationToken = serverRegistration.getAuthenticationToken();
 
-    // Close existing connection if any
-    if (this.webSocket) {
+    if (this.webSocket !== null) {
       this.webSocket.close();
     }
 
@@ -105,140 +141,23 @@ export class WebSocketService {
       this.addEventListeners(this.webSocket);
     } catch (error) {
       console.error("Failed to create WebSocket connection", error);
-      if (this.isReconnecting) {
-        this.scheduleReconnection();
-      }
+      this.scheduleReconnection();
     }
-  }
-
-  private startReconnection(): void {
-    if (this.isReconnecting) {
-      return;
-    }
-
-    this.isReconnecting = true;
-    this.reconnectAttempts = 0;
-    this.scheduleReconnection();
-  }
-
-  private stopReconnection(): void {
-    this.isReconnecting = false;
-    this.reconnectAttempts = 0;
-
-    if (this.reconnectTimeoutId !== null) {
-      clearTimeout(this.reconnectTimeoutId);
-      this.reconnectTimeoutId = null;
-    }
-  }
-
-  private scheduleReconnection(): void {
-    if (!this.isReconnecting) {
-      return;
-    }
-
-    this.reconnectAttempts++;
-
-    // Check if we've exceeded max attempts (0 means unlimited)
-    if (
-      this.maxReconnectAttempts > 0 &&
-      this.reconnectAttempts > this.maxReconnectAttempts
-    ) {
-      console.log(
-        `Maximum reconnection attempts (${this.maxReconnectAttempts}) reached. Stopping reconnection.`
-      );
-      this.stopReconnection();
-      return;
-    }
-
-    // Calculate delay with exponential backoff
-    const delay = Math.min(
-      this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
-      this.maxReconnectDelay
-    );
-
-    console.log(
-      `Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`
-    );
-
-    this.reconnectTimeoutId = setTimeout(() => {
-      if (this.isReconnecting) {
-        console.log(`Reconnection attempt ${this.reconnectAttempts}`);
-        this.attemptConnection();
-      }
-    }, delay);
-  }
-
-  public sendMessage(arrayBuffer: ArrayBuffer): void {
-    if (
-      this.webSocket === null ||
-      this.webSocket.readyState !== WebSocket.OPEN
-    ) {
-      return;
-    }
-
-    try {
-      this.webSocket.send(arrayBuffer);
-
-      if (this.isLoggingEnabled()) {
-        console.debug(
-          "%cSent message to server:\n" + BinaryWriter.preview(arrayBuffer),
-          "color: purple"
-        );
-      }
-    } catch (error) {
-      console.error(`Failed to send message to server`, error);
-    }
-  }
-
-  @ServerCommandHandler(WebSocketType.Notification)
-  public handleNotificationMessage(binaryReader: BinaryReader) {
-    const textBytes = binaryReader.bytesAsArrayBuffer();
-
-    const message = new TextDecoder("utf-8").decode(textBytes);
-    const localEvent = new LocalEvent<ServerNotificationPayload>(
-      EventType.ServerNotification
-    );
-
-    localEvent.setData({
-      message,
-    });
-
-    this.emitLocalEvent(localEvent);
-  }
-
-  @ServerCommandHandler(WebSocketType.OnlinePlayers)
-  public handleOnlinePlayers(binaryReader: BinaryReader) {
-    const total = binaryReader.unsignedInt16();
-
-    this.onlinePlayers = total;
-
-    const localEvent = new LocalEvent<OnlinePlayersPayload>(
-      EventType.OnlinePlayers
-    );
-    localEvent.setData({
-      total,
-    });
-
-    this.emitLocalEvent(localEvent);
   }
 
   private addEventListeners(webSocket: WebSocket): void {
-    webSocket.addEventListener("open", this.handleOpenEvent.bind(this));
-    webSocket.addEventListener("close", this.handleCloseEvent.bind(this));
-    webSocket.addEventListener("error", this.handleErrorEvent.bind(this));
-    webSocket.addEventListener("message", this.handleMessage.bind(this));
+    webSocket.addEventListener("open", () => this.handleOpenEvent());
+    webSocket.addEventListener("close", (event) => this.handleCloseEvent(event));
+    webSocket.addEventListener("error", (event) => this.handleErrorEvent(event));
+    webSocket.addEventListener("message", (event) => this.handleMessage(event));
   }
 
   private handleOpenEvent(): void {
     console.log("Connected to server");
-
-    // Stop any ongoing reconnection attempts
-    this.stopReconnection();
+    this.reconnectionManager.stop();
 
     this.gameState.getGameServer().setConnected(true);
-    this.emitLocalEvent(
-      new LocalEvent(EventType.ServerConnected)
-    );
+    this.emitLocalEvent(new LocalEvent(EventType.ServerConnected));
   }
 
   private handleCloseEvent(event: CloseEvent): void {
@@ -247,62 +166,36 @@ export class WebSocketService {
     const wasConnected = this.gameState.getGameServer().isConnected();
     this.gameState.getGameServer().setConnected(false);
 
-    // Only emit disconnected event if we were actually connected
     if (wasConnected) {
-      const payload = {
-        connectionLost: true,
-      };
-
       const localEvent = new LocalEvent<ServerDisconnectedPayload>(
         EventType.ServerDisconnected
       );
-
-      localEvent.setData(payload);
+      localEvent.setData({ connectionLost: true });
       this.emitLocalEvent(localEvent);
     }
 
-    // Start or continue reconnection if this was an unexpected disconnection or failed reconnection attempt
-    if (wasConnected || this.isReconnecting) {
-      if (!this.isReconnecting) {
-        this.startReconnection();
-      } else {
-        console.log(
-          `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`
-        );
-        this.scheduleReconnection();
-      }
+    if (wasConnected || this.reconnectionManager.isActive()) {
+      this.scheduleReconnection();
     }
   }
 
   private handleErrorEvent(event: Event): void {
     console.error("WebSocket error", event);
 
-    // If we're connected and get an error, treat it like a disconnection
     if (this.gameState.getGameServer().isConnected()) {
       this.gameState.getGameServer().setConnected(false);
-
-      const payload = {
-        connectionLost: true,
-      };
 
       const localEvent = new LocalEvent<ServerDisconnectedPayload>(
         EventType.ServerDisconnected
       );
-
-      localEvent.setData(payload);
+      localEvent.setData({ connectionLost: true });
       this.emitLocalEvent(localEvent);
-
-      this.startReconnection();
-    } else if (this.isReconnecting) {
-      // If we're in the middle of reconnecting and get an error, schedule next attempt
-      console.log(
-        `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`
-      );
-      this.scheduleReconnection();
     }
+
+    this.scheduleReconnection();
   }
 
-  private handleMessage(event: MessageEvent) {
+  private handleMessage(event: MessageEvent): void {
     const arrayBuffer: ArrayBuffer = event.data;
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
@@ -319,14 +212,31 @@ export class WebSocketService {
       this.dispatcherService.dispatchCommand(commandId, binaryReader);
     } catch (error) {
       console.error(
-        `Error executing server command handler for ID ${commandId}}:`,
+        `Error executing server command handler for ID ${commandId}:`,
         error
       );
     }
+  }
+
+  private scheduleReconnection(): void {
+    if (this.webSocket !== null && this.webSocket.readyState === WebSocket.OPEN) {
+      return;
+    }
+
+    const attemptReconnect = () => this.attemptConnection();
+
+    if (this.reconnectionManager.isActive()) {
+      this.reconnectionManager.scheduleNext(attemptReconnect);
+    } else {
+      this.reconnectionManager.start(attemptReconnect);
+    }
+  }
+
+  private emitLocalEvent(event: LocalEvent<unknown>): void {
+    this.localEventListeners.forEach((listener) => listener(event));
   }
 
   private isLoggingEnabled(): boolean {
     return this.gameState.getDebugSettings().isWebSocketLoggingEnabled();
   }
 }
-

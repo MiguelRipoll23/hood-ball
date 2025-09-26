@@ -19,8 +19,9 @@ import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
+import type { MainMenuSceneContract } from "@game/interfaces/scenes/main-menu-scene-contract.js";
 
-export class MainMenuScene extends BaseGameScene {
+export class MainMenuScene extends BaseGameScene implements MainMenuSceneContract {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
   private ONLINE_REQUIRED_BUTTONS: Set<number> = new Set([0, 1]); // Join game and Scoreboard buttons require online connection
 
@@ -352,4 +353,3 @@ export class MainMenuScene extends BaseGameScene {
     this.onlinePlayersEntity?.setOnlinePlayers(payload.total);
   }
 }
-

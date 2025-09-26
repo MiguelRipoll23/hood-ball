@@ -1,9 +1,23 @@
 import type { EngineEvent } from "@engine/models/engine-event.js";
 
+export type EventQueueOptions = {
+  /** Maximum number of events the queue will retain before trimming. */
+  maxPendingEvents?: number;
+  /** Number of consumed events required before a compaction pass is triggered. */
+  compactionThreshold?: number;
+};
+
 export class EventQueueService<T extends EngineEvent = EngineEvent> {
-  private static readonly MAX_CONSUMED_EVENTS = 50;
+  private readonly maxPendingEvents: number;
+  private readonly compactionThreshold: number;
+  private consumedSinceCompaction = 0;
 
   protected events: T[] = [];
+
+  constructor(options: EventQueueOptions = {}) {
+    this.maxPendingEvents = Math.max(32, options.maxPendingEvents ?? 512);
+    this.compactionThreshold = Math.max(1, options.compactionThreshold ?? Math.floor(this.maxPendingEvents / 4));
+  }
 
   public getEvents(): T[] {
     return this.events;
@@ -13,34 +27,56 @@ export class EventQueueService<T extends EngineEvent = EngineEvent> {
     return this.events.filter((event) => !event.isConsumed());
   }
 
-  public addEvent(event: T) {
+  public addEvent(event: T): void {
     this.events.push(event);
-  }
 
-  public consumeEvent(event: T) {
-    const foundEvent = this.events.find((e) => e === event);
-
-    if (foundEvent) {
-      foundEvent.consume();
-      this.checkAndRemoveConsumedEvents();
+    if (this.events.length > this.maxPendingEvents) {
+      this.compactQueue(true);
     }
   }
 
-  private checkAndRemoveConsumedEvents() {
-    const consumedCount = this.events.filter((event) =>
-      event.isConsumed()
-    ).length;
+  public consumeEvent(event: T): void {
+    const foundEvent = this.events.find((candidate) => candidate === event);
 
-    if (consumedCount > EventQueueService.MAX_CONSUMED_EVENTS) {
-      this.removeConsumedEvents();
+    if (foundEvent === undefined || foundEvent.isConsumed()) {
+      return;
+    }
+
+    foundEvent.consume();
+    this.consumedSinceCompaction += 1;
+
+    if (this.consumedSinceCompaction >= this.compactionThreshold) {
+      this.compactQueue();
     }
   }
 
-  private removeConsumedEvents() {
-    this.events = this.events.filter((event) => !event.isConsumed());
-    console.log(`Cleaned up consumed events. Remaining: ${this.events.length}`);
+  private compactQueue(force = false): void {
+    if (!force && this.consumedSinceCompaction < this.compactionThreshold) {
+      return;
+    }
+
+    if (this.events.length === 0) {
+      this.consumedSinceCompaction = 0;
+      return;
+    }
+
+    if (this.consumedSinceCompaction > 0) {
+      let consumedRemoved = 0;
+      this.events = this.events.filter((event) => {
+        if (event.isConsumed()) {
+          consumedRemoved += 1;
+          return false;
+        }
+        return true;
+      });
+      this.consumedSinceCompaction = Math.max(0, this.consumedSinceCompaction - consumedRemoved);
+    }
+
+    if (this.events.length > this.maxPendingEvents) {
+      const overflow = this.events.length - this.maxPendingEvents;
+      this.events.splice(0, overflow);
+    }
   }
 }
-
 
 

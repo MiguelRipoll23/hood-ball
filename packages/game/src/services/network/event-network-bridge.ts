@@ -1,17 +1,21 @@
-import { inject, injectable } from "@needle-di/core";
+import { injectable } from "@needle-di/core";
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { BinaryWriter } from "@engine/utils/binary-writer-utils.js";
 import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
-import { WEBRTC_COMMAND_MAP_TOKEN, type WebRTCCommandMap } from "@engine/contracts/network/webrtc-command-map.js";
+import type { WebRTCCommandMap } from "@engine/contracts/network/webrtc-command-map.js";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebSocketService } from "./websocket-service.js";
 import type { RemoteEvent } from "@engine/models/events/remote-event.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { GameState } from "../../state/game-state.js";
 import { EventType } from "../../enums/event-type.js";
+import { LocalEvent } from "@engine/models/events/local-event.js";
 
 @injectable()
 export class EventNetworkBridge {
+  private initialized = false;
+  private webSocketListener: ((event: LocalEvent<unknown>) => void) | null = null;
+
   private readonly broadcastEvent = (event: RemoteEvent): void => {
     if (!this.gameState.getMatch()?.isHost()) {
       const eventDetails = {
@@ -37,12 +41,18 @@ export class EventNetworkBridge {
   };
 
   constructor(
-    private readonly eventProcessorService: EventProcessorService = inject(EventProcessorService),
-    private readonly webRtcService: WebRTCService = inject(WebRTCService),
-    private readonly webSocketService: WebSocketService = inject(WebSocketService),
-    private readonly webRtcCommands: WebRTCCommandMap = inject(WEBRTC_COMMAND_MAP_TOKEN),
-    private readonly gameState: GameState = inject(GameState)
-  ) {
+    private readonly eventProcessorService: EventProcessorService,
+    private readonly webRtcService: WebRTCService,
+    private readonly webSocketService: WebSocketService,
+    private readonly webRtcCommands: WebRTCCommandMap,
+    private readonly gameState: GameState
+  ) {}
+
+  public initialize(): void {
+    if (this.initialized) {
+      return;
+    }
+
     this.eventProcessorService.registerNetworkEventSender(this.broadcastEvent);
 
     this.webRtcService.registerCommandHandlers(this.eventProcessorService);
@@ -52,9 +62,22 @@ export class EventNetworkBridge {
       "EventData"
     );
 
-    this.webSocketService.addLocalEventListener((event) => {
+    this.webSocketListener = (event) => {
       this.eventProcessorService.addLocalEvent(event);
-    });
+    };
+
+    this.webSocketService.addLocalEventListener(this.webSocketListener);
+    this.initialized = true;
+  }
+
+  public dispose(): void {
+    if (!this.initialized || this.webSocketListener === null) {
+      return;
+    }
+
+    this.webSocketService.removeLocalEventListener(this.webSocketListener);
+    this.webSocketListener = null;
+    this.initialized = false;
   }
 
   private sendEventToPeer(peer: WebRTCPeer, event: RemoteEvent): void {

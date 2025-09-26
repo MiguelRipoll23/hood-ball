@@ -1,9 +1,11 @@
+import { injectable } from "@needle-di/core";
 import { getPeerCommandHandlers } from "../../decorators/peer-command-handler-decorator.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import type { PeerCommandHandlerFunction } from "../../types/peer-command-handler-function-type.js";
 import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 
+@injectable()
 export class WebRTCDispatcherService {
   private readonly commandHandlers = new Map<number, PeerCommandHandlerFunction>();
 

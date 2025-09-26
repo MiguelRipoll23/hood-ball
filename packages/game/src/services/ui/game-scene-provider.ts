@@ -6,14 +6,19 @@ import type { GameSceneProviderContract } from "../../interfaces/services/ui/gam
 import { MainScene } from "../../scenes/main/main-scene.js";
 import { LoginScene } from "../../scenes/main/login/login-scene.js";
 import { MainMenuScene } from "../../scenes/main/main-menu/main-menu-scene.js";
+import { SceneManagerService } from "@engine/services/scene/scene-manager-service.js";
+import { SceneTransitionService } from "@engine/services/scene/scene-transition-service.js";
+import type { RootGameScene } from "@game/interfaces/scenes/root-game-scene.js";
+import type { MainMenuSceneContract } from "@game/interfaces/scenes/main-menu-scene-contract.js";
 
 @injectable()
 export class GameSceneProvider implements GameSceneProviderContract {
   public createRootScene(
     gameState: GameState,
     eventConsumer: EventConsumerService
-  ): GameScene {
-    return new MainScene(gameState, eventConsumer);
+  ): RootGameScene {
+    const sceneManager = new SceneManagerService(new SceneTransitionService());
+    return new MainScene(gameState, eventConsumer, sceneManager);
   }
 
   public createLoginScene(
@@ -27,12 +32,10 @@ export class GameSceneProvider implements GameSceneProviderContract {
     gameState: GameState,
     eventConsumer: EventConsumerService,
     showNews: boolean
-  ): GameScene {
+  ): MainMenuSceneContract {
     return new MainMenuScene(gameState, eventConsumer, showNews);
   }
 }
-
-
 
 
 

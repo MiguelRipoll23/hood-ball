@@ -7,7 +7,6 @@ import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
 import { EventType } from "../../enums/event-type.js";
 import { LocalEvent } from "@engine/models/events/local-event.js";
-import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import type { IIntervalService } from "@engine/contracts/gameplay/interval-service-interface.js";
@@ -32,6 +31,8 @@ import {
   type ReceivedIdentityMap,
 } from "../gameplay/matchmaking-tokens.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
+import { PlayerAssignmentService } from "../gameplay/player-assignment-service.js";
+import { MatchmakingEventPublisher } from "../gameplay/matchmaking-event-publisher.js";
 
 @injectable()
 export class MatchmakingNetworkService
@@ -67,7 +68,9 @@ export class MatchmakingNetworkService
     ) as PendingIdentityMap,
     private readonly receivedIdentities: ReceivedIdentityMap = inject(
       ReceivedIdentitiesToken
-    ) as ReceivedIdentityMap
+    ) as ReceivedIdentityMap,
+    private readonly playerAssignmentService = inject(PlayerAssignmentService),
+    private readonly matchmakingEventPublisher = inject(MatchmakingEventPublisher)
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
@@ -200,37 +203,24 @@ export class MatchmakingNetworkService
     const gamePlayer = new GamePlayer(playerId, playerName);
     peer.setPlayer(gamePlayer);
 
-    let spawnPointIndex =
-      this.spawnPointService.getAndConsumeSpawnPointIndex();
-
-    let usedFallback = false;
-
-    if (
-      spawnPointIndex === -1 ||
-      this.isSpawnPointAlreadyUsed(match, spawnPointIndex)
-    ) {
-      spawnPointIndex = this.allocateFallbackSpawnPoint(match);
-      usedFallback = true;
-    }
-
-    const indexAlreadyUsed = this.isSpawnPointAlreadyUsed(
+    const allocation = this.playerAssignmentService.allocateSpawnPoint(
       match,
-      spawnPointIndex
+      this.spawnPointService
     );
 
-    if (spawnPointIndex === -1 || indexAlreadyUsed) {
+    if (allocation.index === -1) {
       console.warn("No spawn points available for joining player");
     } else {
       console.log("[MatchmakingNetworkService] Assigned spawn point", {
         player: playerName,
-        index: spawnPointIndex,
-        fallback: usedFallback,
+        index: allocation.index,
+        fallback: allocation.fallback,
         players: match.getPlayers().map((p) => ({
           name: p.getName(),
           index: p.getSpawnPointIndex(),
         })),
       });
-      gamePlayer.setSpawnPointIndex(spawnPointIndex);
+      this.playerAssignmentService.applySpawnPoint(gamePlayer, allocation.index);
     }
 
     match.addPlayer(gamePlayer);
@@ -349,16 +339,11 @@ export class MatchmakingNetworkService
       return;
     }
 
-    const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected
-    );
-
-    localEvent.setData({
+    this.matchmakingEventPublisher.publishPlayerConnected(
+      this.eventProcessorService,
       player,
-      matchmaking: true,
-    });
-
-    this.eventProcessorService.addLocalEvent(localEvent);
+      true
+    );
 
     this.sendSnapshotACK(peer);
   }
@@ -385,17 +370,11 @@ export class MatchmakingNetworkService
         this.sendPlayerConnection(p, player, true, false);
       });
 
-    // Publish local event
-    const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected
-    );
-
-    localEvent.setData({
+    this.matchmakingEventPublisher.publishPlayerConnected(
+      this.eventProcessorService,
       player,
-      matchmaking: false,
-    });
-
-    this.eventProcessorService.addLocalEvent(localEvent);
+      false
+    );
 
     // Advertise match to update players count
     const match = this.gameState.getMatch();
@@ -620,76 +599,6 @@ export class MatchmakingNetworkService
       `Sending player connection for ${player.getName()} with index ${spawnIndex}`
     );
     peer.sendReliableOrderedMessage(payload, skipQueue);
-  }
-
-  private allocateFallbackSpawnPoint(match: Match): number {
-    const fallbackIndex = this.findFallbackSpawnPointIndex(match);
-
-    if (fallbackIndex === -1) {
-      return -1;
-    }
-
-    const reserved = this.spawnPointService.consumeSpawnPointIndex(
-      fallbackIndex
-    );
-
-    if (!reserved) {
-      console.warn(
-        `Spawn point ${fallbackIndex} could not be reserved for joining player`
-      );
-      return -1;
-    }
-
-    console.log("[MatchmakingNetworkService] Fallback spawn reserved", {
-      index: fallbackIndex,
-    });
-
-    return fallbackIndex;
-  }
-
-  private findFallbackSpawnPointIndex(match: Match): number {
-    const usedIndexes = new Set<number>();
-
-    match.getPlayers().forEach((player) => {
-      const index = player.getSpawnPointIndex();
-      if (Number.isInteger(index)) {
-        usedIndexes.add(index);
-      }
-    });
-
-    const totalSpawnPoints = this.spawnPointService.getTotalSpawnPoints();
-
-    if (totalSpawnPoints > 0) {
-      for (let index = 0; index < totalSpawnPoints; index += 1) {
-        if (!usedIndexes.has(index)) {
-          return index;
-        }
-      }
-
-      return -1;
-    }
-
-    let fallbackIndex = 0;
-
-    while (usedIndexes.has(fallbackIndex)) {
-      fallbackIndex += 1;
-    }
-
-    console.log("[MatchmakingNetworkService] Fallback index computed outside configured range", {
-      index: fallbackIndex,
-    });
-
-    return fallbackIndex;
-  }
-
-  private isSpawnPointAlreadyUsed(match: Match, index: number): boolean {
-    if (!Number.isInteger(index) || index < 0) {
-      return true;
-    }
-
-    return match
-      .getPlayers()
-      .some((player) => player.getSpawnPointIndex() === index);
   }
 
   private isHostIdentityUnverified(

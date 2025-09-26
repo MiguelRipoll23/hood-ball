@@ -1,8 +1,10 @@
+import { injectable } from "@needle-di/core";
 import { getServerCommandHandlers } from "../../decorators/server-command-handler.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import type { ServerCommandHandlerFunction } from "../../types/server-command-handler-function-type.js";
 import type { BinaryReader } from "@engine/utils/binary-reader-utils.js";
 
+@injectable()
 export class WebSocketDispatcherService {
   private commandHandlers = new Map<
     WebSocketType,

@@ -24,6 +24,7 @@ import { ScoreManagerService } from "../../services/gameplay/score-manager-servi
 import { EventProcessorService } from "@engine/services/events/event-processor-service.js";
 import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
 import { SceneTransitionService } from "@engine/services/scene/scene-transition-service.js";
+import { SceneManagerService } from "@engine/services/scene/scene-manager-service.js";
 import { TimerManagerService } from "@engine/services/time/timer-manager-service.js";
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
@@ -474,7 +475,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private async returnToMainMenuScene(): Promise<void> {
     const mainScene = new MainScene(
       this.gameState,
-      container.get(EventConsumerService)
+      container.get(EventConsumerService),
+      new SceneManagerService(new SceneTransitionService())
     );
     const mainMenuScene = new MainMenuScene(
       this.gameState,

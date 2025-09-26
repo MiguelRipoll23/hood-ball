@@ -1,5 +1,4 @@
 import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
-import { SceneTransitionService } from "./scene-transition-service.js";
 import type { SceneManagerServiceContract } from "../../contracts/scene/scene-manager-service-contract.js";
 import type { SceneTransitionServiceContract } from "../../contracts/scene/scene-transition-service-contract.js";
 
@@ -10,9 +9,7 @@ export class SceneManagerService implements SceneManagerServiceContract {
 
   private transitionService: SceneTransitionServiceContract;
 
-  constructor(
-    transitionService: SceneTransitionServiceContract = new SceneTransitionService()
-  ) {
+  constructor(transitionService: SceneTransitionServiceContract) {
     this.transitionService = transitionService;
   }
 
@@ -89,5 +86,4 @@ export class SceneManagerService implements SceneManagerServiceContract {
     console.log("Scenes stack", this.stack);
   }
 }
-
 

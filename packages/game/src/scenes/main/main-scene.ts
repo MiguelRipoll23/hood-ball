@@ -1,19 +1,23 @@
 import { BaseGameScene } from "@game/scenes/base/base-game-scene.js";
 import { SceneManagerService } from "@engine/services/scene/scene-manager-service.js";
+import { SceneTransitionService } from "@engine/services/scene/scene-transition-service.js";
 import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
 import type { GameScene } from "@engine/interfaces/scenes/game-scene.js";
 import type { GameState } from "@game/state/game-state.js";
 import { EventConsumerService } from "@engine/services/events/event-consumer-service.js";
+import type { RootGameScene } from "@game/interfaces/scenes/root-game-scene.js";
 
-export class MainScene extends BaseGameScene {
+export class MainScene extends BaseGameScene implements RootGameScene {
   private scene: GameScene | null = null;
 
   constructor(
     gameState: GameState,
-    eventConsumerService: EventConsumerService
+    eventConsumerService: EventConsumerService,
+    sceneManagerService?: SceneManagerService
   ) {
     super(gameState, eventConsumerService);
-    this.sceneManagerService = new SceneManagerService();
+    this.sceneManagerService =
+      sceneManagerService ?? new SceneManagerService(new SceneTransitionService());
     // Pointer events should be cleared only after nested scenes have processed
     // them.
     this.clearPointerEventsAutomatically = false;
@@ -63,4 +67,3 @@ export class MainScene extends BaseGameScene {
     this.worldEntities.push(mainBackgroundEntity);
   }
 }
-

@@ -1,27 +1,22 @@
 import type { EventQueueServiceContract } from "../../contracts/gameplay/event-queue-service-interface.js";
 import type { EngineEventSubscription } from "../../contracts/events/event-subscription.js";
 import type { EngineEventId, EventIdentifierResolver } from "../../contracts/events/event-identifier.js";
-import { EVENT_IDENTIFIER_RESOLVER_TOKEN } from "../../contracts/events/event-identifier.js";
 import { LocalEvent } from "@engine/models/events/local-event.js";
 import { RemoteEvent } from "@engine/models/events/remote-event.js";
-import { EventProcessorService } from "./event-processor-service.js";
-import { inject, injectable } from "@needle-di/core";
+import { injectable } from "@needle-di/core";
 
 @injectable()
 export class EventConsumerService {
-  private readonly localQueue: EventQueueServiceContract<LocalEvent>;
-  private readonly remoteQueue: EventQueueServiceContract<RemoteEvent>;
-
   private localSubscriptions: EngineEventSubscription[] = [];
   private remoteSubscriptions: EngineEventSubscription[] = [];
-  private readonly eventNameResolver: EventIdentifierResolver | undefined;
+  private readonly eventNameResolver: EventIdentifierResolver | null;
 
   constructor(
-    private readonly eventProcessorService: EventProcessorService = inject(EventProcessorService)
+    private readonly localQueue: EventQueueServiceContract<LocalEvent>,
+    private readonly remoteQueue: EventQueueServiceContract<RemoteEvent>,
+    eventNameResolver: EventIdentifierResolver | null = null
   ) {
-    this.localQueue = this.eventProcessorService.getLocalQueue();
-    this.remoteQueue = this.eventProcessorService.getRemoteQueue();
-    this.eventNameResolver = inject(EVENT_IDENTIFIER_RESOLVER_TOKEN, { optional: true }) as EventIdentifierResolver | undefined;
+    this.eventNameResolver = eventNameResolver;
   }
 
   public subscribeToLocalEvent<T>(
@@ -96,9 +91,6 @@ export class EventConsumerService {
       });
   }
   private describeEvent(eventType: EngineEventId): string {
-    return (
-      this.eventNameResolver?.getName(eventType) ?? `Event(${eventType})`
-    );
+    return this.eventNameResolver?.getName(eventType) ?? `Event(${eventType})`;
   }
 }
-
