@@ -17,6 +17,6 @@
   },
   "dependencies": {
     "@mori2003/jsimgui": "^0.8.0",
-    "@needle-di/core": "^1.0.0"
+    "@needle-di/core": "^1.1.0"
   }
 }
