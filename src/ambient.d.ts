@@ -1,9 +1,9 @@
-declare module '@needle-di/core';
+declare module "@needle-di/core";
 
-declare module '*.css';
+declare module "*.css";
 
 // Minimal declarations for jsimgui used in debug windows
-declare module '@mori2003/jsimgui' {
+declare module "@mori2003/jsimgui" {
   export const ImGui: any;
   export const ImGuiImplWeb: any;
   export class ImVec2 {
@@ -13,4 +13,3 @@ declare module '@mori2003/jsimgui' {
   }
   export enum ImGuiWindowFlags {}
 }
-

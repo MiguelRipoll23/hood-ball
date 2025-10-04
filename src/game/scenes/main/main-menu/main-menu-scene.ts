@@ -199,7 +199,8 @@ export class MainMenuScene extends BaseGameScene {
       index,
       length,
       item.title,
-      item.content
+      item.content,
+      item.createdAt
     );
   }
 

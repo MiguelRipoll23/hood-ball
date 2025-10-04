@@ -20,7 +20,8 @@ export class ServerMessageWindowEntity extends CloseableWindowEntity {
     index: number,
     length: number,
     title: string,
-    content: string
+    content: string,
+    timestamp?: number
   ): void {
     this.index = index;
     this.next = false;
@@ -28,7 +29,7 @@ export class ServerMessageWindowEntity extends CloseableWindowEntity {
     const pages = `${index + 1}/${length}`;
     console.log(`Opening server message (${pages})`);
 
-    super.open(`SERVER MESSAGE (${pages})`, title, content);
+    super.open(`SERVER MESSAGE (${pages})`, title, content, timestamp);
   }
 
   public override close(): void {
