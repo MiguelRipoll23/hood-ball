@@ -44,6 +44,9 @@ export class BallEntity
   private readonly FIRE_TRAIL_DURATION = 300;
   private readonly SMOKE_DURATION = 600;
 
+  private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
+  private static readonly TELEPORT_SKIP_FRAMES = 3; // Skip interpolation for 3 frames after teleport
+
   constructor(
     x: number,
     y: number,
@@ -67,9 +70,9 @@ export class BallEntity
   }
 
   public override reset(): void {
-    this.resetVelocityAndPosition();
+    // Use teleport to reset to center position instead of manual reset
+    this.teleport(this.canvas.width / 2, this.canvas.height / 2);
     this.inactive = false;
-    this.setSkipInterpolation();
     super.reset();
   }
 
@@ -78,6 +81,17 @@ export class BallEntity
     this.x = this.canvas.width / 2;
     this.y = this.canvas.height / 2;
     this.setSkipInterpolation();
+  }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    // Call parent teleport method (resets position and physics)
+    super.teleport(x, y, angle);
+
+    // Set frame count to skip interpolation for multiple frames
+    this.teleportFrameCount = BallEntity.TELEPORT_SKIP_FRAMES;
+
+    // No ball-specific state to reset currently
+    this.updateHitbox();
   }
 
   public isInactive(): boolean {
@@ -161,10 +175,20 @@ export class BallEntity
 
     const newX = binaryReader.unsignedInt16();
     const newY = binaryReader.unsignedInt16();
-    if (this.skipInterpolation) {
+
+    // Check if we should skip interpolation (either due to setSkipInterpolation or teleport)
+    const shouldSkipInterpolation =
+      this.skipInterpolation || this.teleportFrameCount > 0;
+
+    if (shouldSkipInterpolation) {
       this.x = newX;
       this.y = newY;
       this.skipInterpolation = false;
+
+      // Decrement teleport frame count
+      if (this.teleportFrameCount > 0) {
+        this.teleportFrameCount--;
+      }
     } else {
       this.x = MathUtils.lerp(this.x, newX, 0.5);
       this.y = MathUtils.lerp(this.y, newY, 0.5);
@@ -180,13 +204,6 @@ export class BallEntity
     this.setId("94c58aa041c34b22825a15a3834be240");
     this.setTypeId(EntityType.Ball);
     this.setSyncableByHost(true);
-  }
-
-  private resetVelocityAndPosition(): void {
-    this.vx = 0;
-    this.vy = 0;
-    this.setCenterPosition();
-    super.reset();
   }
 
   // Function to create and draw the gradient ball

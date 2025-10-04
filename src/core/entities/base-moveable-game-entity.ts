@@ -55,4 +55,14 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
   public setSkipInterpolation(): void {
     this.skipInterpolation = true;
   }
+
+  public teleport(x: number, y: number, angle?: number): void {
+    this.x = x;
+    this.y = y;
+    if (angle !== undefined) {
+      this.angle = angle;
+    }
+    // Set skip interpolation for the next network update
+    this.skipInterpolation = true;
+  }
 }

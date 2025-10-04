@@ -135,12 +135,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
         this.demolished = false;
         this.rigidBody = true;
         this.opacity = 1;
-        this.angle = 1.5708;
-        this.speed = 0;
-        this.x = this.respawnX;
-        this.y = this.respawnY;
-        this.updateHitbox();
-        this.setSkipInterpolation();
+        // Use teleport instead of setting position directly
+        this.teleport(this.respawnX, this.respawnY, 1.5708);
       }
       super.update(deltaTimeStamp);
       return;
@@ -290,6 +286,15 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   public setCanvas(canvas: HTMLCanvasElement): void {
     this.canvas = canvas;
+  }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    // Call parent teleport method (resets position and physics)
+    super.teleport(x, y, angle);
+
+    // Reset car-specific state for instant teleportation
+    this.speed = 0;
+    this.updateHitbox();
   }
 
   private createHitbox(): void {

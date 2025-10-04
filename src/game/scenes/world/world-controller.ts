@@ -202,9 +202,8 @@ export class WorldController {
       if (spawnPoint.getIndex() === spawnPointIndex) {
         const x = spawnPoint.getX();
         const y = spawnPoint.getY();
-        this.localCarEntity.setX(x);
-        this.localCarEntity.setY(y);
-        this.localCarEntity.setSkipInterpolation();
+        // Use teleport instead of setX/setY + setSkipInterpolation
+        this.localCarEntity.teleport(x, y);
       }
     });
   }
@@ -217,7 +216,14 @@ export class WorldController {
       }
       this.getEntitiesByOwner(player).forEach((entity) => {
         if (entity instanceof CarEntity) {
-          entity.setSkipInterpolation();
+          // Use teleport method to ensure proper reset and frame-based skip
+          const spawn = this.getSpawnPoint(player);
+          if (spawn) {
+            entity.teleport(spawn.x, spawn.y, 1.5708); // Standard spawn angle
+          } else {
+            // Fallback: at least set skip interpolation
+            entity.setSkipInterpolation();
+          }
         }
       });
     });
