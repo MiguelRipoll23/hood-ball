@@ -16,8 +16,8 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   private titleTextX: number = 0;
   private titleTextY: number = 0;
 
-  private relativeTimeTextX: number = 0;
-  private relativeTimeTextY: number = 0;
+  private formattedDateTextX: number = 0;
+  private formattedDateTextY: number = 0;
 
   private contentTextX: number = 0;
   private contentTextY: number = 0;
@@ -125,8 +125,8 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.titleBarTextX = this.x + 15;
     this.titleBarTextY = this.y + 28;
 
-    this.relativeTimeTextX = this.x + 14;
-    this.relativeTimeTextY = this.y + 62; // More top padding from title bar
+    this.formattedDateTextX = this.x + 14;
+    this.formattedDateTextY = this.y + 62; // More top padding from title bar
 
     this.titleTextX = this.x + 14;
     this.titleTextY = this.y + 88; // More bottom padding from relative time
@@ -164,7 +164,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.renderBackground(context);
     this.renderTitleBar(context);
     this.renderWindowTitle(context);
-    this.renderRelativeTime(context);
+    this.renderFormattedDate(context);
     this.renderTitle(context);
     this.renderContent(context);
   }
@@ -186,19 +186,19 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     context.fillText(this.titleBarText, this.titleBarTextX, this.titleBarTextY);
   }
 
-  private renderRelativeTime(context: CanvasRenderingContext2D): void {
+  private renderFormattedDate(context: CanvasRenderingContext2D): void {
     if (this.timestamp === null) {
       return;
     }
 
-    const relativeTime = formatDate(this.timestamp);
+    const formattedDate = formatDate(this.timestamp);
     context.fillStyle = "#000000";
     context.font = "14px system-ui";
     context.textAlign = "left";
     context.fillText(
-      relativeTime,
-      this.relativeTimeTextX,
-      this.relativeTimeTextY
+      formattedDate,
+      this.formattedDateTextX,
+      this.formattedDateTextY
     );
   }
 
