@@ -4,7 +4,9 @@ export interface ServerMessagesResponse {
 }
 
 export interface ServerMessage {
+  id: number;
   title: string;
   content: string;
-  timestamp: number;
+  createdAt: number;
+  updatedAt: number;
 }

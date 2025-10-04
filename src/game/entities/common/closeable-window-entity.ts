@@ -1,6 +1,7 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
 import { BaseTappableGameEntity } from "../../../core/entities/base-tappable-game-entity.js";
 import { BackdropEntity } from "./backdrop-entity.js";
+import { formatDate } from "../../../core/utils/time-utils.js";
 
 export class CloseableWindowEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;
@@ -15,12 +16,16 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   private titleTextX: number = 0;
   private titleTextY: number = 0;
 
+  private relativeTimeTextX: number = 0;
+  private relativeTimeTextY: number = 0;
+
   private contentTextX: number = 0;
   private contentTextY: number = 0;
   private contentTextMaxWidth: number = 0;
 
   protected title: string = "Title";
   protected content: string = "Content goes here";
+  protected timestamp: number | null = null;
 
   private opened: boolean = false;
 
@@ -43,7 +48,12 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     return this.opened === false;
   }
 
-  public open(titleBarText: string, title: string, content: string): void {
+  public open(
+    titleBarText: string,
+    title: string,
+    content: string,
+    timestamp?: number
+  ): void {
     if (this.opened === false) {
       this.fadeIn(0.2);
     }
@@ -52,6 +62,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.titleBarText = titleBarText;
     this.title = title;
     this.content = content;
+    this.timestamp = timestamp ?? null;
     this.active = true;
   }
 
@@ -114,11 +125,14 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.titleBarTextX = this.x + 15;
     this.titleBarTextY = this.y + 28;
 
+    this.relativeTimeTextX = this.x + 14;
+    this.relativeTimeTextY = this.y + 62; // More top padding from title bar
+
     this.titleTextX = this.x + 14;
-    this.titleTextY = this.y + 68;
+    this.titleTextY = this.y + 88; // More bottom padding from relative time
 
     this.contentTextX = this.x + 14;
-    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 62;
+    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 82; // Adjusted for new title position
     this.contentTextMaxWidth = this.width - 25;
   }
 
@@ -150,6 +164,8 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.renderBackground(context);
     this.renderTitleBar(context);
     this.renderWindowTitle(context);
+    this.renderRelativeTime(context);
+    this.renderTitle(context);
     this.renderContent(context);
   }
 
@@ -164,15 +180,32 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   }
 
   private renderWindowTitle(context: CanvasRenderingContext2D): void {
-    // Render the title bar text
     context.fillStyle = "#FFFFFF";
     context.font = "20px system-ui";
     context.textAlign = "left";
     context.fillText(this.titleBarText, this.titleBarTextX, this.titleBarTextY);
+  }
 
-    // Render the main window title
+  private renderRelativeTime(context: CanvasRenderingContext2D): void {
+    if (this.timestamp === null) {
+      return;
+    }
+
+    const relativeTime = formatDate(this.timestamp);
+    context.fillStyle = "#000000";
+    context.font = "14px system-ui";
+    context.textAlign = "left";
+    context.fillText(
+      relativeTime,
+      this.relativeTimeTextX,
+      this.relativeTimeTextY
+    );
+  }
+
+  private renderTitle(context: CanvasRenderingContext2D): void {
     context.fillStyle = "#000000";
     context.font = "20px system-ui";
+    context.textAlign = "left";
     context.fillText(this.title, this.titleTextX, this.titleTextY);
   }
 
