@@ -129,10 +129,10 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.formattedDateTextY = this.y + 62; // More top padding from title bar
 
     this.titleTextX = this.x + 14;
-    this.titleTextY = this.y + 88; // More bottom padding from relative time
+    this.titleTextY = this.y + 86; // More bottom padding from formatted time
 
     this.contentTextX = this.x + 14;
-    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 82; // Adjusted for new title position
+    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 70; // Adjusted for new title position
     this.contentTextMaxWidth = this.width - 25;
   }
 
