@@ -5,6 +5,7 @@ import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
   RED_TEAM_TRANSPARENCY_COLOR,
 } from "../constants/colors-constants.js";
+import { SPAWN_ANGLE } from "../constants/entity-constants.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
@@ -135,12 +136,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
         this.demolished = false;
         this.rigidBody = true;
         this.opacity = 1;
-        this.angle = 1.5708;
-        this.speed = 0;
-        this.x = this.respawnX;
-        this.y = this.respawnY;
-        this.updateHitbox();
-        this.setSkipInterpolation();
+        // Use teleport instead of setting position directly
+        this.teleport(this.respawnX, this.respawnY, SPAWN_ANGLE);
       }
       super.update(deltaTimeStamp);
       return;
@@ -290,6 +287,15 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   public setCanvas(canvas: HTMLCanvasElement): void {
     this.canvas = canvas;
+  }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    // Call parent teleport method (resets position and physics)
+    super.teleport(x, y, angle);
+
+    // Reset car-specific state for instant teleportation
+    this.speed = 0;
+    this.updateHitbox();
   }
 
   private createHitbox(): void {

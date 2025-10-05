@@ -13,6 +13,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { CarEntity } from "../../entities/car-entity.js";
+import { SPAWN_ANGLE } from "../../constants/entity-constants.js";
 import type { GameEntity } from "../../../core/models/game-entity.js";
 import type { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
@@ -202,9 +203,8 @@ export class WorldController {
       if (spawnPoint.getIndex() === spawnPointIndex) {
         const x = spawnPoint.getX();
         const y = spawnPoint.getY();
-        this.localCarEntity.setX(x);
-        this.localCarEntity.setY(y);
-        this.localCarEntity.setSkipInterpolation();
+        // Use teleport instead of setX/setY + setSkipInterpolation
+        this.localCarEntity.teleport(x, y, SPAWN_ANGLE);
       }
     });
   }
@@ -217,7 +217,17 @@ export class WorldController {
       }
       this.getEntitiesByOwner(player).forEach((entity) => {
         if (entity instanceof CarEntity) {
-          entity.setSkipInterpolation();
+          // Use teleport method to ensure proper reset and frame-based skip
+          const spawn = this.getSpawnPoint(player);
+          if (spawn) {
+            entity.teleport(spawn.x, spawn.y, SPAWN_ANGLE);
+          } else {
+            // Fallback: at least set skip interpolation
+            console.warn(
+              `No spawn point found for player ${player.getName()}, skipping teleport`
+            );
+            entity.setSkipInterpolation();
+          }
         }
       });
     });

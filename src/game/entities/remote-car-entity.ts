@@ -8,8 +8,11 @@ import {
 } from "../constants/webrtc-constants.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { MathUtils } from "../../core/utils/math-utils.js";
+import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 
 export class RemoteCarEntity extends CarEntity {
+  private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
+
   constructor(
     syncableId: string,
     x: number,
@@ -45,15 +48,7 @@ export class RemoteCarEntity extends CarEntity {
     const boosting = binaryReader.boolean();
     const boost = binaryReader.unsignedInt8();
 
-    return new RemoteCarEntity(
-      syncableId,
-      x,
-      y,
-      angle,
-      speed,
-      boosting,
-      boost
-    );
+    return new RemoteCarEntity(syncableId, x, y, angle, speed, boosting, boost);
   }
 
   public override synchronize(arrayBuffer: ArrayBuffer): void {
@@ -65,11 +60,20 @@ export class RemoteCarEntity extends CarEntity {
     const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
     const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
 
-    if (this.skipInterpolation) {
+    // Check if we should skip interpolation (either due to setSkipInterpolation or teleport)
+    const shouldSkipInterpolation =
+      this.skipInterpolation || this.teleportFrameCount > 0;
+
+    if (shouldSkipInterpolation) {
       this.x = newX;
       this.y = newY;
       this.angle = newAngle;
       this.skipInterpolation = false;
+
+      // Decrement teleport frame count
+      if (this.teleportFrameCount > 0) {
+        this.teleportFrameCount--;
+      }
     } else {
       // Smooth the remote movement to reduce jitter
       this.x = MathUtils.lerp(this.x, newX, 0.5);
@@ -82,6 +86,14 @@ export class RemoteCarEntity extends CarEntity {
     this.boost = binaryReader.unsignedInt8();
 
     this.updateHitbox();
+  }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    // Call parent teleport method
+    super.teleport(x, y, angle);
+
+    // Set frame count to skip interpolation for multiple frames
+    this.teleportFrameCount = TELEPORT_SKIP_FRAMES;
   }
 
   private setSyncableValues(syncableId: string) {

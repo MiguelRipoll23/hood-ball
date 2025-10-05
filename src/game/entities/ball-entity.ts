@@ -9,6 +9,7 @@ import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { MathUtils } from "../../core/utils/math-utils.js";
+import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 
 export class BallEntity
   extends BaseDynamicCollidingGameEntity
@@ -27,22 +28,7 @@ export class BallEntity
   private inactive: boolean = false;
   private lastPlayer: GamePlayer | null = null;
 
-  private fireballActive = false;
-  private fireballTimer = 0;
-  private fireTrailParticles: {
-    x: number;
-    y: number;
-    size: number;
-    life: number;
-  }[] = [];
-  private smokeParticles: {
-    x: number;
-    y: number;
-    size: number;
-    life: number;
-  }[] = [];
-  private readonly FIRE_TRAIL_DURATION = 300;
-  private readonly SMOKE_DURATION = 600;
+  private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
 
   constructor(
     x: number,
@@ -67,9 +53,9 @@ export class BallEntity
   }
 
   public override reset(): void {
-    this.resetVelocityAndPosition();
+    // Use teleport to reset to center position instead of manual reset
+    this.teleport(this.canvas.width / 2, this.canvas.height / 2);
     this.inactive = false;
-    this.setSkipInterpolation();
     super.reset();
   }
 
@@ -78,6 +64,17 @@ export class BallEntity
     this.x = this.canvas.width / 2;
     this.y = this.canvas.height / 2;
     this.setSkipInterpolation();
+  }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    // Call parent teleport method (resets position and physics)
+    super.teleport(x, y, angle);
+
+    // Set frame count to skip interpolation for multiple frames
+    this.teleportFrameCount = TELEPORT_SKIP_FRAMES;
+
+    // No ball-specific state to reset currently
+    this.updateHitbox();
   }
 
   public isInactive(): boolean {
@@ -98,22 +95,11 @@ export class BallEntity
     return this.lastPlayer;
   }
 
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  public update(_deltaTimeStamp: DOMHighResTimeStamp): void {
     this.applyFriction();
     this.calculateMovement();
     this.updateHitbox();
     this.handlePlayerCollision();
-
-    if (this.fireballActive) {
-      this.fireballTimer -= deltaTimeStamp;
-      if (this.fireballTimer <= 0) {
-        this.fireballActive = false;
-        this.fireTrailParticles = [];
-        this.smokeParticles = [];
-      } else {
-        this.updateFireballEffects(deltaTimeStamp);
-      }
-    }
 
     EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
   }
@@ -121,17 +107,13 @@ export class BallEntity
   public override render(context: CanvasRenderingContext2D): void {
     context.save(); // Save the current context state
 
-    if (this.fireballActive) {
-      this.drawFireball(context);
-    } else {
-      // Draw the gradient ball
-      this.drawBallWithGradient(context);
+    // Draw the gradient ball
+    this.drawBallWithGradient(context);
 
-      // If the ball is inactive, apply glow effect
-      if (this.inactive) {
-        this.applyGlowEffect(context);
-        this.drawBallWithGlow(context);
-      }
+    // If the ball is inactive, apply glow effect
+    if (this.inactive) {
+      this.applyGlowEffect(context);
+      this.drawBallWithGlow(context);
     }
 
     // Restore the context state
@@ -161,10 +143,20 @@ export class BallEntity
 
     const newX = binaryReader.unsignedInt16();
     const newY = binaryReader.unsignedInt16();
-    if (this.skipInterpolation) {
+
+    // Check if we should skip interpolation (either due to setSkipInterpolation or teleport)
+    const shouldSkipInterpolation =
+      this.skipInterpolation || this.teleportFrameCount > 0;
+
+    if (shouldSkipInterpolation) {
       this.x = newX;
       this.y = newY;
       this.skipInterpolation = false;
+
+      // Decrement teleport frame count
+      if (this.teleportFrameCount > 0) {
+        this.teleportFrameCount--;
+      }
     } else {
       this.x = MathUtils.lerp(this.x, newX, 0.5);
       this.y = MathUtils.lerp(this.y, newY, 0.5);
@@ -180,13 +172,6 @@ export class BallEntity
     this.setId("94c58aa041c34b22825a15a3834be240");
     this.setTypeId(EntityType.Ball);
     this.setSyncableByHost(true);
-  }
-
-  private resetVelocityAndPosition(): void {
-    this.vx = 0;
-    this.vy = 0;
-    this.setCenterPosition();
-    super.reset();
   }
 
   // Function to create and draw the gradient ball
@@ -228,106 +213,6 @@ export class BallEntity
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
     context.closePath();
-  }
-
-  public activateFireball(durationSeconds = 5): void {
-    this.fireballActive = true;
-    this.fireballTimer = durationSeconds * 1000;
-  }
-
-  private drawFireball(context: CanvasRenderingContext2D): void {
-    this.renderSmokeTrail(context);
-    this.renderFireTrail(context);
-    const gradient = context.createRadialGradient(
-      this.x,
-      this.y,
-      0,
-      this.x,
-      this.y,
-      this.radius
-    );
-    gradient.addColorStop(0, "#ffffaa");
-    gradient.addColorStop(0.5, "#ff8800");
-    gradient.addColorStop(1, "#ff0000");
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    context.fill();
-    context.closePath();
-  }
-
-  private updateFireballEffects(delta: DOMHighResTimeStamp): void {
-    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
-    if (speed > this.MIN_VELOCITY) {
-      const dirX = -this.vx / speed;
-      const dirY = -this.vy / speed;
-      const spawnX = this.x + dirX * this.radius;
-      const spawnY = this.y + dirY * this.radius;
-
-      this.fireTrailParticles.push({
-        x: spawnX,
-        y: spawnY,
-        size: this.radius / 2,
-        life: this.FIRE_TRAIL_DURATION,
-      });
-
-      this.smokeParticles.push({
-        x: spawnX,
-        y: spawnY,
-        size: this.radius / 2,
-        life: this.SMOKE_DURATION,
-      });
-    }
-
-    this.fireTrailParticles.forEach((p) => {
-      p.life -= delta;
-      p.size *= 0.96;
-    });
-    this.fireTrailParticles = this.fireTrailParticles.filter((p) => p.life > 0);
-
-    this.smokeParticles.forEach((p) => {
-      p.life -= delta;
-      p.size += 0.02 * (delta / 16);
-      p.y -= 0.02 * (delta / 16);
-    });
-    this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
-  }
-
-  private renderFireTrail(context: CanvasRenderingContext2D): void {
-    context.save();
-    this.fireTrailParticles.forEach((p) => {
-      const progress = p.life / this.FIRE_TRAIL_DURATION;
-      context.globalAlpha = progress;
-      const gradient = context.createRadialGradient(
-        p.x,
-        p.y,
-        0,
-        p.x,
-        p.y,
-        p.size
-      );
-      gradient.addColorStop(0, "#ffffaa");
-      gradient.addColorStop(1, "#ff0000");
-      context.fillStyle = gradient;
-      context.beginPath();
-      context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      context.fill();
-    });
-    context.restore();
-  }
-
-  private renderSmokeTrail(context: CanvasRenderingContext2D): void {
-    context.save();
-    this.smokeParticles.forEach((p) => {
-      const progress = p.life / this.SMOKE_DURATION;
-      const shade = Math.floor(100 + 80 * progress);
-      context.globalAlpha = 0.3 * progress;
-      context.fillStyle = `rgb(${shade},${shade},${shade})`;
-      context.beginPath();
-      context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      context.fill();
-    });
-    context.restore();
   }
 
   private createHitbox(): void {

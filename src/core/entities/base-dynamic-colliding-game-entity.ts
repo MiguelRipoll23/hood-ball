@@ -120,4 +120,13 @@ export class BaseDynamicCollidingGameEntity extends BaseStaticCollidingGameEntit
 
     context.restore();
   }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    // Call parent teleport method
+    super.teleport(x, y, angle);
+
+    // Reset all physics state for instant teleportation
+    this.vx = 0;
+    this.vy = 0;
+  }
 }
