@@ -5,6 +5,7 @@ import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
   RED_TEAM_TRANSPARENCY_COLOR,
 } from "../constants/colors-constants.js";
+import { SPAWN_ANGLE } from "../constants/entity-constants.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
@@ -136,7 +137,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
         this.rigidBody = true;
         this.opacity = 1;
         // Use teleport instead of setting position directly
-        this.teleport(this.respawnX, this.respawnY, 1.5708);
+        this.teleport(this.respawnX, this.respawnY, SPAWN_ANGLE);
       }
       super.update(deltaTimeStamp);
       return;

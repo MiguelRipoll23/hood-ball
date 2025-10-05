@@ -8,10 +8,10 @@ import {
 } from "../constants/webrtc-constants.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { MathUtils } from "../../core/utils/math-utils.js";
+import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 
 export class RemoteCarEntity extends CarEntity {
   private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
-  private static readonly TELEPORT_SKIP_FRAMES = 3; // Skip interpolation for 3 frames after teleport
 
   constructor(
     syncableId: string,
@@ -93,7 +93,7 @@ export class RemoteCarEntity extends CarEntity {
     super.teleport(x, y, angle);
 
     // Set frame count to skip interpolation for multiple frames
-    this.teleportFrameCount = RemoteCarEntity.TELEPORT_SKIP_FRAMES;
+    this.teleportFrameCount = TELEPORT_SKIP_FRAMES;
   }
 
   private setSyncableValues(syncableId: string) {

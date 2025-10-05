@@ -9,6 +9,7 @@ import { DebugUtils } from "../../core/utils/debug-utils.js";
 import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
 import { MathUtils } from "../../core/utils/math-utils.js";
+import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 
 export class BallEntity
   extends BaseDynamicCollidingGameEntity
@@ -45,7 +46,6 @@ export class BallEntity
   private readonly SMOKE_DURATION = 600;
 
   private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
-  private static readonly TELEPORT_SKIP_FRAMES = 3; // Skip interpolation for 3 frames after teleport
 
   constructor(
     x: number,
@@ -88,7 +88,7 @@ export class BallEntity
     super.teleport(x, y, angle);
 
     // Set frame count to skip interpolation for multiple frames
-    this.teleportFrameCount = BallEntity.TELEPORT_SKIP_FRAMES;
+    this.teleportFrameCount = TELEPORT_SKIP_FRAMES;
 
     // No ball-specific state to reset currently
     this.updateHitbox();
