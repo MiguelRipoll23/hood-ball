@@ -15,7 +15,7 @@ import type { FindMatchesResponse } from "../../interfaces/responses/find-matche
 import type { ServerMessagesResponse } from "../../interfaces/responses/server-messages-response.js";
 import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
 import type { VersionResponse } from "../../interfaces/responses/version-response.js";
-import type { RankingResponse } from "../../interfaces/responses/ranking-response.js";
+import type { UserScoresResponse } from "../../interfaces/responses/user-scores-response.js";
 import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
 import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
@@ -195,9 +195,7 @@ export class APIService {
     return response.arrayBuffer();
   }
 
-  public async getMessages(
-    cursor?: number
-  ): Promise<ServerMessagesResponse> {
+  public async getMessages(cursor?: number): Promise<ServerMessagesResponse> {
     if (this.authenticationToken === null) {
       throw new Error("Authentication token not found");
     }
@@ -342,25 +340,27 @@ export class APIService {
     console.log("Score saved");
   }
 
-  public async getRanking(): Promise<RankingResponse[]> {
+  public async getRanking(cursor?: string): Promise<UserScoresResponse> {
     if (this.authenticationToken === null) {
       throw new Error("Authentication token not found");
     }
 
-    const response = await this.fetchWithLoading(
-      this.baseURL + USER_SCORES_PATH,
-      {
-        headers: {
-          Authorization: this.authenticationToken,
-        },
-      }
-    );
+    const url =
+      this.baseURL +
+      USER_SCORES_PATH +
+      (cursor !== undefined ? `?cursor=${cursor}` : "");
+
+    const response = await this.fetchWithLoading(url, {
+      headers: {
+        Authorization: this.authenticationToken,
+      },
+    });
 
     if (response.ok === false) {
       throw new Error("Failed to fetch ranking");
     }
 
-    const rankingResponse: RankingResponse[] = await response.json();
+    const rankingResponse: UserScoresResponse = await response.json();
     console.log("Ranking response", rankingResponse);
 
     return rankingResponse;

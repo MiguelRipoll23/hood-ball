@@ -1,4 +1,4 @@
-import type { RankingResponse } from "../../../interfaces/responses/ranking-response.js";
+import type { UserScore } from "../../../interfaces/responses/user-scores-response.js";
 import { BaseGameScene } from "../../../../core/scenes/base-game-scene.js";
 import type { GameState } from "../../../../core/models/game-state.js";
 import { APIService } from "../../../services/network/api-service.js";
@@ -62,7 +62,7 @@ export class ScoreboardScene extends BaseGameScene {
       });
   }
 
-  private setRankingData(ranking: RankingResponse[]): void {
+  private setRankingData(ranking: UserScore[]): void {
     this.entities?.rankingTableEntity.setRanking(ranking);
   }
 

@@ -1,10 +1,10 @@
 import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
-import type { RankingResponse } from "../interfaces/responses/ranking-response.js";
+import type { UserScore } from "../interfaces/responses/user-scores-response.js";
 
 export class RankingTableEntity extends BaseAnimatedGameEntity {
-  private ranking: RankingResponse[] = [];
+  private ranking: UserScore[] = [];
 
-  public setRanking(ranking: RankingResponse[]): void {
+  public setRanking(ranking: UserScore[]): void {
     this.ranking = ranking;
   }
 
