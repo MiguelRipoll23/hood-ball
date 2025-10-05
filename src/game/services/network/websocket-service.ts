@@ -31,7 +31,7 @@ export class WebSocketService {
   private baseReconnectDelay = 1000; // Start with 1 second
   private maxReconnectDelay = 30000; // Max 30 seconds between attempts
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
-  private reconnectTimeoutId: number | null = null;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private gameState = container.get(GameState)) {
     this.baseURL = APIUtils.getWSBaseURL();
@@ -178,14 +178,16 @@ export class WebSocketService {
 
   @ServerCommandHandler(WebSocketType.Notification)
   public handleNotificationMessage(binaryReader: BinaryReader) {
-    const textBytes = binaryReader.bytesAsArrayBuffer();
+    const channelId = binaryReader.unsignedInt8();
+    const messageBytes = binaryReader.bytesAsArrayBuffer();
 
-    const message = new TextDecoder("utf-8").decode(textBytes);
+    const message = new TextDecoder("utf-8").decode(messageBytes);
     const localEvent = new LocalEvent<ServerNotificationPayload>(
       EventType.ServerNotification
     );
 
     localEvent.setData({
+      channelId,
       message,
     });
 
