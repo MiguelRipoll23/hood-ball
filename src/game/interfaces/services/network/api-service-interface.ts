@@ -10,7 +10,7 @@ import type { AuthenticationOptionsResponse } from "../../responses/authenticati
 import type { AuthenticationResponse } from "../../responses/authentication-response.js";
 import type { FindMatchesResponse } from "../../responses/find-matches-response.js";
 import type { ServerMessagesResponse } from "../../responses/server-messages-response.js";
-import type { RankingResponse } from "../../responses/ranking-response.js";
+import type { UserScoresResponse } from "../../responses/user-scores-response.js";
 
 export interface IAPIService {
   setAuthenticationToken(authenticationToken: string): void;
@@ -35,5 +35,5 @@ export interface IAPIService {
   advertiseMatch(advertiseMatchRequest: AdvertiseMatchRequest): Promise<void>;
   removeMatch(): Promise<void>;
   saveScore(saveScoreRequest: SaveUserScoresRequest[]): Promise<void>;
-  getRanking(): Promise<RankingResponse[]>;
+  getRanking(cursor?: string): Promise<UserScoresResponse>;
 }

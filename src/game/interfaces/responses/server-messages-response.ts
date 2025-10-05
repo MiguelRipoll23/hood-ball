@@ -1,6 +1,7 @@
 export interface ServerMessagesResponse {
   results: ServerMessage[];
   nextCursor?: number;
+  hasMore: boolean;
 }
 
 export interface ServerMessage {
