@@ -223,7 +223,9 @@ export class WorldController {
             entity.teleport(spawn.x, spawn.y, SPAWN_ANGLE);
           } else {
             // Fallback: at least set skip interpolation
-            console.warn(`No spawn point found for player ${player.getName()}, skipping teleport`);
+            console.warn(
+              `No spawn point found for player ${player.getName()}, skipping teleport`
+            );
             entity.setSkipInterpolation();
           }
         }
