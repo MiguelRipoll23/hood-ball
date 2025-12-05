@@ -6,6 +6,7 @@ import { formatDate } from "../../../core/utils/time-utils.js";
 export class CloseableWindowEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;
   private readonly TEXT_LINE_HEIGHT: number = 20;
+  private readonly PINK_COLOR: string = "#FF69B4";
 
   private readonly backdropEntity: BackdropEntity;
 
@@ -141,23 +142,42 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     text: string,
     maxWidth: number
   ): string[] {
-    const words = text.split(" ");
     const lines: string[] = [];
-    let currentLine = words[0];
+    let currentLine = "";
+    let currentLineWithoutTags = "";
 
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i];
-      const width = context.measureText(currentLine + " " + word).width;
-      if (width < maxWidth) {
-        currentLine += " " + word;
+    // Split by spaces but keep track of <em> tags
+    const parts = text.split(" ");
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const testLine =
+        currentLineWithoutTags +
+        (currentLineWithoutTags ? " " : "") +
+        this.stripTags(part);
+      const testWidth = context.measureText(testLine).width;
+
+      if (testWidth <= maxWidth) {
+        currentLine += (currentLine ? " " : "") + part;
+        currentLineWithoutTags = testLine;
       } else {
-        lines.push(currentLine);
-        currentLine = word;
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        currentLine = part;
+        currentLineWithoutTags = this.stripTags(part);
       }
     }
-    lines.push(currentLine);
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
 
     return lines;
+  }
+
+  private stripTags(text: string): string {
+    return text.replace(/<em>|<\/em>/g, "");
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -210,7 +230,6 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   }
 
   private renderContent(context: CanvasRenderingContext2D): void {
-    context.fillStyle = "#000000";
     context.font = "16px system-ui";
     context.textAlign = "left";
 
@@ -220,12 +239,49 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
       this.contentTextMaxWidth
     );
 
-    for (let i = 0; i < lines.length; i++) {
-      context.fillText(
-        lines[i],
-        this.contentTextX,
-        this.contentTextY + i * this.TEXT_LINE_HEIGHT
-      );
+    let currentY = this.contentTextY;
+
+    for (const line of lines) {
+      this.renderLineWithFormatting(context, line, this.contentTextX, currentY);
+      currentY += this.TEXT_LINE_HEIGHT;
+    }
+  }
+
+  private renderLineWithFormatting(
+    context: CanvasRenderingContext2D,
+    line: string,
+    x: number,
+    y: number
+  ): void {
+    let currentX = x;
+    const regex = /<em>(.*?)<\/em>/g;
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(line)) !== null) {
+      // Render text before <em> tag
+      if (match.index > lastIndex) {
+        const normalText = line.substring(lastIndex, match.index);
+        context.fillStyle = "#000000";
+        context.font = "16px system-ui";
+        context.fillText(normalText, currentX, y);
+        currentX += context.measureText(normalText).width;
+      }
+
+      // Render emphasized text in pink and bold
+      context.fillStyle = this.PINK_COLOR;
+      context.font = "bold 16px system-ui";
+      context.fillText(match[1], currentX, y);
+      currentX += context.measureText(match[1]).width;
+      lastIndex = regex.lastIndex;
+    }
+
+    // Render remaining text after last <em> tag
+    if (lastIndex < line.length) {
+      const remainingText = line.substring(lastIndex);
+      context.fillStyle = "#000000";
+      context.font = "16px system-ui";
+      context.fillText(remainingText, currentX, y);
     }
   }
 }
