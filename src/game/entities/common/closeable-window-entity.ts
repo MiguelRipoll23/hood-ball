@@ -6,7 +6,9 @@ import { formatDate } from "../../../core/utils/time-utils.js";
 export class CloseableWindowEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;
   private readonly TEXT_LINE_HEIGHT: number = 20;
-  private readonly PINK_COLOR: string = "#FF69B4";
+  private readonly EMPHASIS_COLOR: string = "#4a9c0f";
+  private readonly NORMAL_TEXT_COLOR: string = "#000000";
+  private readonly NORMAL_FONT: string = "16px system-ui";
 
   private readonly backdropEntity: BackdropEntity;
 
@@ -143,29 +145,23 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     maxWidth: number
   ): string[] {
     const lines: string[] = [];
+    if (!text) {
+      return lines;
+    }
+
+    // Normalize spaces and split into words
+    const words = text.trim().split(/ +/);
     let currentLine = "";
-    let currentLineWithoutTags = "";
 
-    // Split by spaces but keep track of <em> tags
-    const parts = text.split(" ");
-
-    for (let i = 0; i < parts.length; i++) {
-      const part = parts[i];
-      const testLine =
-        currentLineWithoutTags +
-        (currentLineWithoutTags ? " " : "") +
-        this.stripTags(part);
-      const testWidth = context.measureText(testLine).width;
-
-      if (testWidth <= maxWidth) {
-        currentLine += (currentLine ? " " : "") + part;
-        currentLineWithoutTags = testLine;
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (this.calculateFormattedTextWidth(context, testLine) <= maxWidth) {
+        currentLine = testLine;
       } else {
         if (currentLine) {
           lines.push(currentLine);
         }
-        currentLine = part;
-        currentLineWithoutTags = this.stripTags(part);
+        currentLine = word;
       }
     }
 
@@ -176,8 +172,28 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     return lines;
   }
 
-  private stripTags(text: string): string {
-    return text.replace(/<em>|<\/em>/g, "");
+  private calculateFormattedTextWidth(
+    context: CanvasRenderingContext2D,
+    text: string
+  ): number {
+    let totalWidth = 0;
+    const originalFont = context.font;
+    const parts = text.split(/(<em>.*?<\/em>)/);
+
+    for (const part of parts) {
+      if (!part) continue;
+
+      if (part.startsWith("<em>") && part.endsWith("</em>")) {
+        const emText = part.substring(4, part.length - 5);
+        context.font = this.NORMAL_FONT;
+        totalWidth += context.measureText(emText).width;
+      } else {
+        context.font = this.NORMAL_FONT;
+        totalWidth += context.measureText(part).width;
+      }
+    }
+    context.font = originalFont;
+    return totalWidth;
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -212,7 +228,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     }
 
     const formattedDate = formatDate(this.timestamp);
-    context.fillStyle = "#000000";
+    context.fillStyle = this.NORMAL_TEXT_COLOR;
     context.font = "16px system-ui";
     context.textAlign = "left";
     context.fillText(
@@ -223,14 +239,14 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   }
 
   private renderTitle(context: CanvasRenderingContext2D): void {
-    context.fillStyle = "#000000";
+    context.fillStyle = this.NORMAL_TEXT_COLOR;
     context.font = "20px system-ui";
     context.textAlign = "left";
     context.fillText(this.title, this.titleTextX, this.titleTextY);
   }
 
   private renderContent(context: CanvasRenderingContext2D): void {
-    context.font = "16px system-ui";
+    context.font = this.NORMAL_FONT;
     context.textAlign = "left";
 
     const lines = this.wrapText(
@@ -254,34 +270,27 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     y: number
   ): void {
     let currentX = x;
-    const regex = /<em>(.*?)<\/em>/g;
-    let lastIndex = 0;
-    let match;
+    const originalFont = context.font;
+    const parts = line.split(/(<em>.*?<\/em>)/);
 
-    while ((match = regex.exec(line)) !== null) {
-      // Render text before <em> tag
-      if (match.index > lastIndex) {
-        const normalText = line.substring(lastIndex, match.index);
-        context.fillStyle = "#000000";
-        context.font = "16px system-ui";
-        context.fillText(normalText, currentX, y);
-        currentX += context.measureText(normalText).width;
+    for (const part of parts) {
+      if (!part) {
+        continue;
       }
 
-      // Render emphasized text in pink and bold
-      context.fillStyle = this.PINK_COLOR;
-      context.font = "bold 16px system-ui";
-      context.fillText(match[1], currentX, y);
-      currentX += context.measureText(match[1]).width;
-      lastIndex = regex.lastIndex;
+      if (part.startsWith("<em>") && part.endsWith("</em>")) {
+        const text = part.substring(4, part.length - 5);
+        context.fillStyle = this.EMPHASIS_COLOR;
+        context.font = this.NORMAL_FONT;
+        context.fillText(text, currentX, y);
+        currentX += context.measureText(text).width;
+      } else {
+        context.fillStyle = this.NORMAL_TEXT_COLOR;
+        context.font = this.NORMAL_FONT;
+        context.fillText(part, currentX, y);
+        currentX += context.measureText(part).width;
+      }
     }
-
-    // Render remaining text after last <em> tag
-    if (lastIndex < line.length) {
-      const remainingText = line.substring(lastIndex);
-      context.fillStyle = "#000000";
-      context.font = "16px system-ui";
-      context.fillText(remainingText, currentX, y);
-    }
+    context.font = originalFont;
   }
 }
