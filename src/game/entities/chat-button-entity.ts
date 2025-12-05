@@ -105,14 +105,6 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
       this.showInput();
     }
 
-    if (this.gamePointer.isPressing()) {
-      if (!this.pressed) {
-        this.opacity = 0;
-      }
-    } else {
-      this.opacity = this.DEFAULT_OPACITY;
-    }
-
     if (this.inputVisible) {
       this.handleKeyboardInput();
     }
