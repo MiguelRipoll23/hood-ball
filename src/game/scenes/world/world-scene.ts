@@ -45,6 +45,8 @@ import { ChatService } from "../../services/network/chat-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
+  private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
+
   private readonly sceneTransitionService: SceneTransitionService;
   private readonly spawnPointService: SpawnPointService;
   private readonly timerManagerService: TimerManagerService;
@@ -497,7 +499,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.activeWeatherEntity = snowEntity;
 
     // Set icy physics - very slippery
-    this.weatherFrictionMultiplier = 0.3; // 70% less friction
+    this.weatherFrictionMultiplier = WorldScene.SNOW_FRICTION_MULTIPLIER;
     this.applyWeatherPhysics();
 
     console.log("Snow weather activated - icy conditions!");

@@ -10,6 +10,8 @@ interface Snowflake {
 }
 
 export class SnowEntity extends BaseMoveableGameEntity {
+  private static readonly OVERLAY_COLOR_RGB = "173, 216, 255"; // Light blue tint for icy field
+
   private snowflakes: Snowflake[] = [];
   private elapsed = 0;
   private spawnElapsed = 0;
@@ -105,7 +107,7 @@ export class SnowEntity extends BaseMoveableGameEntity {
       return;
     }
 
-    context.fillStyle = `rgba(173, 216, 255, ${overlayOpacity})`;
+    context.fillStyle = `rgba(${SnowEntity.OVERLAY_COLOR_RGB}, ${overlayOpacity})`;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
