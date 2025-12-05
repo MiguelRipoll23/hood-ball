@@ -6,6 +6,9 @@ import { formatDate } from "../../../core/utils/time-utils.js";
 export class CloseableWindowEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;
   private readonly TEXT_LINE_HEIGHT: number = 20;
+  private readonly EMPHASIS_COLOR: string = "#4a9c0f";
+  private readonly NORMAL_TEXT_COLOR: string = "#000000";
+  private readonly NORMAL_FONT: string = "16px system-ui";
 
   private readonly backdropEntity: BackdropEntity;
 
@@ -141,23 +144,56 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     text: string,
     maxWidth: number
   ): string[] {
-    const words = text.split(" ");
     const lines: string[] = [];
-    let currentLine = words[0];
+    if (!text) {
+      return lines;
+    }
 
-    for (let i = 1; i < words.length; i++) {
-      const word = words[i];
-      const width = context.measureText(currentLine + " " + word).width;
-      if (width < maxWidth) {
-        currentLine += " " + word;
+    // Normalize spaces and split into words
+    const words = text.trim().split(/ +/);
+    let currentLine = "";
+
+    for (const word of words) {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (this.calculateFormattedTextWidth(context, testLine) <= maxWidth) {
+        currentLine = testLine;
       } else {
-        lines.push(currentLine);
+        if (currentLine) {
+          lines.push(currentLine);
+        }
         currentLine = word;
       }
     }
-    lines.push(currentLine);
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
 
     return lines;
+  }
+
+  private calculateFormattedTextWidth(
+    context: CanvasRenderingContext2D,
+    text: string
+  ): number {
+    let totalWidth = 0;
+    const originalFont = context.font;
+    const parts = text.split(/(<em>.*?<\/em>)/);
+
+    for (const part of parts) {
+      if (!part) continue;
+
+      if (part.startsWith("<em>") && part.endsWith("</em>")) {
+        const emText = part.substring(4, part.length - 5);
+        context.font = this.NORMAL_FONT;
+        totalWidth += context.measureText(emText).width;
+      } else {
+        context.font = this.NORMAL_FONT;
+        totalWidth += context.measureText(part).width;
+      }
+    }
+    context.font = originalFont;
+    return totalWidth;
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -192,7 +228,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     }
 
     const formattedDate = formatDate(this.timestamp);
-    context.fillStyle = "#000000";
+    context.fillStyle = this.NORMAL_TEXT_COLOR;
     context.font = "16px system-ui";
     context.textAlign = "left";
     context.fillText(
@@ -203,15 +239,14 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   }
 
   private renderTitle(context: CanvasRenderingContext2D): void {
-    context.fillStyle = "#000000";
+    context.fillStyle = this.NORMAL_TEXT_COLOR;
     context.font = "20px system-ui";
     context.textAlign = "left";
     context.fillText(this.title, this.titleTextX, this.titleTextY);
   }
 
   private renderContent(context: CanvasRenderingContext2D): void {
-    context.fillStyle = "#000000";
-    context.font = "16px system-ui";
+    context.font = this.NORMAL_FONT;
     context.textAlign = "left";
 
     const lines = this.wrapText(
@@ -220,12 +255,42 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
       this.contentTextMaxWidth
     );
 
-    for (let i = 0; i < lines.length; i++) {
-      context.fillText(
-        lines[i],
-        this.contentTextX,
-        this.contentTextY + i * this.TEXT_LINE_HEIGHT
-      );
+    let currentY = this.contentTextY;
+
+    for (const line of lines) {
+      this.renderLineWithFormatting(context, line, this.contentTextX, currentY);
+      currentY += this.TEXT_LINE_HEIGHT;
     }
+  }
+
+  private renderLineWithFormatting(
+    context: CanvasRenderingContext2D,
+    line: string,
+    x: number,
+    y: number
+  ): void {
+    let currentX = x;
+    const originalFont = context.font;
+    const parts = line.split(/(<em>.*?<\/em>)/);
+
+    for (const part of parts) {
+      if (!part) {
+        continue;
+      }
+
+      if (part.startsWith("<em>") && part.endsWith("</em>")) {
+        const text = part.substring(4, part.length - 5);
+        context.fillStyle = this.EMPHASIS_COLOR;
+        context.font = this.NORMAL_FONT;
+        context.fillText(text, currentX, y);
+        currentX += context.measureText(text).width;
+      } else {
+        context.fillStyle = this.NORMAL_TEXT_COLOR;
+        context.font = this.NORMAL_FONT;
+        context.fillText(part, currentX, y);
+        currentX += context.measureText(part).width;
+      }
+    }
+    context.font = originalFont;
   }
 }
