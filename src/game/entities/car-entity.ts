@@ -78,9 +78,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
 
-  private rainbowActive = false;
-  private rainbowTimer = 0;
-  private rainbowHue = 0;
+  private weatherFrictionMultiplier = 1.0;
 
   constructor(x: number, y: number, angle: number, private remote = false) {
     super();
@@ -145,15 +143,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
     this.handleBoostPads();
 
-    if (this.rainbowActive) {
-      this.rainbowTimer -= deltaTimeStamp;
-      this.rainbowHue = (this.rainbowHue + deltaTimeStamp * 0.36) % 360;
-      if (this.rainbowTimer <= 0) {
-        this.rainbowActive = false;
-        this.rainbowHue = 0;
-      }
-    }
-
     if (this.boosting) {
       this.smokeSpawnElapsed += deltaTimeStamp;
       if (this.smokeSpawnElapsed >= this.SMOKE_SPAWN_INTERVAL) {
@@ -191,11 +180,6 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     context.rotate(this.angle);
     if (this.boosting) {
       this.renderTurboEffect(context);
-    }
-    if (this.rainbowActive) {
-      context.filter = `hue-rotate(${this.rainbowHue}deg) saturate(200%) brightness(1.3) contrast(1.2)`;
-    } else {
-      context.filter = "none";
     }
     context.drawImage(
       this.carImage!,
@@ -274,11 +258,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.boosting = false;
   }
 
-  public activateRainbow(durationSeconds = 15): void {
-    this.rainbowActive = true;
-    this.rainbowTimer = durationSeconds * 1000;
-    this.rainbowHue = 0;
-    console.log("Rainbow effect activated");
+  public setWeatherFrictionMultiplier(multiplier: number): void {
+    this.weatherFrictionMultiplier = multiplier;
   }
 
   public refillBoost(): void {
@@ -327,7 +308,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   private applyFriction(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.speed !== 0) {
-      const friction = this.FRICTION * deltaTimeStamp;
+      // Apply weather-modified friction
+      const friction =
+        this.FRICTION * deltaTimeStamp * this.weatherFrictionMultiplier;
 
       if (Math.abs(this.speed) <= friction) {
         this.speed = 0;
