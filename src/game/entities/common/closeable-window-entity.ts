@@ -125,14 +125,14 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.titleBarTextX = this.x + 15;
     this.titleBarTextY = this.y + 28;
 
-    this.formattedDateTextX = this.x + 14;
-    this.formattedDateTextY = this.y + 62; // More top padding from title bar
-
     this.titleTextX = this.x + 14;
-    this.titleTextY = this.y + 86; // More bottom padding from formatted time
+    this.titleTextY = this.y + 68; // More top padding from title bar
+
+    this.formattedDateTextX = this.x + 14;
+    this.formattedDateTextY = this.y + this.height - 14; // Bottom left of window
 
     this.contentTextX = this.x + 14;
-    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 70; // Adjusted for new title position
+    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 55; // Reduced top margin
     this.contentTextMaxWidth = this.width - 25;
   }
 
@@ -164,9 +164,9 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.renderBackground(context);
     this.renderTitleBar(context);
     this.renderWindowTitle(context);
-    this.renderFormattedDate(context);
     this.renderTitle(context);
     this.renderContent(context);
+    this.renderFormattedDate(context);
   }
 
   private renderBackground(context: CanvasRenderingContext2D): void {
@@ -193,7 +193,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
     const formattedDate = formatDate(this.timestamp);
     context.fillStyle = "#000000";
-    context.font = "14px system-ui";
+    context.font = "16px system-ui";
     context.textAlign = "left";
     context.fillText(
       formattedDate,
