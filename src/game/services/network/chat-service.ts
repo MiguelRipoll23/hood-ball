@@ -164,13 +164,9 @@ export class ChatService {
     }
 
     this.matchActionsLogService.addAction(
-      MatchAction.chatMessage(
-        chatMessage.getUserId(),
-        chatMessage.getText(),
-        {
-          timestamp: chatMessage.getTimestamp(),
-        }
-      )
+      MatchAction.chatMessage(chatMessage.getUserId(), chatMessage.getText(), {
+        timestamp: chatMessage.getTimestamp(),
+      })
     );
 
     // Notify all listeners
@@ -191,10 +187,10 @@ export class ChatService {
     const command = text.slice(1).toLowerCase();
 
     switch (command) {
-      case "rainbow":
+      case "snow":
         if (!senderId || senderId !== this.localPlayerId) {
-          console.log("Rainbow command received - starting effect");
-          const event = new LocalEvent<void>(EventType.Rainbow);
+          console.log("Snow weather command received");
+          const event = new LocalEvent<void>(EventType.SnowWeather);
           this.eventProcessorService.addLocalEvent(event);
         }
         this.logChatCommand(senderId, command, timestamp);

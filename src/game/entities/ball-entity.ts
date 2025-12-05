@@ -29,6 +29,7 @@ export class BallEntity
   private lastPlayer: GamePlayer | null = null;
 
   private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
+  private weatherFrictionMultiplier = 1.0;
 
   constructor(
     x: number,
@@ -93,6 +94,10 @@ export class BallEntity
 
   public getLastPlayer(): GamePlayer | null {
     return this.lastPlayer;
+  }
+
+  public setWeatherFrictionMultiplier(multiplier: number): void {
+    this.weatherFrictionMultiplier = multiplier;
   }
 
   public update(_deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -228,8 +233,10 @@ export class BallEntity
 
   private applyFriction(): void {
     // Define a small threshold for near-zero velocity
-    this.vx *= 1 - this.FRICTION;
-    this.vy *= 1 - this.FRICTION;
+    // Apply weather-modified friction
+    const effectiveFriction = this.FRICTION * this.weatherFrictionMultiplier;
+    this.vx *= 1 - effectiveFriction;
+    this.vy *= 1 - effectiveFriction;
 
     // If velocity is below the threshold, set it to zero
     if (Math.abs(this.vx) < this.MIN_VELOCITY) this.vx = 0;

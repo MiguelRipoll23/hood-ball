@@ -35,6 +35,7 @@ import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
+import { SnowEntity } from "../../entities/snow-entity.js";
 import { CarExplosionEntity } from "../../entities/car-explosion-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
@@ -71,6 +72,10 @@ export class WorldScene extends BaseCollidingGameScene {
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
   private helpShown = false;
+
+  // Weather state
+  private activeWeatherEntity: SnowEntity | null = null;
+  private weatherFrictionMultiplier = 1.0;
 
   constructor(
     protected gameState: GameState,
@@ -290,12 +295,8 @@ export class WorldScene extends BaseCollidingGameScene {
       () => void this.returnToMainMenuScene()
     );
 
-    this.subscribeToLocalEvent(EventType.Rainbow, () => {
-      this.worldEntities.forEach((entity) => {
-        if (entity instanceof CarEntity) {
-          entity.activateRainbow();
-        }
-      });
+    this.subscribeToLocalEvent(EventType.SnowWeather, () => {
+      this.activateSnowWeather();
     });
   }
 
@@ -393,10 +394,7 @@ export class WorldScene extends BaseCollidingGameScene {
     if (this.matchLogEntity) {
       return;
     }
-    this.matchLogEntity = new MatchLogEntity(
-      this.canvas,
-      this.gameState
-    );
+    this.matchLogEntity = new MatchLogEntity(this.canvas, this.gameState);
     this.uiEntities.push(this.matchLogEntity);
     this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
       (actions) => this.matchLogEntity?.show(actions)
@@ -472,6 +470,40 @@ export class WorldScene extends BaseCollidingGameScene {
       1,
       1
     );
+  }
+
+  private activateSnowWeather(): void {
+    // Remove any existing weather effect
+    if (this.activeWeatherEntity) {
+      this.activeWeatherEntity.setRemoved(true);
+    }
+
+    // Create snow effect
+    const snowEntity = new SnowEntity(this.canvas);
+    this.addEntityToSceneLayer(snowEntity);
+    this.activeWeatherEntity = snowEntity;
+
+    // Set icy physics - very slippery
+    this.weatherFrictionMultiplier = 0.3; // 70% less friction
+    this.applyWeatherPhysics();
+
+    console.log("Snow weather activated - icy conditions!");
+  }
+
+  private applyWeatherPhysics(): void {
+    // Apply reduced friction to all cars
+    this.worldEntities.forEach((entity) => {
+      if (entity instanceof CarEntity) {
+        entity.setWeatherFrictionMultiplier(this.weatherFrictionMultiplier);
+      }
+    });
+
+    // Apply reduced friction to ball
+    if (this.ballEntity) {
+      this.ballEntity.setWeatherFrictionMultiplier(
+        this.weatherFrictionMultiplier
+      );
+    }
   }
 
   public override dispose(): void {
