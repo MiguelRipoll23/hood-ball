@@ -181,6 +181,19 @@ export class WorldScene extends BaseCollidingGameScene {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
 
+    // Check if weather effect has ended and reset physics
+    if (this.activeWeatherEntity && this.activeWeatherEntity.isRemoved()) {
+      this.weatherFrictionMultiplier = 1.0;
+      this.applyWeatherPhysics();
+      this.activeWeatherEntity = null;
+      console.log("Weather effect ended - physics restored to normal");
+    }
+
+    // Apply weather physics each frame to ensure newly spawned entities get the correct friction
+    if (this.weatherFrictionMultiplier !== 1.0) {
+      this.applyWeatherPhysics();
+    }
+
     this.worldController?.handleCarDemolitions(
       this.worldEntities,
       this.triggerCarExplosion.bind(this)
@@ -491,19 +504,12 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private applyWeatherPhysics(): void {
-    // Apply reduced friction to all cars
+    // Apply reduced friction to all cars and the ball
     this.worldEntities.forEach((entity) => {
-      if (entity instanceof CarEntity) {
+      if (entity instanceof CarEntity || entity instanceof BallEntity) {
         entity.setWeatherFrictionMultiplier(this.weatherFrictionMultiplier);
       }
     });
-
-    // Apply reduced friction to ball
-    if (this.ballEntity) {
-      this.ballEntity.setWeatherFrictionMultiplier(
-        this.weatherFrictionMultiplier
-      );
-    }
   }
 
   public override dispose(): void {

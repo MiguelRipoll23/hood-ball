@@ -13,10 +13,10 @@ export class SnowEntity extends BaseMoveableGameEntity {
   private snowflakes: Snowflake[] = [];
   private elapsed = 0;
   private spawnElapsed = 0;
-  private readonly duration = 30000; // 30 seconds
-  private readonly spawnRate = 40; // snowflakes per second
-  private readonly maxSnowflakes = 200;
-  private readonly crackFadeInDuration = 5000; // 5 seconds for overlay to appear
+  private readonly DURATION = 30000; // 30 seconds
+  private readonly SPAWN_RATE = 40; // snowflakes per second
+  private readonly MAX_SNOWFLAKES = 200;
+  private readonly OVERLAY_FADE_IN_DURATION = 5000; // 5 seconds for overlay to appear
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
@@ -24,7 +24,7 @@ export class SnowEntity extends BaseMoveableGameEntity {
   }
 
   private createSnowflake(initialY?: number): void {
-    if (this.snowflakes.length >= this.maxSnowflakes) {
+    if (this.snowflakes.length >= this.MAX_SNOWFLAKES) {
       return;
     }
 
@@ -41,11 +41,11 @@ export class SnowEntity extends BaseMoveableGameEntity {
   public override update(delta: DOMHighResTimeStamp): void {
     this.elapsed += delta;
 
-    if (this.elapsed < this.duration) {
+    if (this.elapsed < this.DURATION) {
       this.spawnElapsed += delta;
-      const toSpawn = Math.floor((this.spawnElapsed / 1000) * this.spawnRate);
+      const toSpawn = Math.floor((this.spawnElapsed / 1000) * this.SPAWN_RATE);
       if (toSpawn > 0) {
-        this.spawnElapsed -= (toSpawn / this.spawnRate) * 1000;
+        this.spawnElapsed -= (toSpawn / this.SPAWN_RATE) * 1000;
         for (let i = 0; i < toSpawn; i++) {
           this.createSnowflake();
         }
@@ -68,7 +68,7 @@ export class SnowEntity extends BaseMoveableGameEntity {
     );
 
     // Remove entity when duration is over and all snowflakes are gone
-    if (this.elapsed >= this.duration && this.snowflakes.length === 0) {
+    if (this.elapsed >= this.DURATION && this.snowflakes.length === 0) {
       this.setRemoved(true);
     }
   }
@@ -94,7 +94,7 @@ export class SnowEntity extends BaseMoveableGameEntity {
   private renderFieldOverlay(context: CanvasRenderingContext2D): void {
     // Calculate overlay opacity based on elapsed time
     const overlayProgress = Math.min(
-      this.elapsed / this.crackFadeInDuration,
+      this.elapsed / this.OVERLAY_FADE_IN_DURATION,
       1
     );
     const overlayOpacity = overlayProgress * 0.15; // Max 15% opacity for subtle bluish tint
@@ -108,6 +108,6 @@ export class SnowEntity extends BaseMoveableGameEntity {
   }
 
   public isActive(): boolean {
-    return this.elapsed < this.duration;
+    return this.elapsed < this.DURATION;
   }
 }
