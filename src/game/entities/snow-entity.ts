@@ -63,9 +63,11 @@ export class SnowEntity extends BaseMoveableGameEntity {
     });
 
     // Remove snowflakes that have fallen off screen
-    this.snowflakes = this.snowflakes.filter(
-      (flake) => flake.y < this.canvas.height + 10
-    );
+    for (let i = this.snowflakes.length - 1; i >= 0; i--) {
+      if (this.snowflakes[i].y >= this.canvas.height + 10) {
+        this.snowflakes.splice(i, 1);
+      }
+    }
 
     // Remove entity when duration is over and all snowflakes are gone
     if (this.elapsed >= this.DURATION && this.snowflakes.length === 0) {
