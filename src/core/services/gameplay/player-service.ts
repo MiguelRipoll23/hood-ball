@@ -161,7 +161,7 @@ export class PlayerService {
     }
 
     this.playbackState = PlaybackState.Playing;
-    this.lastFrameTime = performance.now();
+    this.lastFrameTime = 0;
     console.log("Playback started");
   }
 
