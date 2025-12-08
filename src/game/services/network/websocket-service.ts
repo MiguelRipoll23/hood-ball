@@ -1,18 +1,18 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
-import { LocalEvent } from "../../../core/models/local-event.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
 import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
+import { GameState } from "../../../engine/models/game-state.js";
+import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { container } from "../../../core/services/di-container.js";
+import { container } from "../../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

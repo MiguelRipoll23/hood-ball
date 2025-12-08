@@ -1,13 +1,13 @@
 import { EntityType } from "../enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
-import type { MultiplayerGameEntity } from "../../core/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
   SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
-import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
-import { MathUtils } from "../../core/utils/math-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
+import { MathUtils } from "../../engine/utils/math-utils.js";
 import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 
 export class RemoteCarEntity extends CarEntity {

@@ -1,8 +1,8 @@
-import { BaseTappableGameEntity } from "../../core/entities/base-tappable-game-entity.js";
+import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatService } from "../services/network/chat-service.js";
-import { GamePointer } from "../../core/models/game-pointer.js";
-import { GameKeyboard } from "../../core/models/game-keyboard.js";
+import { GamePointer } from "../../engine/models/game-pointer.js";
+import { GameKeyboard } from "../../engine/models/game-keyboard.js";
 import { HelpEntity } from "./help-entity.js";
 
 export class ChatButtonEntity extends BaseTappableGameEntity {

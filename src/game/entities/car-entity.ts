@@ -1,5 +1,5 @@
-import { HitboxEntity } from "../../core/entities/hitbox-entity.js";
-import { BaseDynamicCollidingGameEntity } from "../../core/entities/base-dynamic-colliding-game-entity.js";
+import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
+import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.js";
 import { GamePlayer } from "../models/game-player.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
@@ -11,8 +11,8 @@ import {
   SCALE_FACTOR_FOR_SPEED,
   SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
-import { DebugUtils } from "../../core/utils/debug-utils.js";
-import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
+import { DebugUtils } from "../../engine/utils/debug-utils.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {

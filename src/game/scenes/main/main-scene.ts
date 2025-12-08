@@ -1,9 +1,9 @@
-import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
-import { SceneManagerService } from "../../../core/services/gameplay/scene-manager-service.js";
+import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
+import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
-import type { GameScene } from "../../../core/interfaces/scenes/game-scene.js";
-import type { GameState } from "../../../core/models/game-state.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import type { GameScene } from "../../../engine/interfaces/scenes/game-scene.js";
+import type { GameState } from "../../../engine/models/game-state.js";
+import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 
 export class MainScene extends BaseGameScene {
   private scene: GameScene | null = null;

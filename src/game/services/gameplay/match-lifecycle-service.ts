@@ -1,10 +1,10 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../../engine/models/game-state.js";
 import { APIService } from "../network/api-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
-import { LocalEvent } from "../../../core/models/local-event.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import { GamePlayer } from "../../models/game-player.js";
@@ -17,7 +17,7 @@ import {
 } from "./matchmaking-tokens.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
-import { RecorderService } from "../../../core/services/gameplay/recorder-service.js";
+import { RecorderService } from "../../../engine/services/gameplay/recorder-service.js";
 
 @injectable()
 export class MatchLifecycleService {

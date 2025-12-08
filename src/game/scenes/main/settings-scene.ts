@@ -1,11 +1,11 @@
-import type { GameState } from "../../../core/models/game-state.js";
+import type { GameState } from "../../../engine/models/game-state.js";
 import { ButtonEntity } from "../../entities/common/button-entity.js";
 import { TitleEntity } from "../../entities/common/title-entity.js";
 import { SettingEntity } from "../../entities/setting-entity.js";
 import { DebugService } from "../../services/debug/debug-service.js";
-import { BaseGameScene } from "../../../core/scenes/base-game-scene.js";
-import { container } from "../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
+import { container } from "../../../engine/services/di-container.js";
+import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 
 export class SettingsScene extends BaseGameScene {
   private titleEntity: TitleEntity | null = null;

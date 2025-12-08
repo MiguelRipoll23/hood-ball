@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "../../../core/entities/base-animated-entity.js";
+import { BaseAnimatedGameEntity } from "../../../engine/entities/base-animated-entity.js";
 
 export class ToggleEntity extends BaseAnimatedGameEntity {
   protected width: number = 55; // Incremented width to 55

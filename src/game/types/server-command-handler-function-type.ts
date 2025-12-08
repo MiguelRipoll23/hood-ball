@@ -1,3 +1,3 @@
-import type { BinaryReader } from "../../core/utils/binary-reader-utils.js";
+import type { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export type ServerCommandHandlerFunction = (binaryReader: BinaryReader) => void;

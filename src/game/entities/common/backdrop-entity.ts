@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "../../../core/entities/base-animated-entity.js";
+import { BaseAnimatedGameEntity } from "../../../engine/entities/base-animated-entity.js";
 
 export class BackdropEntity extends BaseAnimatedGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";

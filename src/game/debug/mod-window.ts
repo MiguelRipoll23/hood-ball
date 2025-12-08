@@ -1,6 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../core/debug/base-window.js";
-import type { GameState } from "../../core/models/game-state.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
+import type { GameState } from "../../engine/models/game-state.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { LocalCarEntity as LocalCarEntityClass } from "../entities/local-car-entity.js";
 import { GoalEntity } from "../entities/goal-entity.js";

@@ -25,10 +25,10 @@ import type { RegistrationOptionsRequest } from "../../interfaces/requests/regis
 import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options.js";
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
 import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response.js";
-import { CryptoService } from "../../../core/services/security/crypto-service.js";
+import { CryptoService } from "../../../engine/services/security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
-import { container } from "../../../core/services/di-container.js";
+import { container } from "../../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

@@ -1,4 +1,4 @@
-import type { BinaryReader } from "../../../../core/utils/binary-reader-utils.js";
+import type { BinaryReader } from "../../../../engine/utils/binary-reader-utils.js";
 import type { WebRTCPeer } from "./webrtc-peer.js";
 
 export interface IMatchmakingNetworkService {

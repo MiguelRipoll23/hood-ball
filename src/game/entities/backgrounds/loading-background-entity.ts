@@ -1,4 +1,4 @@
-import { BaseGameEntity } from "../../../core/entities/base-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
 
 export class LoadingBackgroundEntity extends BaseGameEntity {
   private gradientOffset = 0; // Offset for moving gradient

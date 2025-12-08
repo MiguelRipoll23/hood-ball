@@ -1,8 +1,8 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../core/debug/base-window.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { GamePlayer } from "../models/game-player.js";
-import type { GameState } from "../../core/models/game-state.js";
+import type { GameState } from "../../engine/models/game-state.js";
 import { getPingTextColor } from "../utils/ping-utils.js";
 
 export class MatchInspectorWindow extends BaseWindow {

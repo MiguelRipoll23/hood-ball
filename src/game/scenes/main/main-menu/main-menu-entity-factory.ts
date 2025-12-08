@@ -5,7 +5,7 @@ import { CloseableMessageEntity } from "../../../entities/common/closeable-messa
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 import { WelcomeMessageEntity } from "../../../entities/welcome-message-entity.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
-import type { GameState } from "../../../../core/models/game-state.js";
+import type { GameState } from "../../../../engine/models/game-state.js";
 
 export interface MainMenuEntities {
   titleEntity: TitleEntity;

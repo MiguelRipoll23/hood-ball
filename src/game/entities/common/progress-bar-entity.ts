@@ -1,5 +1,5 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
-import { BaseGameEntity } from "../../../core/entities/base-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
 
 export class ProgressBarEntity extends BaseGameEntity {
   private readonly RECT_HEIGHT: number = 40;

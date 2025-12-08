@@ -1,7 +1,7 @@
 import { ImGui, ImGuiImplWeb, ImVec2 } from "@mori2003/jsimgui";
 import { DebugWindow } from "../../debug/debug-window.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { container } from "../../../core/services/di-container.js";
+import { GameState } from "../../../engine/models/game-state.js";
+import { container } from "../../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

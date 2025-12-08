@@ -1,5 +1,5 @@
-import { BaseMoveableGameEntity } from "../../core/entities/base-moveable-game-entity.js";
-import type { GameState } from "../../core/models/game-state.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+import type { GameState } from "../../engine/models/game-state.js";
 
 export class WelcomeMessageEntity extends BaseMoveableGameEntity {
   constructor(

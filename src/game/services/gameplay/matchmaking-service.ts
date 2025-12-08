@@ -1,7 +1,7 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../core/models/game-state.js";
+import { GameState } from "../../../engine/models/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { DebugUtils } from "../../../core/utils/debug-utils.js";
+import { DebugUtils } from "../../../engine/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { MatchFinderService } from "./match-finder-service.js";

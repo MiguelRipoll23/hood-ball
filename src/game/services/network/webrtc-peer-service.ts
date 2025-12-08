@@ -3,11 +3,11 @@ import type { PeerConnectionListener } from "../../interfaces/services/network/p
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
 import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
-import { container } from "../../../core/services/di-container.js";
+import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
+import { GameState } from "../../../engine/models/game-state.js";
+import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
+import { container } from "../../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()

@@ -2,12 +2,12 @@ import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { SceneInspectorWindow } from "./scene-inspector-window.js";
 import { EventInspectorWindow } from "./event-inspector-window.js";
 import { MatchInspectorWindow } from "./match-inspector-window.js";
-import { BaseWindow } from "../../core/debug/base-window.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
 import { ModWindow } from "./mod-window.js";
 import { RecordingInspectorWindow } from "./recording-inspector-window.js";
-import type { GameState } from "../../core/models/game-state.js";
+import type { GameState } from "../../engine/models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
   private animationInspectorWindow: AnimationInspectorWindow;

@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
+import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
 import type { UserScore } from "../interfaces/responses/user-scores-response.js";
 
 export class RankingTableEntity extends BaseAnimatedGameEntity {

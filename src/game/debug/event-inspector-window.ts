@@ -1,12 +1,12 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { EventType } from "../enums/event-type.js";
-import type { GameEvent } from "../../core/interfaces/models/game-event.js";
-import { LocalEvent } from "../../core/models/local-event.js";
-import { RemoteEvent } from "../../core/models/remote-event.js";
-import { BaseWindow } from "../../core/debug/base-window.js";
-import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
-import { EventProcessorService } from "../../core/services/gameplay/event-processor-service.js";
-import { container } from "../../core/services/di-container.js";
+import type { GameEvent } from "../../engine/interfaces/models/game-event.js";
+import { LocalEvent } from "../../engine/models/local-event.js";
+import { RemoteEvent } from "../../engine/models/remote-event.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
+import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
+import { container } from "../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
