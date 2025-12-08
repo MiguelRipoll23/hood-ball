@@ -234,7 +234,7 @@ export class RecorderService {
     if (anyEntity.getId) return anyEntity.getId();
     return `${entity.constructor.name}_${Math.random()
       .toString(36)
-      .substr(2, 9)}`;
+      .slice(2, 11)}`
   }
 
   private extractEntityProperties(entity: GameEntity): Record<string, unknown> {
