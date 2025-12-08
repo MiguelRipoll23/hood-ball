@@ -1,31 +1,31 @@
-import { GameFrame } from "../../models/game-frame.js";
-import { NotificationEntity } from "../../entities/notification-entity.js";
-import { MainScene } from "../../../game/scenes/main/main-scene.js";
-import { LoginScene } from "../../../game/scenes/main/login/login-scene.js";
-import { MainMenuScene } from "../../../game/scenes/main/main-menu/main-menu-scene.js";
-import { EventType } from "../../../game/enums/event-type.js";
-import type { ServerDisconnectedPayload } from "../../../game/interfaces/events/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../../../game/interfaces/events/server-notification-payload.js";
+import { GameFrame } from "../../../core/models/game-frame.js";
+import { NotificationEntity } from "../../../core/entities/notification-entity.js";
+import { MainScene } from "../../scenes/main/main-scene.js";
+import { LoginScene } from "../../scenes/main/login/login-scene.js";
+import { MainMenuScene } from "../../scenes/main/main-menu/main-menu-scene.js";
+import { EventType } from "../../enums/event-type.js";
+import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
+import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
 import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
-} from "../../constants/canvas-constants.js";
-import { DebugUtils } from "../../utils/debug-utils.js";
-import type { GameScene } from "../../interfaces/scenes/game-scene.js";
-import { GAME_VERSION } from "../../../game/constants/game-constants.js";
-import { EventConsumerService } from "./event-consumer-service.js";
-import { DebugEntity } from "../../entities/debug-entity.js";
-import { GameState } from "../../models/game-state.js";
-import { SceneTransitionService } from "./scene-transition-service.js";
-import { MatchmakingService } from "../../../game/services/gameplay/matchmaking-service.js";
-import { DebugService } from "../../../game/services/debug/debug-service.js";
-import { WebRTCService } from "../../../game/services/network/webrtc-service.js";
-import { TimerManagerService } from "./timer-manager-service.js";
-import { IntervalManagerService } from "./interval-manager-service.js";
-import { ServiceRegistry } from "../service-registry.js";
-import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
-import { container } from "../di-container.js";
-import { RecorderService } from "./recorder-service.js";
+} from "../../../core/constants/canvas-constants.js";
+import { DebugUtils } from "../../../core/utils/debug-utils.js";
+import type { GameScene } from "../../../core/interfaces/scenes/game-scene.js";
+import { GAME_VERSION } from "../../constants/game-constants.js";
+import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
+import { DebugEntity } from "../../../core/entities/debug-entity.js";
+import { GameState } from "../../../core/models/game-state.js";
+import { SceneTransitionService } from "../../../core/services/gameplay/scene-transition-service.js";
+import { MatchmakingService } from "./matchmaking-service.js";
+import { DebugService } from "../debug/debug-service.js";
+import { WebRTCService } from "../network/webrtc-service.js";
+import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
+import { IntervalManagerService } from "../../../core/services/gameplay/interval-manager-service.js";
+import { ServiceRegistry } from "../../../core/services/service-registry.js";
+import { LoadingIndicatorEntity } from "../../../core/entities/loading-indicator-entity.js";
+import { container } from "../../../core/services/di-container.js";
+import { RecorderService } from "../../../core/services/gameplay/recorder-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
