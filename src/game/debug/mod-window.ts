@@ -195,27 +195,34 @@ export class ModWindow extends BaseWindow {
     const worldEntities = this.getActiveSceneEntities();
     if (!worldEntities) return null;
 
-    return worldEntities.find(
-      (entity): entity is LocalCarEntityClass => entity instanceof LocalCarEntityClass
-    ) ?? null;
+    return (
+      worldEntities.find(
+        (entity): entity is LocalCarEntityClass =>
+          entity instanceof LocalCarEntityClass
+      ) ?? null
+    );
   }
 
   private getBall(): BallEntity | null {
     const worldEntities = this.getActiveSceneEntities();
     if (!worldEntities) return null;
 
-    return worldEntities.find(
-      (entity): entity is BallEntity => entity instanceof BallEntity
-    ) ?? null;
+    return (
+      worldEntities.find(
+        (entity): entity is BallEntity => entity instanceof BallEntity
+      ) ?? null
+    );
   }
 
   private getGoal(): GoalEntity | null {
     const worldEntities = this.getActiveSceneEntities();
     if (!worldEntities) return null;
 
-    return worldEntities.find(
-      (entity): entity is GoalEntity => entity instanceof GoalEntity
-    ) ?? null;
+    return (
+      worldEntities.find(
+        (entity): entity is GoalEntity => entity instanceof GoalEntity
+      ) ?? null
+    );
   }
 
   public override close(): void {
