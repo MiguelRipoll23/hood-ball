@@ -165,14 +165,14 @@ export class LocalCarEntity extends CarEntity {
     magnitude: number = 1,
     deltaTimeStamp: DOMHighResTimeStamp
   ): void {
-    if (this.speed < this.TOP_SPEED) {
-      this.speed += this.ACCELERATION * magnitude * deltaTimeStamp;
+    if (this.speed < this.topSpeed) {
+      this.speed += this.acceleration * magnitude * deltaTimeStamp;
     }
   }
 
   private decelerate(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.speed > -this.TOP_SPEED) {
-      this.speed -= this.ACCELERATION * deltaTimeStamp;
+    if (this.speed > -this.topSpeed) {
+      this.speed -= this.acceleration * deltaTimeStamp;
     }
   }
 
