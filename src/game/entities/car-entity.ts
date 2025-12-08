@@ -16,8 +16,8 @@ import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {
-  protected readonly TOP_SPEED: number = 0.3;
-  protected readonly ACCELERATION: number = 0.002;
+  protected topSpeed: number = 0.3;
+  protected acceleration: number = 0.002;
   protected readonly HANDLING: number = 0.007;
 
   private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
@@ -215,6 +215,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     return this.boost;
   }
 
+  public setBoost(boost: number): void {
+    this.boost = Math.max(0, Math.min(this.MAX_BOOST, boost));
+  }
+
   public isBoosting(): boolean {
     return this.boosting;
   }
@@ -223,12 +227,24 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     return this.speed;
   }
 
+  public setSpeed(speed: number): void {
+    this.speed = speed;
+  }
+
   public getTopSpeed(): number {
-    return this.TOP_SPEED;
+    return this.topSpeed;
   }
 
   public getBoostTopSpeedMultiplier(): number {
     return this.BOOST_TOP_SPEED_MULTIPLIER;
+  }
+
+  public setTopSpeed(topSpeed: number): void {
+    this.topSpeed = topSpeed;
+  }
+
+  public setAcceleration(acceleration: number): void {
+    this.acceleration = acceleration;
   }
 
   public demolish(respawnX: number, respawnY: number, delay: number): void {
@@ -328,9 +344,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
     this.boost -= (this.BOOST_DRAIN_RATE * deltaTimeStamp) / 1000;
 
-    if (this.speed < this.TOP_SPEED * this.BOOST_TOP_SPEED_MULTIPLIER) {
+    if (this.speed < this.topSpeed * this.BOOST_TOP_SPEED_MULTIPLIER) {
       this.speed +=
-        this.ACCELERATION * this.BOOST_ACCELERATION_MULTIPLIER * deltaTimeStamp;
+        this.acceleration * this.BOOST_ACCELERATION_MULTIPLIER * deltaTimeStamp;
     }
 
     if (this.boost <= 0) {
