@@ -25,6 +25,8 @@ import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { container } from "../di-container.js";
+import { RecorderService } from "./recorder-service.js";
+import { PlayerService, PlaybackState } from "./player-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -49,6 +51,8 @@ export class GameLoopService {
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
+  private recorderService: RecorderService;
+  private playerService: PlayerService;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -64,6 +68,8 @@ export class GameLoopService {
     this.eventConsumerService = container.get(EventConsumerService);
     this.matchmakingService = container.get(MatchmakingService);
     this.webrtcService = container.get(WebRTCService);
+    this.recorderService = container.get(RecorderService);
+    this.playerService = container.get(PlayerService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
@@ -152,9 +158,7 @@ export class GameLoopService {
     const currentScene = this.gameFrame.getCurrentScene();
 
     if (currentScene instanceof MainScene) {
-      const subScene = currentScene
-        .getSceneManagerService()
-        ?.getCurrentScene();
+      const subScene = currentScene.getSceneManagerService()?.getCurrentScene();
 
       if (subScene instanceof MainMenuScene) {
         this.gameState.setMatch(null);
@@ -184,10 +188,7 @@ export class GameLoopService {
     this.returnToMainMenuScene(false, message);
   }
 
-  private returnToMainMenuScene(
-    reconnect: boolean,
-    message?: string
-  ): void {
+  private returnToMainMenuScene(reconnect: boolean, message?: string): void {
     this.gameState.setMatch(null);
     this.gameState.getGamePlayer().reset();
 
@@ -208,12 +209,7 @@ export class GameLoopService {
       mainMenuScene.setPendingMessage(message);
     }
 
-    this.sceneTransitionService.fadeOutAndIn(
-      this.gameFrame,
-      mainScene,
-      1,
-      1
-    );
+    this.sceneTransitionService.fadeOutAndIn(this.gameFrame, mainScene, 1, 1);
 
     if (reconnect) {
       mainMenuScene.startServerReconnection();
@@ -297,16 +293,33 @@ export class GameLoopService {
     if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugEntity()?.update(deltaTimeStamp);
     }
+
+    // Record frame if recording is active
+    this.recorderService.recordFrameFromGameState(this.gameFrame);
+
+    // Update player service for playback
+    this.playerService.update(deltaTimeStamp);
   }
 
   private render(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.gameFrame.getCurrentScene()?.render(this.context);
-    this.gameFrame.getNextScene()?.render(this.context);
+    // Check if we're playing back a recording
+    const playbackState = this.playerService.getPlaybackState();
+    if (
+      playbackState === PlaybackState.Playing ||
+      playbackState === PlaybackState.Paused
+    ) {
+      // Render only the recording playback
+      this.playerService.render(this.context);
+    } else {
+      // Normal game rendering
+      this.gameFrame.getCurrentScene()?.render(this.context);
+      this.gameFrame.getNextScene()?.render(this.context);
 
-    this.gameFrame.getNotificationEntity()?.render(this.context);
-    this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
+      this.gameFrame.getNotificationEntity()?.render(this.context);
+      this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
+    }
 
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();

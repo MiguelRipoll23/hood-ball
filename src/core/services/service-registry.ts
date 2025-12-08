@@ -23,6 +23,8 @@ import { SpawnPointService } from "../../game/services/gameplay/spawn-point-serv
 import { ChatService } from "../../game/services/network/chat-service.js";
 import { AnimationLogService } from "./gameplay/animation-log-service.js";
 import { MatchActionsLogService } from "../../game/services/gameplay/match-actions-log-service.js";
+import { RecorderService } from "./gameplay/recorder-service.js";
+import { PlayerService } from "./gameplay/player-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
@@ -73,13 +75,18 @@ export class ServiceRegistry {
     });
     container.bind({ provide: WebRTCService, useClass: WebRTCService });
     container.bind({ provide: ChatService, useClass: ChatService });
-    container.bind({ provide: AnimationLogService, useClass: AnimationLogService });
+    container.bind({
+      provide: AnimationLogService,
+      useClass: AnimationLogService,
+    });
     container.bind({ provide: CameraService, useClass: CameraService });
     container.bind({ provide: SpawnPointService, useClass: SpawnPointService });
     container.bind({
       provide: MatchActionsLogService,
       useClass: MatchActionsLogService,
     });
+    container.bind({ provide: RecorderService, useClass: RecorderService });
+    container.bind({ provide: PlayerService, useClass: PlayerService });
     container.bind({
       provide: PendingIdentitiesToken,
       useValue: new Map<string, boolean>(),
@@ -102,12 +109,12 @@ export class ServiceRegistry {
         MatchmakingCoordinator
       );
 
-        if (
-          !webrtcService ||
-          !matchmakingService ||
-          !entityOrchestratorService ||
-          !matchmakingCoordinator
-        ) {
+      if (
+        !webrtcService ||
+        !matchmakingService ||
+        !entityOrchestratorService ||
+        !matchmakingCoordinator
+      ) {
         throw new Error("Failed to resolve core services");
       }
 
