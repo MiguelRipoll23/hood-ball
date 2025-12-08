@@ -25,6 +25,7 @@ import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { container } from "../di-container.js";
+import { RecorderService } from "./recorder-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -49,6 +50,7 @@ export class GameLoopService {
   private eventConsumerService: EventConsumerService;
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
+  private recorderService: RecorderService;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -64,6 +66,7 @@ export class GameLoopService {
     this.eventConsumerService = container.get(EventConsumerService);
     this.matchmakingService = container.get(MatchmakingService);
     this.webrtcService = container.get(WebRTCService);
+    this.recorderService = container.get(RecorderService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
@@ -152,9 +155,7 @@ export class GameLoopService {
     const currentScene = this.gameFrame.getCurrentScene();
 
     if (currentScene instanceof MainScene) {
-      const subScene = currentScene
-        .getSceneManagerService()
-        ?.getCurrentScene();
+      const subScene = currentScene.getSceneManagerService()?.getCurrentScene();
 
       if (subScene instanceof MainMenuScene) {
         this.gameState.setMatch(null);
@@ -184,10 +185,7 @@ export class GameLoopService {
     this.returnToMainMenuScene(false, message);
   }
 
-  private returnToMainMenuScene(
-    reconnect: boolean,
-    message?: string
-  ): void {
+  private returnToMainMenuScene(reconnect: boolean, message?: string): void {
     this.gameState.setMatch(null);
     this.gameState.getGamePlayer().reset();
 
@@ -208,12 +206,7 @@ export class GameLoopService {
       mainMenuScene.setPendingMessage(message);
     }
 
-    this.sceneTransitionService.fadeOutAndIn(
-      this.gameFrame,
-      mainScene,
-      1,
-      1
-    );
+    this.sceneTransitionService.fadeOutAndIn(this.gameFrame, mainScene, 1, 1);
 
     if (reconnect) {
       mainMenuScene.startServerReconnection();
@@ -297,14 +290,22 @@ export class GameLoopService {
     if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugEntity()?.update(deltaTimeStamp);
     }
+
+    // Record frame if recording is active
+    this.recorderService.recordFrameFromGameState(this.gameFrame);
+
+    // Update media player if active
+    this.gameFrame.getMediaPlayerEntity()?.update(deltaTimeStamp);
   }
 
   private render(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
+    // Render scenes
     this.gameFrame.getCurrentScene()?.render(this.context);
     this.gameFrame.getNextScene()?.render(this.context);
 
+    // Render global UI entities
     this.gameFrame.getNotificationEntity()?.render(this.context);
     this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
 
@@ -312,7 +313,10 @@ export class GameLoopService {
       this.renderDebugInformation();
     }
 
-    // Dear ImGui rendering
+    // Render media player last (on top of everything)
+    this.gameFrame.getMediaPlayerEntity()?.render(this.context);
+
+    // Dear ImGui rendering (always on top)
     this.debugService.render();
   }
 

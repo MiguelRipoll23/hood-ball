@@ -30,6 +30,7 @@ import {
   ReceivedIdentitiesToken,
 } from "../gameplay/matchmaking-tokens.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
+import { RecorderService } from "../../../core/services/gameplay/recorder-service.js";
 
 @injectable()
 export class MatchmakingNetworkService
@@ -60,6 +61,7 @@ export class MatchmakingNetworkService
     private readonly spawnPointService: SpawnPointService = inject(
       SpawnPointService
     ),
+    private readonly recorderService: RecorderService = inject(RecorderService),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
     private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
   ) {
@@ -203,6 +205,9 @@ export class MatchmakingNetworkService
     }
 
     match.addPlayer(gamePlayer);
+
+    // Check if we should start/resume recording
+    this.checkRecordingState(match);
 
     this.sendJoinResponse(peer, match);
   }
@@ -406,8 +411,14 @@ export class MatchmakingNetworkService
     }
 
     console.log(`Player ${player.getName()} disconnected`);
-    this.gameState.getMatch()?.removePlayer(player);
+    const match = this.gameState.getMatch();
+    match?.removePlayer(player);
     this.spawnPointService.releaseSpawnPointIndex(player.getSpawnPointIndex());
+
+    // Check if we should pause recording
+    if (match) {
+      this.checkRecordingState(match);
+    }
 
     // Notify players on match
     this.webrtcService
@@ -427,8 +438,6 @@ export class MatchmakingNetworkService
     this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
 
     // Advertise match to update players count
-    const match = this.gameState.getMatch();
-
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
       await this.matchFinderService.advertiseMatch();
     }
@@ -672,5 +681,37 @@ export class MatchmakingNetworkService
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
+  }
+
+  private checkRecordingState(match: Match): void {
+    const playerCount = match.getPlayers().length;
+    const isRecording = this.recorderService.isRecording();
+    const isAutoRecording = this.recorderService.isAutoRecording();
+    const isPaused = this.recorderService.isPaused();
+
+    // Only manage recording if it's auto-recording
+    if (!isAutoRecording && isRecording) {
+      return;
+    }
+
+    if (playerCount >= 2) {
+      // Match has 2+ players
+      if (!isRecording) {
+        // Start auto recording
+        console.log("Match has 2+ players - starting auto recording");
+        this.recorderService.startRecording(true);
+      } else if (isPaused && isAutoRecording) {
+        // Resume if paused
+        console.log("Match has 2+ players - resuming auto recording");
+        this.recorderService.resumeRecording();
+      }
+    } else {
+      // Match has < 2 players
+      if (isRecording && isAutoRecording && !isPaused) {
+        // Pause auto recording
+        console.log("Match has < 2 players - pausing auto recording");
+        this.recorderService.pauseRecording();
+      }
+    }
   }
 }

@@ -6,6 +6,7 @@ import { BaseWindow } from "../../core/debug/base-window.js";
 import { PeerInspectorWindow } from "./peer-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
 import { ModWindow } from "./mod-window.js";
+import { RecordingInspectorWindow } from "./recording-inspector-window.js";
 import type { GameState } from "../../core/models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
@@ -15,6 +16,7 @@ export class DebugWindow extends BaseWindow {
   private peerInspectorWindow: PeerInspectorWindow;
   private sceneInspectorWindow: SceneInspectorWindow;
   private modWindow: ModWindow;
+  private recordingInspectorWindow: RecordingInspectorWindow;
 
   constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
@@ -24,6 +26,7 @@ export class DebugWindow extends BaseWindow {
     this.peerInspectorWindow = new PeerInspectorWindow();
     this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
     this.modWindow = new ModWindow(gameState);
+    this.recordingInspectorWindow = new RecordingInspectorWindow();
     this.open();
   }
 
@@ -59,6 +62,10 @@ export class DebugWindow extends BaseWindow {
     if (this.modWindow.isOpen()) {
       this.modWindow.render();
     }
+
+    if (this.recordingInspectorWindow.isOpen()) {
+      this.recordingInspectorWindow.render();
+    }
   }
 
   private renderMenu(): void {
@@ -88,6 +95,10 @@ export class DebugWindow extends BaseWindow {
 
         if (ImGui.MenuItem("Scene", "S")) {
           this.sceneInspectorWindow.toggle();
+        }
+
+        if (ImGui.MenuItem("Recording", "R")) {
+          this.recordingInspectorWindow.toggle();
         }
 
         ImGui.EndMenu();
