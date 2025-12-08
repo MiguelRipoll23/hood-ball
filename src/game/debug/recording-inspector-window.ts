@@ -48,8 +48,8 @@ export class RecordingInspectorWindow extends BaseWindow {
       await this.playerService.loadRecording(this.selectedFile);
       console.log(`Loaded recording: ${this.selectedFile.name}`);
     } catch (error) {
-      this.errorMessage = `Failed to load recording: ${error}`;
-      console.error(this.errorMessage);
+      this.errorMessage = `Failed to load recording: ${error instanceof Error ? error.message : String(error)}`;
+      console.error("Failed to load recording:", error);
     }
   }
 
