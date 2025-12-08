@@ -61,11 +61,13 @@ export class LocalCarEntity extends CarEntity {
     this.chatButtonEntity = chatButton;
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    // Disable controls when chat is active
+  private canProcessInput(): boolean {
     const isChatActive = this.chatButtonEntity?.isInputVisible() ?? false;
+    return this.active && !isChatActive;
+  }
 
-    if (this.active && !isChatActive) {
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.canProcessInput()) {
       if (this.gameGamepad.get()) {
         this.handleGamepadControls(deltaTimeStamp);
       } else if (this.gamePointer.isTouch()) {
@@ -75,7 +77,7 @@ export class LocalCarEntity extends CarEntity {
       }
     }
 
-    if (this.active && !isChatActive) {
+    if (this.canProcessInput()) {
       this.handleBoostInput();
     } else {
       this.deactivateBoost();
