@@ -1,4 +1,4 @@
-# Reractor PLAN
+# Refactor plan
 
 Separate engine and game correctly.
 
