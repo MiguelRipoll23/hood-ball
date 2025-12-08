@@ -59,8 +59,10 @@ export class RecorderService {
   private paused = false;
   private frames: RecordedFrame[] = [];
   private startTime: number = 0;
+  private endTime: number = 0;
   private frameCount = 0;
   private autoRecording = false;
+  private entityIdCache = new WeakMap<GameEntity, string>();
 
   constructor() {
     console.log("RecorderService initialized");
@@ -122,6 +124,7 @@ export class RecorderService {
     }
 
     console.log(`Stopping recording. Total frames: ${this.frameCount}`);
+    this.endTime = Date.now();
     this.recording = false;
     this.paused = false;
     this.autoRecording = false;
@@ -225,16 +228,31 @@ export class RecorderService {
   }
 
   private getEntityId(entity: GameEntity): string {
-    // Try to get a unique ID from the entity, fallback to constructor name + random
+    // Check cache first
+    const cachedId = this.entityIdCache.get(entity);
+    if (cachedId) return cachedId;
+
+    // Try to get a unique ID from the entity
     const anyEntity = entity as unknown as {
       id?: string;
       getId?: () => string;
     };
-    if (anyEntity.id) return anyEntity.id;
-    if (anyEntity.getId) return anyEntity.getId();
-    return `${entity.constructor.name}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+
+    let id: string;
+    if (anyEntity.id) {
+      id = anyEntity.id;
+    } else if (anyEntity.getId) {
+      id = anyEntity.getId();
+    } else {
+      // Generate a stable fallback ID and cache it
+      id = `${entity.constructor.name}_${Math.random()
+        .toString(36)
+        .substring(2, 11)}`;
+    }
+
+    // Cache the ID for this entity instance
+    this.entityIdCache.set(entity, id);
+    return id;
   }
 
   private extractEntityProperties(entity: GameEntity): Record<string, unknown> {
@@ -276,14 +294,18 @@ export class RecorderService {
     writer.unsignedInt8(1);
     writer.unsignedInt8(0);
 
+    // Use actual written frames count for metadata
+    const writtenFrames = this.frames.length;
+    const endTimeValue = this.endTime || Date.now();
+
     // Write metadata
     writer.float64(this.startTime);
-    writer.float64(Date.now());
-    writer.unsignedInt32(this.frameCount);
+    writer.float64(endTimeValue);
+    writer.unsignedInt32(writtenFrames);
     writer.unsignedInt16(RECORDING_FPS);
 
     // Write frame count
-    writer.unsignedInt32(this.frames.length);
+    writer.unsignedInt32(writtenFrames);
 
     // Write each frame
     for (const frame of this.frames) {
@@ -343,6 +365,8 @@ export class RecorderService {
   public clearRecording(): void {
     this.frames = [];
     this.frameCount = 0;
+    this.endTime = 0;
+    this.entityIdCache = new WeakMap<GameEntity, string>();
     console.log("Recording cleared");
   }
 
@@ -352,7 +376,9 @@ export class RecorderService {
 
   public getRecordingDuration(): number {
     if (!this.startTime) return 0;
-    return this.recording ? Date.now() - this.startTime : 0;
+    if (this.recording) return Date.now() - this.startTime;
+    if (this.endTime) return this.endTime - this.startTime;
+    return 0;
   }
 
   public getMaxDurationMinutes(): number {

@@ -3,6 +3,7 @@ import type { GameScene } from "../interfaces/scenes/game-scene.js";
 import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
 import { DebugEntity } from "../entities/debug-entity.js";
 import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity.js";
+import { MediaPlayerEntity } from "../entities/media-player-entity.js";
 
 export class GameFrame implements SceneManager {
   private currentScene: GameScene | null = null;
@@ -10,6 +11,7 @@ export class GameFrame implements SceneManager {
   private notificationEntity: NotificationEntity | null = null;
   private debugEntity: DebugEntity | null = null;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
+  private mediaPlayerEntity: MediaPlayerEntity | null = null;
 
   public getCurrentScene(): GameScene | null {
     return this.currentScene;
@@ -65,5 +67,13 @@ export class GameFrame implements SceneManager {
     entity: LoadingIndicatorEntity | null
   ): void {
     this.loadingIndicatorEntity = entity;
+  }
+
+  public getMediaPlayerEntity(): MediaPlayerEntity | null {
+    return this.mediaPlayerEntity;
+  }
+
+  public setMediaPlayerEntity(entity: MediaPlayerEntity | null): void {
+    this.mediaPlayerEntity = entity;
   }
 }

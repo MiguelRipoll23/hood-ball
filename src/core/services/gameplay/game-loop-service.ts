@@ -24,9 +24,9 @@ import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
+import { MediaPlayerEntity } from "../../entities/media-player-entity.js";
 import { container } from "../di-container.js";
 import { RecorderService } from "./recorder-service.js";
-import { PlayerService, PlaybackState } from "./player-service.js";
 
 export class GameLoopService {
   private context: CanvasRenderingContext2D;
@@ -52,7 +52,6 @@ export class GameLoopService {
   private matchmakingService: MatchmakingService;
   private webrtcService: WebRTCService;
   private recorderService: RecorderService;
-  private playerService: PlayerService;
   private loadingIndicatorEntity: LoadingIndicatorEntity | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
@@ -69,7 +68,6 @@ export class GameLoopService {
     this.matchmakingService = container.get(MatchmakingService);
     this.webrtcService = container.get(WebRTCService);
     this.recorderService = container.get(RecorderService);
-    this.playerService = container.get(PlayerService);
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
@@ -297,35 +295,29 @@ export class GameLoopService {
     // Record frame if recording is active
     this.recorderService.recordFrameFromGameState(this.gameFrame);
 
-    // Update player service for playback
-    this.playerService.update(deltaTimeStamp);
+    // Update media player if active
+    this.gameFrame.getMediaPlayerEntity()?.update(deltaTimeStamp);
   }
 
   private render(): void {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Check if we're playing back a recording
-    const playbackState = this.playerService.getPlaybackState();
-    if (
-      playbackState === PlaybackState.Playing ||
-      playbackState === PlaybackState.Paused
-    ) {
-      // Render only the recording playback
-      this.playerService.render(this.context);
-    } else {
-      // Normal game rendering
-      this.gameFrame.getCurrentScene()?.render(this.context);
-      this.gameFrame.getNextScene()?.render(this.context);
+    // Render scenes
+    this.gameFrame.getCurrentScene()?.render(this.context);
+    this.gameFrame.getNextScene()?.render(this.context);
 
-      this.gameFrame.getNotificationEntity()?.render(this.context);
-      this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
-    }
+    // Render global UI entities
+    this.gameFrame.getNotificationEntity()?.render(this.context);
+    this.gameFrame.getLoadingIndicatorEntity()?.render(this.context);
 
     if (this.gameState.isDebugging()) {
       this.renderDebugInformation();
     }
 
-    // Dear ImGui rendering
+    // Render media player last (on top of everything)
+    this.gameFrame.getMediaPlayerEntity()?.render(this.context);
+
+    // Dear ImGui rendering (always on top)
     this.debugService.render();
   }
 

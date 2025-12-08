@@ -6,18 +6,23 @@ import {
 } from "../../core/services/gameplay/player-service.js";
 import { RecorderService } from "../../core/services/gameplay/recorder-service.js";
 import { container } from "../../core/services/di-container.js";
+import { MediaPlayerEntity } from "../../core/entities/media-player-entity.js";
+import { GameState } from "../../core/models/game-state.js";
 
 export class RecordingInspectorWindow extends BaseWindow {
   private playerService: PlayerService;
   private recorderService: RecorderService;
+  private gameState: GameState;
+  private mediaPlayerEntity: MediaPlayerEntity | null = null;
   private selectedFile: File | null = null;
   private fileInputElement: HTMLInputElement | null = null;
   private errorMessage: string = "";
 
   constructor() {
-    super("Recording inspector", new ImVec2(380, 300));
+    super("Recording inspector", new ImVec2(380, 360));
     this.playerService = container.get(PlayerService);
     this.recorderService = container.get(RecorderService);
+    this.gameState = container.get(GameState);
     console.log(`${this.constructor.name} created`);
     this.createFileInput();
   }
@@ -54,6 +59,12 @@ export class RecordingInspectorWindow extends BaseWindow {
   }
 
   protected override renderContent(): void {
+    // Check if playback stopped automatically (e.g., reached the end)
+    const currentState = this.playerService.getPlaybackState();
+    if (this.mediaPlayerEntity && currentState === PlaybackState.Stopped) {
+      this.removeMediaPlayerFromScene();
+    }
+
     if (ImGui.BeginTabBar("##RecordingTabs")) {
       if (ImGui.BeginTabItem("Recorder")) {
         this.renderRecorderTab();
@@ -252,6 +263,7 @@ export class RecordingInspectorWindow extends BaseWindow {
       }
     } else {
       if (ImGui.Button("Play")) {
+        this.addMediaPlayerToScene();
         this.playerService.play();
       }
     }
@@ -264,6 +276,7 @@ export class RecordingInspectorWindow extends BaseWindow {
     }
     if (ImGui.Button("Stop")) {
       this.playerService.stop();
+      this.removeMediaPlayerFromScene();
     }
     if (state === PlaybackState.Stopped) {
       ImGui.EndDisabled();
@@ -346,8 +359,41 @@ export class RecordingInspectorWindow extends BaseWindow {
     ImGui.PopStyleColor();
   }
 
+  private addMediaPlayerToScene(): void {
+    if (this.mediaPlayerEntity) {
+      return; // Already added
+    }
+
+    const canvas = this.gameState.getCanvas();
+    this.mediaPlayerEntity = new MediaPlayerEntity(canvas);
+    this.mediaPlayerEntity.load();
+
+    // Set in game frame so it renders last in game loop
+    this.gameState.getGameFrame().setMediaPlayerEntity(this.mediaPlayerEntity);
+
+    console.log("Media player entity added to game frame");
+  }
+
+  private removeMediaPlayerFromScene(): void {
+    if (!this.mediaPlayerEntity) {
+      return; // Not added
+    }
+
+    // Remove from game frame
+    this.gameState.getGameFrame().setMediaPlayerEntity(null);
+
+    this.mediaPlayerEntity = null;
+    console.log("Media player entity removed from game frame");
+  }
   public override close(): void {
     super.close();
+
+    // Stop playback and remove media player if active
+    if (this.playerService.getPlaybackState() !== PlaybackState.Stopped) {
+      this.playerService.stop();
+      this.removeMediaPlayerFromScene();
+    }
+
     // Clean up file input element
     if (this.fileInputElement && this.fileInputElement.parentNode) {
       this.fileInputElement.parentNode.removeChild(this.fileInputElement);

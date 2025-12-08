@@ -202,15 +202,50 @@ export class PlayerService {
       return;
     }
 
-    // Find the frame closest to the requested time
+    // Use binary search to find the frame closest to the requested time
+    // O(log N) instead of O(N) - significant for large recordings (54k frames at 60fps/15min)
+    const frames = this.recordingData.frames;
+    let left = 0;
+    let right = frames.length - 1;
     let closestIndex = 0;
-    let minDiff = Math.abs(this.recordingData.frames[0].timestamp - timeMs);
 
-    for (let i = 1; i < this.recordingData.frames.length; i++) {
-      const diff = Math.abs(this.recordingData.frames[i].timestamp - timeMs);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closestIndex = i;
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      const midTime = frames[mid].timestamp;
+
+      if (midTime === timeMs) {
+        closestIndex = mid;
+        break;
+      }
+
+      if (midTime < timeMs) {
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+
+      // Update closest based on absolute difference
+      if (
+        Math.abs(frames[mid].timestamp - timeMs) <
+        Math.abs(frames[closestIndex].timestamp - timeMs)
+      ) {
+        closestIndex = mid;
+      }
+    }
+
+    // Check neighbors for potentially closer match
+    if (closestIndex > 0) {
+      const prevDiff = Math.abs(frames[closestIndex - 1].timestamp - timeMs);
+      const currDiff = Math.abs(frames[closestIndex].timestamp - timeMs);
+      if (prevDiff < currDiff) {
+        closestIndex--;
+      }
+    }
+    if (closestIndex < frames.length - 1) {
+      const nextDiff = Math.abs(frames[closestIndex + 1].timestamp - timeMs);
+      const currDiff = Math.abs(frames[closestIndex].timestamp - timeMs);
+      if (nextDiff < currDiff) {
+        closestIndex++;
       }
     }
 
@@ -262,24 +297,35 @@ export class PlayerService {
 
     // Calculate how much time has passed adjusted for playback speed
     const adjustedDelta = deltaTimeMs * this.playbackSpeed;
+    this.lastFrameTime += adjustedDelta;
 
-    // Check if we should advance to the next frame
+    // Check if we reached the end - capture last frame before stopping
     if (this.currentFrameIndex >= this.recordingData.frames.length - 1) {
-      // Reached the end
+      const lastFrame = this.recordingData.frames[this.currentFrameIndex];
       this.stop();
-      return this.recordingData.frames[this.currentFrameIndex];
+      return lastFrame;
     }
 
-    const currentFrame = this.recordingData.frames[this.currentFrameIndex];
-    const nextFrame = this.recordingData.frames[this.currentFrameIndex + 1];
+    // Advance through multiple frames if needed
+    while (
+      this.currentFrameIndex < this.recordingData.frames.length - 1 &&
+      this.lastFrameTime >= 0
+    ) {
+      const currentFrame = this.recordingData.frames[this.currentFrameIndex];
+      const nextFrame = this.recordingData.frames[this.currentFrameIndex + 1];
+      const frameDuration = nextFrame.timestamp - currentFrame.timestamp;
 
-    // Calculate time between frames
-    const frameDuration = nextFrame.timestamp - currentFrame.timestamp;
+      if (this.lastFrameTime >= frameDuration) {
+        this.currentFrameIndex++;
+        this.lastFrameTime -= frameDuration;
+      } else {
+        break; // Not enough time to advance to next frame
+      }
+    }
 
-    // Advance frame if enough time has passed
-    this.lastFrameTime += adjustedDelta;
-    if (this.lastFrameTime >= frameDuration) {
-      this.currentFrameIndex++;
+    // Clamp to last frame if we somehow overshot
+    if (this.currentFrameIndex >= this.recordingData.frames.length) {
+      this.currentFrameIndex = this.recordingData.frames.length - 1;
       this.lastFrameTime = 0;
     }
 
@@ -337,7 +383,10 @@ export class PlayerService {
       return 0;
     }
 
-    return this.currentFrameIndex / this.recordingData.frames.length;
+    // Use (currentFrameIndex + 1) to show 100% on the last frame
+    const progress =
+      (this.currentFrameIndex + 1) / this.recordingData.frames.length;
+    return Math.min(progress, 1.0); // Clamp to 1.0
   }
 
   public unload(): void {
