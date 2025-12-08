@@ -24,7 +24,6 @@ import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { ServiceRegistry } from "../service-registry.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
-import { MediaPlayerEntity } from "../../entities/media-player-entity.js";
 import { container } from "../di-container.js";
 import { RecorderService } from "./recorder-service.js";
 
