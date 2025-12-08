@@ -403,6 +403,11 @@ export class WorldScene extends BaseCollidingGameScene {
       this.helpEntity as HelpEntity
     );
     this.uiEntities.push(this.chatButtonEntity);
+
+    // Connect chat button to local car to disable controls during chat
+    if (this.localCarEntity) {
+      this.localCarEntity.setChatButtonEntity(this.chatButtonEntity);
+    }
   }
 
   private setupMatchLog(): void {

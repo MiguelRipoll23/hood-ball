@@ -85,6 +85,10 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
       this.SIZE / 2;
   }
 
+  public isInputVisible(): boolean {
+    return this.inputVisible;
+  }
+
   private handleKeyboardInput(): void {
     const pressedKeys = this.gameKeyboard.getPressedKeys();
     const enterPressed = pressedKeys.has("Enter");

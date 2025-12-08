@@ -7,11 +7,13 @@ import { EntityUtils } from "../../core/utils/entity-utils.js";
 import { GameGamepad } from "../../core/models/game-gamepad.js";
 import { GamepadButton } from "../../core/enums/gamepad-button.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
+import { ChatButtonEntity } from "./chat-button-entity.js";
 
 export class LocalCarEntity extends CarEntity {
   private readonly joystickEntity: JoystickEntity;
   private active = true;
   private boostMeterEntity: BoostMeterEntity | null = null;
+  private chatButtonEntity: ChatButtonEntity | null = null;
 
   constructor(
     x: number,
@@ -55,8 +57,17 @@ export class LocalCarEntity extends CarEntity {
     return this.boostMeterEntity;
   }
 
+  public setChatButtonEntity(chatButton: ChatButtonEntity): void {
+    this.chatButtonEntity = chatButton;
+  }
+
+  private canProcessInput(): boolean {
+    const isChatActive = this.chatButtonEntity?.isInputVisible() ?? false;
+    return this.active && !isChatActive;
+  }
+
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.active) {
+    if (this.canProcessInput()) {
       if (this.gameGamepad.get()) {
         this.handleGamepadControls(deltaTimeStamp);
       } else if (this.gamePointer.isTouch()) {
@@ -66,7 +77,7 @@ export class LocalCarEntity extends CarEntity {
       }
     }
 
-    if (this.active) {
+    if (this.canProcessInput()) {
       this.handleBoostInput();
     } else {
       this.deactivateBoost();
