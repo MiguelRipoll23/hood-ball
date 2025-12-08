@@ -16,8 +16,8 @@ import { BinaryWriter } from "../../core/utils/binary-writer-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {
-  protected readonly TOP_SPEED: number = 0.3;
-  protected readonly ACCELERATION: number = 0.002;
+  protected TOP_SPEED: number = 0.3;
+  protected ACCELERATION: number = 0.002;
   protected readonly HANDLING: number = 0.007;
 
   private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
@@ -215,6 +215,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     return this.boost;
   }
 
+  public setBoost(boost: number): void {
+    this.boost = Math.max(0, Math.min(this.MAX_BOOST, boost));
+  }
+
   public isBoosting(): boolean {
     return this.boosting;
   }
@@ -223,12 +227,24 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     return this.speed;
   }
 
+  public setSpeed(speed: number): void {
+    this.speed = speed;
+  }
+
   public getTopSpeed(): number {
     return this.TOP_SPEED;
   }
 
   public getBoostTopSpeedMultiplier(): number {
     return this.BOOST_TOP_SPEED_MULTIPLIER;
+  }
+
+  public setTopSpeed(topSpeed: number): void {
+    this.TOP_SPEED = topSpeed;
+  }
+
+  public setAcceleration(acceleration: number): void {
+    this.ACCELERATION = acceleration;
   }
 
   public demolish(respawnX: number, respawnY: number, delay: number): void {
