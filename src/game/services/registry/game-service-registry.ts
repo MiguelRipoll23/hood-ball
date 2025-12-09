@@ -27,7 +27,10 @@ import { GAME_VERSION } from "../../constants/game-constants.js";
 
 export class GameServiceRegistry {
   public static register(): void {
-    container.bind({ provide: GameConfig, useValue: { version: GAME_VERSION } });
+    container.bind({
+      provide: GameConfig,
+      useValue: { version: GAME_VERSION },
+    });
     container.bind(GamePlayer);
     container.bind(GameServer);
     container.bind(MatchSessionService);
