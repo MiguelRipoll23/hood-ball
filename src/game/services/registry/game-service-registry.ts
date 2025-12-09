@@ -93,27 +93,17 @@ export class GameServiceRegistry {
   private static initializeServices() {
     try {
       const webrtcService: WebRTCService = container.get(WebRTCService);
-      const matchmakingService: MatchmakingService =
-        container.get(MatchmakingService);
       const entityOrchestratorService: EntityOrchestratorService =
         container.get(EntityOrchestratorService);
       const matchmakingCoordinator: MatchmakingCoordinator = container.get(
         MatchmakingCoordinator
       );
 
-      if (
-        !webrtcService ||
-        !matchmakingService ||
-        !entityOrchestratorService ||
-        !matchmakingCoordinator
-      ) {
-        throw new Error("Failed to resolve core services");
-      }
-
       entityOrchestratorService.initialize(webrtcService);
       matchmakingCoordinator.initialize();
     } catch (error) {
       console.error("Error initializing services", error);
+      throw error;
     }
   }
 }
