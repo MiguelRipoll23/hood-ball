@@ -1,4 +1,4 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.ts";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 
 interface ConfettiParticle {
   x: number;

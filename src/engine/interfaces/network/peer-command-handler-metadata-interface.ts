@@ -1,4 +1,4 @@
-import type { WebRTCType } from "../../enums/webrtc-type.ts";
+import type { WebRTCType } from "../../enums/webrtc-type.js";
 
 export interface PeerCommandHandlerMetadata {
   commandId: WebRTCType;

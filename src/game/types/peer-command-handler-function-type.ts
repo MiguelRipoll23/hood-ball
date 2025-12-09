@@ -1,5 +1,5 @@
-import type { WebRTCPeer } from "../../engine/interfaces/network/webrtc-peer-interface.ts";
-import type { BinaryReader } from "../../engine/utils/binary-reader-utils.ts";
+import type { WebRTCPeer } from "../../engine/interfaces/network/webrtc-peer-interface.js";
+import type { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export type PeerCommandHandlerFunction = (
   webrtcPeer: WebRTCPeer,

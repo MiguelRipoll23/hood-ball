@@ -1,19 +1,19 @@
-import { HitboxEntity } from "../../engine/entities/hitbox-entity.ts";
-import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.ts";
-import { GamePlayer } from "../models/game-player.ts";
+import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
+import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.js";
+import { GamePlayer } from "../models/game-player.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
   RED_TEAM_TRANSPARENCY_COLOR,
-} from "../constants/colors-constants.ts";
-import { SPAWN_ANGLE } from "../constants/entity-constants.ts";
+} from "../constants/colors-constants.js";
+import { SPAWN_ANGLE } from "../constants/entity-constants.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
   SCALE_FACTOR_FOR_COORDINATES,
-} from "../constants/webrtc-constants.ts";
-import { DebugUtils } from "../../engine/utils/debug-utils.ts";
-import { BinaryWriter } from "../../engine/utils/binary-writer-utils.ts";
-import { BoostPadEntity } from "./boost-pad-entity.ts";
+} from "../constants/webrtc-constants.js";
+import { DebugUtils } from "../../engine/utils/debug-utils.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected topSpeed: number = 0.3;

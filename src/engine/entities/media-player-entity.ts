@@ -1,9 +1,9 @@
-import { BaseGameEntity } from "./base-game-entity.ts";
+import { BaseGameEntity } from "./base-game-entity.js";
 import {
   PlayerService,
   PlaybackState,
-} from "../services/gameplay/player-service.ts";
-import { container } from "../services/di-container.ts";
+} from "../services/gameplay/player-service.js";
+import { container } from "../services/di-container.js";
 
 /**
  * MediaPlayerEntity - Full-screen media player for recording playback

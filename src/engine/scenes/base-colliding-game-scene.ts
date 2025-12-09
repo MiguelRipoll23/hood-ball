@@ -1,10 +1,10 @@
-import { BaseStaticCollidingGameEntity } from "../entities/base-static-colliding-game-entity.ts";
-import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-colliding-game-entity.ts";
-import { HitboxEntity } from "../entities/hitbox-entity.ts";
-import { BaseMultiplayerScene } from "./base-multiplayer-scene.ts";
-import type { GameState } from "../models/game-state.ts";
-import { EventConsumerService } from "../services/gameplay/event-consumer-service.ts";
-import type { GameEntity } from "../models/game-entity.ts";
+import { BaseStaticCollidingGameEntity } from "../entities/base-static-colliding-game-entity.js";
+import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-colliding-game-entity.js";
+import { HitboxEntity } from "../entities/hitbox-entity.js";
+import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
+import type { GameState } from "../models/game-state.js";
+import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
+import type { GameEntity } from "../models/game-entity.js";
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   constructor(

@@ -1,6 +1,6 @@
-import { LayerType } from "../../enums/layer-type.ts";
-import type { GameEntity } from "../../models/game-entity.ts";
-import type { SceneManager } from "./scene-manager-interface.ts";
+import { LayerType } from "../../enums/layer-type.js";
+import type { GameEntity } from "../../models/game-entity.js";
+import type { SceneManager } from "./scene-manager-interface.js";
 
 export interface GameScene {
   isActive(): boolean;

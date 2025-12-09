@@ -1,5 +1,5 @@
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.ts";
-import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.ts";
+import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
   private static readonly SPACING = 10;

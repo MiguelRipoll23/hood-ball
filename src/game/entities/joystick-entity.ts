@@ -1,5 +1,5 @@
-import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.ts";
-import { BaseGameEntity } from "../../engine/entities/base-game-entity.ts";
+import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 
 export class JoystickEntity extends BaseGameEntity {
   private readonly RADIUS: number = 40;

@@ -1,5 +1,5 @@
-import type { GameScene } from "../interfaces/scenes/game-scene-interface.ts";
-import type { SceneTransitionServiceContract } from "./scene-transition-service-contract.ts";
+import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
+import type { SceneTransitionServiceContract } from "./scene-transition-service-contract.js";
 
 export interface SceneManagerServiceContract {
   getTransitionService(): SceneTransitionServiceContract;

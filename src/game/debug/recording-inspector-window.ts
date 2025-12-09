@@ -1,13 +1,13 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../engine/debug/base-window.ts";
+import { BaseWindow } from "../../engine/debug/base-window.js";
 import {
   PlayerService,
   PlaybackState,
-} from "../../engine/services/gameplay/player-service.ts";
-import { RecorderService } from "../../engine/services/gameplay/recorder-service.ts";
-import { container } from "../../engine/services/di-container.ts";
-import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.ts";
-import { GameState } from "../../engine/models/game-state.ts";
+} from "../../engine/services/gameplay/player-service.js";
+import { RecorderService } from "../../engine/services/gameplay/recorder-service.js";
+import { container } from "../../engine/services/di-container.js";
+import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.js";
+import { GameState } from "../../engine/models/game-state.js";
 
 export class RecordingInspectorWindow extends BaseWindow {
   private playerService: PlayerService;

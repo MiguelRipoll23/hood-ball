@@ -1,13 +1,13 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import type { GameEntity } from "../../engine/models/game-entity.ts";
-import type { GameScene } from "../../engine/interfaces/scenes/game-scene-interface.ts";
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.ts";
-import { BallEntity } from "../entities/ball-entity.ts";
-import { RemoteCarEntity } from "../entities/remote-car-entity.ts";
-import { BaseWindow } from "../../engine/debug/base-window.ts";
-import type { GameState } from "../../engine/models/game-state.ts";
-import { gameContext } from "../context/game-context.ts";
-import { GamePlayer } from "../models/game-player.ts";
+import type { GameEntity } from "../../engine/models/game-entity.js";
+import type { GameScene } from "../../engine/interfaces/scenes/game-scene-interface.js";
+import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BallEntity } from "../entities/ball-entity.js";
+import { RemoteCarEntity } from "../entities/remote-car-entity.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
+import type { GameState } from "../../engine/models/game-state.js";
+import { gameContext } from "../context/game-context.js";
+import { GamePlayer } from "../models/game-player.js";
 
 export class SceneInspectorWindow extends BaseWindow {
   constructor(private gameState: GameState) {

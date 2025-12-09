@@ -1,6 +1,6 @@
-import { GamepadButton } from "../enums/gamepad-button.ts";
-import { GameFrame } from "./game-frame.ts";
-import type { GameGamepadContract } from "../interfaces/input/game-gamepad-interface.ts";
+import { GamepadButton } from "../enums/gamepad-button.js";
+import { GameFrame } from "./game-frame.js";
+import type { GameGamepadContract } from "../interfaces/input/game-gamepad-interface.js";
 
 export class GameGamepad implements GameGamepadContract {
   private gamepadIndex: number | null = null;
