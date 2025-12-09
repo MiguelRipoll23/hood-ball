@@ -1,21 +1,24 @@
 import { TunnelType } from "../../enums/tunnel-type.js";
-import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
-import { DebugUtils } from "../../../core/utils/debug-utils.js";
+import { DebugUtils } from "../../../engine/utils/debug-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import type { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
+import type { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
-import { WebRTCType } from "../../enums/webrtc-type.js";
-import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
+import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
+import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
-import { GameState } from "../../../core/models/game-state.js";
-import type { GamePlayer } from "../../models/game-player.js";
-import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
+import { GameState } from "../../../engine/models/game-state.js";
+import { GamePlayer } from "../../models/game-player.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { container } from "../../../engine/services/di-container.js";
+import { injectable, inject } from "@needle-di/core";
+import { MatchSessionService } from "../session/match-session-service.js";
+import { GameServer } from "../../models/game-server.js";
+import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {
@@ -30,7 +33,15 @@ export class WebRTCService implements WebRTCServiceContract {
   private connectionListener: PeerConnectionListener | null = null;
 
   constructor(
-    private gameState = container.get(GameState)
+    private readonly gamePlayer: GamePlayer = inject(GamePlayer),
+    private readonly matchSessionService: MatchSessionService = inject(
+      MatchSessionService
+    ),
+    private readonly gameServer: GameServer = inject(GameServer),
+    private readonly timerManagerService: TimerManagerService = inject(
+      TimerManagerService
+    ),
+    private readonly gameState: GameState = inject(GameState)
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
@@ -108,7 +119,7 @@ export class WebRTCService implements WebRTCServiceContract {
     originToken: string,
     rtcSessionDescription: RTCSessionDescriptionInit
   ): void {
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       this.handlePeerOffer(originToken, rtcSessionDescription);
     } else {
       this.handlePeerAnswer(originToken, rtcSessionDescription);
@@ -183,15 +194,10 @@ export class WebRTCService implements WebRTCServiceContract {
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    const match = this.gameState.getMatch();
+    const match = this.matchSessionService.getMatch();
     if (match === null) return;
 
-    const player = this.gameState.getGamePlayer();
-
-    if (player === null) {
-      DebugUtils.renderText(context, 24, 24, "No player found");
-      return;
-    }
+    const player = this.gamePlayer;
 
     if (player.isHost()) {
       DebugUtils.renderText(context, 24, 48, "Host");
@@ -233,6 +239,9 @@ export class WebRTCService implements WebRTCServiceContract {
       token,
       this,
       this.connectionListener,
+      this.matchSessionService,
+      this.gameServer,
+      this.timerManagerService,
       this.gameState
     );
     this.peers.set(token, peer);
@@ -332,7 +341,7 @@ export class WebRTCService implements WebRTCServiceContract {
   }
 
   private updatePingMedianMilliseconds(): void {
-    const match = this.gameState.getMatch();
+    const match = this.matchSessionService.getMatch();
 
     if (match === null) {
       return;

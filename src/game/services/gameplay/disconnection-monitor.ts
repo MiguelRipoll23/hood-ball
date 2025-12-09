@@ -1,6 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
-import type { ITimerService } from "../../../core/interfaces/services/gameplay/timer-service-interface.js";
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
+import type { ITimerService } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
+import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 
 @injectable()
 export class DisconnectionMonitor {

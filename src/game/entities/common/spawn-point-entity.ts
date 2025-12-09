@@ -1,4 +1,4 @@
-import { BaseMoveableGameEntity } from "../../../core/entities/base-moveable-game-entity";
+import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity";
 
 export class SpawnPointEntity extends BaseMoveableGameEntity {
   constructor(private index: number, x: number, y: number) {

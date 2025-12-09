@@ -1,8 +1,8 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../core/debug/base-window.js";
-import { AnimationType } from "../enums/animation-type.js";
-import { AnimationLogService } from "../../core/services/gameplay/animation-log-service.js";
-import { container } from "../../core/services/di-container.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
+import { AnimationType } from "../../engine/enums/animation-type.js";
+import { AnimationLogService } from "../../engine/services/gameplay/animation-log-service.js";
+import { container } from "../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -30,7 +30,9 @@ export class AnimationInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.SizingStretchProp;
 
-    if (ImGui.BeginTable("AnimationsTable", 3, tableFlags, new ImVec2(0, 200))) {
+    if (
+      ImGui.BeginTable("AnimationsTable", 3, tableFlags, new ImVec2(0, 200))
+    ) {
       ImGui.TableSetupColumn("Entity", ImGui.TableColumnFlags.WidthStretch);
       ImGui.TableSetupColumn("Type", ImGui.TableColumnFlags.WidthFixed, 90);
       ImGui.TableSetupColumn("Progress", ImGui.TableColumnFlags.WidthFixed, 80);

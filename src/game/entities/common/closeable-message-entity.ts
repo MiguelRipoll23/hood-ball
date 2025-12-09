@@ -1,4 +1,4 @@
-import { BaseTappableGameEntity } from "../../../core/entities/base-tappable-game-entity.js";
+import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
 
 export class CloseableMessageEntity extends BaseTappableGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";

@@ -1,6 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
 import { WebRTCService } from "../network/webrtc-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { MatchmakingService } from "./matchmaking-service.js";
 
 @injectable()

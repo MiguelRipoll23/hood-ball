@@ -1,18 +1,19 @@
-import type { MultiplayerGameEntity } from "../../../core/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../../engine/interfaces/entities/multiplayer-game-entity.js";
 import { WebRTCService } from "../network/webrtc-service.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { EntityUtils } from "../../../core/utils/entity-utils.js";
-import type { MultiplayerScene } from "../../../core/interfaces/scenes/multiplayer-scene.js";
-import { EntityStateType } from "../../../core/enums/entity-state-type.js";
-import { SceneUtils } from "../../../core/utils/scene-utils.js";
-import { WebRTCType } from "../../enums/webrtc-type.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import type { EntityType } from "../../enums/entity-type.js";
-import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
-import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+import { GameState } from "../../../engine/models/game-state.js";
+import { EntityUtils } from "../../../engine/utils/entity-utils.js";
+import type { MultiplayerScene } from "../../../engine/interfaces/scenes/multiplayer-scene.js";
+import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
+import { SceneUtils } from "../../../engine/utils/scene-utils.js";
+import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
+import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
+import type { EntityType } from "../../../engine/enums/entity-type.js";
+import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
+import { injectable, inject } from "@needle-di/core";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import { MatchSessionService } from "../session/match-session-service.js";
+import { GamePlayer } from "../../models/game-player.js";
 
 @injectable()
 export class EntityOrchestratorService {
@@ -22,7 +23,13 @@ export class EntityOrchestratorService {
   private elapsedMilliseconds: number = 0;
   private periodicUpdate: boolean = false;
 
-  constructor(private gameState = container.get(GameState)) {}
+  constructor(
+    private matchSessionService: MatchSessionService = inject(
+      MatchSessionService
+    ),
+    private gamePlayer: GamePlayer = inject(GamePlayer),
+    private gameState: GameState = inject(GameState)
+  ) {}
 
   public initialize(webrtcService: WebRTCService): void {
     this.webrtcService = webrtcService;
@@ -34,7 +41,7 @@ export class EntityOrchestratorService {
     multiplayerScene: MultiplayerScene,
     deltaTimeStamp: DOMHighResTimeStamp
   ): void {
-    if (this.gameState.getMatch() === null) {
+    if (this.matchSessionService.getMatch() === null) {
       this.elapsedMilliseconds = 0;
       return;
     }
@@ -158,19 +165,19 @@ export class EntityOrchestratorService {
     const unowned = multiplayerEntity.getOwner() === null;
 
     if (syncableByHost && unowned) {
-      const hostPlayer = this.gameState.getMatch()?.getHost() ?? null;
+      const hostPlayer = this.matchSessionService.getMatch()?.getHost() ?? null;
       multiplayerEntity.setOwner(hostPlayer);
     }
   }
 
   private skipUnownedEntity(multiplayerEntity: MultiplayerGameEntity): boolean {
     // If host, don't skip entities from other players
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       return false;
     }
 
     // Is entity not owned by the player?
-    const playerId = this.gameState.getGamePlayer().getNetworkId();
+    const playerId = this.gamePlayer.getNetworkId();
     const ownerId = multiplayerEntity.getOwner()?.getNetworkId();
 
     return ownerId !== playerId;
@@ -277,7 +284,9 @@ export class EntityOrchestratorService {
 
     // Try to find owner
     const player =
-      this.gameState.getMatch()?.getPlayerByNetworkId(entityOwnerId) ?? null;
+      this.matchSessionService
+        .getMatch()
+        ?.getPlayerByNetworkId(entityOwnerId) ?? null;
 
     if (player === null) {
       console.warn("Cannot find player with id", entityOwnerId);

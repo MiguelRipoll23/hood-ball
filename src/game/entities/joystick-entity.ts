@@ -1,5 +1,5 @@
-import { GamePointer } from "../../core/models/game-pointer.js";
-import { BaseGameEntity } from "../../core/entities/base-game-entity.js";
+import { GamePointer } from "../../engine/models/game-pointer.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 
 export class JoystickEntity extends BaseGameEntity {
   private readonly RADIUS: number = 40;

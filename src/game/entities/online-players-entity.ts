@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "../../core/entities/base-animated-entity.js";
+import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
 export class OnlinePlayersEntity extends BaseAnimatedGameEntity {

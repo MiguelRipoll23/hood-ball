@@ -1,14 +1,15 @@
 import { GamePlayer } from "../../models/game-player.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import { WebRTCType } from "../../enums/webrtc-type.js";
-import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-interface.js";
-import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
-import { container } from "../../../core/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/network/webrtc-service-interface.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
+import { GameState } from "../../../engine/models/game-state.js";
+import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
+import { injectable, inject } from "@needle-di/core";
+import { MatchSessionService } from "../session/match-session-service.js";
+import { GameServer } from "../../models/game-server.js";
 
 @injectable()
 export class WebRTCPeerService implements WebRTCPeer {
@@ -51,19 +52,20 @@ export class WebRTCPeerService implements WebRTCPeer {
     private token: string,
     webrtcDelegate: WebRTCServiceContract,
     connectionListener: PeerConnectionListener,
-    private gameState = container.get(GameState),
-    private timerManagerService = container.get(TimerManagerService)
+    matchSessionService: MatchSessionService = inject(MatchSessionService),
+    private gameServer: GameServer = inject(GameServer),
+    private timerManagerService: TimerManagerService = inject(
+      TimerManagerService
+    ),
+    private gameState: GameState = inject(GameState)
   ) {
     this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;
 
-    this.host = gameState.getMatch()?.isHost() ?? false;
+    this.host = matchSessionService.getMatch()?.isHost() ?? false;
 
     this.peerConnection = new RTCPeerConnection({
-      iceServers: this.gameState
-        ?.getGameServer()
-        ?.getServerRegistration()
-        ?.getRTCIceServers(),
+      iceServers: this.gameServer?.getServerRegistration()?.getRTCIceServers(),
     });
 
     if (this.host === false) {

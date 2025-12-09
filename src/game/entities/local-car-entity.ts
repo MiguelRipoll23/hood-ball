@@ -1,11 +1,11 @@
-import { GamePointer } from "../../core/models/game-pointer.js";
-import { EntityType } from "../enums/entity-type.js";
+import { GamePointer } from "../../engine/models/game-pointer.js";
+import { EntityType } from "../../engine/enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
-import { GameKeyboard } from "../../core/models/game-keyboard.js";
-import { EntityUtils } from "../../core/utils/entity-utils.js";
-import { GameGamepad } from "../../core/models/game-gamepad.js";
-import { GamepadButton } from "../../core/enums/gamepad-button.js";
+import { GameKeyboard } from "../../engine/models/game-keyboard.js";
+import { EntityUtils } from "../../engine/utils/entity-utils.js";
+import { GameGamepad } from "../../engine/models/game-gamepad.js";
+import { GamepadButton } from "../../engine/enums/gamepad-button.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatButtonEntity } from "./chat-button-entity.js";
 

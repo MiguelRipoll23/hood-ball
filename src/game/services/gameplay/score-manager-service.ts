@@ -1,28 +1,31 @@
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import { TeamType } from "../../enums/team-type.js";
 
-import { RemoteEvent } from "../../../core/models/remote-event.js";
-import { GameState } from "../../../core/models/game-state.js";
+import { RemoteEvent } from "../../../engine/models/remote-event.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
+import { MatchSessionService } from "../session/match-session-service.js";
+import { gameContext } from "../../context/game-context.js";
 
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
-import { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 
 import { BallEntity } from "../../entities/ball-entity.js";
 import { GoalEntity } from "../../entities/goal-entity.js";
 import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 
-import { TimerManagerService } from "../../../core/services/gameplay/timer-manager-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import { MatchActionsLogService } from "./match-actions-log-service.js";
 
 export class ScoreManagerService {
+  private readonly gamePlayer: GamePlayer;
+  private readonly matchSessionService: MatchSessionService;
+
   constructor(
-    private readonly gameState: GameState,
     private readonly ballEntity: BallEntity,
     private readonly goalEntity: GoalEntity,
     private readonly scoreboardUI: ScoreboardUI,
@@ -39,16 +42,19 @@ export class ScoreManagerService {
       team: TeamType
     ) => void,
     private readonly gameOverEffectCallback: (won: boolean) => void
-  ) {}
+  ) {
+    this.gamePlayer = gameContext.get(GamePlayer);
+    this.matchSessionService = gameContext.get(MatchSessionService);
+  }
 
   public updateScoreboard(): void {
-    const players = this.gameState.getMatch()?.getPlayers() ?? [];
+    const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
     let totalScore = 0;
 
     players.forEach((player) => {
       const score = player.getScore();
 
-      if (player === this.gameState.getGamePlayer()) {
+      if (player === this.gamePlayer) {
         this.scoreboardUI.setBlueScore(score);
         return;
       }
@@ -60,8 +66,8 @@ export class ScoreManagerService {
   }
 
   public detectScoresIfHost(): void {
-    const host = this.gameState.getMatch()?.isHost() ?? false;
-    const matchState = this.gameState.getMatch()?.getState();
+    const host = this.matchSessionService.getMatch()?.isHost() ?? false;
+    const matchState = this.matchSessionService.getMatch()?.getState();
 
     if (host && matchState === MatchStateType.InProgress) {
       this.detectScores();
@@ -75,20 +81,21 @@ export class ScoreManagerService {
       return;
     }
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       console.warn("Host should not receive goal event");
       return;
     }
 
     this.scoreboardUI.stopTimer();
     this.ballEntity.handleGoalScored();
-    this.gameState.setMatchState(MatchStateType.GoalScored);
+    this.matchSessionService.setMatchState(MatchStateType.GoalScored);
 
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
     const playerScore = binaryReader.unsignedInt8();
     const player =
-      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
+      this.matchSessionService.getMatch()?.getPlayerByNetworkId(playerId) ??
+      null;
 
     player?.setScore(playerScore);
     this.updateScoreboard();
@@ -100,7 +107,7 @@ export class ScoreManagerService {
 
     let team: TeamType = TeamType.Red;
 
-    if (player === this.gameState.getGamePlayer()) {
+    if (player === this.gamePlayer) {
       team = TeamType.Blue;
     }
 
@@ -118,7 +125,7 @@ export class ScoreManagerService {
       return;
     }
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       console.warn("Host should not receive game over event");
       return;
     }
@@ -126,13 +133,15 @@ export class ScoreManagerService {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     const playerId = binaryReader.fixedLengthString(32);
     const player =
-      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
+      this.matchSessionService.getMatch()?.getPlayerByNetworkId(playerId) ??
+      null;
 
     this.handleGameOverStart(player);
   }
 
   private detectScores(): void {
-    const playersCount = this.gameState.getMatch()?.getPlayers().length ?? 0;
+    const playersCount =
+      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
     if (playersCount < 2) {
       return;
@@ -157,13 +166,12 @@ export class ScoreManagerService {
 
     this.scoreboardUI.stopTimer();
     this.ballEntity.handleGoalScored();
-    this.gameState.setMatchState(MatchStateType.GoalScored);
+    this.matchSessionService.setMatchState(MatchStateType.GoalScored);
 
     player.sumScore(1);
     this.sendGoalEvent(player);
 
-    const goalTeam =
-      player === this.gameState.getGamePlayer() ? TeamType.Blue : TeamType.Red;
+    const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
 
     if (goalTeam === TeamType.Blue) {
       this.scoreboardUI.incrementBlueScore();
@@ -219,7 +227,10 @@ export class ScoreManagerService {
   }
 
   private detectGameEnd(): void {
-    if (this.gameState.getMatch()?.getState() === MatchStateType.GameOver) {
+    if (
+      this.matchSessionService.getMatch()?.getState() ===
+      MatchStateType.GameOver
+    ) {
       return;
     }
 
@@ -229,8 +240,8 @@ export class ScoreManagerService {
   }
 
   private handleTimerEnd(): void {
-    const players = this.gameState.getMatch()?.getPlayers() || [];
-    let winner = this.gameState.getGamePlayer();
+    const players = this.matchSessionService.getMatch()?.getPlayers() || [];
+    let winner = this.gamePlayer;
 
     for (const player of players) {
       if (player.getScore() > winner.getScore()) {
@@ -264,9 +275,9 @@ export class ScoreManagerService {
   }
 
   private handleGameOverStart(winner: GamePlayer | null): void {
-    this.gameState.endMatch();
+    this.matchSessionService.setMatchState(MatchStateType.GameOver);
 
-    const isLocalWinner = winner === this.gameState.getGamePlayer();
+    const isLocalWinner = winner === this.gamePlayer;
     const playerName = winner?.getName().toUpperCase() ?? "UNKNOWN";
     const playerTeam = isLocalWinner ? "blue" : "red";
 
@@ -279,7 +290,7 @@ export class ScoreManagerService {
     this.gameOverEffectCallback(isLocalWinner);
     this.timerManagerService.createTimer(5, this.gameOverEndCallback);
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       this.matchmakingService
         .savePlayerScore()
         .catch((error) => console.error("Failed to save player scores", error));

@@ -1,11 +1,10 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../core/models/game-state.js";
 import { APIService } from "../network/api-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
-import { EventConsumerService } from "../../../core/services/gameplay/event-consumer-service.js";
-import { LocalEvent } from "../../../core/models/local-event.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { LocalEvent } from "../../../engine/models/local-event.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import { GamePlayer } from "../../models/game-player.js";
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
@@ -16,8 +15,9 @@ import {
   ReceivedIdentitiesToken,
 } from "./matchmaking-tokens.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
-import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
-import { RecorderService } from "../../../core/services/gameplay/recorder-service.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import { RecorderService } from "../../../engine/services/gameplay/recorder-service.js";
+import { MatchSessionService } from "../session/match-session-service.js";
 
 @injectable()
 export class MatchLifecycleService {
@@ -25,7 +25,6 @@ export class MatchLifecycleService {
   private gameOverInProgress = false;
 
   constructor(
-    private readonly gameState = inject(GameState),
     private readonly apiService = inject(APIService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly networkService: IMatchmakingNetworkService = inject(
@@ -36,7 +35,8 @@ export class MatchLifecycleService {
     private readonly disconnectionMonitor = inject(DisconnectionMonitor),
     private readonly recorderService = inject(RecorderService),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
+    private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
+    private readonly matchSessionService = inject(MatchSessionService)
   ) {
     this.eventConsumer.subscribeToLocalEvent(
       EventType.PlayerDisconnected,
@@ -53,7 +53,7 @@ export class MatchLifecycleService {
   }
 
   public async savePlayerScore(): Promise<void> {
-    const players = this.gameState.getMatch()?.getPlayers();
+    const players = this.matchSessionService.getMatch()?.getPlayers();
     if (!players || players.length === 0) {
       console.warn("No players in the match to save score");
       return;
@@ -81,7 +81,7 @@ export class MatchLifecycleService {
     this.gameOverInProgress = true;
     this.gameOverFinalized = false;
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       const peers = this.webrtcService.getPeers();
       const playerIds: string[] = [];
       peers.forEach((peer: WebRTCPeer) => {
@@ -121,7 +121,7 @@ export class MatchLifecycleService {
     if (this.disconnectionMonitor.isTracking()) {
       this.disconnectionMonitor.clear();
     }
-    this.gameState.setMatch(null);
+    this.matchSessionService.setMatch(null);
     this.pendingIdentities.clear();
     this.receivedIdentities.clear();
     const localEvent = new LocalEvent(EventType.ReturnToMainMenu);

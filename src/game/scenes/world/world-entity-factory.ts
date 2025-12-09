@@ -10,9 +10,12 @@ import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
 import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-constants.js";
-import type { GameState } from "../../../core/models/game-state.js";
-import type { GameEntity } from "../../../core/models/game-entity.js";
+import type { GameState } from "../../../engine/models/game-state.js";
+import type { GameEntity } from "../../../engine/models/game-entity.js";
 import { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
+import { gameContext } from "../../context/game-context.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { GameServer } from "../../models/game-server.js";
 
 export interface WorldEntities {
   scoreboardEntity: ScoreboardEntity;
@@ -100,7 +103,7 @@ export class WorldEntityFactory {
     const duration = getConfigurationKey<number>(
       SCOREBOARD_SECONDS_DURATION,
       WorldEntityFactory.DEFAULT_SCOREBOARD_DURATION,
-      this.gameState
+      gameContext.get(GameServer)
     );
     const scoreboard = new ScoreboardEntity(this.canvas);
     scoreboard.setTimerDuration(duration);
@@ -131,7 +134,7 @@ export class WorldEntityFactory {
       gamepad
     );
 
-    car.setOwner(this.gameState.getGamePlayer());
+    car.setOwner(gameContext.get(GamePlayer));
 
     const boostMeter = new BoostMeterEntity(this.canvas);
     car.setBoostMeterEntity(boostMeter);

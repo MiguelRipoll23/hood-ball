@@ -1,7 +1,7 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
-import { BaseTappableGameEntity } from "../../../core/entities/base-tappable-game-entity.js";
+import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
 import { BackdropEntity } from "./backdrop-entity.js";
-import { formatDate } from "../../../core/utils/time-utils.js";
+import { formatDate } from "../../../engine/utils/time-utils.js";
 
 export class CloseableWindowEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;

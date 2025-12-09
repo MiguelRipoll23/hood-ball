@@ -1,7 +1,7 @@
 import { getServerCommandHandlers } from "../../decorators/server-command-handler.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import type { ServerCommandHandlerFunction } from "../../types/server-command-handler-function-type.js";
-import type { BinaryReader } from "../../../core/utils/binary-reader-utils.js";
+import type { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 
 export class WebSocketDispatcherService {
   private commandHandlers = new Map<

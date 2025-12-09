@@ -1,15 +1,17 @@
-import { BaseGameScene } from "../../../../core/scenes/base-game-scene.js";
+import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { MainMenuScene } from "../main-menu/main-menu-scene.js";
-import { CryptoService } from "../../../../core/services/security/crypto-service.js";
+import { CryptoService } from "../../../services/security/crypto-service.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { APIService } from "../../../services/network/api-service.js";
-import { GameState } from "../../../../core/models/game-state.js";
-import { EventType } from "../../../enums/event-type.js";
+import { GameState } from "../../../../engine/models/game-state.js";
+import { EventType } from "../../../../engine/enums/event-type.js";
 import { CredentialService } from "../../../services/security/credential-service.js";
-import { container } from "../../../../core/services/di-container.js";
-import { EventConsumerService } from "../../../../core/services/gameplay/event-consumer-service.js";
+import { container } from "../../../../engine/services/di-container.js";
+import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
 import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginEntities } from "./login-entity-factory.js";
+import { GameServer } from "../../../models/game-server.js";
+import { gameContext } from "../../../context/game-context.js";
 import { LoginController } from "./login-controller.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
 
@@ -21,12 +23,14 @@ export class LoginScene extends BaseGameScene {
   private displayNameInputElement: HTMLInputElement | null = null;
   private registerButtonElement: HTMLElement | null = null;
   private signInButtonElement: HTMLElement | null = null;
+  private readonly gameServer: GameServer;
 
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService
   ) {
     super(gameState, eventConsumerService);
+    this.gameServer = gameContext.get(GameServer);
     const apiService = container.get(APIService);
     const cryptoService = container.get(CryptoService);
     const webSocketService = container.get(WebSocketService);
@@ -140,7 +144,6 @@ export class LoginScene extends BaseGameScene {
     this.dialogElement?.showModal();
   }
 
-
   private handleDisplayNameInputEvent(): void {
     if (this.displayNameInputElement?.value.trim() === "") {
       this.registerButtonElement?.setAttribute("disabled", "true");
@@ -210,7 +213,7 @@ export class LoginScene extends BaseGameScene {
   private async applyConfiguration(
     configuration: ConfigurationType
   ): Promise<void> {
-    this.gameState.getGameServer().setConfiguration(configuration);
+    this.gameServer.setConfiguration(configuration);
 
     console.log("Configuration response (decrypted)", configuration);
 

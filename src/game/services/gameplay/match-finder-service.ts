@@ -4,27 +4,33 @@ import type {
 } from "../../interfaces/responses/find-matches-response.js";
 import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
 import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
-import { LocalEvent } from "../../../core/models/local-event.js";
-import { Match } from "../../models/match.js";
+import { LocalEvent } from "../../../engine/models/local-event.js";
+import { MatchSession } from "../../models/match-session.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
 import { GAME_VERSION } from "../../constants/game-constants.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
-import { BinaryWriter } from "../../../core/utils/binary-writer-utils.js";
+import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIService } from "../network/api-service.js";
 import { WebSocketService } from "../network/websocket-service.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { MatchSessionService } from "../session/match-session-service.js";
+import { GameServer } from "../../models/game-server.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
 
 @injectable()
 export class MatchFinderService {
   constructor(
-    private readonly gameState = inject(GameState),
+    private readonly gamePlayer: GamePlayer = inject(GamePlayer),
+    private readonly matchSessionService: MatchSessionService = inject(
+      MatchSessionService
+    ),
+    private readonly gameServer: GameServer = inject(GameServer),
     private readonly apiService = inject(APIService),
     private readonly webSocketService = inject(WebSocketService),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
@@ -46,19 +52,19 @@ export class MatchFinderService {
     const totalSlots: number = getConfigurationKey<number>(
       MATCH_TOTAL_SLOTS,
       4,
-      this.gameState
+      this.gameServer
     );
 
-    const match = new Match(
+    const match = new MatchSession(
       true,
       MatchStateType.WaitingPlayers,
       totalSlots,
       MATCH_ATTRIBUTES
     );
 
-    this.gameState.setMatch(match);
+    this.matchSessionService.setMatch(match);
 
-    const localPlayer = this.gameState.getGamePlayer();
+    const localPlayer = this.gamePlayer;
     localPlayer.setHost(true);
     match.addPlayer(localPlayer);
 
@@ -70,7 +76,7 @@ export class MatchFinderService {
   }
 
   public async advertiseMatch(): Promise<void> {
-    const match = this.gameState.getMatch();
+    const match = this.matchSessionService.getMatch();
 
     if (match === null) {
       console.warn("Game match is null");

@@ -1,20 +1,21 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../core/debug/base-window.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { GamePlayer } from "../models/game-player.js";
-import type { GameState } from "../../core/models/game-state.js";
 import { getPingTextColor } from "../utils/ping-utils.js";
+import { gameContext } from "../context/game-context.js";
+import { MatchSessionService } from "../services/session/match-session-service.js";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;
 
-  constructor(private gameState: GameState) {
+  constructor() {
     super("Match inspector", new ImVec2(450, 300));
     console.log(`${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {
-    const match = this.gameState.getMatch();
+    const match = gameContext.get(MatchSessionService).getMatch();
 
     if (match === null) {
       ImGui.Text("No active match.");

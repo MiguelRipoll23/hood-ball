@@ -1,7 +1,6 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../core/models/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { DebugUtils } from "../../../core/utils/debug-utils.js";
+import { DebugUtils } from "../../../engine/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
@@ -9,18 +8,19 @@ import { MatchmakingNetworkService } from "../network/matchmaking-network-servic
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import { MatchLifecycleService } from "./match-lifecycle-service.js";
+import { MatchSessionService } from "../session/match-session-service.js";
 
 @injectable()
 export class MatchmakingService implements IMatchmakingService {
   constructor(
-    private readonly gameState = inject(GameState),
     private readonly webSocketService = inject(WebSocketService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly matchFinderService = inject(MatchFinderService),
     private readonly networkService: IMatchmakingNetworkService = inject(
       MatchmakingNetworkService
     ),
-    private readonly lifecycleService = inject(MatchLifecycleService)
+    private readonly lifecycleService = inject(MatchLifecycleService),
+    private readonly matchSessionService = inject(MatchSessionService)
   ) {
     this.registerCommandHandlers();
   }
@@ -66,7 +66,7 @@ export class MatchmakingService implements IMatchmakingService {
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    const match = this.gameState.getMatch();
+    const match = this.matchSessionService.getMatch();
     if (match === null) {
       return;
     }

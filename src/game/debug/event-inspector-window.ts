@@ -1,12 +1,12 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { EventType } from "../enums/event-type.js";
-import type { GameEvent } from "../../core/interfaces/models/game-event.js";
-import { LocalEvent } from "../../core/models/local-event.js";
-import { RemoteEvent } from "../../core/models/remote-event.js";
-import { BaseWindow } from "../../core/debug/base-window.js";
-import { BinaryReader } from "../../core/utils/binary-reader-utils.js";
-import { EventProcessorService } from "../../core/services/gameplay/event-processor-service.js";
-import { container } from "../../core/services/di-container.js";
+import { EventType } from "../../engine/enums/event-type.js";
+import type { GameEvent } from "../../engine/interfaces/models/game-event.js";
+import { LocalEvent } from "../../engine/models/local-event.js";
+import { RemoteEvent } from "../../engine/models/remote-event.js";
+import { BaseWindow } from "../../engine/debug/base-window.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
+import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
+import { container } from "../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -97,7 +97,8 @@ export class EventInspectorWindow extends BaseWindow {
 
     const hasSelected = this.selectedEvent !== null;
     const hasData =
-      this.selectedEvent?.getData() !== null && this.selectedEvent?.getData() !== undefined;
+      this.selectedEvent?.getData() !== null &&
+      this.selectedEvent?.getData() !== undefined;
 
     ImGui.BeginDisabled(!hasData);
     if (ImGui.Button("View") && hasData && this.selectedEvent) {
@@ -130,20 +131,22 @@ export class EventInspectorWindow extends BaseWindow {
     if (event instanceof LocalEvent) {
       const data = event.getData();
       if (data && typeof data === "object") {
-        Object.entries(data as Record<string, unknown>).forEach(([key, value]) => {
-          if (value && typeof value === "object") {
-            try {
-              const json = JSON.stringify(value, null, 2) ?? String(value);
-              json.split("\n").forEach((line, idx) => {
-                ImGui.Text(idx === 0 ? `${key}: ${line}` : line);
-              });
-            } catch {
-              ImGui.Text(`${key}: [Object]`);
+        Object.entries(data as Record<string, unknown>).forEach(
+          ([key, value]) => {
+            if (value && typeof value === "object") {
+              try {
+                const json = JSON.stringify(value, null, 2) ?? String(value);
+                json.split("\n").forEach((line, idx) => {
+                  ImGui.Text(idx === 0 ? `${key}: ${line}` : line);
+                });
+              } catch {
+                ImGui.Text(`${key}: [Object]`);
+              }
+            } else {
+              ImGui.Text(`${key}: ${String(value)}`);
             }
-          } else {
-            ImGui.Text(`${key}: ${String(value)}`);
           }
-        });
+        );
       } else if (data !== null && data !== undefined) {
         ImGui.Text(String(data));
       } else {
@@ -172,7 +175,13 @@ export class EventInspectorWindow extends BaseWindow {
       new ImVec2(0.5, 0.5)
     );
     const open = [true];
-    if (ImGui.BeginPopupModal("Event Details", open, ImGui.WindowFlags.AlwaysAutoResize)) {
+    if (
+      ImGui.BeginPopupModal(
+        "Event Details",
+        open,
+        ImGui.WindowFlags.AlwaysAutoResize
+      )
+    ) {
       if (this.detailEvent) {
         this.renderEventDetails(this.detailEvent);
       } else {

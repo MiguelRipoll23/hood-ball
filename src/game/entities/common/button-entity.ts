@@ -1,4 +1,4 @@
-import { BaseTappableGameEntity } from "../../../core/entities/base-tappable-game-entity.js";
+import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
 
 export class ButtonEntity extends BaseTappableGameEntity {
   private text: string = "Unknown";

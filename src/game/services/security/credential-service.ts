@@ -1,24 +1,27 @@
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options.js";
 import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request.js";
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
 import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
 import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
-import { GameState } from "../../../core/models/game-state.js";
-import { LocalEvent } from "../../../core/models/local-event.js";
+
+import { LocalEvent } from "../../../engine/models/local-event.js";
 import { ServerError } from "../../models/server-error.js";
 import { ServerRegistration } from "../../models/server-registration.js";
-import { Base64Utils } from "../../../core/utils/base64-utils.js";
+import { Base64Utils } from "../../../engine/utils/base64-utils.js";
 import { WebAuthnUtils } from "../../utils/webauthn-utils.js";
 import { APIService } from "../network/api-service.js";
-import { EventProcessorService } from "../../../core/services/gameplay/event-processor-service.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { SignatureService } from "./signature-service.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { GameServer } from "../../models/game-server.js";
 
 @injectable()
 export class CredentialService {
   constructor(
-    private readonly gameState = inject(GameState),
+    private readonly gamePlayer: GamePlayer = inject(GamePlayer),
+    private readonly gameServer: GameServer = inject(GameServer),
     private readonly apiService = inject(APIService),
     private readonly signatureService = inject(SignatureService),
     private readonly eventProcessorService = inject(EventProcessorService)
@@ -157,9 +160,7 @@ export class CredentialService {
   private async handleAuthenticationResponse(
     response: AuthenticationResponse
   ): Promise<void> {
-    this.gameState
-      .getGameServer()
-      .setServerRegistration(new ServerRegistration(response));
+    this.gameServer.setServerRegistration(new ServerRegistration(response));
 
     const {
       authenticationToken,
@@ -171,8 +172,8 @@ export class CredentialService {
     this.apiService.setAuthenticationToken(authenticationToken);
     await this.signatureService.init(serverSignaturePublicKey);
 
-    this.gameState.getGamePlayer().setId(userId);
-    this.gameState.getGamePlayer().setName(userDisplayName);
+    this.gamePlayer.setId(userId);
+    this.gamePlayer.setName(userDisplayName);
 
     const localEvent = new LocalEvent(EventType.ServerAuthenticated);
     this.eventProcessorService.addLocalEvent(localEvent);
