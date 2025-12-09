@@ -1,7 +1,7 @@
 import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
-import type { SceneManagerServiceContract } from "../../../game/interfaces/services/ui/scene-manager-service-interface.js";
-import type { SceneTransitionServiceContract } from "../../../game/interfaces/services/ui/scene-transition-service-interface.js";
+import type { SceneManagerServiceContract } from "../../interfaces/services/scene-manager-service-interface.js";
+import type { SceneTransitionServiceContract } from "../../interfaces/services/scene-transition-service-interface.js";
 import { container } from "../di-container.js";
 
 export class SceneManagerService implements SceneManagerServiceContract {

@@ -1,5 +1,5 @@
 import { GamePointer } from "../../engine/models/game-pointer.js";
-import { EntityType } from "../enums/entity-type.js";
+import { EntityType } from "../../engine/enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
 import { GameKeyboard } from "../../engine/models/game-keyboard.js";

@@ -1,5 +1,5 @@
 import type { WebRTCType } from "../enums/webrtc-type.js";
-import type { PeerCommandHandlerMetadata } from "../interfaces/services/network/peer-command-handler-metadata.js";
+import type { PeerCommandHandlerMetadata } from "../interfaces/network/peer-command-handler-metadata.js";
 
 const commandHandlers: PeerCommandHandlerMetadata[] = [];
 

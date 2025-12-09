@@ -5,8 +5,9 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../engine/models/remote-event.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
 import { GameState } from "../../engine/models/game-state.js";
-import { EventType } from "../enums/event-type.js";
+import { EventType } from "../../engine/enums/event-type.js";
 import { container } from "../../engine/services/di-container.js";
+import { MatchSessionService } from "../services/session/match-session-service.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {
   const bigint = parseInt(hex.replace("#", ""), 16);
@@ -109,9 +110,12 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
         this.y,
         radius
       );
-      gradient.addColorStop(0, '#ffe066');
+      gradient.addColorStop(0, "#ffe066");
       gradient.addColorStop(1, LIGHT_GREEN_COLOR);
-      context.shadowColor = colorWithAlpha(LIGHT_GREEN_COLOR, context.globalAlpha);
+      context.shadowColor = colorWithAlpha(
+        LIGHT_GREEN_COLOR,
+        context.globalAlpha
+      );
       context.shadowBlur = 20 + pulse * 20;
       context.fillStyle = gradient;
       context.beginPath();
@@ -133,9 +137,9 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   }
 
   private sendConsumeEvent(playerId: string): void {
-    const gameState = container.get(GameState);
+    const matchSessionService = container.get(MatchSessionService);
 
-    if (!gameState.getMatch()?.isHost()) {
+    if (!matchSessionService.getMatch()?.isHost()) {
       return;
     }
 

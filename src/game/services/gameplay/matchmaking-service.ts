@@ -9,6 +9,7 @@ import { MatchmakingNetworkService } from "../network/matchmaking-network-servic
 import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import { MatchLifecycleService } from "./match-lifecycle-service.js";
+import { MatchSessionService } from "../session/match-session-service.js";
 
 @injectable()
 export class MatchmakingService implements IMatchmakingService {
@@ -20,7 +21,8 @@ export class MatchmakingService implements IMatchmakingService {
     private readonly networkService: IMatchmakingNetworkService = inject(
       MatchmakingNetworkService
     ),
-    private readonly lifecycleService = inject(MatchLifecycleService)
+    private readonly lifecycleService = inject(MatchLifecycleService),
+    private readonly matchSessionService = inject(MatchSessionService)
   ) {
     this.registerCommandHandlers();
   }
@@ -66,7 +68,7 @@ export class MatchmakingService implements IMatchmakingService {
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
-    const match = this.gameState.getMatch();
+    const match = this.matchSessionService.getMatch();
     if (match === null) {
       return;
     }

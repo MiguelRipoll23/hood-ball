@@ -1,4 +1,4 @@
-import type { WebRTCPeer } from "../interfaces/services/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../engine/interfaces/network/webrtc-peer.js";
 import type { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export type PeerCommandHandlerFunction = (

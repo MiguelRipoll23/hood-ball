@@ -1,13 +1,14 @@
-import { GamePlayer } from "../../game/models/game-player.js";
-import { EntityType } from "../../game/enums/entity-type.js";
+import { EntityType } from "../enums/entity-type.js";
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
 } from "../interfaces/entities/multiplayer-game-entity.js";
 import { BaseGameScene } from "./base-game-scene.js";
 import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene.js";
-import { SceneType } from "../../game/enums/scene-type.js";
+import { SceneType } from "../enums/scene-type.js";
 import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
+
+import type { Player } from "../interfaces/models/player.js";
 
 export class BaseMultiplayerScene
   extends BaseGameScene
@@ -77,7 +78,7 @@ export class BaseMultiplayerScene
     return null;
   }
 
-  public getEntitiesByOwner(player: GamePlayer): BaseMultiplayerGameEntity[] {
+  public getEntitiesByOwner(player: Player): BaseMultiplayerGameEntity[] {
     const result: BaseMultiplayerGameEntity[] = [];
 
     this.uiEntities.forEach((entity) => {

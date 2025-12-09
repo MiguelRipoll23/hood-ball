@@ -1,19 +1,20 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
 import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
-import { GameState } from "../../../engine/models/game-state.js";
+import { GameServer } from "../../models/game-server.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { container } from "../../../engine/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { injectable, inject } from "@needle-di/core";
+import { GameState } from "../../../engine/models/game-state.js";
 
 @injectable()
 export class WebSocketService {
@@ -33,7 +34,10 @@ export class WebSocketService {
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private gameState = container.get(GameState)) {
+  constructor(
+    private readonly gameServer: GameServer = inject(GameServer),
+    private readonly gameState: GameState = inject(GameState)
+  ) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.eventProcessorService = container.get(EventProcessorService);
     this.dispatcherService = new WebSocketDispatcherService();
@@ -62,8 +66,7 @@ export class WebSocketService {
   }
 
   private attemptConnection(): void {
-    const gameServer = this.gameState.getGameServer();
-    const serverRegistration = gameServer.getServerRegistration();
+    const serverRegistration = this.gameServer.getServerRegistration();
 
     if (serverRegistration === null) {
       console.error("Game registration not found, cannot connect to server");
@@ -223,7 +226,7 @@ export class WebSocketService {
     // Stop any ongoing reconnection attempts
     this.stopReconnection();
 
-    this.gameState.getGameServer().setConnected(true);
+    this.gameServer.setConnected(true);
     this.eventProcessorService.addLocalEvent(
       new LocalEvent(EventType.ServerConnected)
     );
@@ -232,8 +235,8 @@ export class WebSocketService {
   private handleCloseEvent(event: CloseEvent): void {
     console.log("Connection closed", event);
 
-    const wasConnected = this.gameState.getGameServer().isConnected();
-    this.gameState.getGameServer().setConnected(false);
+    const wasConnected = this.gameServer.isConnected();
+    this.gameServer.setConnected(false);
 
     // Only emit disconnected event if we were actually connected
     if (wasConnected) {
@@ -266,8 +269,8 @@ export class WebSocketService {
     console.error("WebSocket error", event);
 
     // If we're connected and get an error, treat it like a disconnection
-    if (this.gameState.getGameServer().isConnected()) {
-      this.gameState.getGameServer().setConnected(false);
+    if (this.gameServer.isConnected()) {
+      this.gameServer.setConnected(false);
 
       const payload = {
         connectionLost: true,

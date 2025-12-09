@@ -6,10 +6,10 @@ import type { GameScene } from "../interfaces/scenes/game-scene.js";
 import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
 import { SceneManagerService } from "../services/gameplay/scene-manager-service.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
-import type { EventSubscription } from "../../game/types/event-subscription.js";
+import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
 import { container } from "../services/di-container.js";
-import { EventType } from "../../game/enums/event-type.js";
+import { EventType } from "../enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
 
 export class BaseGameScene implements GameScene {

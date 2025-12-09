@@ -2,7 +2,7 @@ import type { MatchAttributes } from "../interfaces/services/matchmaking/match-a
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GamePlayer } from "./game-player.js";
 
-export class Match {
+export class MatchSession {
   private host: boolean;
   private state: MatchStateType;
   private totalSlots: number;
@@ -61,7 +61,6 @@ export class Match {
   public setPingMedianMilliseconds(ping: number | null): void {
     this.pingMedianMilliseconds = ping;
   }
-
 
   public getPlayerByNetworkId(networkId: string): GamePlayer | null {
     return this.players.get(networkId) ?? null;

@@ -1,4 +1,4 @@
-import { GamePlayer } from "../../../models/game-player.js";
+import { Player } from "../models/player.js";
 
 export interface WebRTCPeer {
   getConnectionState(): RTCPeerConnectionState;
@@ -8,8 +8,8 @@ export interface WebRTCPeer {
   getPingTime(): number | null;
   setPingTime(pingTime: number | null): void;
   getName(): string;
-  getPlayer(): GamePlayer | null;
-  setPlayer(player: GamePlayer): void;
+  getPlayer(): Player | null;
+  setPlayer(player: Player): void;
   hasJoined(): boolean;
   setJoined(joined: boolean): void;
   disconnect(graceful: boolean): void;

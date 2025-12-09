@@ -1,15 +1,9 @@
-import { GameServer } from "../../../game/models/game-server.js";
-import { GameState } from "../../models/game-state.js";
-import { container } from "../di-container.js";
-import { injectable } from "@needle-di/core";
+import { GameServer } from "../../models/game-server.js";
+import { inject, injectable } from "@needle-di/core";
 
 @injectable()
 export class CryptoService {
-  private gameServer: GameServer;
-
-  constructor(gameState = container.get(GameState)) {
-    this.gameServer = gameState.getGameServer();
-  }
+  constructor(private gameServer: GameServer = inject(GameServer)) {}
 
   public async encryptRequest(request: string): Promise<ArrayBuffer> {
     const serverRegistration = this.gameServer.getServerRegistration();

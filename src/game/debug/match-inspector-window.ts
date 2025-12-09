@@ -4,6 +4,8 @@ import { MatchStateType } from "../enums/match-state-type.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { GameState } from "../../engine/models/game-state.js";
 import { getPingTextColor } from "../utils/ping-utils.js";
+import { gameContext } from "../context/game-context.js";
+import { MatchSessionService } from "../services/session/match-session-service.js";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;
@@ -14,7 +16,7 @@ export class MatchInspectorWindow extends BaseWindow {
   }
 
   protected override renderContent(): void {
-    const match = this.gameState.getMatch();
+    const match = gameContext.get(MatchSessionService).getMatch();
 
     if (match === null) {
       ImGui.Text("No active match.");

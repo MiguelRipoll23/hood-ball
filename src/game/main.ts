@@ -1,5 +1,5 @@
 import "./main.css";
-import { GameLoopService } from "../engine/services/gameplay/game-loop-service.js";
+import { Game } from "./game.js";
 
 const canvas = document.querySelector("#game") as HTMLCanvasElement;
 
@@ -7,6 +7,5 @@ if (!canvas) {
   throw new Error("Canvas element with id 'game' not found");
 }
 
-const gameLoop = new GameLoopService(canvas);
-gameLoop.start();
-
+const game = new Game(canvas);
+game.start();

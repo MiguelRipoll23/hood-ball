@@ -3,6 +3,9 @@ import { GameState } from "../../engine/models/game-state.js";
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";
 import { MatchActionType } from "../enums/match-action-type.js";
+import { gameContext } from "../context/game-context.js";
+import { GamePlayer } from "../models/game-player.js";
+import { MatchSessionService } from "../services/session/match-session-service.js";
 
 interface TextPart {
   text: string;
@@ -47,7 +50,9 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
     this.measure();
     this.setPosition();
 
-    const hasActiveActions = this.actions.some((action) => !action.isFadingOut());
+    const hasActiveActions = this.actions.some(
+      (action) => !action.isFadingOut()
+    );
 
     if (hasActiveActions) {
       if (!this.isFadingIn && (this.opacity < 1 || this.isFadingOut)) {
@@ -58,7 +63,11 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
 
     const lastAction = this.actions[this.actions.length - 1];
 
-    if (lastAction.isFadingOut() && !this.isFadingOut && this.getOpacity() > 0) {
+    if (
+      lastAction.isFadingOut() &&
+      !this.isFadingOut &&
+      this.getOpacity() > 0
+    ) {
       const fadeDurationMs = lastAction.getFadeOutDurationMs();
       const fadeStartTimestamp = lastAction.getFadeOutStartTimestamp();
 
@@ -279,14 +288,14 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
       return "Unknown";
     }
 
-    const match = this.gameState.getMatch();
+    const match = gameContext.get(MatchSessionService).getMatch();
     const player = match?.getPlayerByNetworkId(playerId) ?? null;
 
     if (player) {
       return player.getName();
     }
 
-    const localPlayer = this.gameState.getGamePlayer();
+    const localPlayer = gameContext.get(GamePlayer);
     if (playerId === localPlayer.getNetworkId()) {
       return localPlayer.getName();
     }
@@ -304,12 +313,12 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
       return null;
     }
 
-    const localPlayer = this.gameState.getGamePlayer();
+    const localPlayer = gameContext.get(GamePlayer);
     if (playerId === localPlayer.getNetworkId()) {
       return TeamType.Blue;
     }
 
-    const match = this.gameState.getMatch();
+    const match = gameContext.get(MatchSessionService).getMatch();
     const player = match?.getPlayerByNetworkId(playerId) ?? null;
 
     if (player === localPlayer) {

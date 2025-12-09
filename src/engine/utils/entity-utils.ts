@@ -1,4 +1,4 @@
-import type { WebRTCPeer } from "../../game/interfaces/services/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/network/webrtc-peer.js";
 import {
   CANVAS_EXTRA_MARGIN,
   CANVAS_MARGIN,

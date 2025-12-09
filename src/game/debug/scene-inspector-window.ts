@@ -6,9 +6,10 @@ import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import type { GameState } from "../../engine/models/game-state.js";
+import { gameContext } from "../context/game-context.js";
+import { GamePlayer } from "../models/game-player.js";
 
 export class SceneInspectorWindow extends BaseWindow {
-
   constructor(private gameState: GameState) {
     super("Scene inspector", new ImVec2(300, 350));
     console.log(`${this.constructor.name} created`);
@@ -168,7 +169,7 @@ export class SceneInspectorWindow extends BaseWindow {
       );
 
       remoteCarEntity.setDebugSettings(this.gameState.getDebugSettings());
-      remoteCarEntity.setOwner(this.gameState.getGamePlayer());
+      remoteCarEntity.setOwner(gameContext.get(GamePlayer));
 
       remoteCarEntity.setVY(5);
 
@@ -179,6 +180,4 @@ export class SceneInspectorWindow extends BaseWindow {
       }
     }
   }
-
-
 }

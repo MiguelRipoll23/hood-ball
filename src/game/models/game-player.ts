@@ -1,6 +1,7 @@
 import { UUIDUtils } from "../utils/uuid-utils";
+import type { Player } from "../../engine/interfaces/models/player.js";
 
-export class GamePlayer {
+export class GamePlayer implements Player {
   private id: string;
   private networkId: string;
   private name: string;

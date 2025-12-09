@@ -1,9 +1,8 @@
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import type { GameState } from "../../../engine/models/game-state.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
@@ -15,20 +14,23 @@ import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.
 import { CarEntity } from "../../entities/car-entity.js";
 import { SPAWN_ANGLE } from "../../constants/entity-constants.js";
 import type { GameEntity } from "../../../engine/models/game-entity.js";
-import type { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
 import type { BaseMultiplayerGameEntity } from "../../../engine/entities/base-multiplayer-entity.js";
 import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
+import { gameContext } from "../../context/game-context.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { MatchSessionService } from "../../services/session/match-session-service.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+  private readonly gamePlayer: GamePlayer;
+  private readonly matchSessionService: MatchSessionService;
 
   constructor(
-    private readonly gameState: GameState,
     private readonly spawnPointService: SpawnPointService,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
@@ -44,12 +46,14 @@ export class WorldController {
       player: GamePlayer
     ) => BaseMultiplayerGameEntity[]
   ) {
+    this.gamePlayer = gameContext.get(GamePlayer);
+    this.matchSessionService = gameContext.get(MatchSessionService);
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
   }
 
   public handleMatchState(): void {
-    const matchState = this.gameState.getMatch()?.getState();
+    const matchState = this.matchSessionService.getMatch()?.getState();
 
     if (matchState === MatchStateType.InProgress) {
       this.localCarEntity.setActive(true);
@@ -66,16 +70,16 @@ export class WorldController {
   }
 
   public handleWaitingForPlayers(): void {
-    this.gameState.setMatchState(MatchStateType.WaitingPlayers);
+    this.matchSessionService.setMatchState(MatchStateType.WaitingPlayers);
     this.scoreboardEntity.stopTimer();
     this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
   }
 
   public showCountdown(): void {
-    const match = this.gameState.getMatch();
+    const match = this.matchSessionService.getMatch();
     const isHost = match?.isHost();
 
-    this.gameState.setMatchState(MatchStateType.Countdown);
+    this.matchSessionService.setMatchState(MatchStateType.Countdown);
 
     if (this.countdownCurrentNumber < 0) {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
@@ -109,7 +113,7 @@ export class WorldController {
       return;
     }
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       console.warn("Host should not receive countdown event");
       return;
     }
@@ -144,7 +148,7 @@ export class WorldController {
 
   private handleCountdownEnd(): void {
     console.log("Countdown end");
-    this.gameState.startMatch();
+    this.matchSessionService.startMatch();
 
     this.alertEntity.hide();
     this.localCarEntity.reset();
@@ -169,7 +173,7 @@ export class WorldController {
     const spawnPointIndex =
       this.spawnPointService.getAndConsumeSpawnPointIndex();
 
-    const gamePlayer = this.gameState.getGamePlayer();
+    const gamePlayer = this.gamePlayer;
     if (spawnPointIndex === -1) {
       console.warn("No spawn points available for local player");
       return;
@@ -181,7 +185,7 @@ export class WorldController {
   }
 
   private moveCarToSpawnPoint(): void {
-    const gamePlayer = this.gameState.getGamePlayer();
+    const gamePlayer = this.gamePlayer;
     const spawnPointIndex = gamePlayer.getSpawnPointIndex();
 
     if (spawnPointIndex === -1) {
@@ -210,9 +214,9 @@ export class WorldController {
   }
 
   private markRemoteCarsForSpawn(): void {
-    const players = this.gameState.getMatch()?.getPlayers() ?? [];
+    const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
     players.forEach((player) => {
-      if (player === this.gameState.getGamePlayer()) {
+      if (player === this.gamePlayer) {
         return;
       }
       this.getEntitiesByOwner(player).forEach((entity) => {
@@ -243,7 +247,7 @@ export class WorldController {
       return;
     }
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       console.warn("Host should not receive car demolished event");
       return;
     }
@@ -255,10 +259,13 @@ export class WorldController {
     };
 
     const attacker =
-      this.gameState.getMatch()?.getPlayerByNetworkId(payload.attackerId) ??
-      null;
+      this.matchSessionService
+        .getMatch()
+        ?.getPlayerByNetworkId(payload.attackerId) ?? null;
     const victim =
-      this.gameState.getMatch()?.getPlayerByNetworkId(payload.victimId) ?? null;
+      this.matchSessionService
+        .getMatch()
+        ?.getPlayerByNetworkId(payload.victimId) ?? null;
 
     if (!victim) {
       console.warn(`Cannot find victim with id ${payload.victimId}`);
@@ -307,7 +314,7 @@ export class WorldController {
       return;
     }
 
-    if (this.gameState.getMatch()?.isHost()) {
+    if (this.matchSessionService.getMatch()?.isHost()) {
       console.warn("Host should not receive boost pad event");
       return;
     }
@@ -325,7 +332,8 @@ export class WorldController {
     pad.forceConsume();
 
     const player =
-      this.gameState.getMatch()?.getPlayerByNetworkId(playerId) ?? null;
+      this.matchSessionService.getMatch()?.getPlayerByNetworkId(playerId) ??
+      null;
     if (player) {
       getEntitiesByOwner(player).forEach((entity) => {
         if (entity instanceof CarEntity) {
@@ -341,7 +349,7 @@ export class WorldController {
     worldEntities: GameEntity[],
     triggerCarExplosion: (x: number, y: number) => void
   ): void {
-    if (!this.gameState.getMatch()?.isHost()) {
+    if (!this.matchSessionService.getMatch()?.isHost()) {
       return;
     }
 
@@ -429,7 +437,7 @@ export class WorldController {
       return "white";
     }
 
-    return player === this.gameState.getGamePlayer() ? "blue" : "red";
+    return player === this.gamePlayer ? "blue" : "red";
   }
 
   private logDemolition(

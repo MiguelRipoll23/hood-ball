@@ -8,7 +8,7 @@ import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
 import { SettingsScene } from "../settings-scene.js";
-import { EventType } from "../../../enums/event-type.js";
+import { EventType } from "../../../../engine/enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload.js";
 import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload.js";
@@ -17,8 +17,9 @@ import { EventConsumerService } from "../../../../engine/services/gameplay/event
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
+import { GameServer } from "../../../models/game-server.js";
+import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
-import { ToastEntity } from "../../../entities/common/toast-entity.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -34,6 +35,7 @@ export class MainMenuScene extends BaseGameScene {
   private onlinePlayersEntity: OnlinePlayersEntity | null = null;
   private toastEntity: ToastEntity | null = null;
   private pendingMessage: string | null = null;
+  private readonly gameServer: GameServer;
 
   constructor(
     gameState: GameState,
@@ -41,6 +43,7 @@ export class MainMenuScene extends BaseGameScene {
     private showNews: boolean
   ) {
     super(gameState, eventConsumerService);
+    this.gameServer = gameContext.get(GameServer);
     this.showNews = showNews;
     const apiService = container.get(APIService);
     this.controller = new MainMenuController(apiService);
@@ -50,7 +53,6 @@ export class MainMenuScene extends BaseGameScene {
   public override load(): void {
     const factory = new MainMenuEntityFactory(
       this.canvas,
-      this.gameState,
       this.MENU_OPTIONS_TEXT,
       this.ONLINE_REQUIRED_BUTTONS
     );
@@ -294,7 +296,7 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private updateMenuButtonsConnectionState(): void {
-    const isConnected = this.gameState.getGameServer().isConnected();
+    const isConnected = this.gameServer.isConnected();
 
     this.uiEntities.forEach((uiEntity) => {
       if (uiEntity instanceof MenuOptionEntity) {

@@ -1,7 +1,7 @@
-import type { EntityType } from "../../game/enums/entity-type";
-import type { GamePlayer } from "../../game/models/game-player";
-import { BaseGameEntity } from "./base-game-entity";
-import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity";
+import type { EntityType } from "../enums/entity-type.js";
+import type { Player } from "../interfaces/models/player.js";
+import { BaseGameEntity } from "./base-game-entity.js";
+import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity.js";
 
 export class BaseMultiplayerGameEntity
   extends BaseGameEntity
@@ -10,7 +10,7 @@ export class BaseMultiplayerGameEntity
   protected id: string | null = null;
   protected typeId: EntityType | null = null;
   protected syncableByHost: boolean = false;
-  protected owner: GamePlayer | null = null;
+  protected owner: Player | null = null;
 
   protected sync: boolean = false;
   protected syncReliably: boolean = false;
@@ -50,11 +50,11 @@ export class BaseMultiplayerGameEntity
     this.syncableByHost = syncableByHost;
   }
 
-  public getOwner(): GamePlayer | null {
+  public getOwner(): Player | null {
     return this.owner;
   }
 
-  public setOwner(playerOwner: GamePlayer | null): void {
+  public setOwner(playerOwner: Player | null): void {
     this.owner = playerOwner;
   }
 

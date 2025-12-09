@@ -12,8 +12,8 @@ import { MatchAction } from "../../models/match-action.js";
 import { BaseCollidingGameScene } from "../../../engine/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
-import { EventType } from "../../enums/event-type.js";
-import { SceneType } from "../../enums/scene-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
+import { SceneType } from "../../../engine/enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
@@ -43,6 +43,10 @@ import { SpawnPointService } from "../../services/gameplay/spawn-point-service.j
 import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
+import { gameContext } from "../../context/game-context.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { GameServer } from "../../models/game-server.js";
+import { MatchSessionService } from "../../services/session/match-session-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
@@ -55,6 +59,9 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
   private readonly chatService: ChatService;
+  private readonly gamePlayer: GamePlayer;
+  private readonly gameServer: GameServer;
+  private readonly matchSessionService: MatchSessionService;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -84,7 +91,10 @@ export class WorldScene extends BaseCollidingGameScene {
     eventConsumerService: EventConsumerService
   ) {
     super(gameState, eventConsumerService);
-    this.gameState.getGamePlayer().reset();
+    this.gamePlayer = gameContext.get(GamePlayer);
+    this.gameServer = gameContext.get(GameServer);
+    this.matchSessionService = gameContext.get(MatchSessionService);
+    this.gamePlayer.reset();
     this.sceneTransitionService = container.get(SceneTransitionService);
     this.timerManagerService = container.get(TimerManagerService);
     this.matchmakingService = container.get(MatchmakingService);
@@ -125,7 +135,6 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
 
     this.worldController = new WorldController(
-      this.gameState,
       this.spawnPointService,
       this.timerManagerService,
       this.eventProcessorService,
@@ -141,7 +150,6 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.scoreManagerService = new ScoreManagerService(
-      this.gameState,
       this.ballEntity,
       this.goalEntity,
       this.scoreboardEntity,
@@ -211,7 +219,7 @@ export class WorldScene extends BaseCollidingGameScene {
     console.error("Matchmaking error", error);
     alert("Could not find or advertise match, returning to main scene menu...");
 
-    this.gameState.setMatch(null);
+    this.matchSessionService.setMatch(null);
     void this.returnToMainMenuScene();
   }
 
@@ -220,7 +228,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private handleMatchAdvertised(): void {
-    if (this.gameState.getMatch()?.getPlayers().length === 1) {
+    if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
       this.worldController?.handleWaitingForPlayers();
       this.toastEntity?.show("Waiting for players...");
     }
@@ -241,7 +249,7 @@ export class WorldScene extends BaseCollidingGameScene {
     } else {
       this.toastEntity?.show(`<em>${player.getName()}</em> joined`, 2);
 
-      const matchState = this.gameState.getMatch()?.getState();
+      const matchState = this.matchSessionService.getMatch()?.getState();
 
       if (matchState === MatchStateType.WaitingPlayers) {
         this.worldController?.showCountdown();
@@ -264,7 +272,8 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.toastEntity?.show(`<em>${player.getName()}</em> left`, 2);
 
-    const playersCount = this.gameState.getMatch()?.getPlayers().length ?? 0;
+    const playersCount =
+      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
     if (playersCount === 1) {
       this.handleWaitingForPlayers();
@@ -473,7 +482,7 @@ export class WorldScene extends BaseCollidingGameScene {
       false
     );
 
-    if (!this.gameState.getGameServer().isConnected()) {
+    if (!this.gameServer.isConnected()) {
       try {
         container.get(WebSocketService).connectToServer();
       } catch (error) {

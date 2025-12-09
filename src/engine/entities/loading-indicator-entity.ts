@@ -1,5 +1,6 @@
 import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
-import { LIGHT_GREEN_COLOR } from "../../game/constants/colors-constants.js";
+
+const LIGHT_GREEN_COLOR = "#90EE90";
 
 export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
   private readonly SIZE = 20;
