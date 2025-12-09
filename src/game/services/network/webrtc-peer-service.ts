@@ -54,7 +54,9 @@ export class WebRTCPeerService implements WebRTCPeer {
     connectionListener: PeerConnectionListener,
     matchSessionService: MatchSessionService = inject(MatchSessionService),
     private gameServer: GameServer = inject(GameServer),
-    private timerManagerService: TimerManagerService = inject(TimerManagerService),
+    private timerManagerService: TimerManagerService = inject(
+      TimerManagerService
+    ),
     private gameState: GameState = inject(GameState)
   ) {
     this.connectionListener = connectionListener;
