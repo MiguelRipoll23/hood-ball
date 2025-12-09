@@ -6,6 +6,7 @@ import { BaseWindow } from "../../debug/base-window.js";
 @injectable()
 export class DebugService {
   private static readonly MAX_ERROR_MESSAGES = 200;
+  private static consolePatched = false;
 
   private debugCanvas: HTMLCanvasElement;
   private gameCanvas: HTMLCanvasElement;
@@ -16,7 +17,6 @@ export class DebugService {
   private readonly knownEvents = new Set<string>();
 
   private errorMessages: string[] = [];
-  private readonly originalConsoleError = console.error.bind(console);
 
   constructor(private gameState: GameState = inject(GameState)) {
     console.log(`${this.constructor.name} created`);
@@ -147,11 +147,21 @@ export class DebugService {
     };
   }
 
+  /**
+   * Patches console.error to capture logs for the debug overlay.
+   *
+   * NOTE: Initialize DebugService AFTER any external error monitoring tools (like Sentry)
+   * to ensure they are correctly chained.
+   */
   private patchConsoleError(): void {
+    if (DebugService.consolePatched) return;
+
+    const originalConsoleError = console.error;
     console.error = (...args: unknown[]): void => {
+      originalConsoleError.apply(console, args);
       this.handleConsoleError(args);
-      this.originalConsoleError(...args);
     };
+    DebugService.consolePatched = true;
   }
 
   private handleConsoleError(args: unknown[]): void {

@@ -7,7 +7,6 @@ import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
-import { container } from "../../../engine/services/di-container.js";
 import { injectable, inject } from "@needle-di/core";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
@@ -53,15 +52,15 @@ export class WebRTCPeerService implements WebRTCPeer {
     private token: string,
     webrtcDelegate: WebRTCServiceContract,
     connectionListener: PeerConnectionListener,
-    _matchSessionService: MatchSessionService = inject(MatchSessionService),
+    matchSessionService: MatchSessionService = inject(MatchSessionService),
     private gameServer: GameServer = inject(GameServer),
-    private timerManagerService = container.get(TimerManagerService),
+    private timerManagerService: TimerManagerService = inject(TimerManagerService),
     private gameState: GameState = inject(GameState)
   ) {
     this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;
 
-    this.host = _matchSessionService.getMatch()?.isHost() ?? false;
+    this.host = matchSessionService.getMatch()?.isHost() ?? false;
 
     this.peerConnection = new RTCPeerConnection({
       iceServers: this.gameServer?.getServerRegistration()?.getRTCIceServers(),

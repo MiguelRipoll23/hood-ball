@@ -199,11 +199,6 @@ export class WebRTCService implements WebRTCServiceContract {
 
     const player = this.gamePlayer;
 
-    if (player === null) {
-      DebugUtils.renderText(context, 24, 24, "No player found");
-      return;
-    }
-
     if (player.isHost()) {
       DebugUtils.renderText(context, 24, 48, "Host");
     } else {

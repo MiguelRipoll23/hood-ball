@@ -37,21 +37,21 @@ export class GameLoopService {
 
   constructor(
     private readonly canvas: HTMLCanvasElement = inject(HTMLCanvasElement),
-    private gameState: GameState = inject(GameState),
-    private sceneTransitionService: SceneTransitionService = inject(
+    private readonly gameState: GameState = inject(GameState),
+    private readonly sceneTransitionService: SceneTransitionService = inject(
       SceneTransitionService
     ),
-    private timerManagerService: TimerManagerService = inject(
+    private readonly timerManagerService: TimerManagerService = inject(
       TimerManagerService
     ),
-    private intervalManagerService: IntervalManagerService = inject(
+    private readonly intervalManagerService: IntervalManagerService = inject(
       IntervalManagerService
     ),
-    private eventConsumerService: EventConsumerService = inject(
+    private readonly eventConsumerService: EventConsumerService = inject(
       EventConsumerService
     ),
-    private recorderService: RecorderService = inject(RecorderService),
-    private debugService: DebugService = inject(DebugService)
+    private readonly recorderService: RecorderService = inject(RecorderService),
+    private readonly debugService: DebugService = inject(DebugService)
   ) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
