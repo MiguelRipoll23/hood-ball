@@ -26,14 +26,12 @@ export class ChatService {
 
   private readonly messages: ChatMessage[] = [];
   private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
-  private readonly webSocketService: WebSocketServiceContract;
-  private readonly webrtcService: WebRTCServiceContract;
   private readonly localPlayerId: string;
   private readonly commandLogTimestamps = new Map<string, number>();
 
   constructor(
-    webSocketService: WebSocketServiceContract = inject(WebSocketService),
-    webrtcService: WebRTCServiceContract = inject(WebRTCService),
+    private readonly webSocketService: WebSocketServiceContract = inject(WebSocketService),
+    private readonly webrtcService: WebRTCServiceContract = inject(WebRTCService),
     private readonly signatureService: SignatureService = inject(
       SignatureService
     ),
@@ -45,8 +43,6 @@ export class ChatService {
       MatchActionsLogService
     )
   ) {
-    this.webSocketService = webSocketService;
-    this.webrtcService = webrtcService;
     this.localPlayerId = this.gamePlayer.getNetworkId();
     this.webrtcService.registerCommandHandlers(this);
     this.webSocketService.registerCommandHandlers(this);

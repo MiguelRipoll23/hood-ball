@@ -89,22 +89,31 @@ export class WorldScene extends BaseCollidingGameScene {
 
   constructor(
     protected gameState: GameState,
-    eventConsumerService: EventConsumerService
+    eventConsumerService: EventConsumerService,
+    sceneTransitionService: SceneTransitionService,
+    timerManagerService: TimerManagerService,
+    matchmakingService: MatchmakingServiceContract,
+    matchmakingController: MatchmakingControllerService,
+    entityOrchestrator: EntityOrchestratorService,
+    eventProcessorService: EventProcessorService,
+    spawnPointService: SpawnPointService,
+    chatService: ChatService,
+    matchActionsLogService: MatchActionsLogService
   ) {
     super(gameState, eventConsumerService);
     this.gamePlayer = gameContext.get(GamePlayer);
     this.gameServer = gameContext.get(GameServer);
     this.matchSessionService = gameContext.get(MatchSessionService);
     this.gamePlayer.reset();
-    this.sceneTransitionService = container.get(SceneTransitionService);
-    this.timerManagerService = container.get(TimerManagerService);
-    this.matchmakingService = container.get(MatchmakingService);
-    this.matchmakingController = container.get(MatchmakingControllerService);
-    this.entityOrchestrator = container.get(EntityOrchestratorService);
-    this.eventProcessorService = container.get(EventProcessorService);
-    this.spawnPointService = container.get(SpawnPointService);
-    this.chatService = container.get(ChatService);
-    this.matchActionsLogService = container.get(MatchActionsLogService);
+    this.sceneTransitionService = sceneTransitionService;
+    this.timerManagerService = timerManagerService;
+    this.matchmakingService = matchmakingService;
+    this.matchmakingController = matchmakingController;
+    this.entityOrchestrator = entityOrchestrator;
+    this.eventProcessorService = eventProcessorService;
+    this.spawnPointService = spawnPointService;
+    this.chatService = chatService;
+    this.matchActionsLogService = matchActionsLogService;
     this.matchActionsLogService.clear();
     this.addSyncableEntities();
     this.subscribeToEvents();
