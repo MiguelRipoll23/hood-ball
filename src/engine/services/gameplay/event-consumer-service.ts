@@ -15,12 +15,12 @@ export class EventConsumerService {
   private remoteSubscriptions: EventSubscription[] = [];
 
   constructor(
-    private readonly eventProcessorService: EventProcessorService = inject(
+    eventProcessorService: EventProcessorService = inject(
       EventProcessorService
     )
   ) {
-    this.localQueue = this.eventProcessorService.getLocalQueue();
-    this.remoteQueue = this.eventProcessorService.getRemoteQueue();
+    this.localQueue = eventProcessorService.getLocalQueue();
+    this.remoteQueue = eventProcessorService.getRemoteQueue();
   }
 
   public subscribeToLocalEvent<T>(
