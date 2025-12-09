@@ -9,7 +9,7 @@ export enum PlaybackState {
 }
 
 @injectable()
-export class PlayerService {
+export class MediaPlayerService {
   private recordingData: RecordingData | null = null;
   private currentFrameIndex = 0;
   private playbackState: PlaybackState = PlaybackState.Stopped;
@@ -17,7 +17,7 @@ export class PlayerService {
   private lastFrameTime = 0;
 
   constructor() {
-    console.log("PlayerService initialized");
+    console.log("MediaPlayerService initialized");
   }
 
   public async loadRecording(file: File): Promise<void> {
