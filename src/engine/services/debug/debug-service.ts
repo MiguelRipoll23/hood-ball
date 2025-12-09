@@ -74,10 +74,11 @@ export class DebugService {
   }
 
   private clearCanvas(): void {
-    this.context?.clearColor(0, 0, 0, 0);
-    this.context?.clear(
-      this.context.COLOR_BUFFER_BIT | this.context.DEPTH_BUFFER_BIT
-    );
+    if (!this.context) return;
+    const ctx = this.context;
+    ctx.clearColor(0, 0, 0, 0);
+    ctx.clearDepth(1.0);
+    ctx.clear(ctx.COLOR_BUFFER_BIT | ctx.DEPTH_BUFFER_BIT);
   }
 
   private addEventListeners(): void {

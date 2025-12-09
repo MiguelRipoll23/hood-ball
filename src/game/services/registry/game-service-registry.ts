@@ -22,9 +22,12 @@ import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameLifecycleService } from "../lifecycle/game-lifecycle-service.js";
 import { CryptoService } from "../security/crypto-service.js";
+import { GameConfig } from "../../../engine/models/game-config.js";
+import { GAME_VERSION } from "../../constants/game-constants.js";
 
 export class GameServiceRegistry {
   public static register(): void {
+    container.bind({ provide: GameConfig, useValue: { version: GAME_VERSION } });
     container.bind(GamePlayer);
     container.bind(GameServer);
     container.bind(MatchSessionService);

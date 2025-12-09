@@ -4,7 +4,6 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
 } from "../../constants/canvas-constants.js";
-import { GAME_VERSION } from "../../../game/constants/game-constants.js";
 import { DebugUtils } from "../../utils/debug-utils.js";
 import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { EventConsumerService } from "./event-consumer-service.js";
@@ -17,6 +16,7 @@ import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.
 import { RecorderService } from "./recorder-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { DebugService } from "../debug/debug-service.js";
+import { GameConfig } from "../../models/game-config.js";
 
 @injectable()
 export class GameLoopService {
@@ -51,7 +51,8 @@ export class GameLoopService {
       EventConsumerService
     ),
     private readonly recorderService: RecorderService = inject(RecorderService),
-    private readonly debugService: DebugService = inject(DebugService)
+    private readonly debugService: DebugService = inject(DebugService),
+    private readonly gameConfig: GameConfig = inject(GameConfig)
   ) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -226,7 +227,7 @@ export class GameLoopService {
       this.context,
       this.canvas.width - 24,
       this.canvas.height - 24,
-      `v${GAME_VERSION}`,
+      `v${this.gameConfig.version}`,
       true,
       true
     );
