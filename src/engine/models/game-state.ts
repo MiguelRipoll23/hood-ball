@@ -1,8 +1,8 @@
-import { GameFrame } from "./game-frame.ts";
-import { GamePointer } from "./game-pointer.ts";
-import { DebugSettings } from "./debug-settings.ts";
-import { GameKeyboard } from "./game-keyboard.ts";
-import { GameGamepad } from "./game-gamepad.ts";
+import { GameFrame } from "./game-frame.js";
+import { GamePointer } from "./game-pointer.js";
+import { DebugSettings } from "./debug-settings.js";
+import { GameKeyboard } from "./game-keyboard.js";
+import { GameGamepad } from "./game-gamepad.js";
 
 export class GameState {
   private debugSettings: DebugSettings;

@@ -1,4 +1,4 @@
-import { DebugUtils } from "./debug-utils.ts";
+import { DebugUtils } from "./debug-utils.js";
 
 export class BinaryReader {
   private readonly buffer: ArrayBuffer;

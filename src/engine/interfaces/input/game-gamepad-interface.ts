@@ -1,4 +1,4 @@
-import type { GamepadButton } from "../../enums/gamepad-button.ts";
+import type { GamepadButton } from "../../enums/gamepad-button.js";
 
 export interface GameGamepadContract {
   get(): Gamepad | null;

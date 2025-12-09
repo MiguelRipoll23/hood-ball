@@ -1,14 +1,14 @@
-import { EntityType } from "../enums/entity-type.ts";
+import { EntityType } from "../enums/entity-type.js";
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
-} from "../interfaces/entities/multiplayer-game-entity-interface.ts";
-import { BaseGameScene } from "./base-game-scene.ts";
-import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene-interface.ts";
-import { SceneType } from "../enums/scene-type.ts";
-import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.ts";
+} from "../interfaces/entities/multiplayer-game-entity-interface.js";
+import { BaseGameScene } from "./base-game-scene.js";
+import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene-interface.js";
+import { SceneType } from "../enums/scene-type.js";
+import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
 
-import type { Player } from "../interfaces/models/player-interface.ts";
+import type { Player } from "../interfaces/models/player-interface.js";
 
 export class BaseMultiplayerScene
   extends BaseGameScene

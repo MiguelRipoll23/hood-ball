@@ -1,5 +1,5 @@
 import "./main.css";
-import { Game } from "./game.ts";
+import { Game } from "./game.js";
 
 const canvas = document.querySelector("#game") as HTMLCanvasElement;
 

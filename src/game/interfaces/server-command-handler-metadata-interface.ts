@@ -1,4 +1,4 @@
-import type { WebSocketType } from "../enums/websocket-type.ts";
+import type { WebSocketType } from "../enums/websocket-type.js";
 
 export interface ServerCommandHandlerMetadata {
   commandId: WebSocketType;

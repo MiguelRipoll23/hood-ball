@@ -1,5 +1,5 @@
-import type { ConfigurationType } from "../types/configuration-type.ts";
-import { ServerRegistration } from "./server-registration.ts";
+import type { ConfigurationType } from "../types/configuration-type.js";
+import { ServerRegistration } from "./server-registration.js";
 
 export class GameServer {
   private serverRegistration: ServerRegistration | null = null;

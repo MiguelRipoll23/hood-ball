@@ -1,8 +1,8 @@
 import type {
   GamePointerContract,
   PointerType,
-} from "../interfaces/input/game-pointer-interface.ts";
-import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point-interface.ts";
+} from "../interfaces/input/game-pointer-interface.js";
+import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point-interface.js";
 
 export class GamePointer implements GamePointerContract {
   private touches: Map<number, GamePointerTouchPoint> = new Map();

@@ -1,6 +1,6 @@
 export type PointerType = "mouse" | "touch" | "pen";
 
-import type { GamePointerTouchPoint } from "./game-pointer-touch-point-interface.ts";
+import type { GamePointerTouchPoint } from "./game-pointer-touch-point-interface.js";
 
 export interface GamePointerContract {
   /** Primary pointer X coordinate */

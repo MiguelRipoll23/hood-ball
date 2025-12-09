@@ -1,4 +1,4 @@
-import { BaseMoveableGameEntity } from "./base-moveable-game-entity.ts";
+import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
 
 const LIGHT_GREEN_COLOR = "#90EE90";
 

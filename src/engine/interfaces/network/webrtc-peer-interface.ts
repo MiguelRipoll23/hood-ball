@@ -1,4 +1,4 @@
-import type { Player } from "../models/player-interface.ts";
+import type { Player } from "../models/player-interface.js";
 
 export interface WebRTCPeer {
   getConnectionState(): RTCPeerConnectionState;

@@ -1,10 +1,10 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../engine/debug/base-window.ts";
-import { MatchStateType } from "../enums/match-state-type.ts";
-import type { GamePlayer } from "../models/game-player.ts";
-import { getPingTextColor } from "../utils/ping-utils.ts";
-import { gameContext } from "../context/game-context.ts";
-import { MatchSessionService } from "../services/session/match-session-service.ts";
+import { BaseWindow } from "../../engine/debug/base-window.js";
+import { MatchStateType } from "../enums/match-state-type.js";
+import type { GamePlayer } from "../models/game-player.js";
+import { getPingTextColor } from "../utils/ping-utils.js";
+import { gameContext } from "../context/game-context.js";
+import { MatchSessionService } from "../services/session/match-session-service.js";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;

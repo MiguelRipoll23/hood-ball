@@ -1,5 +1,5 @@
-import type { EventType } from "../enums/event-type.ts";
-import type { GameEvent } from "../interfaces/models/game-event-interface.ts";
+import type { EventType } from "../enums/event-type.js";
+import type { GameEvent } from "../interfaces/models/game-event-interface.js";
 
 export class BaseEvent<T> implements GameEvent {
   private type: EventType;

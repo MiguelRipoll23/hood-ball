@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "./base-animated-entity.ts";
+import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
 
 export class NotificationEntity extends BaseAnimatedGameEntity {
   private readonly HEIGHT = 35;

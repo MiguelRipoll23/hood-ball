@@ -1,6 +1,6 @@
-import type { WebRTCPeer } from "../interfaces/network/webrtc-peer-interface.ts";
-import type { BinaryReader } from "../utils/binary-reader-utils.ts";
-import type { WebRTCType } from "../enums/webrtc-type.ts";
+import type { WebRTCPeer } from "../interfaces/network/webrtc-peer-interface.js";
+import type { BinaryReader } from "../utils/binary-reader-utils.js";
+import type { WebRTCType } from "../enums/webrtc-type.js";
 
 export interface WebRTCServiceContract {
   registerCommandHandlers(instance: object): void;

@@ -1,5 +1,5 @@
-import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.ts";
-import { BaseAnimatedGameEntity } from "./base-animated-entity.ts";
+import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.js";
+import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
 
 export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
   protected width = 0;

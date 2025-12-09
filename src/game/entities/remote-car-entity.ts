@@ -1,14 +1,14 @@
-import { EntityType } from "../../engine/enums/entity-type.ts";
-import { CarEntity } from "./car-entity.ts";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.ts";
+import { EntityType } from "../../engine/enums/entity-type.js";
+import { CarEntity } from "./car-entity.js";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import {
   SCALE_FACTOR_FOR_ANGLES,
   SCALE_FACTOR_FOR_SPEED,
   SCALE_FACTOR_FOR_COORDINATES,
-} from "../constants/webrtc-constants.ts";
-import { BinaryReader } from "../../engine/utils/binary-reader-utils.ts";
-import { MathUtils } from "../../engine/utils/math-utils.ts";
-import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.ts";
+} from "../constants/webrtc-constants.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
+import { MathUtils } from "../../engine/utils/math-utils.js";
+import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 
 export class RemoteCarEntity extends CarEntity {
   private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport

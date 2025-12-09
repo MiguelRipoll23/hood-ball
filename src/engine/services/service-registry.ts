@@ -1,15 +1,15 @@
-import { GameState } from "../models/game-state.ts";
-import { container } from "./di-container.ts";
-import { EventProcessorService } from "./gameplay/event-processor-service.ts";
-import { EventConsumerService } from "./gameplay/event-consumer-service.ts";
-import { CameraService } from "./gameplay/camera-service.ts";
-import { AnimationLogService } from "./gameplay/animation-log-service.ts";
-import { RecorderService } from "./gameplay/recorder-service.ts";
-import { PlayerService } from "./gameplay/player-service.ts";
-import { DebugService } from "./debug/debug-service.ts";
-import { SceneTransitionService } from "./gameplay/scene-transition-service.ts";
-import { TimerManagerService } from "./gameplay/timer-manager-service.ts";
-import { IntervalManagerService } from "./gameplay/interval-manager-service.ts";
+import { GameState } from "../models/game-state.js";
+import { container } from "./di-container.js";
+import { EventProcessorService } from "./gameplay/event-processor-service.js";
+import { EventConsumerService } from "./gameplay/event-consumer-service.js";
+import { CameraService } from "./gameplay/camera-service.js";
+import { AnimationLogService } from "./gameplay/animation-log-service.js";
+import { RecorderService } from "./gameplay/recorder-service.js";
+import { PlayerService } from "./gameplay/player-service.js";
+import { DebugService } from "./debug/debug-service.js";
+import { SceneTransitionService } from "./gameplay/scene-transition-service.js";
+import { TimerManagerService } from "./gameplay/timer-manager-service.js";
+import { IntervalManagerService } from "./gameplay/interval-manager-service.js";
 
 export class ServiceRegistry {
   public static register(canvas: HTMLCanvasElement, debugging: boolean): void {

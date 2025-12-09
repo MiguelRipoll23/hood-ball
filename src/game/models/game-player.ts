@@ -1,5 +1,5 @@
-import { UUIDUtils } from "../utils/uuid-utils.ts";
-import type { Player } from "../../engine/interfaces/models/player-interface.ts";
+import { UUIDUtils } from "../utils/uuid-utils.js";
+import type { Player } from "../../engine/interfaces/models/player-interface.js";
 
 export class GamePlayer implements Player {
   private id: string;
