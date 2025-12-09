@@ -17,7 +17,7 @@ import { SceneType } from "../../../engine/enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
-import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
+import type { MatchmakingControllerContract } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
@@ -55,7 +55,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly spawnPointService: SpawnPointService;
   private readonly timerManagerService: TimerManagerService;
   private readonly matchmakingService: MatchmakingServiceContract;
-  private readonly matchmakingController: MatchmakingControllerService;
+  private readonly matchmakingController: MatchmakingControllerContract;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
   private readonly chatService: ChatService;
@@ -92,7 +92,7 @@ export class WorldScene extends BaseCollidingGameScene {
     sceneTransitionService: SceneTransitionService,
     timerManagerService: TimerManagerService,
     matchmakingService: MatchmakingServiceContract,
-    matchmakingController: MatchmakingControllerService,
+    matchmakingController: MatchmakingControllerContract,
     entityOrchestrator: EntityOrchestratorService,
     eventProcessorService: EventProcessorService,
     spawnPointService: SpawnPointService,

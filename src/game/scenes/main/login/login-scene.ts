@@ -14,6 +14,7 @@ import { GameServer } from "../../../models/game-server.js";
 import { gameContext } from "../../../context/game-context.js";
 import { LoginController } from "./login-controller.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
+import type { SceneManagerServiceContract } from "../../../../engine/interfaces/services/scene/scene-manager-service-contract.js";
 
 export class LoginScene extends BaseGameScene {
   private controller: LoginController;
@@ -237,8 +238,12 @@ export class LoginScene extends BaseGameScene {
     );
     mainMenuScene.load();
 
-    this.sceneManagerService
+    (this.sceneManagerService as SceneManagerServiceContract)
       ?.getTransitionService()
-      .crossfade(this.sceneManagerService, mainMenuScene, 0.2);
+      .crossfade(
+        this.sceneManagerService as SceneManagerServiceContract,
+        mainMenuScene,
+        0.2
+      );
   }
 }

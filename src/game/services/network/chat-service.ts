@@ -17,7 +17,7 @@ import { EventType } from "../../../engine/enums/event-type.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
-import type { WebRTCServiceContract } from "../../../engine/contracts/webrtc-service-contract.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 
 @injectable()
 export class ChatService {
@@ -48,7 +48,7 @@ export class ChatService {
     )
   ) {
     this.localPlayerId = this.gamePlayer.getNetworkId();
-    this.webrtcService.registerCommandHandlers(this);
+    this.webrtcService.registerCommandHandlers?.(this);
     this.webSocketService.registerCommandHandlers(this);
   }
 

@@ -4,7 +4,7 @@ import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js
 import type { GameEntity } from "../models/game-entity.js";
 import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
 import type { SceneManager } from "../interfaces/scenes/scene-manager-interface.js";
-import type { SceneManagerServiceContract } from "../contracts/scene-manager-service-contract.js";
+import type { SceneManagerServiceContract } from "../interfaces/services/scene/scene-manager-service-contract.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
@@ -19,7 +19,7 @@ export class BaseGameScene implements GameScene {
   private remoteEventSubscriptions: EventSubscription[] = [];
 
   protected canvas: HTMLCanvasElement;
-  protected sceneManagerService: SceneManagerServiceContract | null = null;
+  protected sceneManagerService: SceneManager | null = null;
 
   protected loaded: boolean = false;
   protected opacity: number = 0;
@@ -76,9 +76,7 @@ export class BaseGameScene implements GameScene {
     return this.sceneManagerService;
   }
 
-  public setSceneManagerService(
-    sceneManagerService: SceneManagerServiceContract
-  ): void {
+  public setSceneManagerService(sceneManagerService: SceneManager): void {
     this.sceneManagerService = sceneManagerService;
   }
 
@@ -284,10 +282,10 @@ export class BaseGameScene implements GameScene {
 
     console.log("Returning to", previousScene.constructor.name);
 
-    this.sceneManagerService
+    (this.sceneManagerService as SceneManagerServiceContract)
       ?.getTransitionService()
       .crossfade(
-        this.sceneManagerService,
+        this.sceneManagerService as SceneManagerServiceContract,
         previousScene,
         crossfadeDurationSeconds
       );

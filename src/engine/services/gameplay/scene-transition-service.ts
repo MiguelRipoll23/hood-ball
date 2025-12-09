@@ -1,7 +1,7 @@
 import { injectable } from "@needle-di/core";
 import type { SceneManager } from "../../interfaces/scenes/scene-manager-interface.js";
 import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js";
-import type { SceneTransitionServiceContract } from "../../contracts/scene-transition-service-contract.js";
+import type { SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
 
 @injectable()
 export class SceneTransitionService implements SceneTransitionServiceContract {

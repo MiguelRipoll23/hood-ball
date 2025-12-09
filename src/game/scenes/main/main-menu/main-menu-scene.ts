@@ -21,6 +21,7 @@ import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
+import type { SceneManagerServiceContract } from "../../../../engine/interfaces/services/scene/scene-manager-service-contract.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -263,9 +264,13 @@ export class MainMenuScene extends BaseGameScene {
     );
     loadingScene.load();
 
-    this.sceneManagerService
+    (this.sceneManagerService as SceneManagerServiceContract)
       ?.getTransitionService()
-      .crossfade(this.sceneManagerService, loadingScene, 0.2);
+      .crossfade(
+        this.sceneManagerService as SceneManagerServiceContract,
+        loadingScene,
+        0.2
+      );
   }
 
   private transitionToScoreboardScene(): void {
@@ -277,9 +282,13 @@ export class MainMenuScene extends BaseGameScene {
     );
     scoreboardScene.load();
 
-    this.sceneManagerService
+    (this.sceneManagerService as SceneManagerServiceContract)
       ?.getTransitionService()
-      .crossfade(this.sceneManagerService, scoreboardScene, 0.2);
+      .crossfade(
+        this.sceneManagerService as SceneManagerServiceContract,
+        scoreboardScene,
+        0.2
+      );
   }
 
   private transitionToSettingsScene(): void {
@@ -291,9 +300,13 @@ export class MainMenuScene extends BaseGameScene {
     );
     settingsScene.load();
 
-    this.sceneManagerService
+    (this.sceneManagerService as SceneManagerServiceContract)
       ?.getTransitionService()
-      .crossfade(this.sceneManagerService, settingsScene, 0.2);
+      .crossfade(
+        this.sceneManagerService as SceneManagerServiceContract,
+        settingsScene,
+        0.2
+      );
   }
 
   private updateMenuButtonsConnectionState(): void {

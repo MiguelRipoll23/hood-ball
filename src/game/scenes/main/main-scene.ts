@@ -3,7 +3,7 @@ import { MainBackgroundEntity } from "../../entities/backgrounds/main-background
 import type { GameScene } from "../../../engine/interfaces/scenes/game-scene-interface.js";
 import type { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
-import type { SceneManagerServiceContract } from "../../../engine/contracts/scene-manager-service-contract.js";
+import type { SceneManagerServiceContract } from "../../../engine/interfaces/services/scene/scene-manager-service-contract.js";
 
 export class MainScene extends BaseGameScene {
   private scene: GameScene | null = null;
@@ -23,7 +23,9 @@ export class MainScene extends BaseGameScene {
   public activateScene(scene: GameScene): void {
     this.scene = scene;
     this.scene?.setOpacity(1);
-    this.sceneManagerService?.setInitialScene(scene);
+    (this.sceneManagerService as SceneManagerServiceContract)?.setInitialScene(
+      scene
+    );
   }
 
   public override load(): void {
