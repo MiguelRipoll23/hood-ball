@@ -37,7 +37,9 @@ export class WebSocketService implements WebSocketServiceContract {
   constructor(
     private readonly gameServer: GameServer = inject(GameServer),
     private readonly gameState: GameState = inject(GameState),
-    private readonly eventProcessorService: EventProcessorServiceContract = inject(EventProcessorService)
+    private readonly eventProcessorService: EventProcessorServiceContract = inject(
+      EventProcessorService
+    )
   ) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.dispatcherService = new WebSocketDispatcherService();

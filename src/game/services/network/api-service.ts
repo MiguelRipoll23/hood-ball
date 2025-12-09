@@ -37,7 +37,9 @@ export class APIService {
 
   constructor(
     private readonly cryptoService: CryptoService = inject(CryptoService),
-    private readonly loadingIndicatorService: LoadingIndicatorService = inject(LoadingIndicatorService)
+    private readonly loadingIndicatorService: LoadingIndicatorService = inject(
+      LoadingIndicatorService
+    )
   ) {
     this.baseURL = APIUtils.getBaseURL();
   }

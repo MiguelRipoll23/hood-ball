@@ -41,7 +41,9 @@ export class WebRTCService implements WebRTCServiceContract {
       TimerManagerService
     ),
     private readonly gameState: GameState = inject(GameState),
-    private readonly webSocketService: WebSocketServiceContract = inject(WebSocketService)
+    private readonly webSocketService: WebSocketServiceContract = inject(
+      WebSocketService
+    )
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);

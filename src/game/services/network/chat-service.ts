@@ -32,9 +32,7 @@ export class ChatService {
   private readonly commandLogTimestamps = new Map<string, number>();
 
   constructor(
-    webSocketService: WebSocketServiceContract = inject(
-      WebSocketService
-    ),
+    webSocketService: WebSocketServiceContract = inject(WebSocketService),
     webrtcService: WebRTCServiceContract = inject(WebRTCService),
     private readonly signatureService: SignatureService = inject(
       SignatureService
