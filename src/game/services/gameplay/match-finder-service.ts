@@ -1,9 +1,9 @@
 import type {
   FindMatchesResponse,
   MatchData,
-} from "../../interfaces/responses/find-matches-response.js";
-import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
-import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
+} from "../../interfaces/responses/find-matches-response-interface.js";
+import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request-interface.js";
+import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request-interface.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { MatchSession } from "../../models/match-session.js";
 import { MatchStateType } from "../../enums/match-state-type.js";

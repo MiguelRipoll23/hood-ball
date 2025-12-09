@@ -5,7 +5,7 @@ import {
   CANVAS_WIDTH,
 } from "../../constants/canvas-constants.js";
 import { DebugUtils } from "../../utils/debug-utils.js";
-import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { DebugEntity } from "../../entities/debug-entity.js";
 import { GameState } from "../../models/game-state.js";

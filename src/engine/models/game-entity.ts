@@ -1,5 +1,5 @@
-import { EntityStateType } from "../enums/entity-state-type.js";
-import type { DebugSettings } from "./debug-settings.js";
+import { EntityStateType } from "../enums/entity-state-type.ts";
+import type { DebugSettings } from "./debug-settings.ts";
 
 export interface GameEntity {
   load(): void;

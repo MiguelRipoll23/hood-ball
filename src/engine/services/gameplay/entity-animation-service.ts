@@ -1,7 +1,7 @@
-import { AnimationType } from "../../enums/animation-type.js";
-import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity.js";
-import { AnimationLogService } from "./animation-log-service.js";
-import { container } from "../di-container.js";
+import { AnimationType } from "../../enums/animation-type.ts";
+import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.ts";
+import { AnimationLogService } from "./animation-log-service.ts";
+import { container } from "../di-container.ts";
 
 export class EntityAnimationService {
   private readonly entity: AnimatableEntity;

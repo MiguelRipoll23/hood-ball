@@ -1,4 +1,4 @@
-import type { MatchAttributes } from "../services/matchmaking/match-attributes.js";
+import type { MatchAttributes } from "../match-attributes-interface.js";
 
 export interface FindMatchesRequest {
   clientVersion: string;

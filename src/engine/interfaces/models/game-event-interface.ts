@@ -1,4 +1,4 @@
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../enums/event-type.ts";
 
 export interface GameEvent {
   getType(): EventType;

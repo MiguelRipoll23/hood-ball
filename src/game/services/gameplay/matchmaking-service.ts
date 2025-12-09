@@ -5,8 +5,8 @@ import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
-import type { MatchmakingNetworkServiceContract } from "../../contracts/matchmaking-network-service-contract.js";
-import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
+import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
+import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MatchLifecycleService } from "./match-lifecycle-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 

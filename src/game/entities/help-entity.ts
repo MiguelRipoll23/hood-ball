@@ -1,5 +1,5 @@
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
-import { TimerService } from "../../engine/services/gameplay/timer-service.js";
+import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.ts";
+import { TimerService } from "../../engine/services/gameplay/timer-service.ts";
 
 export class HelpEntity extends BaseAnimatedGameEntity {
   private readonly paddingX = 20;

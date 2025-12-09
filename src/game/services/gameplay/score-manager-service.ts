@@ -13,12 +13,12 @@ import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 
 import { BallEntity } from "../../entities/ball-entity.js";
 import { GoalEntity } from "../../entities/goal-entity.js";
-import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui.js";
+import type { ScoreboardUI } from "../../interfaces/ui/scoreboard-ui-interface.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
+import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MatchActionsLogService } from "./match-actions-log-service.js";
 
 export class ScoreManagerService {

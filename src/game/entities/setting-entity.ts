@@ -1,5 +1,5 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
-import { ToggleEntity } from "./common/toggle-button.js";
+import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.ts";
+import { ToggleEntity } from "./common/toggle-button.ts";
 
 export class SettingEntity extends BaseTappableGameEntity {
   private toggleEntity: ToggleEntity | null = null;

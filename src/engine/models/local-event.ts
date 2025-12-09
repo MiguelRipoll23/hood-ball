@@ -1,6 +1,6 @@
-import type { GameEvent } from "../interfaces/models/game-event.js";
-import { EventType } from "../enums/event-type.js";
-import { BaseEvent } from "./base-event.js";
+import type { GameEvent } from "../interfaces/models/game-event-interface.ts";
+import { EventType } from "../enums/event-type.ts";
+import { BaseEvent } from "./base-event.ts";
 
 export class LocalEvent<T = unknown> extends BaseEvent<T> implements GameEvent {
   constructor(id: EventType) {

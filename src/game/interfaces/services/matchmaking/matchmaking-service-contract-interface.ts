@@ -1,4 +1,4 @@
-import type { MatchmakingNetworkServiceContract } from "./matchmaking-network-service-contract.js";
+import type { MatchmakingNetworkServiceContract } from "./matchmaking-network-service-contract-interface.js";
 
 export interface MatchmakingServiceContract {
   getNetworkService(): MatchmakingNetworkServiceContract;

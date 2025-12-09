@@ -1,3 +1,3 @@
-export interface IMatchmakingControllerService {
+export interface MatchmakingControllerContract {
   startMatchmaking(): Promise<void>;
 }

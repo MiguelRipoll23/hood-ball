@@ -1,5 +1,5 @@
-import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseStaticCollidingGameEntity } from "../../engine/entities/base-static-colliding-game-entity.js";
+import { HitboxEntity } from "../../engine/entities/hitbox-entity.ts";
+import { BaseStaticCollidingGameEntity } from "../../engine/entities/base-static-colliding-game-entity.ts";
 
 export class GoalEntity extends BaseStaticCollidingGameEntity {
   private readonly WIDTH: number = 100; // Width of the goal

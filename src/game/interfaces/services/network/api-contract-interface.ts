@@ -1,18 +1,18 @@
-import type { AdvertiseMatchRequest } from "../../requests/advertise-match-request.js";
-import type { FindMatchesRequest } from "../../requests/find-matches-request.js";
-import type { SaveUserScoresRequest } from "../../requests/save-score-request.js";
-import type { RegistrationOptionsRequest } from "../../requests/registration-options-request.js";
-import type { VerifyRegistrationRequest } from "../../requests/verify-registration-request.js";
-import type { AuthenticationOptionsRequest } from "../../requests/authentication-options.js";
-import type { VerifyAuthenticationRequest } from "../../requests/verify-authentication-request.js";
-import type { RegistrationOptionsResponse } from "../../responses/registration-options-response.js";
-import type { AuthenticationOptionsResponse } from "../../responses/authentication-options-response.js";
-import type { AuthenticationResponse } from "../../responses/authentication-response.js";
-import type { FindMatchesResponse } from "../../responses/find-matches-response.js";
-import type { ServerMessagesResponse } from "../../responses/server-messages-response.js";
-import type { UserScoresResponse } from "../../responses/user-scores-response.js";
+import type { AdvertiseMatchRequest } from "../../requests/advertise-match-request-interface.js";
+import type { FindMatchesRequest } from "../../requests/find-matches-request-interface.js";
+import type { SaveUserScoresRequest } from "../../requests/save-score-request-interface.js";
+import type { RegistrationOptionsRequest } from "../../requests/registration-options-request-interface.js";
+import type { VerifyRegistrationRequest } from "../../requests/verify-registration-request-interface.js";
+import type { AuthenticationOptionsRequest } from "../../requests/authentication-options-interface.js";
+import type { VerifyAuthenticationRequest } from "../../requests/verify-authentication-request-interface.js";
+import type { RegistrationOptionsResponse } from "../../responses/registration-options-response-interface.js";
+import type { AuthenticationOptionsResponse } from "../../responses/authentication-options-response-interface.js";
+import type { AuthenticationResponse } from "../../responses/authentication-response-interface.js";
+import type { FindMatchesResponse } from "../../responses/find-matches-response-interface.js";
+import type { ServerMessagesResponse } from "../../responses/server-messages-response-interface.js";
+import type { UserScoresResponse } from "../../responses/user-scores-response-interface.js";
 
-export interface IAPIService {
+export interface APIServiceContract {
   setAuthenticationToken(authenticationToken: string): void;
   checkForUpdates(): Promise<boolean>;
   getRegistrationOptions(

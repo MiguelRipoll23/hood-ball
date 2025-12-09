@@ -1,5 +1,5 @@
-import { GameServer } from "../models/game-server.js";
-import type { ConfigurationType } from "../types/configuration-type.js";
+import { GameServer } from "../models/game-server.ts";
+import type { ConfigurationType } from "../types/configuration-type.ts";
 
 export function getConfigurationKey<T>(
   key: string,

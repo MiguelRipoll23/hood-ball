@@ -1,7 +1,7 @@
 import type {
   UserScoresResponse,
   UserScore,
-} from "../../../interfaces/responses/user-scores-response.js";
+} from "../../../interfaces/responses/user-scores-response-interface.js";
 import { APIService } from "../../../services/network/api-service.js";
 
 export class ScoreboardController {

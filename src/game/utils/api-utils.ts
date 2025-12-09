@@ -2,9 +2,9 @@ import {
   API_HOST as API_HOST,
   API_PATH,
   API_VERSION,
-} from "../constants/api-constants.js";
-import type { ErrorResponse } from "../interfaces/responses/error-response.js";
-import { ServerError } from "../models/server-error.js";
+} from "../constants/api-constants.ts";
+import type { ErrorResponse } from "../interfaces/responses/error-response-interface.ts";
+import { ServerError } from "../models/server-error.ts";
 
 export class APIUtils {
   public static getBaseURL(): string {

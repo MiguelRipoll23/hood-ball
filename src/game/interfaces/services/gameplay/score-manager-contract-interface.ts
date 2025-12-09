@@ -1,4 +1,4 @@
-export interface IScoreManagerService {
+export interface ScoreManagerServiceContract {
   updateScoreboard(): void;
   detectScoresIfHost(): void;
   handleRemoteGoal(arrayBuffer: ArrayBuffer | null): void;

@@ -1,7 +1,7 @@
 import { ImGui, ImGuiImplWeb, ImVec2 } from "@mori2003/jsimgui";
-import { GameState } from "../../models/game-state.js";
+import { GameState } from "../../models/game-state.ts";
 import { injectable, inject } from "@needle-di/core";
-import { BaseWindow } from "../../debug/base-window.js";
+import { BaseWindow } from "../../debug/base-window.ts";
 
 @injectable()
 export class DebugService {
@@ -69,8 +69,8 @@ export class DebugService {
   }
 
   private setCanvasSize(): void {
-    this.debugCanvas.width = window.innerWidth;
-    this.debugCanvas.height = window.innerHeight;
+    this.debugCanvas.width = globalThis.innerWidth;
+    this.debugCanvas.height = globalThis.innerHeight;
   }
 
   private clearCanvas(): void {
@@ -82,7 +82,7 @@ export class DebugService {
   }
 
   private addEventListeners(): void {
-    window.addEventListener("resize", this.setCanvasSize.bind(this));
+    globalThis.addEventListener("resize", this.setCanvasSize.bind(this));
     this.preloadCommonEvents();
     this.patchCanvasAddEventListener();
   }

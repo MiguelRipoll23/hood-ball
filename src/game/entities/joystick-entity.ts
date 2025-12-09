@@ -1,5 +1,5 @@
-import { GamePointer } from "../../engine/models/game-pointer.js";
-import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.ts";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.ts";
 
 export class JoystickEntity extends BaseGameEntity {
   private readonly RADIUS: number = 40;
@@ -12,7 +12,7 @@ export class JoystickEntity extends BaseGameEntity {
   private angle: number = 0;
   private magnitude: number = 1;
 
-  constructor(private readonly gamePointer: GamePointer) {
+  constructor(private readonly gamePointer: GamePointerContract) {
     super();
   }
 

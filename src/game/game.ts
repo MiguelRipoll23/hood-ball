@@ -1,15 +1,15 @@
-import { container } from "../engine/services/di-container.js";
-import { GameLoopService } from "../engine/services/gameplay/game-loop-service.js";
-import { ServiceRegistry } from "../engine/services/service-registry.js";
-import { GameServiceRegistry } from "./services/registry/game-service-registry.js";
-import { GameLifecycleService } from "./services/lifecycle/game-lifecycle-service.js";
-import { GameState } from "../engine/models/game-state.js";
-import { EventConsumerService } from "../engine/services/gameplay/event-consumer-service.js";
-import { DebugService } from "../engine/services/debug/debug-service.js";
-import { DebugWindow } from "./debug/debug-window.js";
-import { MainScene } from "./scenes/main/main-scene.js";
-import { LoginScene } from "./scenes/main/login/login-scene.js";
-import { SceneManagerService } from "../engine/services/gameplay/scene-manager-service.js";
+import { container } from "../engine/services/di-container.ts";
+import { GameLoopService } from "../engine/services/gameplay/game-loop-service.ts";
+import { ServiceRegistry } from "../engine/services/service-registry.ts";
+import { GameServiceRegistry } from "./services/registry/game-service-registry.ts";
+import { GameLifecycleService } from "./services/lifecycle/game-lifecycle-service.ts";
+import { GameState } from "../engine/models/game-state.ts";
+import { EventConsumerService } from "../engine/services/gameplay/event-consumer-service.ts";
+import { DebugService } from "../engine/services/debug/debug-service.ts";
+import { DebugWindow } from "./debug/debug-window.ts";
+import { MainScene } from "./scenes/main/main-scene.ts";
+import { LoginScene } from "./scenes/main/login/login-scene.ts";
+import { SceneManagerService } from "../engine/services/gameplay/scene-manager-service.ts";
 
 export class Game {
   constructor(private canvas: HTMLCanvasElement) {}
@@ -22,7 +22,7 @@ export class Game {
   }
 
   private initializeServices(): void {
-    const debug = window.location.search.includes("debug");
+    const debug = globalThis.location.search.includes("debug");
     ServiceRegistry.register(this.canvas, debug);
     GameServiceRegistry.register();
   }

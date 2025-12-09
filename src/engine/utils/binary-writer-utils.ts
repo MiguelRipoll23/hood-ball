@@ -1,4 +1,4 @@
-import { DebugUtils } from "./debug-utils.js";
+import { DebugUtils } from "./debug-utils.ts";
 
 export class BinaryWriter {
   private buffer: ArrayBuffer;

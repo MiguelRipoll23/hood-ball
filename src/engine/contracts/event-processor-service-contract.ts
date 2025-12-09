@@ -1,9 +1,9 @@
-import type { EventQueueServiceContract } from "./event-queue-service-contract.js";
-import type { LocalEvent } from "../models/local-event.js";
-import type { RemoteEvent } from "../models/remote-event.js";
-import type { WebRTCServiceContract } from "./webrtc-service-contract.js";
-import type { BinaryReader } from "../utils/binary-reader-utils.js";
-import type { WebRTCPeer } from "../interfaces/network/webrtc-peer.js";
+import type { EventQueueServiceContract } from "./event-queue-service-contract.ts";
+import type { LocalEvent } from "../models/local-event.ts";
+import type { RemoteEvent } from "../models/remote-event.ts";
+import type { WebRTCServiceContract } from "./webrtc-service-contract.ts";
+import type { BinaryReader } from "../utils/binary-reader-utils.ts";
+import type { WebRTCPeer } from "../interfaces/network/webrtc-peer-interface.ts";
 
 export interface EventProcessorServiceContract {
   initialize(webrtcService: WebRTCServiceContract): void;

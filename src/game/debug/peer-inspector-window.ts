@@ -1,9 +1,9 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { BaseWindow } from "../../engine/debug/base-window.js";
-import { WebRTCService } from "../services/network/webrtc-service.js";
-import { container } from "../../engine/services/di-container.js";
+import { BaseWindow } from "../../engine/debug/base-window.ts";
+import { WebRTCService } from "../services/network/webrtc-service.ts";
+import { container } from "../../engine/services/di-container.ts";
 import { injectable } from "@needle-di/core";
-import { getPingTextColor } from "../utils/ping-utils.js";
+import { getPingTextColor } from "../utils/ping-utils.ts";
 
 @injectable()
 export class PeerInspectorWindow extends BaseWindow {

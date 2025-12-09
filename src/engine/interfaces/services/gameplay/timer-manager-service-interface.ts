@@ -1,12 +1,12 @@
-import type { ITimerService } from "./timer-service-interface.js";
+import type { TimerServiceContract } from "./timer-service-interface.js";
 
-export interface ITimerManagerService {
+export interface TimerManagerServiceContract {
   createTimer(
     durationSeconds: number,
     callback: () => void,
     autoStart?: boolean
-  ): ITimerService;
-  removeTimer(timer: ITimerService): void;
+  ): TimerServiceContract;
+  removeTimer(timer: TimerServiceContract): void;
   update(deltaTimeStamp: DOMHighResTimeStamp): void;
   clear(): void;
   count(): number;

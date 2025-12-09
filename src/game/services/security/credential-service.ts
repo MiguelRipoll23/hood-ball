@@ -1,9 +1,9 @@
 import { EventType } from "../../../engine/enums/event-type.js";
-import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options.js";
-import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request.js";
-import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
-import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
-import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
+import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options-interface.js";
+import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request-interface.js";
+import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request-interface.js";
+import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request-interface.js";
+import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response-interface.js";
 
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { ServerError } from "../../models/server-error.js";

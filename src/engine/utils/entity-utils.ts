@@ -1,9 +1,9 @@
-import type { WebRTCPeer } from "../interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../interfaces/network/webrtc-peer-interface.ts";
 import {
   CANVAS_EXTRA_MARGIN,
   CANVAS_MARGIN,
-} from "../constants/canvas-constants.js";
-import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.js";
+} from "../constants/canvas-constants.ts";
+import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.ts";
 
 export class EntityUtils {
   public static hasInvalidOwner(

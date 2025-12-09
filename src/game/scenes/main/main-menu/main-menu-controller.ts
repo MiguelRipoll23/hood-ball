@@ -1,5 +1,5 @@
 import { APIService } from "../../../services/network/api-service.js";
-import type { ServerMessagesResponse } from "../../../interfaces/responses/server-messages-response.js";
+import type { ServerMessagesResponse } from "../../../interfaces/responses/server-messages-response-interface.js";
 
 export class MainMenuController {
   constructor(private readonly apiService: APIService) {}

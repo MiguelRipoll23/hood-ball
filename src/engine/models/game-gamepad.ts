@@ -1,6 +1,6 @@
-import { GamepadButton } from "../enums/gamepad-button.js";
-import { GameFrame } from "./game-frame.js";
-import type { GameGamepadContract } from "../interfaces/input/game-gamepad-interface.js";
+import { GamepadButton } from "../enums/gamepad-button.ts";
+import { GameFrame } from "./game-frame.ts";
+import type { GameGamepadContract } from "../interfaces/input/game-gamepad-interface.ts";
 
 export class GameGamepad implements GameGamepadContract {
   private gamepadIndex: number | null = null;
@@ -34,12 +34,12 @@ export class GameGamepad implements GameGamepadContract {
   }
 
   private addEventListeners(): void {
-    window.addEventListener(
+    globalThis.addEventListener(
       "gamepadconnected",
       this.handleConnected.bind(this)
     );
 
-    window.addEventListener(
+    globalThis.addEventListener(
       "gamepaddisconnected",
       this.handleDisconnected.bind(this)
     );

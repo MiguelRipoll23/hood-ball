@@ -1,6 +1,6 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
-import { BLUE_TEAM_COLOR, RED_TEAM_COLOR } from "../constants/colors-constants.js";
-import { TeamType } from "../enums/team-type.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.ts";
+import { BLUE_TEAM_COLOR, RED_TEAM_COLOR } from "../constants/colors-constants.ts";
+import { TeamType } from "../enums/team-type.ts";
 
 interface Particle {
   x: number;

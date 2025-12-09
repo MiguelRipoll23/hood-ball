@@ -1,6 +1,6 @@
-import type { MatchAttributes } from "../interfaces/services/matchmaking/match-attributes.js";
-import { MatchStateType } from "../enums/match-state-type.js";
-import { GamePlayer } from "./game-player.js";
+import type { MatchAttributes } from "../interfaces/match-attributes-interface.ts";
+import { MatchStateType } from "../enums/match-state-type.ts";
+import { GamePlayer } from "./game-player.ts";
 
 export class MatchSession {
   private host: boolean;

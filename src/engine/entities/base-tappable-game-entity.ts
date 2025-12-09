@@ -1,5 +1,5 @@
-import { GamePointer } from "../models/game-pointer.js";
-import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
+import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.ts";
+import { BaseAnimatedGameEntity } from "./base-animated-entity.ts";
 
 export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
   protected width = 0;
@@ -36,7 +36,7 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
     return this.pressed;
   }
 
-  public handlePointerEvent(gamePointer: GamePointer): void {
+  public handlePointerEvent(gamePointer: GamePointerContract): void {
     const touches = gamePointer.getTouchPoints();
 
     for (const touch of touches) {

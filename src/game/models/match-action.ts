@@ -1,4 +1,4 @@
-import { MatchActionType } from "../enums/match-action-type.js";
+import { MatchActionType } from "../enums/match-action-type.ts";
 
 interface PlayerActionOptions {
   timestamp?: number;

@@ -1,10 +1,10 @@
 import {
   BLUE_TEAM_COLOR,
   RED_TEAM_COLOR,
-} from "../constants/colors-constants.js";
-import { TimerService } from "../../engine/services/gameplay/timer-service.js";
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
+} from "../constants/colors-constants.ts";
+import { TimerService } from "../../engine/services/gameplay/timer-service.ts";
+import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.ts";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.ts";
 
 export class AlertEntity
   extends BaseAnimatedGameEntity

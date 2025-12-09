@@ -10,13 +10,13 @@ import { ChatMessage } from "../../models/chat-message.js";
 import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
-import type { WebSocketServiceContract } from "../../contracts/websocket-service-contract.js";
+import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 import type { WebRTCServiceContract } from "../../../engine/contracts/webrtc-service-contract.js";
 
 @injectable()

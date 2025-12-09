@@ -1,6 +1,6 @@
-import { EntityStateType } from "../enums/entity-state-type.js";
-import type { GameEntity } from "../models/game-entity.js";
-import type { DebugSettings } from "../models/debug-settings.js";
+import { EntityStateType } from "../enums/entity-state-type.ts";
+import type { GameEntity } from "../models/game-entity.ts";
+import type { DebugSettings } from "../models/debug-settings.ts";
 
 export class BaseGameEntity implements GameEntity {
   protected loaded: boolean = false;

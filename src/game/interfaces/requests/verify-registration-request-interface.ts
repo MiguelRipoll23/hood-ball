@@ -1,4 +1,4 @@
-import type { SerializedCredential } from "../serialized-credential.js";
+import type { SerializedCredential } from "../serialized-credential-interface.js";
 
 export interface VerifyRegistrationRequest {
   transactionId: string;

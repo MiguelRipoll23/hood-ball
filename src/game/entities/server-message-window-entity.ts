@@ -1,4 +1,4 @@
-import { CloseableWindowEntity } from "./common/closeable-window-entity.js";
+import { CloseableWindowEntity } from "./common/closeable-window-entity.ts";
 
 export class ServerMessageWindowEntity extends CloseableWindowEntity {
   private index: number = 0;

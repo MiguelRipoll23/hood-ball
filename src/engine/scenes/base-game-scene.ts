@@ -1,16 +1,16 @@
-import { GamePointer } from "../models/game-pointer.js";
-import { LayerType } from "../enums/layer-type.js";
-import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
-import type { GameEntity } from "../models/game-entity.js";
-import type { GameScene } from "../interfaces/scenes/game-scene.js";
-import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
-import { SceneManagerService } from "../services/gameplay/scene-manager-service.js";
-import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
-import type { EventSubscription } from "../types/event-subscription.js";
-import { CameraService } from "../services/gameplay/camera-service.js";
-import { container } from "../services/di-container.js";
-import { EventType } from "../enums/event-type.js";
-import type { GameState } from "../models/game-state.js";
+import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.ts";
+import { LayerType } from "../enums/layer-type.ts";
+import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.ts";
+import type { GameEntity } from "../models/game-entity.ts";
+import type { GameScene } from "../interfaces/scenes/game-scene-interface.ts";
+import type { SceneManager } from "../interfaces/scenes/scene-manager-interface.ts";
+import type { SceneManagerServiceContract } from "../contracts/scene-manager-service-contract.ts";
+import { EventConsumerService } from "../services/gameplay/event-consumer-service.ts";
+import type { EventSubscription } from "../types/event-subscription.ts";
+import { CameraService } from "../services/gameplay/camera-service.ts";
+import { container } from "../services/di-container.ts";
+import { EventType } from "../enums/event-type.ts";
+import type { GameState } from "../models/game-state.ts";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerService;
@@ -19,7 +19,7 @@ export class BaseGameScene implements GameScene {
   private remoteEventSubscriptions: EventSubscription[] = [];
 
   protected canvas: HTMLCanvasElement;
-  protected sceneManagerService: SceneManagerService | null = null;
+  protected sceneManagerService: SceneManagerServiceContract | null = null;
 
   protected loaded: boolean = false;
   protected opacity: number = 0;
@@ -29,7 +29,7 @@ export class BaseGameScene implements GameScene {
 
   protected readonly cameraService: CameraService;
 
-  private gamePointer: GamePointer;
+  private gamePointer: GamePointerContract;
   /**
    * Indicates whether pointer events should be cleared automatically
    * after handling input in {@link update}. Subclasses can override
@@ -77,7 +77,7 @@ export class BaseGameScene implements GameScene {
   }
 
   public setSceneManagerService(
-    sceneManagerService: SceneManagerService
+    sceneManagerService: SceneManagerServiceContract
   ): void {
     this.sceneManagerService = sceneManagerService;
   }

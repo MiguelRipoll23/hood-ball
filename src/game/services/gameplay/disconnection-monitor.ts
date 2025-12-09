@@ -1,15 +1,13 @@
 import { inject, injectable } from "@needle-di/core";
-import type { ITimerService } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
+import type { TimerServiceContract } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 
 @injectable()
 export class DisconnectionMonitor {
   private readonly pending = new Set<string>();
-  private timeout: ITimerService | null = null;
+  private timeout: TimerServiceContract | null = null;
 
-  constructor(
-    private readonly timerManager = inject(TimerManagerService)
-  ) {}
+  constructor(private readonly timerManager = inject(TimerManagerService)) {}
 
   public track(playerIds: string[], onTimeout: () => void): void {
     this.clear();

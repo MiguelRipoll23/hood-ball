@@ -1,5 +1,5 @@
-import type { WebSocketType } from "../enums/websocket-type.js";
-import type { ServerCommandHandlerMetadata } from "../interfaces/services/network/server-command-handler-metadata.js";
+import type { WebSocketType } from "../enums/websocket-type.ts";
+import type { ServerCommandHandlerMetadata } from "../interfaces/server-command-handler-metadata-interface.ts";
 
 const commandHandlers: ServerCommandHandlerMetadata[] = [];
 

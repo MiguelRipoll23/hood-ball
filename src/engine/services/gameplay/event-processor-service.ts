@@ -10,7 +10,7 @@ import type { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
 import type { WebRTCServiceContract } from "../../contracts/webrtc-service-contract.js";
 import { injectable } from "@needle-di/core";
-import type { WebRTCPeer } from "../../interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../interfaces/network/webrtc-peer-interface.js";
 
 export type EventSubscription = {
   eventType: EventType;

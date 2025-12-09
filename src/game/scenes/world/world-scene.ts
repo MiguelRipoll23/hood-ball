@@ -15,8 +15,8 @@ import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { SceneType } from "../../../engine/enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
-import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
+import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
+import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
@@ -28,6 +28,7 @@ import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
@@ -40,7 +41,7 @@ import { CarExplosionEntity } from "../../entities/car-explosion-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
-import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
+import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import { gameContext } from "../../context/game-context.js";
@@ -474,7 +475,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private async returnToMainMenuScene(): Promise<void> {
     const mainScene = new MainScene(
       this.gameState,
-      container.get(EventConsumerService)
+      container.get(EventConsumerService),
+      container.get(SceneManagerService)
     );
     const mainMenuScene = new MainMenuScene(
       this.gameState,

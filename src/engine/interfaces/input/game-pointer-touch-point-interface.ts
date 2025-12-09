@@ -1,4 +1,4 @@
-import type { PointerType } from "./game-pointer-interface.js";
+import type { PointerType } from "./game-pointer-interface.ts";
 
 export interface GamePointerTouchPoint {
   pointerId: number;

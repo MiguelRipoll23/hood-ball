@@ -1,6 +1,6 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
-import { GamePlayer } from "../models/game-player.js";
-import { gameContext } from "../context/game-context.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.ts";
+import { GamePlayer } from "../models/game-player.ts";
+import { gameContext } from "../context/game-context.ts";
 
 export class WelcomeMessageEntity extends BaseMoveableGameEntity {
   private gamePlayer: GamePlayer;

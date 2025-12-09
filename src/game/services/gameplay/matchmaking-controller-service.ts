@@ -3,7 +3,7 @@ import { EventProcessorService } from "../../../engine/services/gameplay/event-p
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { MatchmakingService } from "./matchmaking-service.js";
-import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
+import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 
 @injectable()
 export class MatchmakingControllerService {

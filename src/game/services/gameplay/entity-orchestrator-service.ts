@@ -1,8 +1,8 @@
-import type { MultiplayerGameEntity } from "../../../engine/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EntityUtils } from "../../../engine/utils/entity-utils.js";
-import type { MultiplayerScene } from "../../../engine/interfaces/scenes/multiplayer-scene.js";
+import type { MultiplayerScene } from "../../../engine/interfaces/scenes/multiplayer-scene-interface.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { SceneUtils } from "../../../engine/utils/scene-utils.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
@@ -11,7 +11,7 @@ import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import type { EntityType } from "../../../engine/enums/entity-type.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { injectable, inject } from "@needle-di/core";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 

@@ -1,4 +1,4 @@
-import type { GameKeyboardContract } from "../interfaces/input/game-keyboard-interface.js";
+import type { GameKeyboardContract } from "../interfaces/input/game-keyboard-interface.ts";
 
 export class GameKeyboard implements GameKeyboardContract {
   private pressedKeys: Set<string> = new Set();
@@ -12,8 +12,8 @@ export class GameKeyboard implements GameKeyboardContract {
   }
 
   private addEventListeners(): void {
-    window.addEventListener("keydown", this.handleKeyDown.bind(this));
-    window.addEventListener("keyup", this.handleKeyUp.bind(this));
+    globalThis.addEventListener("keydown", this.handleKeyDown.bind(this));
+    globalThis.addEventListener("keyup", this.handleKeyUp.bind(this));
   }
 
   private handleKeyDown(event: KeyboardEvent): void {

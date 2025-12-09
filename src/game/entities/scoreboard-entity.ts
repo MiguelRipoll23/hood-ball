@@ -1,13 +1,13 @@
 import {
   BLUE_TEAM_COLOR,
   RED_TEAM_COLOR,
-} from "../constants/colors-constants.js";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
-import { EntityType } from "../../engine/enums/entity-type.js";
-import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
-import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
-import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui.js";
-import { BaseMultiplayerGameEntity } from "../../engine/entities/base-multiplayer-entity.js";
+} from "../constants/colors-constants.ts";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.ts";
+import { EntityType } from "../../engine/enums/entity-type.ts";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.ts";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.ts";
+import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui-interface.ts";
+import { BaseMultiplayerGameEntity } from "../../engine/entities/base-multiplayer-entity.ts";
 
 export class ScoreboardEntity
   extends BaseMultiplayerGameEntity

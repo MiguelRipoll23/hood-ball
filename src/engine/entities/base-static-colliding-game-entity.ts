@@ -1,5 +1,5 @@
-import { HitboxEntity } from "./hitbox-entity.js";
-import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
+import { HitboxEntity } from "./hitbox-entity.ts";
+import { BaseAnimatedGameEntity } from "./base-animated-entity.ts";
 
 type CollidingGameEntityConstructor = new (
   ...args: never[]

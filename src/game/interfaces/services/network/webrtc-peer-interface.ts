@@ -1,6 +1,6 @@
 import type { GamePlayer } from "../../../models/game-player.js";
 
-export interface IWebRTCPeerService {
+export interface WebRTCPeerContract {
   getConnectionState(): RTCPeerConnectionState;
   isConnected(): boolean;
   getToken(): string;
@@ -15,7 +15,9 @@ export interface IWebRTCPeerService {
   getPingRequestTime(): number | null;
   addRemoteIceCandidate(iceCandidate: RTCIceCandidateInit): void;
   createOffer(): Promise<RTCSessionDescriptionInit>;
-  createAnswer(offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit>;
+  createAnswer(
+    offer: RTCSessionDescriptionInit
+  ): Promise<RTCSessionDescriptionInit>;
   connect(answer: RTCSessionDescriptionInit): Promise<void>;
   getPingTime(): number | null;
   setPingTime(pingTime: number | null): void;

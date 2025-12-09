@@ -1,7 +1,7 @@
-import { GameFrame } from "../models/game-frame.js";
-import { BaseMultiplayerScene } from "../scenes/base-multiplayer-scene.js";
-import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene.js";
-import type { SceneType } from "../enums/scene-type.js";
+import { GameFrame } from "../models/game-frame.ts";
+import { BaseMultiplayerScene } from "../scenes/base-multiplayer-scene.ts";
+import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene-interface.ts";
+import type { SceneType } from "../enums/scene-type.ts";
 
 export class SceneUtils {
   public static getSceneById(

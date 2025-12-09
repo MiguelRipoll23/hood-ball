@@ -1,9 +1,9 @@
-import { EventType } from "../../enums/event-type.js";
-import type { EventQueueServiceContract } from "../../contracts/event-queue-service-contract.js";
-import type { EventSubscription } from "../../types/event-subscription.js";
-import { LocalEvent } from "../../models/local-event.js";
-import { RemoteEvent } from "../../models/remote-event.js";
-import { EventProcessorService } from "./event-processor-service.js";
+import { EventType } from "../../enums/event-type.ts";
+import type { EventQueueServiceContract } from "../../contracts/event-queue-service-contract.ts";
+import type { EventSubscription } from "../../types/event-subscription.ts";
+import { LocalEvent } from "../../models/local-event.ts";
+import { RemoteEvent } from "../../models/remote-event.ts";
+import { EventProcessorService } from "./event-processor-service.ts";
 import { injectable, inject } from "@needle-di/core";
 
 @injectable()

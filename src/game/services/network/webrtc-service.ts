@@ -1,5 +1,5 @@
 import { TunnelType } from "../../enums/tunnel-type.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
 import { DebugUtils } from "../../../engine/utils/debug-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
@@ -13,12 +13,12 @@ import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
 import type { WebRTCServiceContract } from "../../../engine/contracts/webrtc-service-contract.js";
-import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
+import type { PeerConnectionListener } from "../../interfaces/peer-connection-listener-interface.js";
 import { injectable, inject } from "@needle-di/core";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
-import type { WebSocketServiceContract } from "../../contracts/websocket-service-contract.js";
+import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {

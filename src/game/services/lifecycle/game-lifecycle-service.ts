@@ -1,12 +1,13 @@
 import { injectable, inject } from "@needle-di/core";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
+import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { MainScene } from "../../scenes/main/main-scene.js";
 import { MainMenuScene } from "../../scenes/main/main-menu/main-menu-scene.js";
-import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
+import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
+import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload-interface.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 
@@ -23,7 +24,10 @@ export class GameLifecycleService {
     private matchSessionService: MatchSessionService = inject(
       MatchSessionService
     ),
-    private gamePlayer: GamePlayer = inject(GamePlayer)
+    private gamePlayer: GamePlayer = inject(GamePlayer),
+    private sceneManagerService: SceneManagerService = inject(
+      SceneManagerService
+    )
   ) {}
 
   public start(): void {
@@ -93,7 +97,11 @@ export class GameLifecycleService {
     this.matchSessionService.setMatch(null);
     this.gamePlayer.reset();
 
-    const mainScene = new MainScene(this.gameState, this.eventConsumerService);
+    const mainScene = new MainScene(
+      this.gameState,
+      this.eventConsumerService,
+      this.sceneManagerService
+    );
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       this.eventConsumerService,

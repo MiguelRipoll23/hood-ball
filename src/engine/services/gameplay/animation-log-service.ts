@@ -1,7 +1,7 @@
 import { injectable } from "@needle-di/core";
-import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity.js";
-import type { EntityAnimationService } from "./entity-animation-service.js";
-import { AnimationType } from "../../enums/animation-type.js";
+import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.ts";
+import type { EntityAnimationService } from "./entity-animation-service.ts";
+import { AnimationType } from "../../enums/animation-type.ts";
 
 export type AnimationLogItem = {
   entityName: string;

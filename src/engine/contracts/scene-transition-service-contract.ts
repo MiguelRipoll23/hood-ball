@@ -1,5 +1,5 @@
-import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
-import type { GameScene } from "../interfaces/scenes/game-scene.js";
+import type { SceneManager } from "../interfaces/scenes/scene-manager-interface.ts";
+import type { GameScene } from "../interfaces/scenes/game-scene-interface.ts";
 
 export interface SceneTransitionServiceContract {
   update(deltaTimeStamp: DOMHighResTimeStamp): void;

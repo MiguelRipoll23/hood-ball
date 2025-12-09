@@ -1,15 +1,15 @@
-import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.js";
-import { CarEntity } from "./car-entity.js";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
-import { EntityType } from "../../engine/enums/entity-type.js";
-import { GamePlayer } from "../models/game-player.js";
-import { EntityUtils } from "../../engine/utils/entity-utils.js";
-import { DebugUtils } from "../../engine/utils/debug-utils.js";
-import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
-import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
-import { MathUtils } from "../../engine/utils/math-utils.js";
-import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
+import { HitboxEntity } from "../../engine/entities/hitbox-entity.ts";
+import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.ts";
+import { CarEntity } from "./car-entity.ts";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.ts";
+import { EntityType } from "../../engine/enums/entity-type.ts";
+import { GamePlayer } from "../models/game-player.ts";
+import { EntityUtils } from "../../engine/utils/entity-utils.ts";
+import { DebugUtils } from "../../engine/utils/debug-utils.ts";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.ts";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.ts";
+import { MathUtils } from "../../engine/utils/math-utils.ts";
+import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.ts";
 
 export class BallEntity
   extends BaseDynamicCollidingGameEntity

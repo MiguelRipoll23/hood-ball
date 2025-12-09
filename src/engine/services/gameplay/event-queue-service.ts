@@ -1,5 +1,5 @@
-import type { GameEvent } from "../../interfaces/models/game-event.js";
-import type { EventQueueServiceContract } from "../../contracts/event-queue-service-contract.js";
+import type { GameEvent } from "../../interfaces/models/game-event-interface.ts";
+import type { EventQueueServiceContract } from "../../contracts/event-queue-service-contract.ts";
 
 export class EventQueueService<T extends GameEvent>
   implements EventQueueServiceContract<T>

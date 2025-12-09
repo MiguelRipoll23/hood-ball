@@ -1,4 +1,4 @@
-import { BaseStaticCollidingGameEntity } from "./base-static-colliding-game-entity.js";
+import { BaseStaticCollidingGameEntity } from "./base-static-colliding-game-entity.ts";
 
 export class BaseDynamicCollidingGameEntity extends BaseStaticCollidingGameEntity {
   private static readonly LINE_LENGTH = 50;

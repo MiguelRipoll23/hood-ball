@@ -1,15 +1,15 @@
-import type { ITimerService } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
+import type { TimerServiceContract } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
 import { MatchSession } from "../../models/match-session.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
-import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
+import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
+import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
-import type { IIntervalService } from "../../../engine/interfaces/services/gameplay/interval-service-interface.js";
+import type { IntervalServiceContract } from "../../../engine/interfaces/services/gameplay/interval-service-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
@@ -17,8 +17,8 @@ import { PeerCommandHandler } from "../../../engine/decorators/peer-command-hand
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
-import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import type { MatchmakingNetworkServiceContract } from "../../contracts/matchmaking-network-service-contract.js";
+import type { PeerConnectionListener } from "../../interfaces/peer-connection-listener-interface.js";
+import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
@@ -36,9 +36,9 @@ import { RecorderService } from "../../../engine/services/gameplay/recorder-serv
 export class MatchmakingNetworkService
   implements PeerConnectionListener, MatchmakingNetworkServiceContract
 {
-  private findMatchesTimerService: ITimerService | null = null;
-  private pingCheckInterval: IIntervalService | null = null;
-  private advertiseMatchInterval: IIntervalService | null = null;
+  private findMatchesTimerService: TimerServiceContract | null = null;
+  private pingCheckInterval: IntervalServiceContract | null = null;
+  private advertiseMatchInterval: IntervalServiceContract | null = null;
 
   constructor(
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),

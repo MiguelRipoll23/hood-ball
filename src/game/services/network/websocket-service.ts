@@ -3,9 +3,9 @@ import { EventProcessorService } from "../../../engine/services/gameplay/event-p
 import type { EventProcessorServiceContract } from "../../../engine/contracts/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
-import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
-import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
+import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
+import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload-interface.js";
+import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { GameServer } from "../../models/game-server.js";
@@ -15,7 +15,7 @@ import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { injectable, inject } from "@needle-di/core";
 import { GameState } from "../../../engine/models/game-state.js";
-import type { WebSocketServiceContract } from "../../contracts/websocket-service-contract.js";
+import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 
 @injectable()
 export class WebSocketService implements WebSocketServiceContract {
