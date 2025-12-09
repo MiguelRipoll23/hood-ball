@@ -1,5 +1,5 @@
 import { injectable } from "@needle-di/core";
-import type { SceneManagerServiceContract } from "../../interfaces/services/scene/scene-manager-service-contract.js";
+import type { SceneManager } from "../../interfaces/scenes/scene-manager-interface.js";
 import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js";
 import type { SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
 
@@ -16,7 +16,7 @@ export class SceneTransitionService implements SceneTransitionServiceContract {
   private fadeOutDurationMilliseconds: number = 0;
   private crossfadeDurationMilliseconds: number = 0;
 
-  private sceneManager: SceneManagerServiceContract | null = null;
+  private sceneManager: SceneManager | null = null;
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.sceneManager === null) {
@@ -38,7 +38,7 @@ export class SceneTransitionService implements SceneTransitionServiceContract {
   }
 
   public fadeOutAndIn(
-    sceneManager: SceneManagerServiceContract,
+    sceneManager: SceneManager,
     nextScene: GameScene,
     fadeOutDurationSeconds: number,
     fadeInDurationSeconds: number
@@ -67,7 +67,7 @@ export class SceneTransitionService implements SceneTransitionServiceContract {
   }
 
   public crossfade(
-    sceneManager: SceneManagerServiceContract,
+    sceneManager: SceneManager,
     nextScene: GameScene,
     crossfadeDurationSeconds: number
   ): void {
