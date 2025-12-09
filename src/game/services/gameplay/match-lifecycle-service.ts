@@ -7,7 +7,7 @@ import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
 import { GamePlayer } from "../../models/game-player.js";
-import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
+import type { MatchmakingNetworkServiceContract } from "../../contracts/matchmaking-network-service-contract.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import { DisconnectionMonitor } from "./disconnection-monitor.js";
 import {
@@ -27,7 +27,7 @@ export class MatchLifecycleService {
   constructor(
     private readonly apiService = inject(APIService),
     private readonly webrtcService = inject(WebRTCService),
-    private readonly networkService: IMatchmakingNetworkService = inject(
+    private readonly networkService: MatchmakingNetworkServiceContract = inject(
       MatchmakingNetworkService
     ),
     private readonly eventProcessor = inject(EventProcessorService),

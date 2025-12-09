@@ -17,7 +17,7 @@ import type { GameEntity } from "../../../engine/models/game-entity.js";
 import { MatchAction } from "../../models/match-action.js";
 import type { BaseMultiplayerGameEntity } from "../../../engine/entities/base-multiplayer-entity.js";
 import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload.js";
-import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import { gameContext } from "../../context/game-context.js";
@@ -34,7 +34,7 @@ export class WorldController {
     private readonly spawnPointService: SpawnPointService,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: IMatchmakingService,
+    private readonly matchmakingService: MatchmakingServiceContract,
     private readonly scoreboardEntity: ScoreboardEntity,
     private readonly ballEntity: BallEntity,
     private readonly localCarEntity: LocalCarEntity,

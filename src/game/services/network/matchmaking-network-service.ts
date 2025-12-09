@@ -18,7 +18,7 @@ import { ServerCommandHandler } from "../../decorators/server-command-handler.js
 import { WebSocketService } from "./websocket-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
+import type { MatchmakingNetworkServiceContract } from "../../contracts/matchmaking-network-service-contract.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
@@ -34,7 +34,7 @@ import { RecorderService } from "../../../engine/services/gameplay/recorder-serv
 
 @injectable()
 export class MatchmakingNetworkService
-  implements PeerConnectionListener, IMatchmakingNetworkService
+  implements PeerConnectionListener, MatchmakingNetworkServiceContract
 {
   private findMatchesTimerService: ITimerService | null = null;
   private pingCheckInterval: IIntervalService | null = null;

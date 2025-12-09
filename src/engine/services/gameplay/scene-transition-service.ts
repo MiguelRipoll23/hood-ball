@@ -1,9 +1,10 @@
 import { injectable } from "@needle-di/core";
 import type { SceneManager } from "../../interfaces/scenes/scene-manager";
 import type { GameScene } from "../../interfaces/scenes/game-scene";
+import type { SceneTransitionServiceContract } from "../../contracts/scene-transition-service-contract.js";
 
 @injectable()
-export class SceneTransitionService {
+export class SceneTransitionService implements SceneTransitionServiceContract {
   private elapsedTransitionMilliseconds: number = 0;
 
   // Transition state flags

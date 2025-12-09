@@ -5,18 +5,18 @@ import { WebSocketService } from "../network/websocket-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { MatchFinderService } from "./match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
-import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
-import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { MatchmakingNetworkServiceContract } from "../../contracts/matchmaking-network-service-contract.js";
+import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
 import { MatchLifecycleService } from "./match-lifecycle-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 
 @injectable()
-export class MatchmakingService implements IMatchmakingService {
+export class MatchmakingService implements MatchmakingServiceContract {
   constructor(
     private readonly webSocketService = inject(WebSocketService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly matchFinderService = inject(MatchFinderService),
-    private readonly networkService: IMatchmakingNetworkService = inject(
+    private readonly networkService: MatchmakingNetworkServiceContract = inject(
       MatchmakingNetworkService
     ),
     private readonly lifecycleService = inject(MatchLifecycleService),
@@ -25,7 +25,7 @@ export class MatchmakingService implements IMatchmakingService {
     this.registerCommandHandlers();
   }
 
-  public getNetworkService(): IMatchmakingNetworkService {
+  public getNetworkService(): MatchmakingNetworkServiceContract {
     return this.networkService;
   }
 

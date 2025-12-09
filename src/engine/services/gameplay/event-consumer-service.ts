@@ -1,11 +1,10 @@
 import { EventType } from "../../enums/event-type.js";
-import type { EventQueueServiceContract } from "../../interfaces/services/gameplay/event-queue-service-interface.js";
+import type { EventQueueServiceContract } from "../../contracts/event-queue-service-contract.js";
 import type { EventSubscription } from "../../types/event-subscription.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { RemoteEvent } from "../../models/remote-event.js";
 import { EventProcessorService } from "./event-processor-service.js";
-import { container } from "../di-container.js";
-import { injectable } from "@needle-di/core";
+import { injectable, inject } from "@needle-di/core";
 
 @injectable()
 export class EventConsumerService {
@@ -15,10 +14,13 @@ export class EventConsumerService {
   private localSubscriptions: EventSubscription[] = [];
   private remoteSubscriptions: EventSubscription[] = [];
 
-  constructor() {
-    const eventProcessorService = container.get(EventProcessorService);
-    this.localQueue = eventProcessorService.getLocalQueue();
-    this.remoteQueue = eventProcessorService.getRemoteQueue();
+  constructor(
+    private readonly eventProcessorService: EventProcessorService = inject(
+      EventProcessorService
+    )
+  ) {
+    this.localQueue = this.eventProcessorService.getLocalQueue();
+    this.remoteQueue = this.eventProcessorService.getRemoteQueue();
   }
 
   public subscribeToLocalEvent<T>(

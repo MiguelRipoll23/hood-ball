@@ -18,7 +18,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
 import { MatchActionsLogService } from "./match-actions-log-service.js";
 
 export class ScoreManagerService {
@@ -33,7 +33,7 @@ export class ScoreManagerService {
     private readonly matchActionsLogService: MatchActionsLogService,
     private readonly timerManagerService: TimerManagerService,
     private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: IMatchmakingService,
+    private readonly matchmakingService: MatchmakingServiceContract,
     private readonly goalTimeEndCallback: () => void,
     private readonly gameOverEndCallback: () => void,
     private readonly explosionCallback: (

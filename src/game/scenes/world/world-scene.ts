@@ -40,7 +40,7 @@ import { CarExplosionEntity } from "../../entities/car-explosion-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
-import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { MatchmakingServiceContract } from "../../contracts/matchmaking-service-contract.js";
 import { ChatService } from "../../services/network/chat-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import { gameContext } from "../../context/game-context.js";
@@ -54,7 +54,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
   private readonly spawnPointService: SpawnPointService;
   private readonly timerManagerService: TimerManagerService;
-  private readonly matchmakingService: IMatchmakingService;
+  private readonly matchmakingService: MatchmakingServiceContract;
   private readonly matchmakingController: MatchmakingControllerService;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
