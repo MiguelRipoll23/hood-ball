@@ -1,6 +1,6 @@
 import { injectable } from "@needle-di/core";
 import type { GameEntity } from "../../models/game-entity.js";
-import type { GameEvent } from "../../interfaces/models/game-event.js";
+import type { GameEvent } from "../../interfaces/models/game-event-interface.js";
 import { BaseMoveableGameEntity } from "../../entities/base-moveable-game-entity.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { GameFrame } from "../../models/game-frame.js";

@@ -11,37 +11,37 @@ import {
   VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT,
   AUTHENTICATION_OPTIONS_ENDPOINT,
 } from "../../constants/api-constants.js";
-import type { FindMatchesResponse } from "../../interfaces/responses/find-matches-response.js";
-import type { ServerMessagesResponse } from "../../interfaces/responses/server-messages-response.js";
-import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response.js";
-import type { VersionResponse } from "../../interfaces/responses/version-response.js";
-import type { UserScoresResponse } from "../../interfaces/responses/user-scores-response.js";
-import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request.js";
-import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request.js";
-import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
-import type { AuthenticationOptionsResponse } from "../../interfaces/responses/authentication-options-response.js";
-import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request.js";
-import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request.js";
-import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options.js";
-import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request.js";
-import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response.js";
+import type { FindMatchesResponse } from "../../interfaces/responses/find-matches-response-interface.js";
+import type { ServerMessagesResponse } from "../../interfaces/responses/server-messages-response-interface.js";
+import type { AuthenticationResponse } from "../../interfaces/responses/authentication-response-interface.js";
+import type { VersionResponse } from "../../interfaces/responses/version-response-interface.js";
+import type { UserScoresResponse } from "../../interfaces/responses/user-scores-response-interface.js";
+import type { AdvertiseMatchRequest } from "../../interfaces/requests/advertise-match-request-interface.js";
+import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-request-interface.js";
+import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request-interface.js";
+import type { AuthenticationOptionsResponse } from "../../interfaces/responses/authentication-options-response-interface.js";
+import type { VerifyRegistrationRequest } from "../../interfaces/requests/verify-registration-request-interface.js";
+import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request-interface.js";
+import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options-interface.js";
+import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request-interface.js";
+import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response-interface.js";
 import { CryptoService } from "../security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
-import { container } from "../../../engine/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { injectable, inject } from "@needle-di/core";
 
 @injectable()
 export class APIService {
   private baseURL: string;
   private authenticationToken: string | null = null;
-  private readonly cryptoService: CryptoService;
-  private readonly loadingIndicatorService: LoadingIndicatorService;
 
-  constructor() {
+  constructor(
+    private readonly cryptoService: CryptoService = inject(CryptoService),
+    private readonly loadingIndicatorService: LoadingIndicatorService = inject(
+      LoadingIndicatorService
+    )
+  ) {
     this.baseURL = APIUtils.getBaseURL();
-    this.cryptoService = container.get(CryptoService);
-    this.loadingIndicatorService = container.get(LoadingIndicatorService);
   }
 
   private async fetchWithLoading(

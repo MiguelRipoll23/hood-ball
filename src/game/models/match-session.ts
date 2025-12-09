@@ -1,4 +1,4 @@
-import type { MatchAttributes } from "../interfaces/services/matchmaking/match-attributes.js";
+import type { MatchAttributes } from "../interfaces/match-attributes-interface.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GamePlayer } from "./game-player.js";
 

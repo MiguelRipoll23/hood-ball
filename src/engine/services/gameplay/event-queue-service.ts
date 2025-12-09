@@ -1,6 +1,9 @@
-import type { GameEvent } from "../../interfaces/models/game-event.js";
+import type { GameEvent } from "../../interfaces/models/game-event-interface.js";
+import type { EventQueueServiceContract } from "../../interfaces/services/events/event-queue-service-contract.js";
 
-export class EventQueueService<T extends GameEvent> {
+export class EventQueueService<T extends GameEvent>
+  implements EventQueueServiceContract<T>
+{
   private static readonly MAX_CONSUMED_EVENTS = 50;
 
   protected events: T[] = [];

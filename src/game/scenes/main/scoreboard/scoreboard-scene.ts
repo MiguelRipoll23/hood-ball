@@ -1,4 +1,4 @@
-import type { UserScore } from "../../../interfaces/responses/user-scores-response.js";
+import type { UserScore } from "../../../interfaces/responses/user-scores-response-interface.js";
 import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import { APIService } from "../../../services/network/api-service.js";

@@ -15,10 +15,9 @@ import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { SceneType } from "../../../engine/enums/scene-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload.js";
-import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
-import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
-import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
+import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
+import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
+import type { MatchmakingControllerContract } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
 import { ScoreManagerService } from "../../services/gameplay/score-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
@@ -28,6 +27,7 @@ import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
@@ -40,7 +40,7 @@ import { CarExplosionEntity } from "../../entities/car-explosion-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
-import type { IMatchmakingService } from "../../interfaces/services/gameplay/matchmaking-service-interface.js";
+import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import { gameContext } from "../../context/game-context.js";
@@ -54,8 +54,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private readonly sceneTransitionService: SceneTransitionService;
   private readonly spawnPointService: SpawnPointService;
   private readonly timerManagerService: TimerManagerService;
-  private readonly matchmakingService: IMatchmakingService;
-  private readonly matchmakingController: MatchmakingControllerService;
+  private readonly matchmakingService: MatchmakingServiceContract;
+  private readonly matchmakingController: MatchmakingControllerContract;
   private readonly eventProcessorService: EventProcessorService;
   private readonly entityOrchestrator: EntityOrchestratorService;
   private readonly chatService: ChatService;
@@ -88,22 +88,31 @@ export class WorldScene extends BaseCollidingGameScene {
 
   constructor(
     protected gameState: GameState,
-    eventConsumerService: EventConsumerService
+    eventConsumerService: EventConsumerService,
+    sceneTransitionService: SceneTransitionService,
+    timerManagerService: TimerManagerService,
+    matchmakingService: MatchmakingServiceContract,
+    matchmakingController: MatchmakingControllerContract,
+    entityOrchestrator: EntityOrchestratorService,
+    eventProcessorService: EventProcessorService,
+    spawnPointService: SpawnPointService,
+    chatService: ChatService,
+    matchActionsLogService: MatchActionsLogService
   ) {
     super(gameState, eventConsumerService);
     this.gamePlayer = gameContext.get(GamePlayer);
     this.gameServer = gameContext.get(GameServer);
     this.matchSessionService = gameContext.get(MatchSessionService);
     this.gamePlayer.reset();
-    this.sceneTransitionService = container.get(SceneTransitionService);
-    this.timerManagerService = container.get(TimerManagerService);
-    this.matchmakingService = container.get(MatchmakingService);
-    this.matchmakingController = container.get(MatchmakingControllerService);
-    this.entityOrchestrator = container.get(EntityOrchestratorService);
-    this.eventProcessorService = container.get(EventProcessorService);
-    this.spawnPointService = container.get(SpawnPointService);
-    this.chatService = container.get(ChatService);
-    this.matchActionsLogService = container.get(MatchActionsLogService);
+    this.sceneTransitionService = sceneTransitionService;
+    this.timerManagerService = timerManagerService;
+    this.matchmakingService = matchmakingService;
+    this.matchmakingController = matchmakingController;
+    this.entityOrchestrator = entityOrchestrator;
+    this.eventProcessorService = eventProcessorService;
+    this.spawnPointService = spawnPointService;
+    this.chatService = chatService;
+    this.matchActionsLogService = matchActionsLogService;
     this.matchActionsLogService.clear();
     this.addSyncableEntities();
     this.subscribeToEvents();
@@ -474,7 +483,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private async returnToMainMenuScene(): Promise<void> {
     const mainScene = new MainScene(
       this.gameState,
-      container.get(EventConsumerService)
+      container.get(EventConsumerService),
+      container.get(SceneManagerService)
     );
     const mainMenuScene = new MainMenuScene(
       this.gameState,

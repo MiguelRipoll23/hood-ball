@@ -69,8 +69,8 @@ export class DebugService {
   }
 
   private setCanvasSize(): void {
-    this.debugCanvas.width = window.innerWidth;
-    this.debugCanvas.height = window.innerHeight;
+    this.debugCanvas.width = globalThis.innerWidth;
+    this.debugCanvas.height = globalThis.innerHeight;
   }
 
   private clearCanvas(): void {
@@ -82,7 +82,7 @@ export class DebugService {
   }
 
   private addEventListeners(): void {
-    window.addEventListener("resize", this.setCanvasSize.bind(this));
+    globalThis.addEventListener("resize", this.setCanvasSize.bind(this));
     this.preloadCommonEvents();
     this.patchCanvasAddEventListener();
   }

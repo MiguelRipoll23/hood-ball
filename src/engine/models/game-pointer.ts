@@ -2,7 +2,7 @@ import type {
   GamePointerContract,
   PointerType,
 } from "../interfaces/input/game-pointer-interface.js";
-import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point.js";
+import type { GamePointerTouchPoint } from "../interfaces/input/game-pointer-touch-point-interface.js";
 
 export class GamePointer implements GamePointerContract {
   private touches: Map<number, GamePointerTouchPoint> = new Map();
@@ -199,7 +199,7 @@ export class GamePointer implements GamePointerContract {
     );
 
     // Reset pointer state if the window loses focus
-    window.addEventListener("blur", () => {
+    globalThis.addEventListener("blur", () => {
       this.reset();
     });
 

@@ -1,7 +1,7 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import {
-  PlayerService,
+  MediaPlayerService,
   PlaybackState,
 } from "../../engine/services/gameplay/player-service.js";
 import { RecorderService } from "../../engine/services/gameplay/recorder-service.js";
@@ -10,7 +10,7 @@ import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.js"
 import { GameState } from "../../engine/models/game-state.js";
 
 export class RecordingInspectorWindow extends BaseWindow {
-  private playerService: PlayerService;
+  private playerService: MediaPlayerService;
   private recorderService: RecorderService;
   private gameState: GameState;
   private mediaPlayerEntity: MediaPlayerEntity | null = null;
@@ -20,7 +20,7 @@ export class RecordingInspectorWindow extends BaseWindow {
 
   constructor() {
     super("Recording inspector", new ImVec2(380, 360));
-    this.playerService = container.get(PlayerService);
+    this.playerService = container.get(MediaPlayerService);
     this.recorderService = container.get(RecorderService);
     this.gameState = container.get(GameState);
     console.log(`${this.constructor.name} created`);
@@ -53,7 +53,9 @@ export class RecordingInspectorWindow extends BaseWindow {
       await this.playerService.loadRecording(this.selectedFile);
       console.log(`Loaded recording: ${this.selectedFile.name}`);
     } catch (error) {
-      this.errorMessage = `Failed to load recording: ${error instanceof Error ? error.message : String(error)}`;
+      this.errorMessage = `Failed to load recording: ${
+        error instanceof Error ? error.message : String(error)
+      }`;
       console.error("Failed to load recording:", error);
     }
   }

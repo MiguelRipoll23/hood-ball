@@ -1,4 +1,6 @@
-export class TimerService {
+import type { TimerServiceContract } from "../../interfaces/services/gameplay/timer-service-interface.js";
+
+export class TimerService implements TimerServiceContract {
   private elapsedMilliseconds: number = 0;
   private durationMilliseconds: number = 0;
 

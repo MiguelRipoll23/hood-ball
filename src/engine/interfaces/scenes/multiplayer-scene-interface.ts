@@ -1,9 +1,9 @@
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,
-} from "../entities/multiplayer-game-entity.js";
+} from "../entities/multiplayer-game-entity-interface.js";
 import { SceneType } from "../../enums/scene-type.js";
-import type { GameScene } from "./game-scene.js";
+import type { GameScene } from "./game-scene-interface.js";
 import type { EntityType } from "../../enums/entity-type.js";
 
 export interface MultiplayerScene extends GameScene {

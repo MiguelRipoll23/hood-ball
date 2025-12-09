@@ -5,17 +5,17 @@ import { EventProcessorService } from "../../../engine/services/gameplay/event-p
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
-import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request.js";
+import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request-interface.js";
 import { GamePlayer } from "../../models/game-player.js";
-import type { IMatchmakingNetworkService } from "../../interfaces/services/network/matchmaking-network-service-interface.js";
+import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import { DisconnectionMonitor } from "./disconnection-monitor.js";
 import {
   PendingIdentitiesToken,
   ReceivedIdentitiesToken,
 } from "./matchmaking-tokens.js";
-import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { RecorderService } from "../../../engine/services/gameplay/recorder-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 
@@ -27,7 +27,7 @@ export class MatchLifecycleService {
   constructor(
     private readonly apiService = inject(APIService),
     private readonly webrtcService = inject(WebRTCService),
-    private readonly networkService: IMatchmakingNetworkService = inject(
+    private readonly networkService: MatchmakingNetworkServiceContract = inject(
       MatchmakingNetworkService
     ),
     private readonly eventProcessor = inject(EventProcessorService),

@@ -1,7 +1,7 @@
 import type { EntityType } from "../enums/entity-type.js";
-import type { Player } from "../interfaces/models/player.js";
+import type { Player } from "../interfaces/models/player-interface.js";
 import { BaseGameEntity } from "./base-game-entity.js";
-import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity-interface.js";
 
 export class BaseMultiplayerGameEntity
   extends BaseGameEntity

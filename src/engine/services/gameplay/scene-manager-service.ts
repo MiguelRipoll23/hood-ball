@@ -1,19 +1,20 @@
-import type { GameScene } from "../../interfaces/scenes/game-scene.js";
+import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
-import type { SceneManagerServiceContract } from "../../interfaces/services/scene-manager-service-interface.js";
-import type { SceneTransitionServiceContract } from "../../interfaces/services/scene-transition-service-interface.js";
-import { container } from "../di-container.js";
+import type { SceneManagerServiceContract } from "../../interfaces/services/scene/scene-manager-service-contract.js";
+import type { SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
+import { injectable, inject } from "@needle-di/core";
 
+@injectable()
 export class SceneManagerService implements SceneManagerServiceContract {
   private stack: GameScene[] = [];
   private currentScene: GameScene | null = null;
   private nextScene: GameScene | null = null;
 
-  private transitionService: SceneTransitionServiceContract;
-
-  constructor() {
-    this.transitionService = container.get(SceneTransitionService);
-  }
+  constructor(
+    private readonly transitionService: SceneTransitionServiceContract = inject(
+      SceneTransitionService
+    )
+  ) {}
 
   public getTransitionService(): SceneTransitionServiceContract {
     return this.transitionService;

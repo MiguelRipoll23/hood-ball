@@ -2,11 +2,11 @@ import {
   BLUE_TEAM_COLOR,
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
-import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity.js";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import { EntityType } from "../../engine/enums/entity-type.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
-import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui.js";
+import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui-interface.js";
 import { BaseMultiplayerGameEntity } from "../../engine/entities/base-multiplayer-entity.js";
 
 export class ScoreboardEntity

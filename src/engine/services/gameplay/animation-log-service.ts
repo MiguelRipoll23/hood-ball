@@ -1,5 +1,5 @@
 import { injectable } from "@needle-di/core";
-import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity.js";
+import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.js";
 import type { EntityAnimationService } from "./entity-animation-service.js";
 import { AnimationType } from "../../enums/animation-type.js";
 

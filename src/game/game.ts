@@ -9,6 +9,7 @@ import { DebugService } from "../engine/services/debug/debug-service.js";
 import { DebugWindow } from "./debug/debug-window.js";
 import { MainScene } from "./scenes/main/main-scene.js";
 import { LoginScene } from "./scenes/main/login/login-scene.js";
+import { SceneManagerService } from "../engine/services/gameplay/scene-manager-service.js";
 
 export class Game {
   constructor(private canvas: HTMLCanvasElement) {}
@@ -21,7 +22,7 @@ export class Game {
   }
 
   private initializeServices(): void {
-    const debug = window.location.search.includes("debug");
+    const debug = globalThis.location.search.includes("debug");
     ServiceRegistry.register(this.canvas, debug);
     GameServiceRegistry.register();
   }
@@ -42,8 +43,13 @@ export class Game {
     const gameState = container.get(GameState);
     const eventConsumerService = container.get(EventConsumerService);
     const gameLoop = container.get(GameLoopService);
+    const sceneManagerService = container.get(SceneManagerService);
 
-    const mainScene = new MainScene(gameState, eventConsumerService);
+    const mainScene = new MainScene(
+      gameState,
+      eventConsumerService,
+      sceneManagerService
+    );
     const loginScene = new LoginScene(gameState, eventConsumerService);
 
     mainScene.activateScene(loginScene);

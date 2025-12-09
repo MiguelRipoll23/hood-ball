@@ -1,4 +1,4 @@
-import type { GameScene } from "./game-scene.js";
+import type { GameScene } from "./game-scene-interface.js";
 
 export interface SceneManager {
   getPreviousScene(): GameScene | null;

@@ -1,4 +1,4 @@
-export interface ITimerService {
+export interface TimerServiceContract {
   start(): void;
   pause(): void;
   stop(finished: boolean): void;

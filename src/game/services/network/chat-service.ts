@@ -3,20 +3,21 @@ import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { container } from "../../../engine/services/di-container.js";
-import { injectable } from "@needle-di/core";
+import { injectable, inject } from "@needle-di/core";
 import { WebRTCService } from "./webrtc-service.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
 import { ChatMessage } from "../../models/chat-message.js";
 import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
+import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 
 @injectable()
 export class ChatService {
@@ -25,23 +26,29 @@ export class ChatService {
 
   private readonly messages: ChatMessage[] = [];
   private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
-  private readonly webSocketService: WebSocketService;
-  private readonly webrtcService: WebRTCService;
-  private readonly signatureService: SignatureService;
-  private readonly eventProcessorService: EventProcessorService;
   private readonly localPlayerId: string;
-  private readonly matchActionsLogService: MatchActionsLogService;
   private readonly commandLogTimestamps = new Map<string, number>();
 
-  constructor() {
-    this.webSocketService = container.get(WebSocketService);
-    this.webrtcService = container.get(WebRTCService);
-    this.signatureService = container.get(SignatureService);
-    this.eventProcessorService = container.get(EventProcessorService);
-    const gamePlayer = container.get(GamePlayer);
-    this.localPlayerId = gamePlayer.getNetworkId();
-    this.matchActionsLogService = container.get(MatchActionsLogService);
-    this.webrtcService.registerCommandHandlers(this);
+  constructor(
+    private readonly webSocketService: WebSocketServiceContract = inject(
+      WebSocketService
+    ),
+    private readonly webrtcService: WebRTCServiceContract = inject(
+      WebRTCService
+    ),
+    private readonly signatureService: SignatureService = inject(
+      SignatureService
+    ),
+    private readonly eventProcessorService: EventProcessorService = inject(
+      EventProcessorService
+    ),
+    private readonly gamePlayer: GamePlayer = inject(GamePlayer),
+    private readonly matchActionsLogService: MatchActionsLogService = inject(
+      MatchActionsLogService
+    )
+  ) {
+    this.localPlayerId = this.gamePlayer.getNetworkId();
+    this.webrtcService.registerCommandHandlers?.(this);
     this.webSocketService.registerCommandHandlers(this);
   }
 

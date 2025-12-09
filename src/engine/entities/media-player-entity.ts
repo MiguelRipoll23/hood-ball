@@ -1,6 +1,6 @@
 import { BaseGameEntity } from "./base-game-entity.js";
 import {
-  PlayerService,
+  MediaPlayerService,
   PlaybackState,
 } from "../services/gameplay/player-service.js";
 import { container } from "../services/di-container.js";
@@ -12,13 +12,13 @@ import { container } from "../services/di-container.js";
  * When active, it renders the recording with playback controls overlay.
  */
 export class MediaPlayerEntity extends BaseGameEntity {
-  private playerService: PlayerService;
+  private playerService: MediaPlayerService;
   private canvas: HTMLCanvasElement;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
     this.canvas = canvas;
-    this.playerService = container.get(PlayerService);
+    this.playerService = container.get(MediaPlayerService);
   }
 
   public override load(): void {
@@ -55,9 +55,9 @@ export class MediaPlayerEntity extends BaseGameEntity {
   }
 
   /**
-   * Get the underlying PlayerService for control operations
+   * Get the underlying MediaPlayerService for control operations
    */
-  public getPlayerService(): PlayerService {
+  public getPlayerService(): MediaPlayerService {
     return this.playerService;
   }
 }

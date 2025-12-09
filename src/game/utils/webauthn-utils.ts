@@ -1,4 +1,4 @@
-import type { SerializedCredential } from "../interfaces/serialized-credential.js";
+import type { SerializedCredential } from "../interfaces/serialized-credential-interface.js";
 import { Base64Utils } from "../../engine/utils/base64-utils.js";
 
 export class WebAuthnUtils {

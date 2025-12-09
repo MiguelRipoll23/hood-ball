@@ -1,5 +1,5 @@
 import { TunnelType } from "../../enums/tunnel-type.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { WebRTCPeerService } from "./webrtc-peer-service.js";
 import { DebugUtils } from "../../../engine/utils/debug-utils.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
@@ -12,13 +12,13 @@ import { ServerCommandHandler } from "../../decorators/server-command-handler.js
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
-import type { WebRTCServiceContract } from "../../../engine/interfaces/network/webrtc-service-interface.js";
-import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
-import { container } from "../../../engine/services/di-container.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
+import type { PeerConnectionListener } from "../../interfaces/peer-connection-listener-interface.js";
 import { injectable, inject } from "@needle-di/core";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
+import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {
@@ -29,7 +29,6 @@ export class WebRTCService implements WebRTCServiceContract {
   private uploadKilobytesPerSecond: number = 0;
 
   private readonly dispatcherService: WebRTCDispatcherService;
-  private webSocketService: WebSocketService | null = null;
   private connectionListener: PeerConnectionListener | null = null;
 
   constructor(
@@ -41,15 +40,17 @@ export class WebRTCService implements WebRTCServiceContract {
     private readonly timerManagerService: TimerManagerService = inject(
       TimerManagerService
     ),
-    private readonly gameState: GameState = inject(GameState)
+    private readonly gameState: GameState = inject(GameState),
+    private readonly webSocketService: WebSocketServiceContract = inject(
+      WebSocketService
+    )
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
     this.registerCommandHandlers(this);
   }
 
   public initialize(listener: PeerConnectionListener): void {
-    this.webSocketService = container.get(WebSocketService);
-    this.webSocketService!.registerCommandHandlers(this);
+    this.webSocketService.registerCommandHandlers(this);
     this.connectionListener = listener;
     console.log("WebRTC service initialized");
   }
@@ -82,7 +83,7 @@ export class WebRTCService implements WebRTCServiceContract {
       .bytes(offerBytes)
       .toArrayBuffer();
 
-    this.getWebSocketService().sendMessage(webSocketPayload);
+    this.webSocketService.sendMessage(webSocketPayload);
   }
 
   public getPeers(): WebRTCPeer[] {
@@ -143,7 +144,7 @@ export class WebRTCService implements WebRTCServiceContract {
       .bytes(iceCandidateBytes)
       .toArrayBuffer();
 
-    this.getWebSocketService().sendMessage(webSocketPayload);
+    this.webSocketService.sendMessage(webSocketPayload);
   }
 
   public handleNewIceCandidate(
@@ -223,14 +224,6 @@ export class WebRTCService implements WebRTCServiceContract {
     );
   }
 
-  private getWebSocketService(): WebSocketService {
-    if (this.webSocketService === null) {
-      throw new Error("WebSocketService is not initialized");
-    }
-
-    return this.webSocketService;
-  }
-
   private addPeer(token: string): WebRTCPeer {
     if (this.connectionListener === null) {
       throw new Error("WebRTCService not initialized");
@@ -303,7 +296,7 @@ export class WebRTCService implements WebRTCServiceContract {
       .bytes(answerBytes)
       .toArrayBuffer();
 
-    this.getWebSocketService().sendMessage(webSocketPayload);
+    this.webSocketService.sendMessage(webSocketPayload);
   }
 
   private async handlePeerAnswer(

@@ -3,15 +3,15 @@ import { MenuOptionEntity } from "../../../entities/common/menu-option-entity.js
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 import { ServerMessageWindowEntity } from "../../../entities/server-message-window-entity.js";
 import { APIService } from "../../../services/network/api-service.js";
-import type { ServerMessagesResponse } from "../../../interfaces/responses/server-messages-response.js";
+import type { ServerMessagesResponse } from "../../../interfaces/responses/server-messages-response-interface.js";
 import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
 import { SettingsScene } from "../settings-scene.js";
 import { EventType } from "../../../../engine/enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
-import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload.js";
-import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload.js";
+import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
+import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload-interface.js";
 import { container } from "../../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";

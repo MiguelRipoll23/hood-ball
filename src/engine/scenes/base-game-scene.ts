@@ -1,10 +1,9 @@
-import { GamePointer } from "../models/game-pointer.js";
+import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.js";
 import { LayerType } from "../enums/layer-type.js";
 import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
 import type { GameEntity } from "../models/game-entity.js";
-import type { GameScene } from "../interfaces/scenes/game-scene.js";
-import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
-import { SceneManagerService } from "../services/gameplay/scene-manager-service.js";
+import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
+import type { SceneManagerServiceContract } from "../interfaces/services/scene/scene-manager-service-contract.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
@@ -19,7 +18,7 @@ export class BaseGameScene implements GameScene {
   private remoteEventSubscriptions: EventSubscription[] = [];
 
   protected canvas: HTMLCanvasElement;
-  protected sceneManagerService: SceneManagerService | null = null;
+  protected sceneManagerService: SceneManagerServiceContract | null = null;
 
   protected loaded: boolean = false;
   protected opacity: number = 0;
@@ -29,7 +28,7 @@ export class BaseGameScene implements GameScene {
 
   protected readonly cameraService: CameraService;
 
-  private gamePointer: GamePointer;
+  private gamePointer: GamePointerContract;
   /**
    * Indicates whether pointer events should be cleared automatically
    * after handling input in {@link update}. Subclasses can override
@@ -72,12 +71,12 @@ export class BaseGameScene implements GameScene {
     return this.opacity > 0;
   }
 
-  public getSceneManagerService(): SceneManager | null {
+  public getSceneManagerService(): SceneManagerServiceContract | null {
     return this.sceneManagerService;
   }
 
   public setSceneManagerService(
-    sceneManagerService: SceneManagerService
+    sceneManagerService: SceneManagerServiceContract
   ): void {
     this.sceneManagerService = sceneManagerService;
   }
@@ -286,11 +285,7 @@ export class BaseGameScene implements GameScene {
 
     this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(
-        this.sceneManagerService,
-        previousScene,
-        crossfadeDurationSeconds
-      );
+      .crossfade(this.sceneManagerService, previousScene, crossfadeDurationSeconds);
   }
 
   public resubscribeEvents(): void {

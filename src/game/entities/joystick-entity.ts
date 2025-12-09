@@ -1,4 +1,4 @@
-import { GamePointer } from "../../engine/models/game-pointer.js";
+import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 
 export class JoystickEntity extends BaseGameEntity {
@@ -12,7 +12,7 @@ export class JoystickEntity extends BaseGameEntity {
   private angle: number = 0;
   private magnitude: number = 1;
 
-  constructor(private readonly gamePointer: GamePointer) {
+  constructor(private readonly gamePointer: GamePointerContract) {
     super();
   }
 

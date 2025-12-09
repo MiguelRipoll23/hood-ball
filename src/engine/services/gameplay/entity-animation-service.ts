@@ -1,5 +1,5 @@
 import { AnimationType } from "../../enums/animation-type.js";
-import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity.js";
+import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.js";
 import { AnimationLogService } from "./animation-log-service.js";
 import { container } from "../di-container.js";
 

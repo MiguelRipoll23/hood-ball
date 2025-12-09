@@ -1,6 +1,6 @@
 import { getPeerCommandHandlers } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
-import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import type { PeerCommandHandlerFunction } from "../../types/peer-command-handler-function-type.js";
 import type { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 

@@ -34,12 +34,12 @@ export class GameGamepad implements GameGamepadContract {
   }
 
   private addEventListeners(): void {
-    window.addEventListener(
+    globalThis.addEventListener(
       "gamepadconnected",
       this.handleConnected.bind(this)
     );
 
-    window.addEventListener(
+    globalThis.addEventListener(
       "gamepaddisconnected",
       this.handleDisconnected.bind(this)
     );

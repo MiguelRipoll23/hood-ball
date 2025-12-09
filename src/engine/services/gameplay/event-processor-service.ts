@@ -3,14 +3,14 @@ import { RemoteEvent } from "../../models/remote-event.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { WebRTCType } from "../../enums/webrtc-type.js";
 import { EventQueueService } from "./event-queue-service.js";
-import type { IEventProcessorService } from "../../interfaces/services/gameplay/event-processor-service-interface.js";
-import type { EventQueueServiceContract } from "../../interfaces/services/gameplay/event-queue-service-interface.js";
+import type { EventProcessorServiceContract } from "../../interfaces/services/events/event-processor-service-contract.js";
+import type { EventQueueServiceContract } from "../../interfaces/services/events/event-queue-service-contract.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { BinaryReader } from "../../utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../decorators/peer-command-handler-decorator.js";
-import type { WebRTCServiceContract } from "../../interfaces/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../interfaces/services/network/webrtc-service-contract.js";
 import { injectable } from "@needle-di/core";
-import type { WebRTCPeer } from "../../interfaces/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../interfaces/network/webrtc-peer-interface.js";
 
 export type EventSubscription = {
   eventType: EventType;
@@ -18,7 +18,7 @@ export type EventSubscription = {
 };
 
 @injectable()
-export class EventProcessorService implements IEventProcessorService {
+export class EventProcessorService implements EventProcessorServiceContract {
   private localQueue: EventQueueService<LocalEvent>;
   private remoteQueue: EventQueueService<RemoteEvent>;
   private webrtcService: WebRTCServiceContract | null = null;

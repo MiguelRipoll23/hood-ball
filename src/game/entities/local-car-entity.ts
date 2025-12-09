@@ -1,10 +1,10 @@
-import { GamePointer } from "../../engine/models/game-pointer.js";
+import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { EntityType } from "../../engine/enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
-import { GameKeyboard } from "../../engine/models/game-keyboard.js";
+import type { GameKeyboardContract } from "../../engine/interfaces/input/game-keyboard-interface.js";
 import { EntityUtils } from "../../engine/utils/entity-utils.js";
-import { GameGamepad } from "../../engine/models/game-gamepad.js";
+import type { GameGamepadContract } from "../../engine/interfaces/input/game-gamepad-interface.js";
 import { GamepadButton } from "../../engine/enums/gamepad-button.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatButtonEntity } from "./chat-button-entity.js";
@@ -20,9 +20,9 @@ export class LocalCarEntity extends CarEntity {
     y: number,
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
-    protected gamePointer: GamePointer,
-    protected gameKeyboard: GameKeyboard,
-    protected gameGamepad: GameGamepad
+    protected gamePointer: GamePointerContract,
+    protected gameKeyboard: GameKeyboardContract,
+    protected gameGamepad: GameGamepadContract
   ) {
     super(x, y, angle);
     this.gamePointer = gamePointer;

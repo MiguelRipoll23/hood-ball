@@ -1,6 +1,6 @@
 import { NotificationEntity } from "../entities/notification-entity.js";
-import type { GameScene } from "../interfaces/scenes/game-scene.js";
-import type { SceneManager } from "../interfaces/scenes/scene-manager.js";
+import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
+import type { SceneManager } from "../interfaces/scenes/scene-manager-interface.js";
 import { DebugEntity } from "../entities/debug-entity.js";
 import { LoadingIndicatorEntity } from "../entities/loading-indicator-entity.js";
 import { MediaPlayerEntity } from "../entities/media-player-entity.js";

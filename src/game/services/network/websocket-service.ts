@@ -1,10 +1,11 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import type { EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
-import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload.js";
-import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload.js";
-import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload.js";
+import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
+import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload-interface.js";
+import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { GameServer } from "../../models/game-server.js";
@@ -12,18 +13,17 @@ import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { container } from "../../../engine/services/di-container.js";
 import { injectable, inject } from "@needle-di/core";
 import { GameState } from "../../../engine/models/game-state.js";
+import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 
 @injectable()
-export class WebSocketService {
+export class WebSocketService implements WebSocketServiceContract {
   private baseURL: string;
   private webSocket: WebSocket | null = null;
 
   private onlinePlayers = 0;
 
-  private eventProcessorService: EventProcessorService;
   private dispatcherService: WebSocketDispatcherService;
 
   // Reconnection properties
@@ -36,10 +36,12 @@ export class WebSocketService {
 
   constructor(
     private readonly gameServer: GameServer = inject(GameServer),
-    private readonly gameState: GameState = inject(GameState)
+    private readonly gameState: GameState = inject(GameState),
+    private readonly eventProcessorService: EventProcessorServiceContract = inject(
+      EventProcessorService
+    )
   ) {
     this.baseURL = APIUtils.getWSBaseURL();
-    this.eventProcessorService = container.get(EventProcessorService);
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
   }
