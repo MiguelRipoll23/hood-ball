@@ -264,13 +264,9 @@ export class MainMenuScene extends BaseGameScene {
     );
     loadingScene.load();
 
-    (this.sceneManagerService as SceneManagerServiceContract)
+    this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(
-        this.sceneManagerService as SceneManagerServiceContract,
-        loadingScene,
-        0.2
-      );
+      .crossfade(this.sceneManagerService, loadingScene, 0.2);
   }
 
   private transitionToScoreboardScene(): void {
@@ -282,13 +278,9 @@ export class MainMenuScene extends BaseGameScene {
     );
     scoreboardScene.load();
 
-    (this.sceneManagerService as SceneManagerServiceContract)
+    this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(
-        this.sceneManagerService as SceneManagerServiceContract,
-        scoreboardScene,
-        0.2
-      );
+      .crossfade(this.sceneManagerService, scoreboardScene, 0.2);
   }
 
   private transitionToSettingsScene(): void {
@@ -300,13 +292,9 @@ export class MainMenuScene extends BaseGameScene {
     );
     settingsScene.load();
 
-    (this.sceneManagerService as SceneManagerServiceContract)
+    this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(
-        this.sceneManagerService as SceneManagerServiceContract,
-        settingsScene,
-        0.2
-      );
+      .crossfade(this.sceneManagerService, settingsScene, 0.2);
   }
 
   private updateMenuButtonsConnectionState(): void {

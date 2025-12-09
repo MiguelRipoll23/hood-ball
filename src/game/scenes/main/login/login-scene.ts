@@ -238,12 +238,8 @@ export class LoginScene extends BaseGameScene {
     );
     mainMenuScene.load();
 
-    (this.sceneManagerService as SceneManagerServiceContract)
+    this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(
-        this.sceneManagerService as SceneManagerServiceContract,
-        mainMenuScene,
-        0.2
-      );
+      .crossfade(this.sceneManagerService, mainMenuScene, 0.2);
   }
 }

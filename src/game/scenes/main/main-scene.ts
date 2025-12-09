@@ -23,9 +23,7 @@ export class MainScene extends BaseGameScene {
   public activateScene(scene: GameScene): void {
     this.scene = scene;
     this.scene?.setOpacity(1);
-    (this.sceneManagerService as SceneManagerServiceContract)?.setInitialScene(
-      scene
-    );
+    this.sceneManagerService?.setInitialScene(scene);
   }
 
   public override load(): void {
