@@ -11,7 +11,7 @@ import { ChatMessage } from "../../models/chat-message.js";
 import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
-import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";

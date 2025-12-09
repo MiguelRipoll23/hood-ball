@@ -18,6 +18,7 @@ import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
 import { GameServer } from "../../../models/game-server.js";
+import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 

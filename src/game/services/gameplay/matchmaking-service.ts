@@ -1,5 +1,4 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../engine/models/game-state.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { DebugUtils } from "../../../engine/utils/debug-utils.js";
 import { WebSocketService } from "../network/websocket-service.js";
@@ -14,7 +13,6 @@ import { MatchSessionService } from "../session/match-session-service.js";
 @injectable()
 export class MatchmakingService implements IMatchmakingService {
   constructor(
-    private readonly gameState = inject(GameState),
     private readonly webSocketService = inject(WebSocketService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly matchFinderService = inject(MatchFinderService),

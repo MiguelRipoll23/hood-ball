@@ -12,7 +12,7 @@ import { ServerCommandHandler } from "../../decorators/server-command-handler.js
 import { WebSocketService } from "./websocket-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
-import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/network/webrtc-service-interface.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { container } from "../../../engine/services/di-container.js";
 import { injectable, inject } from "@needle-di/core";

@@ -13,6 +13,7 @@ import type { LoginEntities } from "./login-entity-factory.js";
 import { GameServer } from "../../../models/game-server.js";
 import { gameContext } from "../../../context/game-context.js";
 import { LoginController } from "./login-controller.js";
+import type { ConfigurationType } from "../../../types/configuration-type.js";
 
 export class LoginScene extends BaseGameScene {
   private controller: LoginController;

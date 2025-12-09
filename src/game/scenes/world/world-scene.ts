@@ -423,7 +423,7 @@ export class WorldScene extends BaseCollidingGameScene {
     if (this.matchLogEntity) {
       return;
     }
-    this.matchLogEntity = new MatchLogEntity(this.canvas, this.gameState);
+    this.matchLogEntity = new MatchLogEntity(this.canvas);
     this.uiEntities.push(this.matchLogEntity);
     this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
       (actions) => this.matchLogEntity?.show(actions)

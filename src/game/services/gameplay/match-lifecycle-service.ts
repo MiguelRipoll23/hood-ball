@@ -1,5 +1,4 @@
 import { inject, injectable } from "@needle-di/core";
-import { GameState } from "../../../engine/models/game-state.js";
 import { APIService } from "../network/api-service.js";
 import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
@@ -26,7 +25,6 @@ export class MatchLifecycleService {
   private gameOverInProgress = false;
 
   constructor(
-    private readonly gameState = inject(GameState),
     private readonly apiService = inject(APIService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly networkService: IMatchmakingNetworkService = inject(

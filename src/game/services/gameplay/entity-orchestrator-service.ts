@@ -12,7 +12,7 @@ import type { EntityType } from "../../../engine/enums/entity-type.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { container } from "../../../engine/services/di-container.js";
 import { injectable, inject } from "@needle-di/core";
-import type { WebRTCPeer } from "../../interfaces/services/network/webrtc-peer.js";
+import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 

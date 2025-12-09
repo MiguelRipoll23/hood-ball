@@ -208,7 +208,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public getPlayer(): GamePlayer | null {
-    return this.owner;
+    return this.owner as GamePlayer | null;
   }
 
   public getBoost(): number {
@@ -391,7 +391,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   private renderPingLevel(context: CanvasRenderingContext2D): void {
-    const pingTime = this.owner?.getPingTime() ?? null;
+    const pingTime = (this.owner as GamePlayer | null)?.getPingTime() ?? null;
 
     if (pingTime === null) {
       return;

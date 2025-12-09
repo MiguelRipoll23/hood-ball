@@ -1,5 +1,5 @@
 import type { BinaryReader } from "../../../../engine/utils/binary-reader-utils.js";
-import type { WebRTCPeer } from "./webrtc-peer.js";
+import type { WebRTCPeer } from "../../../../engine/interfaces/network/webrtc-peer.js";
 
 export interface IMatchmakingNetworkService {
   startFindMatchesTimer(resolve: () => void): void;

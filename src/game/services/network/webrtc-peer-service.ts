@@ -1,7 +1,7 @@
 import { GamePlayer } from "../../models/game-player.js";
 import type { PeerConnectionListener } from "../../interfaces/services/network/peer-connection-listener.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
-import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-interface.js";
+import type { WebRTCServiceContract } from "../../../engine/interfaces/network/webrtc-service-interface.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
@@ -53,9 +53,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     private token: string,
     webrtcDelegate: WebRTCServiceContract,
     connectionListener: PeerConnectionListener,
-    private matchSessionService: MatchSessionService = inject(
-      MatchSessionService
-    ),
+    _matchSessionService: MatchSessionService = inject(MatchSessionService),
     private gameServer: GameServer = inject(GameServer),
     private timerManagerService = container.get(TimerManagerService),
     private gameState: GameState = inject(GameState)
@@ -63,7 +61,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     this.connectionListener = connectionListener;
     this.webrtcDelegate = webrtcDelegate;
 
-    this.host = matchSessionService.getMatch()?.isHost() ?? false;
+    this.host = _matchSessionService.getMatch()?.isHost() ?? false;
 
     this.peerConnection = new RTCPeerConnection({
       iceServers: this.gameServer?.getServerRegistration()?.getRTCIceServers(),

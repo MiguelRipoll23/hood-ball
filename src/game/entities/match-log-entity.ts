@@ -1,5 +1,4 @@
 import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
-import { GameState } from "../../engine/models/game-state.js";
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";
 import { MatchActionType } from "../enums/match-action-type.js";
@@ -27,10 +26,7 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
   private isFadingIn = false;
   private isFadingOut = false;
 
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly gameState: GameState
-  ) {
+  constructor(private readonly canvas: HTMLCanvasElement) {
     super();
     this.opacity = 0;
   }

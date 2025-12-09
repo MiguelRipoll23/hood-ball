@@ -22,7 +22,7 @@ export class DebugWindow extends BaseWindow {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
     this.animationInspectorWindow = new AnimationInspectorWindow();
     this.eventInspectorWindow = new EventInspectorWindow();
-    this.matchInspectorWindow = new MatchInspectorWindow(gameState);
+    this.matchInspectorWindow = new MatchInspectorWindow();
     this.peerInspectorWindow = new PeerInspectorWindow();
     this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
     this.modWindow = new ModWindow(gameState);

@@ -1,4 +1,4 @@
-import { Player } from "../models/player.js";
+import type { Player } from "../models/player.js";
 import { EntityType } from "../../enums/entity-type.js";
 import type { GameEntity } from "../../models/game-entity.js";
 
