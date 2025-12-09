@@ -13,11 +13,11 @@ import { LoginScene } from "./scenes/main/login/login-scene.js";
 export class Game {
   constructor(private canvas: HTMLCanvasElement) {}
 
-  public start(): void {
+  public async start(): Promise<void> {
     this.initializeServices();
     this.initializeDebug();
     this.initializeLifecycle();
-    this.startGameLoop();
+    await this.startGameLoop();
   }
 
   private initializeServices(): void {
@@ -38,7 +38,7 @@ export class Game {
     gameLifecycleService.start();
   }
 
-  private startGameLoop(): void {
+  private async startGameLoop(): Promise<void> {
     const gameState = container.get(GameState);
     const eventConsumerService = container.get(EventConsumerService);
     const gameLoop = container.get(GameLoopService);
@@ -48,6 +48,6 @@ export class Game {
 
     mainScene.activateScene(loginScene);
 
-    gameLoop.start(mainScene);
+    await gameLoop.start(mainScene);
   }
 }

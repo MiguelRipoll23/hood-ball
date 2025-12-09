@@ -4,6 +4,7 @@ import {
   CANVAS_HEIGHT,
   CANVAS_WIDTH,
 } from "../../constants/canvas-constants.js";
+import { GAME_VERSION } from "../../../game/constants/game-constants.js";
 import { DebugUtils } from "../../utils/debug-utils.js";
 import type { GameScene } from "../../interfaces/scenes/game-scene.js";
 import { EventConsumerService } from "./event-consumer-service.js";
@@ -58,14 +59,14 @@ export class GameLoopService {
     this.addWindowAndGameListeners();
     this.setCanvasSize();
     this.loadEntities();
-    this.debugService.init();
   }
 
   public getCanvas(): HTMLCanvasElement {
     return this.canvas;
   }
 
-  public start(initialScene: GameScene): void {
+  public async start(initialScene: GameScene): Promise<void> {
+    await this.debugService.init();
     this.isRunning = true;
     requestAnimationFrame(this.loop.bind(this));
     this.setInitialScene(initialScene);
@@ -225,7 +226,7 @@ export class GameLoopService {
       this.context,
       this.canvas.width - 24,
       this.canvas.height - 24,
-      `v${"0.0.0"}`,
+      `v${GAME_VERSION}`,
       true,
       true
     );

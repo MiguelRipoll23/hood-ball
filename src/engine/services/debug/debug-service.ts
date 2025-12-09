@@ -5,6 +5,8 @@ import { BaseWindow } from "../../debug/base-window.js";
 
 @injectable()
 export class DebugService {
+  private static readonly MAX_ERROR_MESSAGES = 200;
+
   private debugCanvas: HTMLCanvasElement;
   private gameCanvas: HTMLCanvasElement;
   private context: WebGLRenderingContext | null = null;
@@ -164,6 +166,9 @@ export class DebugService {
       }
     });
 
+    if (this.errorMessages.length >= DebugService.MAX_ERROR_MESSAGES) {
+      this.errorMessages.shift();
+    }
     this.errorMessages.push(parts.join(" "));
   }
 
