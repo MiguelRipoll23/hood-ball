@@ -30,7 +30,9 @@ export class AnimationInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.SizingStretchProp;
 
-    if (ImGui.BeginTable("AnimationsTable", 3, tableFlags, new ImVec2(0, 200))) {
+    if (
+      ImGui.BeginTable("AnimationsTable", 3, tableFlags, new ImVec2(0, 200))
+    ) {
       ImGui.TableSetupColumn("Entity", ImGui.TableColumnFlags.WidthStretch);
       ImGui.TableSetupColumn("Type", ImGui.TableColumnFlags.WidthFixed, 90);
       ImGui.TableSetupColumn("Progress", ImGui.TableColumnFlags.WidthFixed, 80);
