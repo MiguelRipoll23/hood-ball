@@ -112,6 +112,9 @@ export class SettingsScene extends BaseGameScene {
       // Register debug window only when first initializing
       const debugWindow = new DebugWindow(this.gameState);
       debugService.registerWindow(debugWindow);
+    } else {
+      // Re-open debug windows when debug mode is re-enabled
+      debugService.openWindows();
     }
   }
 }

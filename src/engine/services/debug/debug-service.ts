@@ -31,6 +31,15 @@ export class DebugService {
     this.windows.push(window);
   }
 
+  /**
+   * Opens all registered debug windows.
+   * This should be called when debug mode is re-enabled after being disabled,
+   * to ensure that windows which may have been closed are reopened.
+   */
+  public openWindows(): void {
+    this.windows.forEach((window) => window.open());
+  }
+
   public isInitialized(): boolean {
     return this.initialized;
   }
