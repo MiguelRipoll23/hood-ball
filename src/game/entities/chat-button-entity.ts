@@ -105,7 +105,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
-    if (this.pressed) {
+    if (this.pressed && !this.inputVisible) {
       this.showInput();
     }
 
