@@ -45,6 +45,10 @@ export class DebugService {
   }
 
   public async init(): Promise<void> {
+    if (this.initialized) {
+      console.log(`${this.constructor.name} already initialized, skipping`);
+      return;
+    }
     await ImGuiImplWeb.Init({ canvas: this.debugCanvas });
     this.setCanvasContext();
     ImGui.SetNextWindowFocus();
