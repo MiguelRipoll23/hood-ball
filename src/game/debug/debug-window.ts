@@ -105,7 +105,7 @@ export class DebugWindow extends BaseWindow {
       }
 
       if (ImGui.BeginMenu("Mod")) {
-        if (ImGui.MenuItem("Open Menu", "")) {
+        if (ImGui.MenuItem("Open menu", "")) {
           this.modWindow.toggle();
         }
 

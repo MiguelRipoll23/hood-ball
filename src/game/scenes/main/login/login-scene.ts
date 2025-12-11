@@ -15,7 +15,6 @@ import { gameContext } from "../../../context/game-context.js";
 import { LoginController } from "./login-controller.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
 
-
 export class LoginScene extends BaseGameScene {
   private controller: LoginController;
   private credentialService: CredentialService;
@@ -26,10 +25,9 @@ export class LoginScene extends BaseGameScene {
   private signInButtonElement: HTMLElement | null = null;
   private readonly gameServer: GameServer;
 
-  constructor(
-    gameState: GameState,
-    eventConsumerService: EventConsumerService
-  ) {
+  constructor() {
+    const gameState = container.get(GameState);
+    const eventConsumerService = container.get(EventConsumerService);
     super(gameState, eventConsumerService);
     this.gameServer = gameContext.get(GameServer);
     const apiService = container.get(APIService);

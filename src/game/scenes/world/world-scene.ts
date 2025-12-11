@@ -27,7 +27,6 @@ import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
-import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
@@ -481,11 +480,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private async returnToMainMenuScene(): Promise<void> {
-    const mainScene = new MainScene(
-      this.gameState,
-      container.get(EventConsumerService),
-      container.get(SceneManagerService)
-    );
+    const mainScene = new MainScene();
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
