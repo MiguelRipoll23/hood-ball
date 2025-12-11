@@ -67,7 +67,9 @@ export class GameLoopService {
   }
 
   public async start(initialScene: GameScene): Promise<void> {
-    await this.debugService.init();
+    if (this.gameState.isDebugging() && !this.debugService.isInitialized()) {
+      await this.debugService.init();
+    }
     this.isRunning = true;
     requestAnimationFrame(this.loop.bind(this));
     this.setInitialScene(initialScene);
