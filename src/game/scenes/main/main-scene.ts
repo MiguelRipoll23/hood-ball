@@ -14,7 +14,7 @@ export class MainScene extends BaseGameScene {
     const eventConsumerService = container.get(EventConsumerService);
     const sceneManagerService = container.get(SceneManagerService);
     super(gameState, eventConsumerService);
-    this.sceneManagerService = sceneManagerService;
+    this.setSceneManagerService(sceneManagerService);
     // Pointer events should be cleared only after nested scenes have processed
     // them.
     this.clearPointerEventsAutomatically = false;
