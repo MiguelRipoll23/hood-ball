@@ -13,7 +13,10 @@ import { IntervalManagerService } from "./gameplay/interval-manager-service.ts";
 import { DebugService } from "./debug/debug-service.ts";
 
 export class ServiceRegistry {
-  public static async register(canvas: HTMLCanvasElement, debugging: boolean): Promise<void> {
+  public static async register(
+    canvas: HTMLCanvasElement,
+    debugging: boolean
+  ): Promise<void> {
     container.bind({ provide: HTMLCanvasElement, useValue: canvas });
     const gameState = new GameState(canvas, debugging);
     container.bind({ provide: GameState, useValue: gameState });

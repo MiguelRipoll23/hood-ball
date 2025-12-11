@@ -51,18 +51,13 @@ export class SettingsScene extends BaseGameScene {
 
   private loadDebugSettingEntity(): void {
     const debugging = this.gameState.isDebugging();
-    const settingEntity = new SettingEntity(
-      "debug",
-      "Debug mode",
-      debugging
-    );
+    const settingEntity = new SettingEntity("debug", "Debug mode", debugging);
 
     settingEntity.setY(75);
     settingEntity.load();
 
     this.uiEntities.push(settingEntity);
   }
-
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
@@ -120,5 +115,4 @@ export class SettingsScene extends BaseGameScene {
     const debugWindow = new DebugWindow(this.gameState);
     debugService.registerWindow(debugWindow);
   }
-
 }
