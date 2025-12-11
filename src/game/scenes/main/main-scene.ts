@@ -1,18 +1,18 @@
 import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { MainBackgroundEntity } from "../../entities/backgrounds/main-background-entity.js";
 import type { GameScene } from "../../../engine/interfaces/scenes/game-scene-interface.js";
-import type { GameState } from "../../../engine/models/game-state.js";
+import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
-import type { SceneManagerServiceContract } from "../../../engine/interfaces/services/scene/scene-manager-service-contract.js";
+import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
+import { container } from "../../../engine/services/di-container.js";
 
 export class MainScene extends BaseGameScene {
   private scene: GameScene | null = null;
 
-  constructor(
-    gameState: GameState,
-    eventConsumerService: EventConsumerService,
-    sceneManagerService: SceneManagerServiceContract
-  ) {
+  constructor() {
+    const gameState = container.get(GameState);
+    const eventConsumerService = container.get(EventConsumerService);
+    const sceneManagerService = container.get(SceneManagerService);
     super(gameState, eventConsumerService);
     this.sceneManagerService = sceneManagerService;
     // Pointer events should be cleared only after nested scenes have processed
@@ -42,13 +42,14 @@ export class MainScene extends BaseGameScene {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    super.update(deltaTimeStamp);
-
-    // Update nested scenes after updating the base entities
+    // Update nested scenes first
     this.sceneManagerService?.getCurrentScene()?.setOpacity(this.opacity);
     this.sceneManagerService?.update(deltaTimeStamp);
 
-    // Clear pointer events once all scenes have processed input
+    // Then update the base scene
+    super.update(deltaTimeStamp);
+
+    // Clear pointer events after both the nested and base scenes have consumed them
     this.clearPointerEvents();
   }
 

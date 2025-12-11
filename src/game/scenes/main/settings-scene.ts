@@ -2,10 +2,11 @@ import type { GameState } from "../../../engine/models/game-state.js";
 import { ButtonEntity } from "../../entities/common/button-entity.js";
 import { TitleEntity } from "../../entities/common/title-entity.js";
 import { SettingEntity } from "../../entities/setting-entity.js";
-import { DebugService } from "../../services/debug/debug-service.js";
+import { DebugService } from "../../../engine/services/debug/debug-service.js";
 import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { DebugWindow } from "../../debug/debug-window.js";
 
 export class SettingsScene extends BaseGameScene {
   private titleEntity: TitleEntity | null = null;
@@ -114,6 +115,10 @@ export class SettingsScene extends BaseGameScene {
     if (debugService.isInitialized() === false) {
       debugService.init();
     }
+
+    // Register debug window
+    const debugWindow = new DebugWindow(this.gameState);
+    debugService.registerWindow(debugWindow);
   }
 
 }

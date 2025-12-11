@@ -6,13 +6,14 @@ import { CameraService } from "./gameplay/camera-service.ts";
 import { AnimationLogService } from "./gameplay/animation-log-service.ts";
 import { RecorderService } from "./gameplay/recorder-service.ts";
 import { MediaPlayerService } from "./gameplay/player-service.ts";
-import { DebugService } from "./debug/debug-service.ts";
 import { SceneTransitionService } from "./gameplay/scene-transition-service.ts";
+import { SceneManagerService } from "./gameplay/scene-manager-service.ts";
 import { TimerManagerService } from "./gameplay/timer-manager-service.ts";
 import { IntervalManagerService } from "./gameplay/interval-manager-service.ts";
+import { DebugService } from "./debug/debug-service.ts";
 
 export class ServiceRegistry {
-  public static register(canvas: HTMLCanvasElement, debugging: boolean): void {
+  public static async register(canvas: HTMLCanvasElement, debugging: boolean): Promise<void> {
     container.bind({ provide: HTMLCanvasElement, useValue: canvas });
     const gameState = new GameState(canvas, debugging);
     container.bind({ provide: GameState, useValue: gameState });
@@ -34,10 +35,13 @@ export class ServiceRegistry {
       provide: MediaPlayerService,
       useClass: MediaPlayerService,
     });
-    container.bind({ provide: DebugService, useClass: DebugService });
     container.bind({
       provide: SceneTransitionService,
       useClass: SceneTransitionService,
+    });
+    container.bind({
+      provide: SceneManagerService,
+      useClass: SceneManagerService,
     });
     container.bind({
       provide: TimerManagerService,
@@ -47,5 +51,11 @@ export class ServiceRegistry {
       provide: IntervalManagerService,
       useClass: IntervalManagerService,
     });
+    container.bind({ provide: DebugService, useClass: DebugService });
+
+    if (debugging) {
+      const debugService = container.get(DebugService);
+      await debugService.init();
+    }
   }
 }

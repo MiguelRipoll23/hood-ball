@@ -36,7 +36,7 @@ export class BaseGameScene implements GameScene {
    * when delegating events to nested scenes.
    */
   // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
-  protected clearPointerEventsAutomatically = true;
+  protected clearPointerEventsAutomatically = false;
 
   /**
    * Determines if pointer events should be cleared at the end of
@@ -285,7 +285,11 @@ export class BaseGameScene implements GameScene {
 
     this.sceneManagerService
       ?.getTransitionService()
-      .crossfade(this.sceneManagerService, previousScene, crossfadeDurationSeconds);
+      .crossfade(
+        this.sceneManagerService,
+        previousScene,
+        crossfadeDurationSeconds
+      );
   }
 
   public resubscribeEvents(): void {
