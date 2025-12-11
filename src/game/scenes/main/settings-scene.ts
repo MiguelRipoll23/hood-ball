@@ -109,10 +109,9 @@ export class SettingsScene extends BaseGameScene {
 
     if (debugService.isInitialized() === false) {
       debugService.init();
+      // Register debug window only when first initializing
+      const debugWindow = new DebugWindow(this.gameState);
+      debugService.registerWindow(debugWindow);
     }
-
-    // Register debug window
-    const debugWindow = new DebugWindow(this.gameState);
-    debugService.registerWindow(debugWindow);
   }
 }
