@@ -1,7 +1,6 @@
 import { injectable, inject } from "@needle-di/core";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
-import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { MainScene } from "../../scenes/main/main-scene.js";
@@ -24,10 +23,7 @@ export class GameLifecycleService {
     private matchSessionService: MatchSessionService = inject(
       MatchSessionService
     ),
-    private gamePlayer: GamePlayer = inject(GamePlayer),
-    private sceneManagerService: SceneManagerService = inject(
-      SceneManagerService
-    )
+    private gamePlayer: GamePlayer = inject(GamePlayer)
   ) {}
 
   public start(): void {
@@ -97,11 +93,7 @@ export class GameLifecycleService {
     this.matchSessionService.setMatch(null);
     this.gamePlayer.reset();
 
-    const mainScene = new MainScene(
-      this.gameState,
-      this.eventConsumerService,
-      this.sceneManagerService
-    );
+    const mainScene = new MainScene();
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       this.eventConsumerService,

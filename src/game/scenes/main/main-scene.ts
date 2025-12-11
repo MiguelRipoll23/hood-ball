@@ -14,7 +14,7 @@ export class MainScene extends BaseGameScene {
     const eventConsumerService = container.get(EventConsumerService);
     const sceneManagerService = container.get(SceneManagerService);
     super(gameState, eventConsumerService);
-    this.sceneManagerService = sceneManagerService;
+    this.setSceneManagerService(sceneManagerService);
     // Pointer events should be cleared only after nested scenes have processed
     // them.
     this.clearPointerEventsAutomatically = false;
@@ -42,12 +42,12 @@ export class MainScene extends BaseGameScene {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    // Update nested scenes first
+    // Update base scene first to process entities
+    super.update(deltaTimeStamp);
+
+    // Update nested scenes after updating the base entities
     this.sceneManagerService?.getCurrentScene()?.setOpacity(this.opacity);
     this.sceneManagerService?.update(deltaTimeStamp);
-
-    // Then update the base scene
-    super.update(deltaTimeStamp);
 
     // Clear pointer events after both the nested and base scenes have consumed them
     this.clearPointerEvents();
