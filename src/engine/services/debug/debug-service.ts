@@ -31,6 +31,10 @@ export class DebugService {
     this.windows.push(window);
   }
 
+  public openWindows(): void {
+    this.windows.forEach((window) => window.open());
+  }
+
   public isInitialized(): boolean {
     return this.initialized;
   }
