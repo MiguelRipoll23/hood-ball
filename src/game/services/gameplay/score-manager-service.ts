@@ -143,7 +143,8 @@ export class ScoreManagerService {
     const playersCount =
       this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
-    if (playersCount < 2) {
+    // Allow scoring with 1 player (solo match with NPC) or 2+ players
+    if (playersCount < 1) {
       return;
     }
 

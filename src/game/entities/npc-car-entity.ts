@@ -17,7 +17,8 @@ export class NpcCarEntity extends CarEntity {
     y: number,
     angle: number,
     canvas: HTMLCanvasElement,
-    private readonly ballEntity: BallEntity
+    private readonly ballEntity: BallEntity,
+    spawnPointIndex: number = -1
   ) {
     super(x, y, angle, true); // remote=true to use red car
     this.setCanvas(canvas);
@@ -28,7 +29,7 @@ export class NpcCarEntity extends CarEntity {
       "🤖 NPC",
       false,
       0,
-      -1 // No spawn point for NPC
+      spawnPointIndex
     );
     this.setOwner(npcPlayer);
   }

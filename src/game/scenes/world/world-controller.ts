@@ -29,9 +29,8 @@ export class WorldController {
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
   private readonly gamePlayer: GamePlayer;
   private readonly matchSessionService: MatchSessionService;
-  private isInitialWaitingState = false;
-  private fakeMatchBlueScore = 0;
-  private fakeMatchRedScore = 0;
+  private isSoloMatchWithNpc = false;
+  private soloMatchScoresSnapshot: { player: number; npc: number } | null = null;
 
   constructor(
     private readonly spawnPointService: SpawnPointService,
@@ -48,7 +47,7 @@ export class WorldController {
     private readonly getEntitiesByOwner: (
       player: GamePlayer
     ) => BaseMultiplayerGameEntity[],
-    private readonly onAddNpcCar: () => void,
+    private readonly onAddNpcCar: (spawnPointIndex: number) => void,
     private readonly onRemoveNpcCar: () => void
   ) {
     this.gamePlayer = gameContext.get(GamePlayer);
@@ -68,12 +67,6 @@ export class WorldController {
       this.scoreboardEntity.setActive(false);
     }
 
-    // During initial waiting state with NPC, allow playing
-    if (matchState === MatchStateType.WaitingPlayers && this.isInitialWaitingState) {
-      this.localCarEntity.setActive(true);
-      this.ballEntity.setInactive(false);
-    }
-
     if (matchState === MatchStateType.Countdown) {
       this.ballEntity.setInactive(true);
       this.localCarEntity.setActive(false);
@@ -84,14 +77,24 @@ export class WorldController {
     this.matchSessionService.setMatchState(MatchStateType.WaitingPlayers);
     this.scoreboardEntity.stopTimer();
     this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
-    this.isInitialWaitingState = isInitial;
     
     // Only add NPC car during initial waiting (not when player leaves)
     if (isInitial) {
-      this.fakeMatchBlueScore = 0;
-      this.fakeMatchRedScore = 0;
-      this.onAddNpcCar();
+      // Get a spawn point for the NPC
+      const npcSpawnPointIndex = this.spawnPointService.getAndConsumeSpawnPointIndex();
+      if (npcSpawnPointIndex !== -1) {
+        this.isSoloMatchWithNpc = true;
+        this.onAddNpcCar(npcSpawnPointIndex);
+      }
     }
+  }
+  
+  public startSoloMatchWithNpc(): void {
+    // Start the match in InProgress state but keep timer frozen
+    this.matchSessionService.setMatchState(MatchStateType.InProgress);
+    this.isSoloMatchWithNpc = true;
+    // Don't start the timer - it stays frozen
+    console.log("Solo match with NPC started - timer frozen");
   }
 
   public showCountdown(): void {
@@ -100,15 +103,21 @@ export class WorldController {
 
     this.matchSessionService.setMatchState(MatchStateType.Countdown);
 
-    // Remove NPC car when countdown starts
-    if (this.isInitialWaitingState) {
+    // Remove NPC car and reset scores when countdown starts for real match
+    if (this.isSoloMatchWithNpc) {
       this.onRemoveNpcCar();
-      this.isInitialWaitingState = false;
+      this.isSoloMatchWithNpc = false;
+      
+      // Reset scores when transitioning from solo match to real match
+      if (this.soloMatchScoresSnapshot) {
+        // Reset player scores to 0
+        const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
+        players.forEach(player => {
+          player.setScore(0);
+        });
+        this.soloMatchScoresSnapshot = null;
+      }
     }
-
-    // Reset fake match scores when countdown starts
-    this.fakeMatchBlueScore = 0;
-    this.fakeMatchRedScore = 0;
 
     if (this.countdownCurrentNumber < 0) {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
@@ -184,7 +193,14 @@ export class WorldController {
     this.moveCarToSpawnPoint();
     this.markRemoteCarsForSpawn();
     this.ballEntity.reset();
-    this.scoreboardEntity.startTimer();
+    
+    // Only start timer if it's not a solo match with NPC
+    // In solo matches, timer stays frozen at initial duration
+    if (!this.isSoloMatchWithNpc) {
+      this.scoreboardEntity.startTimer();
+    } else {
+      console.log("Solo match - timer remains frozen");
+    }
   }
 
   private sendCountdownEvent(): void {
@@ -483,38 +499,12 @@ export class WorldController {
     );
   }
 
-  public handleFakeMatchGoal(isPlayerGoal: boolean): void {
-    // Only handle fake match goals during waiting state
-    const matchState = this.matchSessionService.getMatch()?.getState();
-    if (matchState !== MatchStateType.WaitingPlayers) {
-      return;
-    }
-
-    if (isPlayerGoal) {
-      this.fakeMatchBlueScore += 1;
-      this.alertEntity.show(["YOU", "SCORED!"], "blue");
-    } else {
-      this.fakeMatchRedScore += 1;
-      this.alertEntity.show(["🤖 NPC", "SCORED!"], "red");
-    }
-
-    // Reset ball after goal
-    this.ballEntity.reset();
+  public isSoloMatch(): boolean {
+    return this.isSoloMatchWithNpc;
   }
-
-  public getFakeMatchBlueScore(): number {
-    return this.fakeMatchBlueScore;
-  }
-
-  public getFakeMatchRedScore(): number {
-    return this.fakeMatchRedScore;
-  }
-
-  public isInFakeMatch(): boolean {
-    const match = this.matchSessionService.getMatch();
-    if (!match) {
-      return false;
-    }
-    return this.isInitialWaitingState && match.getState() === MatchStateType.WaitingPlayers;
+  
+  public getNpcSpawnPointIndex(): number | null {
+    // Return a spawn point index for the NPC if available
+    return this.spawnPointService.getAndConsumeSpawnPointIndex();
   }
 }

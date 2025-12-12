@@ -223,12 +223,8 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.worldController?.handleMatchState();
     
-    // Detect goals for real match or fake match
-    if (this.worldController?.isInFakeMatch()) {
-      this.detectFakeMatchGoals();
-    } else {
-      this.scoreManagerService?.detectScoresIfHost();
-    }
+    // Always use the normal score detection (works for solo and multiplayer)
+    this.scoreManagerService?.detectScoresIfHost();
 
     this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
   }
@@ -247,8 +243,14 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchAdvertised(): void {
     if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
+      // Start a solo match with NPC instead of waiting
       this.worldController?.handleWaitingForPlayers(true); // true = initial waiting state
-      this.toastEntity?.show("Waiting for players...");
+      // Immediately transition to countdown and then solo match
+      this.toastEntity?.show("Starting practice match...", 2);
+      // Trigger countdown after a short delay
+      this.timerManagerService.createTimer(1, () => {
+        this.worldController?.showCountdown();
+      });
     }
   }
 
@@ -269,7 +271,12 @@ export class WorldScene extends BaseCollidingGameScene {
 
       const matchState = this.matchSessionService.getMatch()?.getState();
 
-      if (matchState === MatchStateType.WaitingPlayers) {
+      // If player joins during a solo match, transition to real match
+      if (this.worldController?.isSoloMatch()) {
+        this.toastEntity?.show("Real match starting!", 2);
+        // Start countdown to begin real match (this will reset scores)
+        this.worldController?.showCountdown();
+      } else if (matchState === MatchStateType.WaitingPlayers) {
         this.worldController?.showCountdown();
       }
     }
@@ -543,34 +550,48 @@ export class WorldScene extends BaseCollidingGameScene {
     });
   }
 
-  private addNpcCar(): void {
-    const NPC_SPAWN_Y_OFFSET = 200; // Distance from bottom edge to spawn NPC
-    
-    if (!this.ballEntity || this.npcCarEntity) {
+  private addNpcCar(spawnPointIndex: number): void {
+    if (!this.ballEntity || this.npcCarEntity || spawnPointIndex === -1) {
       return;
     }
     
-    // Spawn NPC car at opposite side of player
-    const npcSpawnX = this.canvas.width / 2;
-    const npcSpawnY = this.canvas.height - NPC_SPAWN_Y_OFFSET;
+    // Find the spawn point entity with the given index
+    const spawnPoint = this.spawnPointEntities.find(sp => sp.getIndex() === spawnPointIndex);
+    if (!spawnPoint) {
+      console.warn(`Spawn point with index ${spawnPointIndex} not found`);
+      return;
+    }
+    
+    const spawnX = spawnPoint.getX();
+    const spawnY = spawnPoint.getY();
     
     this.npcCarEntity = new NpcCarEntity(
-      npcSpawnX,
-      npcSpawnY,
-      -Math.PI / 2, // Face upward
+      spawnX,
+      spawnY,
+      Math.PI / 2, // Spawn angle (facing down toward goal)
       this.canvas,
-      this.ballEntity
+      this.ballEntity,
+      spawnPointIndex
     );
     
     this.npcCarEntity.load();
     this.worldEntities.push(this.npcCarEntity);
     
-    console.log("NPC car added for fake match");
+    console.log(`NPC car added at spawn point ${spawnPointIndex}`);
   }
 
   private removeNpcCar(): void {
     if (!this.npcCarEntity) {
       return;
+    }
+
+    // Release the spawn point back to the pool
+    const npcPlayer = this.npcCarEntity.getPlayer();
+    if (npcPlayer) {
+      const spawnIndex = npcPlayer.getSpawnPointIndex();
+      if (spawnIndex !== -1) {
+        this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
+      }
     }
 
     const index = this.worldEntities.indexOf(this.npcCarEntity);
@@ -582,23 +603,7 @@ export class WorldScene extends BaseCollidingGameScene {
     console.log("NPC car removed");
   }
 
-  private detectFakeMatchGoals(): void {
-    if (!this.goalEntity || !this.ballEntity) {
-      return;
-    }
 
-    const goalScored = this.goalEntity
-      .getCollidingEntities()
-      .includes(this.ballEntity);
-
-    if (goalScored) {
-      const lastPlayer = this.ballEntity.getLastPlayer();
-      // If last player is local player, they scored
-      const isPlayerGoal = lastPlayer === this.gamePlayer;
-      
-      this.worldController?.handleFakeMatchGoal(isPlayerGoal);
-    }
-  }
 
   public override dispose(): void {
     // Hide chat input when leaving the game scene
