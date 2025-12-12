@@ -15,7 +15,6 @@ import { GameState } from "../../../engine/models/game-state.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { SceneType } from "../../../engine/enums/scene-type.js";
-import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { MatchmakingControllerContract } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
@@ -243,18 +242,12 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchAdvertised(): void {
     if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
-      // Start a solo match with NPC in waiting state
-      this.worldController?.handleWaitingForPlayers(true); // true = initial waiting state
+      // Start solo match with NPC
+      this.worldController?.startSoloMatchWithNpc();
       this.toastEntity?.show("Waiting for players...");
       
-      // After a short delay, start countdown to begin solo practice
-      this.timerManagerService.createTimer(2, () => {
-        // Check if still solo (no other player joined yet)
-        const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
-        if (playersCount === 1) {
-          this.worldController?.showCountdown();
-        }
-      });
+      // Start countdown to begin practice match
+      this.worldController?.showCountdown();
     }
   }
 
@@ -273,14 +266,10 @@ export class WorldScene extends BaseCollidingGameScene {
     } else {
       this.toastEntity?.show(`<em>${player.getName()}</em> joined`, 2);
 
-      const matchState = this.matchSessionService.getMatch()?.getState();
-
       // If player joins during a solo match, transition to real match
       if (this.worldController?.isSoloMatch()) {
         this.toastEntity?.show("Real match starting!", 2);
         // Start countdown to begin real match (this will reset scores)
-        this.worldController?.showCountdown();
-      } else if (matchState === MatchStateType.WaitingPlayers) {
         this.worldController?.showCountdown();
       }
     }
@@ -304,8 +293,9 @@ export class WorldScene extends BaseCollidingGameScene {
     const playersCount =
       this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
+    // If down to 1 player, just show waiting message but stay in current state
     if (playersCount === 1) {
-      this.handleWaitingForPlayers();
+      this.toastEntity?.show("Waiting for players...");
     }
 
     this.scoreManagerService?.updateScoreboard();
@@ -392,10 +382,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
   }
 
-  private handleWaitingForPlayers(): void {
-    this.worldController?.handleWaitingForPlayers(false); // false = not initial, player left
-    this.toastEntity?.show("Waiting for players...");
-  }
+
 
   private setupChatUI(): void {
     const chatInputElement = document.querySelector(

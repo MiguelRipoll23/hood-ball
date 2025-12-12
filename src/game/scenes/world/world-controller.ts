@@ -63,11 +63,6 @@ export class WorldController {
       this.localCarEntity.setActive(true);
       this.scoreboardEntity.setActive(true);
       this.ballEntity.setInactive(false);
-    } else if (matchState === MatchStateType.WaitingPlayers) {
-      // During solo match in waiting state before countdown, disable gameplay
-      this.scoreboardEntity.setActive(false);
-      this.localCarEntity.setActive(false);
-      this.ballEntity.setInactive(true);
     } else {
       this.scoreboardEntity.setActive(false);
     }
@@ -78,28 +73,14 @@ export class WorldController {
     }
   }
 
-  public handleWaitingForPlayers(isInitial: boolean = false): void {
-    this.matchSessionService.setMatchState(MatchStateType.WaitingPlayers);
-    this.scoreboardEntity.stopTimer();
-    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
-    
-    // Only add NPC car during initial waiting (not when player leaves)
-    if (isInitial) {
-      // Get a spawn point for the NPC
-      const npcSpawnPointIndex = this.spawnPointService.getAndConsumeSpawnPointIndex();
-      if (npcSpawnPointIndex !== -1) {
-        this.isSoloMatchWithNpc = true;
-        this.onAddNpcCar(npcSpawnPointIndex);
-      }
-    }
-  }
-  
   public startSoloMatchWithNpc(): void {
-    // Start the match in InProgress state but keep timer frozen
-    this.matchSessionService.setMatchState(MatchStateType.InProgress);
-    this.isSoloMatchWithNpc = true;
-    // Don't start the timer - it stays frozen
-    console.log("Solo match with NPC started - timer frozen");
+    // Get a spawn point for the NPC
+    const npcSpawnPointIndex = this.spawnPointService.getAndConsumeSpawnPointIndex();
+    if (npcSpawnPointIndex !== -1) {
+      this.isSoloMatchWithNpc = true;
+      this.onAddNpcCar(npcSpawnPointIndex);
+      console.log("Solo match with NPC started");
+    }
   }
 
   public showCountdown(): void {
