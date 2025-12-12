@@ -30,7 +30,6 @@ export class WorldController {
   private readonly gamePlayer: GamePlayer;
   private readonly matchSessionService: MatchSessionService;
   private isSoloMatchWithNpc = false;
-  private soloMatchScoresSnapshot: { player: number; npc: number } | null = null;
 
   constructor(
     private readonly spawnPointService: SpawnPointService,
@@ -61,10 +60,9 @@ export class WorldController {
 
     if (matchState === MatchStateType.InProgress) {
       this.localCarEntity.setActive(true);
-      this.scoreboardEntity.setActive(true);
+      // Don't call setActive on scoreboard - timer state is managed by startTimer/stopTimer
+      // in handleCountdownEnd and goal scoring
       this.ballEntity.setInactive(false);
-    } else {
-      this.scoreboardEntity.setActive(false);
     }
 
     if (matchState === MatchStateType.Countdown) {
@@ -86,23 +84,22 @@ export class WorldController {
   public showCountdown(): void {
     const match = this.matchSessionService.getMatch();
     const isHost = match?.isHost();
+    const playersCount = match?.getPlayers().length ?? 0;
 
     this.matchSessionService.setMatchState(MatchStateType.Countdown);
 
-    // Remove NPC car and reset scores when countdown starts for real match
-    if (this.isSoloMatchWithNpc) {
+    // Remove NPC car and reset scores when transitioning from solo to multiplayer
+    // (when second player joins - player count is now 2)
+    if (this.isSoloMatchWithNpc && playersCount >= 2) {
       this.onRemoveNpcCar();
       this.isSoloMatchWithNpc = false;
       
       // Reset scores when transitioning from solo match to real match
-      if (this.soloMatchScoresSnapshot) {
-        // Reset player scores to 0
-        const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
-        players.forEach(player => {
-          player.setScore(0);
-        });
-        this.soloMatchScoresSnapshot = null;
-      }
+      const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
+      players.forEach(player => {
+        player.setScore(0);
+      });
+      console.log("Transitioning from solo to multiplayer - NPC removed, scores reset");
     }
 
     if (this.countdownCurrentNumber < 0) {
