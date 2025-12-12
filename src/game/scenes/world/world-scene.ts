@@ -73,6 +73,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
   private matchLogEntity: MatchLogEntity | null = null;
+  private npcCarEntity: import("../../entities/npc-car-entity.js").NpcCarEntity | null = null;
 
   private readonly matchActionsLogService: MatchActionsLogService;
   private matchActionsLogUnsubscribe: (() => void) | null = null;
@@ -154,7 +155,9 @@ export class WorldScene extends BaseCollidingGameScene {
       this.matchActionsLogService,
       this.boostPadsEntities,
       this.spawnPointEntities,
-      this.getEntitiesByOwner.bind(this)
+      this.getEntitiesByOwner.bind(this),
+      this.addNpcCar.bind(this),
+      this.removeNpcCar.bind(this)
     );
 
     this.scoreManagerService = new ScoreManagerService(
@@ -218,7 +221,13 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.worldController?.handleMatchState();
-    this.scoreManagerService?.detectScoresIfHost();
+    
+    // Detect goals for real match or fake match
+    if (this.worldController?.isInFakeMatch()) {
+      this.detectFakeMatchGoals();
+    } else {
+      this.scoreManagerService?.detectScoresIfHost();
+    }
 
     this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
   }
@@ -237,7 +246,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchAdvertised(): void {
     if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
-      this.worldController?.handleWaitingForPlayers();
+      this.worldController?.handleWaitingForPlayers(true); // true = initial waiting state
       this.toastEntity?.show("Waiting for players...");
     }
   }
@@ -372,7 +381,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private handleWaitingForPlayers(): void {
-    this.worldController?.handleWaitingForPlayers();
+    this.worldController?.handleWaitingForPlayers(false); // false = not initial, player left
     this.toastEntity?.show("Waiting for players...");
   }
 
@@ -533,6 +542,63 @@ export class WorldScene extends BaseCollidingGameScene {
     });
   }
 
+  private async addNpcCar(): Promise<void> {
+    if (!this.ballEntity || this.npcCarEntity) {
+      return;
+    }
+
+    const { NpcCarEntity } = await import("../../entities/npc-car-entity.js");
+    
+    // Spawn NPC car at opposite side of player
+    const npcSpawnX = this.canvas.width / 2;
+    const npcSpawnY = this.canvas.height - 200;
+    
+    this.npcCarEntity = new NpcCarEntity(
+      npcSpawnX,
+      npcSpawnY,
+      -Math.PI / 2, // Face upward
+      this.canvas,
+      this.ballEntity
+    );
+    
+    this.npcCarEntity.load();
+    this.worldEntities.push(this.npcCarEntity);
+    
+    console.log("NPC car added for fake match");
+  }
+
+  private removeNpcCar(): void {
+    if (!this.npcCarEntity) {
+      return;
+    }
+
+    const index = this.worldEntities.indexOf(this.npcCarEntity);
+    if (index > -1) {
+      this.worldEntities.splice(index, 1);
+    }
+    
+    this.npcCarEntity = null;
+    console.log("NPC car removed");
+  }
+
+  private detectFakeMatchGoals(): void {
+    if (!this.goalEntity || !this.ballEntity) {
+      return;
+    }
+
+    const goalScored = this.goalEntity
+      .getCollidingEntities()
+      .includes(this.ballEntity);
+
+    if (goalScored) {
+      const lastPlayer = this.ballEntity.getLastPlayer();
+      // If last player is local player, they scored
+      const isPlayerGoal = lastPlayer === this.gamePlayer;
+      
+      this.worldController?.handleFakeMatchGoal(isPlayerGoal);
+    }
+  }
+
   public override dispose(): void {
     // Hide chat input when leaving the game scene
     const chatInputElement = document.querySelector(
@@ -546,6 +612,9 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
     this.matchActionsLogService.clear();
+    
+    // Remove NPC car if present
+    this.removeNpcCar();
 
     super.dispose();
   }

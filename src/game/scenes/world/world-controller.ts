@@ -29,6 +29,9 @@ export class WorldController {
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
   private readonly gamePlayer: GamePlayer;
   private readonly matchSessionService: MatchSessionService;
+  private isInitialWaitingState = false;
+  private fakeMatchBlueScore = 0;
+  private fakeMatchRedScore = 0;
 
   constructor(
     private readonly spawnPointService: SpawnPointService,
@@ -44,7 +47,9 @@ export class WorldController {
     private readonly spawnPointEntities: SpawnPointEntity[],
     private readonly getEntitiesByOwner: (
       player: GamePlayer
-    ) => BaseMultiplayerGameEntity[]
+    ) => BaseMultiplayerGameEntity[],
+    private readonly onAddNpcCar: () => void,
+    private readonly onRemoveNpcCar: () => void
   ) {
     this.gamePlayer = gameContext.get(GamePlayer);
     this.matchSessionService = gameContext.get(MatchSessionService);
@@ -69,10 +74,18 @@ export class WorldController {
     }
   }
 
-  public handleWaitingForPlayers(): void {
+  public handleWaitingForPlayers(isInitial: boolean = false): void {
     this.matchSessionService.setMatchState(MatchStateType.WaitingPlayers);
     this.scoreboardEntity.stopTimer();
     this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+    this.isInitialWaitingState = isInitial;
+    
+    // Only add NPC car during initial waiting (not when player leaves)
+    if (isInitial) {
+      this.fakeMatchBlueScore = 0;
+      this.fakeMatchRedScore = 0;
+      this.onAddNpcCar();
+    }
   }
 
   public showCountdown(): void {
@@ -80,6 +93,16 @@ export class WorldController {
     const isHost = match?.isHost();
 
     this.matchSessionService.setMatchState(MatchStateType.Countdown);
+
+    // Remove NPC car when countdown starts
+    if (this.isInitialWaitingState) {
+      this.onRemoveNpcCar();
+      this.isInitialWaitingState = false;
+    }
+
+    // Reset fake match scores when countdown starts
+    this.fakeMatchBlueScore = 0;
+    this.fakeMatchRedScore = 0;
 
     if (this.countdownCurrentNumber < 0) {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
@@ -452,5 +475,37 @@ export class WorldController {
         victimName: victimName ?? null,
       })
     );
+  }
+
+  public handleFakeMatchGoal(isPlayerGoal: boolean): void {
+    // Only handle fake match goals during waiting state
+    const matchState = this.matchSessionService.getMatch()?.getState();
+    if (matchState !== MatchStateType.WaitingPlayers) {
+      return;
+    }
+
+    if (isPlayerGoal) {
+      this.fakeMatchBlueScore += 1;
+      this.alertEntity.show(["YOU", "SCORED!"], "blue");
+    } else {
+      this.fakeMatchRedScore += 1;
+      this.alertEntity.show(["NPC", "SCORED!"], "red");
+    }
+
+    // Reset ball after goal
+    this.ballEntity.reset();
+  }
+
+  public getFakeMatchBlueScore(): number {
+    return this.fakeMatchBlueScore;
+  }
+
+  public getFakeMatchRedScore(): number {
+    return this.fakeMatchRedScore;
+  }
+
+  public isInFakeMatch(): boolean {
+    return this.isInitialWaitingState && 
+           this.matchSessionService.getMatch()?.getState() === MatchStateType.WaitingPlayers;
   }
 }
