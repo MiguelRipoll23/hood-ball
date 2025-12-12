@@ -3,7 +3,7 @@ import { BaseWindow } from "../../engine/debug/base-window.js";
 import {
   MediaPlayerService,
   PlaybackState,
-} from "../../engine/services/gameplay/player-service.js";
+} from "../../engine/services/gameplay/media-player-service.js";
 import { RecorderService } from "../../engine/services/gameplay/recorder-service.js";
 import { container } from "../../engine/services/di-container.js";
 import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.js";

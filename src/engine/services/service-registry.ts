@@ -5,7 +5,7 @@ import { EventConsumerService } from "./gameplay/event-consumer-service.ts";
 import { CameraService } from "./gameplay/camera-service.ts";
 import { AnimationLogService } from "./gameplay/animation-log-service.ts";
 import { RecorderService } from "./gameplay/recorder-service.ts";
-import { MediaPlayerService } from "./gameplay/player-service.ts";
+import { MediaPlayerService } from "./gameplay/media-player-service.ts";
 import { SceneTransitionService } from "./gameplay/scene-transition-service.ts";
 import { SceneManagerService } from "./gameplay/scene-manager-service.ts";
 import { TimerManagerService } from "./gameplay/timer-manager-service.ts";

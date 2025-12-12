@@ -263,7 +263,7 @@ export class RecorderService {
     const anyEntity = entity as unknown as Record<string, unknown>;
 
     // Extract angle from moveable entities using getter
-    if (moveable?.getAngle) {
+    if (moveable) {
       properties.angle = moveable.getAngle();
     }
 
