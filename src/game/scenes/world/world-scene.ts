@@ -544,13 +544,15 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private addNpcCar(): void {
+    const NPC_SPAWN_Y_OFFSET = 200; // Distance from bottom edge to spawn NPC
+    
     if (!this.ballEntity || this.npcCarEntity) {
       return;
     }
     
     // Spawn NPC car at opposite side of player
     const npcSpawnX = this.canvas.width / 2;
-    const npcSpawnY = this.canvas.height - 200;
+    const npcSpawnY = this.canvas.height - NPC_SPAWN_Y_OFFSET;
     
     this.npcCarEntity = new NpcCarEntity(
       npcSpawnX,

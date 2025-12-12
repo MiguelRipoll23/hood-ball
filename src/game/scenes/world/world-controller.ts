@@ -511,7 +511,10 @@ export class WorldController {
   }
 
   public isInFakeMatch(): boolean {
-    return this.isInitialWaitingState && 
-           this.matchSessionService.getMatch()?.getState() === MatchStateType.WaitingPlayers;
+    const match = this.matchSessionService.getMatch();
+    if (!match) {
+      return false;
+    }
+    return this.isInitialWaitingState && match.getState() === MatchStateType.WaitingPlayers;
   }
 }

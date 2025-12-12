@@ -3,6 +3,11 @@ import { BallEntity } from "./ball-entity.js";
 
 export class NpcCarEntity extends CarEntity {
   private readonly AI_UPDATE_INTERVAL = 50; // Update AI decisions every 50ms
+  private readonly BOOST_DISTANCE_THRESHOLD = 200; // Distance to ball to activate boost
+  private readonly BOOST_ANGLE_THRESHOLD = 0.5; // Max angle difference to use boost
+  private readonly MIN_BOOST_THRESHOLD = 20; // Minimum boost required to activate
+  private readonly ANGLE_TOLERANCE = 0.1; // Minimum angle difference to turn
+  
   private aiUpdateTimer = 0;
   private targetAngle = 0;
 
@@ -46,7 +51,7 @@ export class NpcCarEntity extends CarEntity {
     const angleDiff = this.normalizeAngle(this.targetAngle - this.angle);
     const turnAmount = this.HANDLING * deltaTimeStamp;
     
-    if (Math.abs(angleDiff) > 0.1) {
+    if (Math.abs(angleDiff) > this.ANGLE_TOLERANCE) {
       if (angleDiff > 0) {
         this.angle += Math.min(turnAmount, angleDiff);
       } else {
@@ -60,7 +65,9 @@ export class NpcCarEntity extends CarEntity {
     }
 
     // Use boost if close to ball and facing it (to push it harder)
-    if (distanceToBall < 200 && Math.abs(angleDiff) < 0.5 && this.boost > 20) {
+    if (distanceToBall < this.BOOST_DISTANCE_THRESHOLD && 
+        Math.abs(angleDiff) < this.BOOST_ANGLE_THRESHOLD && 
+        this.boost > this.MIN_BOOST_THRESHOLD) {
       this.activateBoost();
     } else {
       this.deactivateBoost();
