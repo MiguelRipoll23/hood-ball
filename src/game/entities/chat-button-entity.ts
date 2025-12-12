@@ -10,10 +10,13 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   private readonly OFFSET = 20;
   private readonly emoji = "\uD83D\uDCAC"; // chat emoji
   private readonly DEFAULT_OPACITY = 0.7;
+  private readonly HIDE_COOLDOWN_MS = 500; // Prevent immediate reopen after hiding
 
   private inputVisible = false;
   private prevEnterPressed = false;
   private prevEscapePressed = false;
+  private lastHideTimestamp = 0;
+  private prevButtonPressed = false;
 
   constructor(
     private readonly boostMeterEntity: BoostMeterEntity,
@@ -47,6 +50,11 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
       return;
     }
 
+    // Prevent reopening if we just hid it (cooldown period)
+    if (Date.now() - this.lastHideTimestamp < this.HIDE_COOLDOWN_MS) {
+      return;
+    }
+
     this.inputElement.style.display = "block";
     // Trigger reflow to ensure the transition runs
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
@@ -62,15 +70,18 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   private hideInput(): void {
     this.inputElement.blur();
     this.inputElement.classList.remove("show");
-    const onTransitionEnd = () => {
-      this.inputElement.style.display = "none";
-      this.inputElement.removeEventListener("transitionend", onTransitionEnd);
-    };
-    this.inputElement.addEventListener("transitionend", onTransitionEnd, {
-      once: true,
-    });
+
+    this.inputElement.addEventListener(
+      "transitionend",
+      () => {
+        this.inputElement.style.display = "none";
+      },
+      { once: true }
+    );
+
     this.gamePointer.setPreventDefault(true);
     this.inputVisible = false;
+    this.lastHideTimestamp = Date.now();
     this.setActive(true);
   }
 
@@ -105,7 +116,8 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
-    if (this.pressed && !this.inputVisible) {
+    // Only show input on a new button press (not just hover/held)
+    if (this.pressed && !this.prevButtonPressed && !this.inputVisible) {
       this.showInput();
     }
 
@@ -113,6 +125,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
       this.handleKeyboardInput();
     }
 
+    this.prevButtonPressed = this.pressed;
     super.update(delta);
   }
 
