@@ -9,6 +9,7 @@ import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
 import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
+import { NpcCarEntity } from "../../entities/npc-car-entity.js";
 import { BaseCollidingGameScene } from "../../../engine/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
@@ -73,7 +74,7 @@ export class WorldScene extends BaseCollidingGameScene {
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
   private matchLogEntity: MatchLogEntity | null = null;
-  private npcCarEntity: import("../../entities/npc-car-entity.js").NpcCarEntity | null = null;
+  private npcCarEntity: NpcCarEntity | null = null;
 
   private readonly matchActionsLogService: MatchActionsLogService;
   private matchActionsLogUnsubscribe: (() => void) | null = null;
@@ -542,12 +543,10 @@ export class WorldScene extends BaseCollidingGameScene {
     });
   }
 
-  private async addNpcCar(): Promise<void> {
+  private addNpcCar(): void {
     if (!this.ballEntity || this.npcCarEntity) {
       return;
     }
-
-    const { NpcCarEntity } = await import("../../entities/npc-car-entity.js");
     
     // Spawn NPC car at opposite side of player
     const npcSpawnX = this.canvas.width / 2;

@@ -68,6 +68,12 @@ export class WorldController {
       this.scoreboardEntity.setActive(false);
     }
 
+    // During initial waiting state with NPC, allow playing
+    if (matchState === MatchStateType.WaitingPlayers && this.isInitialWaitingState) {
+      this.localCarEntity.setActive(true);
+      this.ballEntity.setInactive(false);
+    }
+
     if (matchState === MatchStateType.Countdown) {
       this.ballEntity.setInactive(true);
       this.localCarEntity.setActive(false);
