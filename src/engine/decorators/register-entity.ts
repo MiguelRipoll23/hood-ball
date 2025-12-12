@@ -1,7 +1,8 @@
 import type { GameEntity } from "../models/game-entity.js";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface EntityConstructor {
-  new (...args: never[]): GameEntity;
+  new (...args: any[]): GameEntity;
 }
 
 const entityRegistry = new Map<string, EntityConstructor>();

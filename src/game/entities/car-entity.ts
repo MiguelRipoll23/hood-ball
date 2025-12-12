@@ -79,13 +79,11 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
-  private remote = false;
 
   private weatherFrictionMultiplier = 1.0;
 
-  constructor(x?: number, y?: number, angle?: number, remote = false) {
+  constructor(x?: number, y?: number, angle?: number, private remote = false) {
     super();
-    this.remote = remote;
     this.x = x ?? 0;
     this.y = y ?? 0;
     this.angle = angle ?? 0;

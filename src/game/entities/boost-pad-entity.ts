@@ -25,19 +25,13 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   private active = true;
   private cooldownRemaining = 0;
   private glowTimer = 0;
-  private startX = 0;
-  private startY = 0;
-  private index = 0;
 
   constructor(
-    startX?: number,
-    startY?: number,
-    index?: number
+    private readonly startX: number = 0,
+    private readonly startY: number = 0,
+    private readonly index: number = 0
   ) {
     super();
-    this.startX = startX ?? 0;
-    this.startY = startY ?? 0;
-    this.index = index ?? 0;
     this.x = this.startX;
     this.y = this.startY;
     this.width = this.RADIUS * 2;
