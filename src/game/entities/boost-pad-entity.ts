@@ -7,6 +7,7 @@ import { EventProcessorService } from "../../engine/services/gameplay/event-proc
 import { EventType } from "../../engine/enums/event-type.js";
 import { container } from "../../engine/services/di-container.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
+import { RegisterEntity } from "../../engine/decorators/register-entity.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {
   const bigint = parseInt(hex.replace("#", ""), 16);
@@ -18,18 +19,25 @@ function colorWithAlpha(hex: string, alpha: number): string {
 
 const PAD_COOLDOWN_MS = 10000;
 
+@RegisterEntity
 export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   private readonly RADIUS = 16;
   private active = true;
   private cooldownRemaining = 0;
   private glowTimer = 0;
+  private startX = 0;
+  private startY = 0;
+  private index = 0;
 
   constructor(
-    private startX: number,
-    private startY: number,
-    private readonly index: number
+    startX?: number,
+    startY?: number,
+    index?: number
   ) {
     super();
+    this.startX = startX ?? 0;
+    this.startY = startY ?? 0;
+    this.index = index ?? 0;
     this.x = this.startX;
     this.y = this.startY;
     this.width = this.RADIUS * 2;
@@ -151,5 +159,21 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     const event = new RemoteEvent(EventType.BoostPadConsumed);
     event.setData(payload);
     eventProcessor.sendEvent(event);
+  }
+
+  public override serializeForRecording(): Record<string, unknown> {
+    return {
+      ...super.serializeForRecording(),
+      active: this.active,
+      cooldownRemaining: this.cooldownRemaining,
+      glowTimer: this.glowTimer,
+    };
+  }
+
+  public override deserializeFromRecording(data: Record<string, unknown>): void {
+    super.deserializeFromRecording(data);
+    if (typeof data.active === "boolean") this.active = data.active;
+    if (typeof data.cooldownRemaining === "number") this.cooldownRemaining = data.cooldownRemaining;
+    if (typeof data.glowTimer === "number") this.glowTimer = data.glowTimer;
   }
 }

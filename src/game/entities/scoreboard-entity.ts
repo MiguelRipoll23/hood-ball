@@ -8,7 +8,9 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui-interface.js";
 import { BaseMultiplayerGameEntity } from "../../engine/entities/base-multiplayer-entity.js";
+import { RegisterEntity } from "../../engine/decorators/register-entity.js";
 
+@RegisterEntity
 export class ScoreboardEntity
   extends BaseMultiplayerGameEntity
   implements MultiplayerGameEntity, ScoreboardUI
@@ -30,7 +32,8 @@ export class ScoreboardEntity
   // Interval used for fade in/out effect when the timer is below 5 seconds
   private readonly FADE_INTERVAL_MS: number = 500;
 
-  private x: number;
+  private canvas: HTMLCanvasElement | null = null;
+  private x: number = 0;
   private y: number = 90;
 
   private blueScore: number = 0;
@@ -42,9 +45,12 @@ export class ScoreboardEntity
   private durationMilliseconds: number = 0;
   private remainingSeconds: number = 0;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(canvas?: HTMLCanvasElement) {
     super();
-    this.x = this.canvas.width / 2 - this.SPACE_BETWEEN / 2;
+    if (canvas) {
+      this.canvas = canvas;
+      this.x = this.canvas.width / 2 - this.SPACE_BETWEEN / 2;
+    }
     this.setSyncableValues();
   }
 
@@ -260,5 +266,27 @@ export class ScoreboardEntity
     return `${minutes.toString().padStart(2, "0")}:${seconds
       .toString()
       .padStart(2, "0")}`;
+  }
+
+  public override serializeForRecording(): Record<string, unknown> {
+    return {
+      ...super.serializeForRecording(),
+      x: this.x,
+      y: this.y,
+      blueScore: this.blueScore,
+      redScore: this.redScore,
+      active: this.active,
+      remainingSeconds: this.remainingSeconds,
+    };
+  }
+
+  public override deserializeFromRecording(data: Record<string, unknown>): void {
+    super.deserializeFromRecording(data);
+    if (typeof data.x === "number") this.x = data.x;
+    if (typeof data.y === "number") this.y = data.y;
+    if (typeof data.blueScore === "number") this.blueScore = data.blueScore;
+    if (typeof data.redScore === "number") this.redScore = data.redScore;
+    if (typeof data.active === "boolean") this.active = data.active;
+    if (typeof data.remainingSeconds === "number") this.remainingSeconds = data.remainingSeconds;
   }
 }

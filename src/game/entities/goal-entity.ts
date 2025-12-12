@@ -1,6 +1,8 @@
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
 import { BaseStaticCollidingGameEntity } from "../../engine/entities/base-static-colliding-game-entity.js";
+import { RegisterEntity } from "../../engine/decorators/register-entity.js";
 
+@RegisterEntity
 export class GoalEntity extends BaseStaticCollidingGameEntity {
   private readonly WIDTH: number = 100; // Width of the goal
   private readonly HEIGHT: number = 40; // Height of the goal (adjusted)
@@ -10,11 +12,13 @@ export class GoalEntity extends BaseStaticCollidingGameEntity {
 
   private fillColor: string = "rgba(255, 255, 255, 0.6)";
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas?: HTMLCanvasElement) {
     super();
     this.rigidBody = false;
     this.setSize();
-    this.setPosition(canvas);
+    if (canvas) {
+      this.setPosition(canvas);
+    }
   }
 
   public override load(): void {
