@@ -2,7 +2,7 @@ import { BaseGameEntity } from "./base-game-entity.js";
 import {
   MediaPlayerService,
   PlaybackState,
-} from "../services/gameplay/player-service.js";
+} from "../services/gameplay/media-player-service.js";
 import { container } from "../services/di-container.js";
 
 /**
