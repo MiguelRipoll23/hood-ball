@@ -1,5 +1,6 @@
 import { CarEntity } from "./car-entity.js";
 import { BallEntity } from "./ball-entity.js";
+import { GamePlayer } from "../models/game-player.js";
 
 export class NpcCarEntity extends CarEntity {
   private readonly AI_UPDATE_INTERVAL = 50; // Update AI decisions every 50ms
@@ -20,6 +21,16 @@ export class NpcCarEntity extends CarEntity {
   ) {
     super(x, y, angle, true); // remote=true to use red car
     this.setCanvas(canvas);
+    
+    // Create a distinctive NPC player with robot emoji
+    const npcPlayer = new GamePlayer(
+      "npc-00000000-0000-0000-0000-000000000000",
+      "🤖 NPC",
+      false,
+      0,
+      -1 // No spawn point for NPC
+    );
+    this.setOwner(npcPlayer);
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
@@ -42,7 +53,9 @@ export class NpcCarEntity extends CarEntity {
     const distanceToBall = Math.sqrt(dx * dx + dy * dy);
     
     // Calculate angle to ball
-    const angleTowardsBall = Math.atan2(dy, dx);
+    // Note: The car's movement system uses x -= vx, y -= vy, so we need to invert the angle
+    // to make the car move towards the ball instead of away from it
+    const angleTowardsBall = Math.atan2(dy, dx) + Math.PI;
     
     // Always try to move towards the ball
     this.targetAngle = angleTowardsBall;

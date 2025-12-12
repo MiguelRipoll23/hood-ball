@@ -495,7 +495,7 @@ export class WorldController {
       this.alertEntity.show(["YOU", "SCORED!"], "blue");
     } else {
       this.fakeMatchRedScore += 1;
-      this.alertEntity.show(["NPC", "SCORED!"], "red");
+      this.alertEntity.show(["🤖 NPC", "SCORED!"], "red");
     }
 
     // Reset ball after goal
