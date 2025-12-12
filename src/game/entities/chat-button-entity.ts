@@ -71,14 +71,17 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.inputElement.blur();
     this.inputElement.classList.remove("show");
 
-    // Wait for transition to complete before hiding
-    setTimeout(() => {
-      this.inputElement.style.display = "none";
-    }, 400); // Match the CSS transition duration
+    this.inputElement.addEventListener(
+      "transitionend",
+      () => {
+        this.inputElement.style.display = "none";
+      },
+      { once: true }
+    );
 
     this.gamePointer.setPreventDefault(true);
     this.inputVisible = false;
-    this.lastHideTimestamp = Date.now(); // Record when we hid the input
+    this.lastHideTimestamp = Date.now();
     this.setActive(true);
   }
 
