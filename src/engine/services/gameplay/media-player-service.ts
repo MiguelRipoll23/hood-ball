@@ -420,7 +420,11 @@ export class MediaPlayerService {
       context.globalAlpha = entity.opacity;
 
       // Apply rotation if angle property exists
-      const angle = entity.properties.angle as number | undefined;
+      const angleRaw = (entity.properties as Record<string, unknown>).angle;
+      const angle =
+        typeof angleRaw === "number" && Number.isFinite(angleRaw)
+          ? angleRaw
+          : undefined;
       if (angle !== undefined) {
         // Translate to entity center, rotate, then translate back
         const centerX = entity.x + entity.width / 2;
@@ -429,7 +433,6 @@ export class MediaPlayerService {
         context.rotate(angle);
         context.translate(-centerX, -centerY);
       }
-
       // For now, render entities as simple rectangles with their type label
       // In a full implementation, you would instantiate actual entity classes
       context.fillStyle = "#4488ff";
