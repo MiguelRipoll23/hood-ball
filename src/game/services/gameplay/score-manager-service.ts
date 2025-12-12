@@ -68,10 +68,16 @@ export class ScoreManagerService {
   public detectScoresIfHost(): void {
     const host = this.matchSessionService.getMatch()?.isHost() ?? false;
     const matchState = this.matchSessionService.getMatch()?.getState();
+    const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
-    if (host && matchState === MatchStateType.InProgress) {
+    // Allow scoring in InProgress state or in WaitingPlayers if solo (1 player with NPC)
+    if (host && (matchState === MatchStateType.InProgress || 
+                 (matchState === MatchStateType.WaitingPlayers && playersCount === 1))) {
       this.detectScores();
-      this.detectGameEnd();
+      // Only detect game end if in real match (InProgress), not during solo waiting
+      if (matchState === MatchStateType.InProgress) {
+        this.detectGameEnd();
+      }
     }
   }
 
@@ -232,6 +238,12 @@ export class ScoreManagerService {
       this.matchSessionService.getMatch()?.getState() ===
       MatchStateType.GameOver
     ) {
+      return;
+    }
+
+    // Only detect timer end if there are at least 2 real players
+    const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    if (playersCount < 2) {
       return;
     }
 

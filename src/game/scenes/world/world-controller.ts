@@ -63,6 +63,11 @@ export class WorldController {
       this.localCarEntity.setActive(true);
       this.scoreboardEntity.setActive(true);
       this.ballEntity.setInactive(false);
+    } else if (matchState === MatchStateType.WaitingPlayers) {
+      // During solo match in waiting state before countdown, disable gameplay
+      this.scoreboardEntity.setActive(false);
+      this.localCarEntity.setActive(false);
+      this.ballEntity.setInactive(true);
     } else {
       this.scoreboardEntity.setActive(false);
     }
@@ -198,6 +203,7 @@ export class WorldController {
     // In solo matches, timer stays frozen at initial duration
     if (!this.isSoloMatchWithNpc) {
       this.scoreboardEntity.startTimer();
+      console.log("Real match - timer started");
     } else {
       console.log("Solo match - timer remains frozen");
     }

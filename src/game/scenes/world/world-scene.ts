@@ -243,13 +243,17 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchAdvertised(): void {
     if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
-      // Start a solo match with NPC instead of waiting
+      // Start a solo match with NPC in waiting state
       this.worldController?.handleWaitingForPlayers(true); // true = initial waiting state
-      // Immediately transition to countdown and then solo match
-      this.toastEntity?.show("Starting practice match...", 2);
-      // Trigger countdown after a short delay
-      this.timerManagerService.createTimer(1, () => {
-        this.worldController?.showCountdown();
+      this.toastEntity?.show("Waiting for players...");
+      
+      // After a short delay, start countdown to begin solo practice
+      this.timerManagerService.createTimer(2, () => {
+        // Check if still solo (no other player joined yet)
+        const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+        if (playersCount === 1) {
+          this.worldController?.showCountdown();
+        }
       });
     }
   }
