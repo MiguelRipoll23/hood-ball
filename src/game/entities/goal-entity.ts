@@ -13,6 +13,7 @@ export class GoalEntity extends BaseStaticCollidingGameEntity {
   constructor(canvas: HTMLCanvasElement) {
     super();
     this.rigidBody = false;
+    this.setSize();
     this.setPosition(canvas);
   }
 
@@ -54,6 +55,11 @@ export class GoalEntity extends BaseStaticCollidingGameEntity {
 
     // Hitbox
     super.render(context);
+  }
+
+  private setSize(): void {
+    this.width = this.WIDTH;
+    this.height = this.HEIGHT;
   }
 
   private setPosition(canvas: HTMLCanvasElement): void {

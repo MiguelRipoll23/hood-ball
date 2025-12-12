@@ -150,8 +150,8 @@ export class ModWindow extends BaseWindow {
 
       if (ball && goal) {
         // Calculate goal center position
-        const goalCenterX = goal.getX() + 50; // Goal width is ~100, so center is at +50
-        const goalCenterY = goal.getY() + 20; // Goal height is ~40, so center is at +20
+        const goalCenterX = goal.getX() + goal.getWidth() / 2;
+        const goalCenterY = goal.getY() + goal.getHeight() / 2;
 
         const dx = goalCenterX - ball.getX();
         const dy = goalCenterY - ball.getY();
