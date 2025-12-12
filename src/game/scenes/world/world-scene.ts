@@ -157,7 +157,9 @@ export class WorldScene extends BaseCollidingGameScene {
       this.spawnPointEntities,
       this.getEntitiesByOwner.bind(this),
       this.addNpcCar.bind(this),
-      this.removeNpcCar.bind(this)
+      this.removeNpcCar.bind(this),
+      this.activateNpcCar.bind(this),
+      this.moveNpcToSpawn.bind(this)
     );
 
     this.scoreManagerService = new ScoreManagerService(
@@ -592,6 +594,45 @@ export class WorldScene extends BaseCollidingGameScene {
     
     this.npcCarEntity = null;
     console.log("NPC car removed");
+  }
+  
+  private activateNpcCar(): void {
+    if (!this.npcCarEntity) {
+      return;
+    }
+    
+    // Pass boost pad information to NPC
+    const boostPadsInfo = this.boostPadsEntities.map(pad => ({
+      x: pad.getX(),
+      y: pad.getY(),
+      consumed: !pad.isActive() // Boost pad is consumed if not active
+    }));
+    this.npcCarEntity.setBoostPads(boostPadsInfo);
+    
+    // Activate NPC AI
+    this.npcCarEntity.setActive(true);
+    console.log("NPC car activated");
+  }
+  
+  private moveNpcToSpawn(): void {
+    if (!this.npcCarEntity) {
+      return;
+    }
+    
+    const npcPlayer = this.npcCarEntity.getPlayer();
+    if (!npcPlayer) {
+      return;
+    }
+    
+    const spawnIndex = npcPlayer.getSpawnPointIndex();
+    const spawnPoint = this.spawnPointEntities.find(sp => sp.getIndex() === spawnIndex);
+    
+    if (spawnPoint) {
+      const spawnX = spawnPoint.getX();
+      const spawnY = spawnPoint.getY();
+      this.npcCarEntity.teleport(spawnX, spawnY, Math.PI / 2);
+      console.log(`NPC moved to spawn point ${spawnIndex}`);
+    }
   }
 
 

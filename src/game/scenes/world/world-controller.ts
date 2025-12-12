@@ -47,7 +47,9 @@ export class WorldController {
       player: GamePlayer
     ) => BaseMultiplayerGameEntity[],
     private readonly onAddNpcCar: (spawnPointIndex: number) => void,
-    private readonly onRemoveNpcCar: () => void
+    private readonly onRemoveNpcCar: () => void,
+    private readonly onActivateNpcCar: () => void,
+    private readonly onMoveNpcToSpawn: () => void
   ) {
     this.gamePlayer = gameContext.get(GamePlayer);
     this.matchSessionService = gameContext.get(MatchSessionService);
@@ -165,6 +167,11 @@ export class WorldController {
     this.markRemoteCarsForSpawn();
     this.localCarEntity.refillBoost();
     this.boostPadsEntities.forEach((pad) => pad.reset());
+    
+    // Move NPC to spawn point if in solo match
+    if (this.isSoloMatchWithNpc) {
+      this.onMoveNpcToSpawn();
+    }
   }
 
   private handleCountdownEnd(): void {
@@ -184,6 +191,8 @@ export class WorldController {
       console.log("Real match - timer started");
     } else {
       console.log("Solo match - timer remains frozen");
+      // Activate NPC AI after countdown completes
+      this.onActivateNpcCar();
     }
   }
 
