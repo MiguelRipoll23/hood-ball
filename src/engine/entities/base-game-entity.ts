@@ -1,8 +1,9 @@
 import { EntityStateType } from "../enums/entity-state-type.js";
 import type { GameEntity } from "../models/game-entity.js";
 import type { DebugSettings } from "../models/debug-settings.js";
+import type { SerializableEntity } from "../interfaces/entities/serializable-entity-interface.js";
 
-export class BaseGameEntity implements GameEntity {
+export class BaseGameEntity implements GameEntity, SerializableEntity {
   protected loaded: boolean = false;
   protected state: EntityStateType = EntityStateType.Active;
   protected removed: boolean = false;
@@ -69,4 +70,20 @@ export class BaseGameEntity implements GameEntity {
   public update(_deltaTimeStamp: DOMHighResTimeStamp): void {}
 
   public render(_context: CanvasRenderingContext2D): void {}
+
+  public serializeForRecording(): Record<string, unknown> {
+    return {
+      state: this.state,
+      opacity: this.opacity,
+    };
+  }
+
+  public deserializeFromRecording(data: Record<string, unknown>): void {
+    if (typeof data.state === "number") {
+      this.state = data.state as EntityStateType;
+    }
+    if (typeof data.opacity === "number") {
+      this.opacity = data.opacity;
+    }
+  }
 }

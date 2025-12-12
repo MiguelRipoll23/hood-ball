@@ -19,6 +19,8 @@ export class MediaPlayerEntity extends BaseGameEntity {
     super();
     this.canvas = canvas;
     this.playerService = container.get(MediaPlayerService);
+    // Set canvas reference for entity instantiation during playback
+    this.playerService.setCanvas(canvas);
   }
 
   public override load(): void {

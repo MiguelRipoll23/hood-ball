@@ -14,7 +14,9 @@ import {
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
+import { RegisterEntity } from "../../engine/decorators/register-entity.js";
 
+@RegisterEntity
 export class CarEntity extends BaseDynamicCollidingGameEntity {
   protected topSpeed: number = 0.3;
   protected acceleration: number = 0.002;
@@ -77,15 +79,16 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
   private carImage: HTMLImageElement | null = null;
   private imagePath = this.IMAGE_BLUE_PATH;
+  private remote = false;
 
   private weatherFrictionMultiplier = 1.0;
 
-  constructor(x: number, y: number, angle: number, private remote = false) {
+  constructor(x?: number, y?: number, angle?: number, remote = false) {
     super();
     this.remote = remote;
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
+    this.x = x ?? 0;
+    this.y = y ?? 0;
+    this.angle = angle ?? 0;
     this.mass = this.MASS;
     this.setBounciness(0.5);
 
@@ -594,5 +597,36 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     context.fill();
 
     context.restore();
+  }
+
+  public override serializeForRecording(): Record<string, unknown> {
+    return {
+      ...super.serializeForRecording(),
+      speed: this.speed,
+      boost: this.boost,
+      boosting: this.boosting,
+      remote: this.remote,
+      demolished: this.demolished,
+      vx: this.vx,
+      vy: this.vy,
+    };
+  }
+
+  public override deserializeFromRecording(data: Record<string, unknown>): void {
+    super.deserializeFromRecording(data);
+    if (typeof data.speed === "number") this.speed = data.speed;
+    if (typeof data.boost === "number") this.boost = data.boost;
+    if (typeof data.boosting === "boolean") this.boosting = data.boosting;
+    if (typeof data.remote === "boolean") {
+      this.remote = data.remote;
+      this.imagePath = this.remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
+      // Reload image with correct path
+      if (!this.carImage || this.carImage.src !== this.imagePath) {
+        this.loadCarImage();
+      }
+    }
+    if (typeof data.demolished === "boolean") this.demolished = data.demolished;
+    if (typeof data.vx === "number") this.vx = data.vx;
+    if (typeof data.vy === "number") this.vy = data.vy;
   }
 }

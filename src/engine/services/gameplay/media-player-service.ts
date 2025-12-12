@@ -1,6 +1,9 @@
 import { injectable } from "@needle-di/core";
 import type { RecordingData, RecordedFrame } from "./recorder-service.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
+import { getEntityConstructor } from "../../decorators/register-entity.js";
+import type { GameEntity } from "../../models/game-entity.js";
+import { isSerializableEntity } from "../../interfaces/entities/serializable-entity-interface.js";
 
 export enum PlaybackState {
   Stopped = "stopped",
@@ -15,9 +18,15 @@ export class MediaPlayerService {
   private playbackState: PlaybackState = PlaybackState.Stopped;
   private playbackSpeed = 1.0;
   private lastFrameTime = 0;
+  private entityCache = new Map<string, GameEntity>();
 
   constructor() {
     console.log("MediaPlayerService initialized");
+  }
+
+  public setCanvas(_canvas: HTMLCanvasElement): void {
+    // Canvas may be needed for future entity creation
+    // Currently entities are created without constructor parameters
   }
 
   public async loadRecording(file: File): Promise<void> {
@@ -178,6 +187,7 @@ export class MediaPlayerService {
   public stop(): void {
     this.playbackState = PlaybackState.Stopped;
     this.currentFrameIndex = 0;
+    this.clearEntityCache();
     console.log("Playback stopped");
   }
 
@@ -392,7 +402,58 @@ export class MediaPlayerService {
   public unload(): void {
     this.stop();
     this.recordingData = null;
+    this.clearEntityCache();
     console.log("Recording unloaded");
+  }
+
+  private clearEntityCache(): void {
+    this.entityCache.clear();
+  }
+
+  private getOrCreateEntity(
+    id: string,
+    type: string,
+    serializedData: Record<string, unknown>
+  ): GameEntity | null {
+    // Check if entity already exists in cache
+    let entity = this.entityCache.get(id);
+    
+    if (entity) {
+      // Update existing entity with new data
+      if (isSerializableEntity(entity)) {
+        entity.deserializeFromRecording(serializedData);
+      }
+      return entity;
+    }
+
+    // Try to create new entity
+    const EntityConstructor = getEntityConstructor(type);
+    if (!EntityConstructor) {
+      // Entity type not registered, return null to fall back to simple rendering
+      return null;
+    }
+
+    try {
+      // Create entity instance with minimal/no constructor arguments
+      // Entities should handle missing constructor args gracefully
+      entity = new EntityConstructor();
+      
+      // Apply serialized data
+      if (isSerializableEntity(entity)) {
+        entity.deserializeFromRecording(serializedData);
+      }
+      
+      // Load the entity (important for image loading, etc.)
+      entity.load();
+      
+      // Cache the entity
+      this.entityCache.set(id, entity);
+      
+      return entity;
+    } catch (error) {
+      console.warn(`Failed to instantiate entity ${type}:`, error);
+      return null;
+    }
   }
 
   public render(context: CanvasRenderingContext2D): void {
@@ -409,49 +470,36 @@ export class MediaPlayerService {
     context.save();
 
     // Render each entity from the recording
-    for (const entity of currentFrame.entities) {
-      if (!entity.visible) {
+    for (const serializedEntity of currentFrame.entities) {
+      if (!serializedEntity.visible) {
         continue;
       }
+
+      // Try to get or create actual entity instance
+      const entityInstance = this.getOrCreateEntity(
+        serializedEntity.id,
+        serializedEntity.type,
+        serializedEntity.properties
+      );
 
       context.save();
 
       // Apply opacity
-      context.globalAlpha = entity.opacity;
+      context.globalAlpha = serializedEntity.opacity;
 
-      // Apply rotation if angle property exists
-      const angleRaw = (entity.properties as Record<string, unknown>).angle;
-      const angle =
-        typeof angleRaw === "number" && Number.isFinite(angleRaw)
-          ? angleRaw
-          : undefined;
-      if (angle !== undefined) {
-        // Translate to entity center, rotate, then translate back
-        const centerX = entity.x + entity.width / 2;
-        const centerY = entity.y + entity.height / 2;
-        context.translate(centerX, centerY);
-        context.rotate(angle);
-        context.translate(-centerX, -centerY);
+      if (entityInstance && entityInstance.hasLoaded()) {
+        // Render the actual entity
+        try {
+          entityInstance.render(context);
+        } catch (error) {
+          console.warn(`Failed to render entity ${serializedEntity.type}:`, error);
+          // Fall back to simple rendering
+          this.renderFallbackEntity(context, serializedEntity);
+        }
+      } else {
+        // Fall back to simple rendering if entity can't be instantiated
+        this.renderFallbackEntity(context, serializedEntity);
       }
-      // For now, render entities as simple rectangles with their type label
-      // In a full implementation, you would instantiate actual entity classes
-      context.fillStyle = "#4488ff";
-      context.strokeStyle = "#0044aa";
-      context.lineWidth = 2;
-
-      context.fillRect(entity.x, entity.y, entity.width, entity.height);
-      context.strokeRect(entity.x, entity.y, entity.width, entity.height);
-
-      // Draw entity type label
-      context.fillStyle = "#ffffff";
-      context.font = "10px monospace";
-      context.textAlign = "center";
-      context.textBaseline = "middle";
-      context.fillText(
-        entity.type.split(/(?=[A-Z])/).join(" "), // Split camelCase
-        entity.x + entity.width / 2,
-        entity.y + entity.height / 2
-      );
 
       context.restore();
     }
@@ -460,6 +508,53 @@ export class MediaPlayerService {
     this.renderPlaybackOverlay(context);
 
     context.restore();
+  }
+
+  private renderFallbackEntity(
+    context: CanvasRenderingContext2D,
+    entity: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      type: string;
+      properties: Record<string, unknown>;
+    }
+  ): void {
+    // Apply rotation if angle property exists
+    const angleRaw = entity.properties.angle;
+    const angle =
+      typeof angleRaw === "number" && Number.isFinite(angleRaw)
+        ? angleRaw
+        : undefined;
+    
+    if (angle !== undefined) {
+      // Translate to entity center, rotate, then translate back
+      const centerX = entity.x + entity.width / 2;
+      const centerY = entity.y + entity.height / 2;
+      context.translate(centerX, centerY);
+      context.rotate(angle);
+      context.translate(-centerX, -centerY);
+    }
+
+    // Render as simple rectangle with type label
+    context.fillStyle = "#4488ff";
+    context.strokeStyle = "#0044aa";
+    context.lineWidth = 2;
+
+    context.fillRect(entity.x, entity.y, entity.width, entity.height);
+    context.strokeRect(entity.x, entity.y, entity.width, entity.height);
+
+    // Draw entity type label
+    context.fillStyle = "#ffffff";
+    context.font = "10px monospace";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(
+      entity.type.split(/(?=[A-Z])/).join(" "), // Split camelCase
+      entity.x + entity.width / 2,
+      entity.y + entity.height / 2
+    );
   }
 
   private renderPlaybackOverlay(context: CanvasRenderingContext2D): void {

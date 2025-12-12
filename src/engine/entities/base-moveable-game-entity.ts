@@ -65,4 +65,24 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
     // Set skip interpolation for the next network update
     this.skipInterpolation = true;
   }
+
+  public override serializeForRecording(): Record<string, unknown> {
+    return {
+      ...super.serializeForRecording(),
+      x: this.x,
+      y: this.y,
+      width: this.width,
+      height: this.height,
+      angle: this.angle,
+    };
+  }
+
+  public override deserializeFromRecording(data: Record<string, unknown>): void {
+    super.deserializeFromRecording(data);
+    if (typeof data.x === "number") this.x = data.x;
+    if (typeof data.y === "number") this.y = data.y;
+    if (typeof data.width === "number") this.width = data.width;
+    if (typeof data.height === "number") this.height = data.height;
+    if (typeof data.angle === "number") this.angle = data.angle;
+  }
 }

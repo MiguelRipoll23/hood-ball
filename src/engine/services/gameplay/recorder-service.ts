@@ -6,6 +6,7 @@ import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { GameFrame } from "../../models/game-frame.js";
 import { container } from "../di-container.js";
 import { EventProcessorService } from "./event-processor-service.js";
+import { isSerializableEntity } from "../../interfaces/entities/serializable-entity-interface.js";
 
 // Maximum recording duration in minutes
 const MAX_RECORDING_DURATION_MINUTES = 15;
@@ -259,6 +260,12 @@ export class RecorderService {
     entity: GameEntity,
     moveable?: BaseMoveableGameEntity
   ): Record<string, unknown> {
+    // If entity implements SerializableEntity, use its custom serialization
+    if (isSerializableEntity(entity)) {
+      return entity.serializeForRecording();
+    }
+
+    // Fallback to legacy property extraction for entities that don't implement the interface
     const properties: Record<string, unknown> = {};
     const anyEntity = entity as unknown as Record<string, unknown>;
 

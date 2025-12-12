@@ -10,7 +10,9 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { MathUtils } from "../../engine/utils/math-utils.js";
 import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
+import { RegisterEntity } from "../../engine/decorators/register-entity.js";
 
+@RegisterEntity
 export class BallEntity
   extends BaseDynamicCollidingGameEntity
   implements MultiplayerGameEntity
@@ -30,15 +32,17 @@ export class BallEntity
 
   private teleportFrameCount = 0; // Number of frames to skip interpolation after teleport
   private weatherFrictionMultiplier = 1.0;
+  private canvas: HTMLCanvasElement | null = null;
 
   constructor(
-    x: number,
-    y: number,
-    private readonly canvas: HTMLCanvasElement
+    x?: number,
+    y?: number,
+    canvas?: HTMLCanvasElement
   ) {
     super();
-    this.x = x;
-    this.y = y;
+    this.x = x ?? 0;
+    this.y = y ?? 0;
+    this.canvas = canvas ?? null;
     this.mass = this.MASS;
     this.setBounciness(0.8);
     this.setSyncableValues();
@@ -55,15 +59,19 @@ export class BallEntity
 
   public override reset(): void {
     // Use teleport to reset to center position instead of manual reset
-    this.teleport(this.canvas.width / 2, this.canvas.height / 2);
+    if (this.canvas) {
+      this.teleport(this.canvas.width / 2, this.canvas.height / 2);
+    }
     this.inactive = false;
     super.reset();
   }
 
   public setCenterPosition(): void {
     // Set position to the center of the canvas accounting for the radius
-    this.x = this.canvas.width / 2;
-    this.y = this.canvas.height / 2;
+    if (this.canvas) {
+      this.x = this.canvas.width / 2;
+      this.y = this.canvas.height / 2;
+    }
     this.setSkipInterpolation();
   }
 
@@ -106,7 +114,9 @@ export class BallEntity
     this.updateHitbox();
     this.handlePlayerCollision();
 
-    EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
+    if (this.canvas) {
+      EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
+    }
   }
 
   public override render(context: CanvasRenderingContext2D): void {
@@ -290,5 +300,23 @@ export class BallEntity
       this.y + this.radius + 5,
       `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
     );
+  }
+
+  public override serializeForRecording(): Record<string, unknown> {
+    return {
+      ...super.serializeForRecording(),
+      radius: this.radius,
+      inactive: this.inactive,
+      vx: this.vx,
+      vy: this.vy,
+    };
+  }
+
+  public override deserializeFromRecording(data: Record<string, unknown>): void {
+    super.deserializeFromRecording(data);
+    if (typeof data.radius === "number") this.radius = data.radius;
+    if (typeof data.inactive === "boolean") this.inactive = data.inactive;
+    if (typeof data.vx === "number") this.vx = data.vx;
+    if (typeof data.vy === "number") this.vy = data.vy;
   }
 }
