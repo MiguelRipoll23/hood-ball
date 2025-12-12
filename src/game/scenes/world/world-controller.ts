@@ -104,7 +104,11 @@ export class WorldController {
       players.forEach(player => {
         player.setScore(0);
       });
-      console.log("Transitioning from solo to multiplayer - NPC removed, scores reset");
+      
+      // Reset countdown to start fresh for real match
+      this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+      
+      console.log("Transitioning from solo to multiplayer - NPC removed, scores reset, countdown restarted");
     }
 
     if (this.countdownCurrentNumber < 0) {

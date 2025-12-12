@@ -52,16 +52,20 @@ export class NpcCarEntity extends CarEntity {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    // Only update AI if active (after countdown)
-    if (this.active) {
-      this.aiUpdateTimer += deltaTimeStamp;
+    // When inactive (during countdown), don't update anything - no movement, no AI, no boost
+    if (!this.active) {
+      return;
+    }
+    
+    // Only update AI when active (after countdown)
+    this.aiUpdateTimer += deltaTimeStamp;
 
-      if (this.aiUpdateTimer >= this.AI_UPDATE_INTERVAL) {
-        this.aiUpdateTimer = 0;
-        this.updateAI(deltaTimeStamp);
-      }
+    if (this.aiUpdateTimer >= this.AI_UPDATE_INTERVAL) {
+      this.aiUpdateTimer = 0;
+      this.updateAI(deltaTimeStamp);
     }
 
+    // Call parent update for movement, boost, etc.
     super.update(deltaTimeStamp);
   }
   
