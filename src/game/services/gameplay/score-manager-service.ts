@@ -165,32 +165,44 @@ export class ScoreManagerService {
       return;
     }
 
+    // Check if this is a solo match (1 real player)
+    const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    const isSoloMatch = playersCount === 1;
+
     this.scoreboardUI.stopTimer();
     this.ballEntity.handleGoalScored();
     this.matchSessionService.setMatchState(MatchStateType.GoalScored);
 
-    player.sumScore(1);
-    this.sendGoalEvent(player);
+    // Don't update player scores or scoreboard during solo play
+    if (!isSoloMatch) {
+      player.sumScore(1);
+      this.sendGoalEvent(player);
 
-    const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
+      const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
 
-    if (goalTeam === TeamType.Blue) {
-      this.scoreboardUI.incrementBlueScore();
+      if (goalTeam === TeamType.Blue) {
+        this.scoreboardUI.incrementBlueScore();
+      } else {
+        this.scoreboardUI.incrementRedScore();
+      }
+
+      this.matchActionsLogService.addAction(
+        MatchAction.goal(player.getNetworkId(), {
+          playerName: player.getName(),
+        })
+      );
+
+      this.showGoalAlert(player, goalTeam);
     } else {
-      this.scoreboardUI.incrementRedScore();
+      // In solo match, just show a simple alert without updating scores
+      const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
+      this.showGoalAlert(player, goalTeam);
     }
-
-    this.matchActionsLogService.addAction(
-      MatchAction.goal(player.getNetworkId(), {
-        playerName: player.getName(),
-      })
-    );
-
-    this.showGoalAlert(player, goalTeam);
+    
     this.explosionCallback(
       this.ballEntity.getX(),
       this.ballEntity.getY(),
-      goalTeam
+      player === this.gamePlayer ? TeamType.Blue : TeamType.Red
     );
     this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
   }

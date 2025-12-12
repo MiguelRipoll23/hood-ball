@@ -159,6 +159,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.addNpcCar.bind(this),
       this.removeNpcCar.bind(this),
       this.activateNpcCar.bind(this),
+      this.deactivateNpcCar.bind(this),
       this.moveNpcToSpawn.bind(this)
     );
 
@@ -578,9 +579,16 @@ export class WorldScene extends BaseCollidingGameScene {
       return;
     }
 
-    // Release the spawn point back to the pool
+    // Remove NPC player from match to prevent crashes
     const npcPlayer = this.npcCarEntity.getPlayer();
     if (npcPlayer) {
+      const match = this.matchSessionService.getMatch();
+      if (match) {
+        match.removePlayer(npcPlayer);
+        console.log("NPC player removed from match");
+      }
+      
+      // Release the spawn point back to the pool
       const spawnIndex = npcPlayer.getSpawnPointIndex();
       if (spawnIndex !== -1) {
         this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
@@ -612,6 +620,15 @@ export class WorldScene extends BaseCollidingGameScene {
     // Activate NPC AI
     this.npcCarEntity.setActive(true);
     console.log("NPC car activated");
+  }
+  
+  private deactivateNpcCar(): void {
+    if (!this.npcCarEntity) {
+      return;
+    }
+    
+    // Deactivate NPC AI
+    this.npcCarEntity.setActive(false);
   }
   
   private moveNpcToSpawn(): void {

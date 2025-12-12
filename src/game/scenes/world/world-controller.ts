@@ -49,6 +49,7 @@ export class WorldController {
     private readonly onAddNpcCar: (spawnPointIndex: number) => void,
     private readonly onRemoveNpcCar: () => void,
     private readonly onActivateNpcCar: () => void,
+    private readonly onDeactivateNpcCar: () => void,
     private readonly onMoveNpcToSpawn: () => void
   ) {
     this.gamePlayer = gameContext.get(GamePlayer);
@@ -70,6 +71,8 @@ export class WorldController {
     if (matchState === MatchStateType.Countdown) {
       this.ballEntity.setInactive(true);
       this.localCarEntity.setActive(false);
+      // Deactivate NPC during countdown
+      this.onDeactivateNpcCar();
     }
   }
 
