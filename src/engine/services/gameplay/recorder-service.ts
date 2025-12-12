@@ -212,7 +212,7 @@ export class RecorderService {
         height: moveable.getHeight?.() ?? 0,
         visible: true,
         opacity: entity.getOpacity(),
-        properties: this.extractEntityProperties(entity),
+        properties: this.extractEntityProperties(entity, moveable),
       };
 
       return serialized;
@@ -255,15 +255,22 @@ export class RecorderService {
     return id;
   }
 
-  private extractEntityProperties(entity: GameEntity): Record<string, unknown> {
+  private extractEntityProperties(
+    entity: GameEntity,
+    moveable?: BaseMoveableGameEntity
+  ): Record<string, unknown> {
     const properties: Record<string, unknown> = {};
     const anyEntity = entity as unknown as Record<string, unknown>;
+
+    // Extract angle from moveable entities using getter
+    if (moveable) {
+      properties.angle = moveable.getAngle();
+    }
 
     // Extract common properties that might be useful for replay
     const commonProps = [
       "velocityX",
       "velocityY",
-      "angle",
       "rotation",
       "scale",
       "scaleX",
