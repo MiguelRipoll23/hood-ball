@@ -189,15 +189,8 @@ export class NpcCarEntity extends CarEntity {
       }
     }
     
-    // Show position info (same as parent class)
-    DebugUtils.renderText(
-      context,
-      this.x - this.width / 2,
-      this.y + this.height / 2 + 5,
-      `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
-    );
-    
-    // Show action and boost level below position
+    // Show action and boost level below the parent's position debug info
+    // Parent renders at y + height/2 + 5, so we render at y + height/2 + 30
     const boostPercent = Math.round(this.boost);
     const debugText = `${action} | Boost: ${boostPercent}%`;
     
