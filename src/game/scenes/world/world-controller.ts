@@ -23,12 +23,14 @@ import { MatchActionsLogService } from "../../services/gameplay/match-actions-lo
 import { gameContext } from "../../context/game-context.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
+import { NpcService } from "../../services/gameplay/npc-service.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
   private readonly gamePlayer: GamePlayer;
   private readonly matchSessionService: MatchSessionService;
+  private isSoloMatchWithNpc = false;
 
   constructor(
     private readonly spawnPointService: SpawnPointService,
@@ -44,7 +46,8 @@ export class WorldController {
     private readonly spawnPointEntities: SpawnPointEntity[],
     private readonly getEntitiesByOwner: (
       player: GamePlayer
-    ) => BaseMultiplayerGameEntity[]
+    ) => BaseMultiplayerGameEntity[],
+    private readonly npcService: NpcService
   ) {
     this.gamePlayer = gameContext.get(GamePlayer);
     this.matchSessionService = gameContext.get(MatchSessionService);
@@ -57,29 +60,58 @@ export class WorldController {
 
     if (matchState === MatchStateType.InProgress) {
       this.localCarEntity.setActive(true);
-      this.scoreboardEntity.setActive(true);
+      // Don't call setActive on scoreboard - timer state is managed by startTimer/stopTimer
+      // in handleCountdownEnd and goal scoring
       this.ballEntity.setInactive(false);
-    } else {
-      this.scoreboardEntity.setActive(false);
     }
 
     if (matchState === MatchStateType.Countdown) {
       this.ballEntity.setInactive(true);
       this.localCarEntity.setActive(false);
+      // Deactivate NPC during countdown
+      this.npcService.deactivateNpcCar();
     }
   }
 
-  public handleWaitingForPlayers(): void {
-    this.matchSessionService.setMatchState(MatchStateType.WaitingPlayers);
-    this.scoreboardEntity.stopTimer();
-    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+  public startSoloMatchWithNpc(
+    canvas: HTMLCanvasElement,
+    onEntityAdded: (entity: any) => void
+  ): void {
+    this.isSoloMatchWithNpc = true;
+    this.npcService.addNpcCar(
+      canvas,
+      this.ballEntity,
+      this.spawnPointEntities,
+      onEntityAdded
+    );
+    console.log("Solo match with NPC started");
   }
 
   public showCountdown(): void {
     const match = this.matchSessionService.getMatch();
     const isHost = match?.isHost();
+    const playersCount = match?.getPlayers().length ?? 0;
 
     this.matchSessionService.setMatchState(MatchStateType.Countdown);
+
+    // Remove NPC car and reset scores when transitioning from solo to multiplayer
+    // (when second player joins - player count is now 2)
+    if (this.isSoloMatchWithNpc && playersCount >= 2) {
+      // Remove NPC through service (WorldScene will handle entity removal via onEntityRemoved callback)
+      this.npcService.removeNpcCar(() => {});
+      this.isSoloMatchWithNpc = false;
+      
+      // Reset scores when transitioning from solo match to real match
+      const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
+      players.forEach(player => {
+        player.setScore(0);
+      });
+      
+      // Reset countdown to start fresh for real match
+      this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+      
+      console.log("Transitioning from solo to multiplayer - NPC removed, scores reset, countdown restarted");
+    }
 
     if (this.countdownCurrentNumber < 0) {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
@@ -128,8 +160,35 @@ export class WorldController {
       return;
     }
 
-    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
-    this.showCountdown();
+    // During solo play, skip countdown and restart immediately
+    if (this.isSoloMatchWithNpc) {
+      this.resetForSoloGoal();
+      this.matchSessionService.setMatchState(MatchStateType.InProgress);
+      // Reactivate NPC after goal
+      this.npcService.activateNpcCar(this.boostPadsEntities);
+    } else {
+      this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+      this.showCountdown();
+    }
+  }
+  
+  private resetForSoloGoal(): void {
+    // Reset ball and move players to spawn points
+    this.ballEntity.reset();
+    this.localCarEntity.reset();
+    this.moveCarToSpawnPoint();
+    // Reset boost levels
+    this.localCarEntity.refillBoost();
+    // Move NPC to spawn and reset its boost
+    this.npcService.moveNpcToSpawn(this.spawnPointEntities);
+    // Reset boost pads
+    this.boostPadsEntities.forEach((pad) => pad.reset());
+  }
+  
+  public startSoloMatchImmediately(): void {
+    // Skip countdown for solo play - start match directly
+    this.resetForCountdown();
+    this.handleCountdownEnd();
   }
 
   public handleGameOverEnd(): void {
@@ -144,6 +203,11 @@ export class WorldController {
     this.markRemoteCarsForSpawn();
     this.localCarEntity.refillBoost();
     this.boostPadsEntities.forEach((pad) => pad.reset());
+    
+    // Move NPC to spawn point if in solo match
+    if (this.isSoloMatchWithNpc) {
+      this.npcService.moveNpcToSpawn(this.spawnPointEntities);
+    }
   }
 
   private handleCountdownEnd(): void {
@@ -155,7 +219,17 @@ export class WorldController {
     this.moveCarToSpawnPoint();
     this.markRemoteCarsForSpawn();
     this.ballEntity.reset();
-    this.scoreboardEntity.startTimer();
+    
+    // Only start timer if it's not a solo match with NPC
+    // In solo matches, timer stays frozen at initial duration
+    if (!this.isSoloMatchWithNpc) {
+      this.scoreboardEntity.startTimer();
+      console.log("Real match - timer started");
+    } else {
+      console.log("Solo match - timer remains frozen");
+      // Activate NPC AI after 3-second delay
+      this.npcService.activateNpcCarAfterDelay(this.boostPadsEntities);
+    }
   }
 
   private sendCountdownEvent(): void {
@@ -452,5 +526,14 @@ export class WorldController {
         victimName: victimName ?? null,
       })
     );
+  }
+
+  public isSoloMatch(): boolean {
+    return this.isSoloMatchWithNpc;
+  }
+  
+  public getNpcSpawnPointIndex(): number | null {
+    // Return a spawn point index for the NPC if available
+    return this.spawnPointService.getAndConsumeSpawnPointIndex();
   }
 }

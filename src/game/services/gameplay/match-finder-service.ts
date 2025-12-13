@@ -57,7 +57,7 @@ export class MatchFinderService {
 
     const match = new MatchSession(
       true,
-      MatchStateType.WaitingPlayers,
+      MatchStateType.Countdown,
       totalSlots,
       MATCH_ATTRIBUTES
     );

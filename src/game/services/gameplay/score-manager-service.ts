@@ -111,7 +111,7 @@ export class ScoreManagerService {
       team = TeamType.Blue;
     }
 
-    this.showGoalAlert(player, team);
+    this.showGoalAlert(player, team, 5);
     this.explosionCallback(
       this.ballEntity.getX(),
       this.ballEntity.getY(),
@@ -143,7 +143,8 @@ export class ScoreManagerService {
     const playersCount =
       this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
-    if (playersCount < 2) {
+    // Allow scoring with 1 player (solo match with NPC) or 2+ players
+    if (playersCount < 1) {
       return;
     }
 
@@ -164,34 +165,50 @@ export class ScoreManagerService {
       return;
     }
 
+    // Check if this is a solo match (1 real player)
+    const playersCount =
+      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    const isSoloMatch = playersCount === 1;
+
     this.scoreboardUI.stopTimer();
     this.ballEntity.handleGoalScored();
     this.matchSessionService.setMatchState(MatchStateType.GoalScored);
 
-    player.sumScore(1);
-    this.sendGoalEvent(player);
+    // Don't update player scores or scoreboard during solo play
+    if (!isSoloMatch) {
+      player.sumScore(1);
+      this.sendGoalEvent(player);
 
-    const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
+      const goalTeam =
+        player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
 
-    if (goalTeam === TeamType.Blue) {
-      this.scoreboardUI.incrementBlueScore();
+      if (goalTeam === TeamType.Blue) {
+        this.scoreboardUI.incrementBlueScore();
+      } else {
+        this.scoreboardUI.incrementRedScore();
+      }
+
+      this.matchActionsLogService.addAction(
+        MatchAction.goal(player.getNetworkId(), {
+          playerName: player.getName(),
+        })
+      );
+
+      this.showGoalAlert(player, goalTeam, 5);
+      this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
     } else {
-      this.scoreboardUI.incrementRedScore();
+      // In solo match, show alert but with shorter duration (2 seconds instead of 5)
+      const goalTeam =
+        player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
+      this.showGoalAlert(player, goalTeam, 2);
+      this.timerManagerService.createTimer(2, this.goalTimeEndCallback);
     }
 
-    this.matchActionsLogService.addAction(
-      MatchAction.goal(player.getNetworkId(), {
-        playerName: player.getName(),
-      })
-    );
-
-    this.showGoalAlert(player, goalTeam);
     this.explosionCallback(
       this.ballEntity.getX(),
       this.ballEntity.getY(),
-      goalTeam
+      player === this.gamePlayer ? TeamType.Blue : TeamType.Red
     );
-    this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
   }
 
   private sendGoalEvent(player: GamePlayer): void {
@@ -211,7 +228,8 @@ export class ScoreManagerService {
 
   private showGoalAlert(
     player: GamePlayer | null | undefined,
-    goalTeam: TeamType
+    goalTeam: TeamType,
+    duration = 0
   ): void {
     const playerName = player?.getName().toUpperCase() || "UNKNOWN";
 
@@ -223,7 +241,7 @@ export class ScoreManagerService {
       color = "red";
     }
 
-    this.alertEntity.show([playerName, "SCORED!"], color);
+    this.alertEntity.show([playerName, "SCORED!"], color, duration);
   }
 
   private detectGameEnd(): void {
@@ -231,6 +249,13 @@ export class ScoreManagerService {
       this.matchSessionService.getMatch()?.getState() ===
       MatchStateType.GameOver
     ) {
+      return;
+    }
+
+    // Only detect timer end if there are at least 2 real players
+    const playersCount =
+      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    if (playersCount < 2) {
       return;
     }
 

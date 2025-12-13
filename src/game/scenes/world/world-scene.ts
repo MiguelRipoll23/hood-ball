@@ -9,12 +9,12 @@ import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
 import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
+import { NpcCarEntity } from "../../entities/npc-car-entity.js";
 import { BaseCollidingGameScene } from "../../../engine/scenes/base-colliding-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { SceneType } from "../../../engine/enums/scene-type.js";
-import { MatchStateType } from "../../enums/match-state-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { MatchmakingControllerContract } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
@@ -46,6 +46,7 @@ import { gameContext } from "../../context/game-context.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
+import { NpcService } from "../../services/gameplay/npc-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
@@ -73,12 +74,14 @@ export class WorldScene extends BaseCollidingGameScene {
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
   private matchLogEntity: MatchLogEntity | null = null;
+  private npcCarEntity: NpcCarEntity | null = null;
 
   private readonly matchActionsLogService: MatchActionsLogService;
   private matchActionsLogUnsubscribe: (() => void) | null = null;
 
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
+  private npcService: NpcService | null = null;
   private helpShown = false;
 
   // Weather state
@@ -142,6 +145,12 @@ export class WorldScene extends BaseCollidingGameScene {
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
 
+    // Initialize NPC service
+    this.npcService = new NpcService(
+      this.matchSessionService,
+      this.spawnPointService
+    );
+
     this.worldController = new WorldController(
       this.spawnPointService,
       this.timerManagerService,
@@ -154,7 +163,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.matchActionsLogService,
       this.boostPadsEntities,
       this.spawnPointEntities,
-      this.getEntitiesByOwner.bind(this)
+      this.getEntitiesByOwner.bind(this),
+      this.npcService
     );
 
     this.scoreManagerService = new ScoreManagerService(
@@ -218,6 +228,8 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.worldController?.handleMatchState();
+
+    // Always use the normal score detection (works for solo and multiplayer)
     this.scoreManagerService?.detectScoresIfHost();
 
     this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
@@ -237,8 +249,18 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchAdvertised(): void {
     if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
-      this.worldController?.handleWaitingForPlayers();
+      // Start solo match with NPC
+      this.worldController?.startSoloMatchWithNpc(
+        this.canvas,
+        (entity: NpcCarEntity) => {
+          this.npcCarEntity = entity;
+          this.addEntityToSceneLayer(entity);
+        }
+      );
       this.toastEntity?.show("Waiting for players...");
+
+      // Skip countdown during solo play - start match immediately
+      this.worldController?.startSoloMatchImmediately();
     }
   }
 
@@ -257,9 +279,17 @@ export class WorldScene extends BaseCollidingGameScene {
     } else {
       this.toastEntity?.show(`<em>${player.getName()}</em> joined`, 2);
 
-      const matchState = this.matchSessionService.getMatch()?.getState();
-
-      if (matchState === MatchStateType.WaitingPlayers) {
+      // If player joins during a solo match, transition to real match
+      if (this.worldController?.isSoloMatch()) {
+        // Remove NPC car entity from scene
+        if (this.npcCarEntity) {
+          const index = this.worldEntities.indexOf(this.npcCarEntity);
+          if (index > -1) {
+            this.worldEntities.splice(index, 1);
+          }
+          this.npcCarEntity = null;
+        }
+        // Start countdown to begin real match (this will reset scores)
         this.worldController?.showCountdown();
       }
     }
@@ -283,8 +313,9 @@ export class WorldScene extends BaseCollidingGameScene {
     const playersCount =
       this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
 
+    // If down to 1 player, just show waiting message but stay in current state
     if (playersCount === 1) {
-      this.handleWaitingForPlayers();
+      this.toastEntity?.show("Waiting for players...");
     }
 
     this.scoreManagerService?.updateScoreboard();
@@ -369,11 +400,6 @@ export class WorldScene extends BaseCollidingGameScene {
           this.triggerCarExplosion.bind(this)
         )
     );
-  }
-
-  private handleWaitingForPlayers(): void {
-    this.worldController?.handleWaitingForPlayers();
-    this.toastEntity?.show("Waiting for players...");
   }
 
   private setupChatUI(): void {
@@ -546,6 +572,16 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
     this.matchActionsLogService.clear();
+
+    // Remove NPC car if present
+    if (this.npcService) {
+      this.npcService.removeNpcCar((entity) => {
+        const index = this.worldEntities.indexOf(entity);
+        if (index > -1) {
+          this.worldEntities.splice(index, 1);
+        }
+      });
+    }
 
     super.dispose();
   }
