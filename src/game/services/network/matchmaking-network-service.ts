@@ -198,18 +198,7 @@ export class MatchmakingNetworkService
 
     // Remove NPC player if present (solo match transition to multiplayer)
     // This must happen BEFORE assigning a spawn point to the joining player
-    const players = match.getPlayers();
-    const npcPlayer = players.find((p) => p.isNpc());
-    if (npcPlayer) {
-      const npcSpawnIndex = npcPlayer.getSpawnPointIndex();
-      match.removePlayer(npcPlayer);
-      if (npcSpawnIndex !== -1) {
-        this.spawnPointService.releaseSpawnPointIndex(npcSpawnIndex);
-        console.log(
-          `NPC player removed from match, spawn point ${npcSpawnIndex} released before joining player assignment`
-        );
-      }
-    }
+    this.removeNpcPlayerAndReleaseSpawnPoint(match);
 
     const gamePlayer = new GamePlayer(playerId, playerName);
     peer.setPlayer(gamePlayer);
@@ -731,6 +720,21 @@ export class MatchmakingNetworkService
         // Pause auto recording
         console.log("Match has < 2 players - pausing auto recording");
         this.recorderService.pauseRecording();
+      }
+    }
+  }
+
+  private removeNpcPlayerAndReleaseSpawnPoint(match: MatchSession): void {
+    const players = match.getPlayers();
+    const npcPlayer = players.find((p) => p.isNpc());
+    if (npcPlayer) {
+      const npcSpawnIndex = npcPlayer.getSpawnPointIndex();
+      match.removePlayer(npcPlayer);
+      if (npcSpawnIndex !== -1) {
+        this.spawnPointService.releaseSpawnPointIndex(npcSpawnIndex);
+        console.log(
+          `NPC player removed from match, spawn point ${npcSpawnIndex} released before joining player assignment`
+        );
       }
     }
   }

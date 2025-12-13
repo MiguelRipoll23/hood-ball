@@ -82,37 +82,14 @@ export class NpcService {
       this.idleTimer = null;
     }
 
-    // Remove NPC player from match if still present
-    // (May have already been removed by matchmaking service before spawn assignment)
-    const npcPlayer = this.npcCarEntity.getPlayer();
-    if (npcPlayer) {
-      const match = this.matchSessionService.getMatch();
-      if (match) {
-        const players = match.getPlayers();
-        if (players.find((p) => p === npcPlayer)) {
-          match.removePlayer(npcPlayer);
-          console.log(
-            "NPC player removed from match - transitioning to real multiplayer"
-          );
-
-          // Release the spawn point back to the pool
-          const spawnIndex = npcPlayer.getSpawnPointIndex();
-          if (spawnIndex !== -1) {
-            this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
-          }
-        } else {
-          console.log(
-            "NPC player already removed from match (done before spawn assignment)"
-          );
-        }
-      }
-    }
+    // Note: NPC player is removed from match by matchmaking service before spawn assignment
+    // This method only handles entity cleanup
 
     // Remove entity from scene via callback if provided
     onEntityRemoved?.(this.npcCarEntity);
 
     this.npcCarEntity = null;
-    console.log("NPC car removed");
+    console.log("NPC car entity removed");
   }
 
   public activateNpcCarAfterDelay(boostPadsEntities: BoostPadEntity[]): void {
