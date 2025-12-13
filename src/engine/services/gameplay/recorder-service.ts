@@ -100,17 +100,11 @@ export class RecorderService {
   }
 
   public startRecording(auto = false): void {
-    console.log(`[RecorderService] startRecording called - auto: ${auto}`);
-    console.log(
-      `[RecorderService] Current state - recording: ${this.recording}, paused: ${this.paused}`
-    );
-
     if (this.recording) {
       console.warn("Recording is already in progress");
       return;
     }
 
-    console.log(`Starting recording${auto ? " (auto)" : ""}...`);
     this.recording = true;
     this.paused = false;
     this.frameCount = 0;
@@ -127,10 +121,6 @@ export class RecorderService {
     this.recordedEvents = [];
     this.lastEntityState.clear();
     this.trackedEntities.clear();
-
-    console.log(
-      `[RecorderService] Recording started - recording: ${this.recording}, paused: ${this.paused}`
-    );
   }
 
   public pauseRecording(): void {
@@ -138,7 +128,6 @@ export class RecorderService {
       return;
     }
 
-    console.log("Pausing recording...");
     this.paused = true;
   }
 
@@ -147,7 +136,6 @@ export class RecorderService {
       return;
     }
 
-    console.log("Resuming recording...");
     this.paused = false;
   }
 
@@ -156,7 +144,6 @@ export class RecorderService {
       return;
     }
 
-    console.log(`Stopping recording. Total frames: ${this.frameCount}`);
     this.endTime = Date.now();
     this.recording = false;
     this.paused = false;
@@ -185,7 +172,6 @@ export class RecorderService {
         } else {
           this.recordedSceneId = "unknown";
         }
-        console.log(`Recording scene ID: ${this.recordedSceneId}`);
       }
 
       entities.push(...currentScene.getUIEntities());
@@ -213,13 +199,6 @@ export class RecorderService {
   }
 
   public recordFrame(entities: GameEntity[], events: GameEvent[]): void {
-    // Log first few calls to verify method is being invoked
-    if (this.frameCount < 5 || this.frameCount % 120 === 0) {
-      console.log(
-        `[RecorderService] recordFrame called - frame: ${this.frameCount}, recording: ${this.recording}, paused: ${this.paused}, entities: ${entities.length}, events: ${events.length}`
-      );
-    }
-
     if (!this.recording || this.paused) {
       return;
     }
@@ -241,11 +220,6 @@ export class RecorderService {
     this.recordEvents(events, timestamp);
 
     this.frameCount++;
-
-    // Log every 60 frames (once per second at 60fps)
-    if (this.frameCount % 60 === 0) {
-      console.log(`Recorded ${this.frameCount} frames (${this.transformDeltas.length} transform deltas, ${this.stateDeltas.length} state deltas)`);
-    }
   }
 
   private captureInitialSnapshot(entities: GameEntity[]): void {
@@ -265,8 +239,6 @@ export class RecorderService {
         properties: { ...snapshot.properties },
       });
     }
-    
-    console.log(`Initial snapshot captured: ${this.initialSnapshot.length} entities`);
   }
 
   private createEntitySnapshot(entity: GameEntity): EntitySnapshot {
@@ -604,10 +576,6 @@ export class RecorderService {
     }
 
     const buffer = writer.toArrayBuffer();
-    console.log(`Recording exported as binary: ${buffer.byteLength} bytes`);
-    console.log(`  Initial: ${this.initialSnapshot.length} entities`);
-    console.log(`  Spawns: ${this.spawnEvents.length}, Despawns: ${this.despawnEvents.length}`);
-    console.log(`  Transform deltas: ${this.transformDeltas.length}, State deltas: ${this.stateDeltas.length}`);
     return new Blob([buffer], { type: "application/octet-stream" });
   }
 
@@ -654,7 +622,6 @@ export class RecorderService {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    console.log(`Recording downloaded as ${a.download}`);
   }
 
   public clearRecording(): void {
@@ -672,8 +639,6 @@ export class RecorderService {
     this.recordedEvents = [];
     this.lastEntityState.clear();
     this.trackedEntities.clear();
-    
-    console.log("Recording cleared");
   }
 
   public getFrameCount(): number {

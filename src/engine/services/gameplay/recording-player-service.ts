@@ -66,9 +66,9 @@ export class RecordingPlayerService {
       }
 
       // Read version - expecting 1.0 for delta format
-      const versionMajor = reader.unsignedInt8();
-      const versionMinor = reader.unsignedInt8();
-      console.log(`Recording version: ${versionMajor}.${versionMinor}`);
+      reader.unsignedInt8(); // versionMajor
+      reader.unsignedInt8(); // versionMinor
+
 
       // Read metadata
       const startTime = reader.float64();
@@ -81,7 +81,7 @@ export class RecordingPlayerService {
       await this.loadDeltaFormat(reader, startTime, endTime, totalFrames, fps, sceneId);
 
       this.playbackState = PlaybackState.Stopped;
-      console.log(`Recording loaded: ${totalFrames} frames, ${fps} FPS`);
+
     } catch (error) {
       console.error("Failed to load recording:", error);
       throw error;
@@ -185,11 +185,7 @@ export class RecordingPlayerService {
       events,
     };
 
-    console.log(`Delta recording loaded:`);
-    console.log(`  Scene ID: ${sceneId}`);
-    console.log(`  Initial: ${initialSnapshot.length} entities`);
-    console.log(`  Spawns: ${spawnEvents.length}, Despawns: ${despawnEvents.length}`);
-    console.log(`  Transform deltas: ${transformDeltas.length}, State deltas: ${stateDeltas.length}`);
+
   }
 
   private readEntitySnapshot(reader: BinaryReader): EntitySnapshot {
@@ -240,20 +236,20 @@ export class RecordingPlayerService {
     this.playbackState = PlaybackState.Playing;
     this.initializeDeltaPlayback();
     
-    console.log("Playback started");
+
   }
 
   private async loadRecordedScene(): Promise<void> {
     if (!this.recordingData) return;
 
     const sceneId = parseInt(this.recordingData.metadata.sceneId);
-    console.log(`Loading actual scene for replay: ${sceneId} (${SceneType[sceneId] || 'Unknown'})`);
+
 
     // Store current scene to restore later (DON'T dispose it - we want to restore it)
     this.previousScene = this.gameState.getGameFrame().getCurrentScene();
     
     if (this.previousScene) {
-      console.log(`Storing current scene (${this.previousScene.constructor.name}) for later restoration`);
+
       // Just clear it from GameFrame, but keep the scene intact for restoration
       this.gameState.getGameFrame().setCurrentScene(null as any);
     }
@@ -283,7 +279,7 @@ export class RecordingPlayerService {
       // Load the scene - it will skip entity creation due to replay mode
       this.replayScene.load();
       
-      console.log("WorldScene loaded in replay mode - entities will be spawned from recording");
+
     } else {
       console.warn(`Scene type ${sceneId} not yet supported for replay`);
       return;
@@ -292,8 +288,7 @@ export class RecordingPlayerService {
     // Set as current scene
     this.gameState.getGameFrame().setCurrentScene(this.replayScene);
     
-    console.log("Actual WorldScene loaded for replay");
-    console.log("Entities will be spawned from recording data");
+
   }
 
   private initializeDeltaPlayback(): void {
@@ -316,7 +311,7 @@ export class RecordingPlayerService {
     this.nextTransformIndex = 0;
     this.nextStateIndex = 0;
     
-    console.log(`Delta playback initialized with ${this.currentEntityStates.size} entities`);
+
   }
 
   private spawnEntityFromSnapshot(snapshot: EntitySnapshot): void {
@@ -342,7 +337,7 @@ export class RecordingPlayerService {
     // Track spawned entity
     this.spawnedEntities.set(snapshot.id, entity);
     
-    console.log(`Spawned entity: ${snapshot.type} (${snapshot.id})`);
+
   }
 
   private applySnapshotToEntity(entity: GameEntity, snapshot: EntitySnapshot): void {
@@ -406,7 +401,7 @@ export class RecordingPlayerService {
     }
 
     this.playbackState = PlaybackState.Paused;
-    console.log("Playback paused");
+
   }
 
   public stop(): void {
@@ -421,14 +416,14 @@ export class RecordingPlayerService {
     
     // Exit replay scene if active
     if (this.replayScene) {
-      console.log("Exiting replay scene");
+
       this.replayScene.dispose();
       this.replayScene = null;
     }
     
     // Restore previous scene
     if (this.previousScene) {
-      console.log(`Restoring previous scene: ${this.previousScene.constructor.name}`);
+
       // Resubscribe events if the scene has that method
       if (typeof this.previousScene.resubscribeEvents === 'function') {
         this.previousScene.resubscribeEvents();
@@ -437,7 +432,7 @@ export class RecordingPlayerService {
       this.previousScene = null;
     }
     
-    console.log("Playback stopped and cleaned up");
+
   }
 
   public seekToTime(timeMs: number): void {
@@ -548,7 +543,7 @@ export class RecordingPlayerService {
     }
 
     this.playbackSpeed = speed;
-    console.log(`Playback speed set to ${speed}x`);
+
   }
 
   public getPlaybackSpeed(): number {

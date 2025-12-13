@@ -119,7 +119,12 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointService = spawnPointService;
     this.chatService = chatService;
     this.matchActionsLogService = matchActionsLogService;
-    this.matchActionsLogService.clear();
+    
+    // Only clear if service exists (in replay mode, some services may be null)
+    if (this.matchActionsLogService) {
+      this.matchActionsLogService.clear();
+    }
+    
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
