@@ -165,10 +165,11 @@ export class ScoreManagerService {
       return;
     }
 
-    // Check if this is a solo match (1 real player)
-    const playersCount =
-      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
-    const isSoloMatch = playersCount === 1;
+    // Check if this is a solo match (1 real player, excluding NPCs)
+    const allPlayers =
+      this.matchSessionService.getMatch()?.getPlayers() ?? [];
+    const realPlayersCount = allPlayers.filter((p) => !p.isNpc()).length;
+    const isSoloMatch = realPlayersCount === 1;
 
     this.scoreboardUI.stopTimer();
     this.ballEntity.handleGoalScored();

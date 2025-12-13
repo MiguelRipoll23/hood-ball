@@ -59,7 +59,7 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
         context,
         textX,
         textY,
-        "Spawn point"
+        "Spawn"
       );
 
       // Only show player name if assigned (with 24px vertical spacing like matchmaking service)
@@ -68,7 +68,7 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
           context,
           textX,
           textY + 24,
-          playerInfo
+          `> ${playerInfo}`
         );
       }
 

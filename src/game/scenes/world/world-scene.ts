@@ -306,6 +306,16 @@ export class WorldScene extends BaseCollidingGameScene {
         }
         // Start countdown to begin real match (this will reset scores)
         this.worldController?.showCountdown();
+      } else {
+        // If a player joins back after someone left (real players becoming 2 again)
+        const allPlayers =
+          this.matchSessionService.getMatch()?.getPlayers() ?? [];
+        const realPlayersCount = allPlayers.filter((p) => !p.isNpc()).length;
+        if (realPlayersCount === 2) {
+          // Resume the timer that was stopped when player left
+          this.scoreboardEntity?.startTimer();
+          console.log("Player joined - match resumed, timer restarted");
+        }
       }
     }
 
@@ -325,12 +335,17 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.toastEntity?.show(`<em>${player.getName()}</em> left`, 2);
 
-    const playersCount =
-      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    // Count only real players (excluding NPCs)
+    const allPlayers =
+      this.matchSessionService.getMatch()?.getPlayers() ?? [];
+    const realPlayersCount = allPlayers.filter((p) => !p.isNpc()).length;
 
-    // If down to 1 player, just show waiting message but stay in current state
-    if (playersCount === 1) {
+    // If down to 1 real player, freeze match state
+    if (realPlayersCount === 1) {
       this.toastEntity?.show("Waiting for players...");
+      // Stop/pause the timer to freeze countdown
+      this.scoreboardEntity?.stopTimer();
+      console.log("Player left - match frozen, timer stopped");
     }
 
     this.scoreManagerService?.updateScoreboard();
