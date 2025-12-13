@@ -281,7 +281,6 @@ export class WorldScene extends BaseCollidingGameScene {
 
       // If player joins during a solo match, transition to real match
       if (this.worldController?.isSoloMatch()) {
-        this.toastEntity?.show("Real match starting!", 2);
         // Remove NPC car entity from scene
         if (this.npcCarEntity) {
           const index = this.worldEntities.indexOf(this.npcCarEntity);
@@ -559,8 +558,6 @@ export class WorldScene extends BaseCollidingGameScene {
       }
     });
   }
-
-
 
   public override dispose(): void {
     // Hide chat input when leaving the game scene
