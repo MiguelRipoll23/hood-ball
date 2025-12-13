@@ -203,9 +203,22 @@ export class RecordingPlayerService {
     const velocityX = hasVelocityX ? reader.float32() : undefined;
     const hasVelocityY = reader.boolean();
     const velocityY = hasVelocityY ? reader.float32() : undefined;
+    
+    // Read serialized data if available
+    const hasSerializedData = reader.boolean();
+    let serializedData: ArrayBuffer | undefined = undefined;
+    if (hasSerializedData) {
+      const dataLength = reader.unsignedInt16();
+      const dataBytes = new Uint8Array(dataLength);
+      for (let i = 0; i < dataLength; i++) {
+        dataBytes[i] = reader.unsignedInt8();
+      }
+      serializedData = dataBytes.buffer;
+    }
+    
     const properties = this.readProperties(reader);
     
-    return { id, type, x, y, width, height, angle, visible, opacity, velocityX, velocityY, properties };
+    return { id, type, x, y, width, height, angle, visible, opacity, velocityX, velocityY, serializedData, properties };
   }
 
   private readProperties(reader: BinaryReader): Record<string, unknown> {
@@ -341,7 +354,18 @@ export class RecordingPlayerService {
   }
 
   private applySnapshotToEntity(entity: GameEntity, snapshot: EntitySnapshot): void {
-    // Apply position and transform
+    // Check if entity has synchronize() method (multiplayer entity)
+    const multiplayerEntity = entity as { synchronize?: (data: ArrayBuffer) => void };
+    
+    // If entity has serialized data and synchronize method, use that (preferred method)
+    if (snapshot.serializedData && multiplayerEntity.synchronize) {
+      multiplayerEntity.synchronize(snapshot.serializedData);
+      // Also apply opacity which may not be in serialized data
+      entity.setOpacity(snapshot.opacity);
+      return;
+    }
+    
+    // Otherwise, fall back to manual property application
     const moveable = entity as {
       setX?: (x: number) => void;
       setY?: (y: number) => void;

@@ -264,7 +264,8 @@ export class WorldScene extends BaseCollidingGameScene {
     super.render(context);
 
     // Render debug information from matchmaking service (which internally delegates to webrtc)
-    if (this.gameState.isDebugging()) {
+    // Skip in replay mode where matchmakingService may be null
+    if (this.gameState.isDebugging() && this.matchmakingService) {
       this.matchmakingService.renderDebugInformation(context);
     }
   }

@@ -245,6 +245,10 @@ export class RecorderService {
     const moveable = entity as BaseMoveableGameEntity;
     const dynamic = entity as { vx?: number; vy?: number; getVX?: () => number; getVY?: () => number };
     
+    // Check if entity has serialize() method (multiplayer entity)
+    const multiplayerEntity = entity as { serialize?: () => ArrayBuffer };
+    const serializedData = multiplayerEntity.serialize ? multiplayerEntity.serialize() : undefined;
+    
     return {
       id: this.getEntityId(entity),
       type: entity.constructor.name,
@@ -257,6 +261,7 @@ export class RecorderService {
       opacity: entity.getOpacity(),
       velocityX: dynamic.getVX?.() ?? dynamic.vx,
       velocityY: dynamic.getVY?.() ?? dynamic.vy,
+      serializedData, // Include serialized data if available
       properties: this.extractEntityProperties(entity, moveable),
     };
   }
@@ -600,6 +605,17 @@ export class RecorderService {
     if (snapshot.velocityY !== undefined) {
       writer.float32(snapshot.velocityY);
     }
+    
+    // Write serialized data if available (from entity's serialize() method)
+    writer.boolean(snapshot.serializedData !== undefined);
+    if (snapshot.serializedData) {
+      const dataView = new Uint8Array(snapshot.serializedData);
+      writer.unsignedInt16(dataView.length);
+      for (let i = 0; i < dataView.length; i++) {
+        writer.unsignedInt8(dataView[i]);
+      }
+    }
+    
     this.writeProperties(writer, snapshot.properties);
   }
 
