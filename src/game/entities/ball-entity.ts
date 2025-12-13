@@ -250,7 +250,7 @@ export class BallEntity
     this.y -= this.vy;
   }
 
-  private updateHitbox(): void {
+  public updateHitbox(): void {
     this.getHitboxEntities().forEach((entity) => {
       entity.setX(this.x - this.RADIUS);
       entity.setY(this.y - this.RADIUS);
