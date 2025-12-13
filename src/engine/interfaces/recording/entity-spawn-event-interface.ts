@@ -7,6 +7,8 @@ export interface EntitySpawnEvent {
   type: string; // Entity type/prefab name
   x: number;
   y: number;
+  width: number;
+  height: number;
   angle?: number;
   properties: Record<string, unknown>;
 }

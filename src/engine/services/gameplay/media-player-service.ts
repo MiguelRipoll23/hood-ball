@@ -175,10 +175,12 @@ export class MediaPlayerService {
       const type = reader.variableLengthString();
       const x = reader.float32();
       const y = reader.float32();
+      const width = reader.float32();
+      const height = reader.float32();
       const hasAngle = reader.boolean();
       const angle = hasAngle ? reader.float32() : undefined;
       const properties = this.readProperties(reader);
-      spawnEvents.push({ timestamp, id, type, x, y, angle, properties });
+      spawnEvents.push({ timestamp, id, type, x, y, width, height, angle, properties });
     }
 
     // Read despawn events
@@ -549,8 +551,8 @@ export class MediaPlayerService {
         type: spawnEvent.type,
         x: spawnEvent.x,
         y: spawnEvent.y,
-        width: 50, // Default size
-        height: 50,
+        width: spawnEvent.width,
+        height: spawnEvent.height,
         angle: spawnEvent.angle,
         visible: true,
         opacity: 1,

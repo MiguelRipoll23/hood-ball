@@ -30,6 +30,9 @@ const VELOCITY_DELTA_THRESHOLD = 0.01;
 // Maximum number of frames to store (for backwards compatibility)
 const MAX_FRAMES = MAX_RECORDING_DURATION_MINUTES * 60 * RECORDING_FPS;
 
+// Estimated bytes per frame for old format (used for size comparison)
+const ESTIMATED_BYTES_PER_FRAME = 500;
+
 export interface RecordedFrame {
   timestamp: number;
   entities: SerializedEntity[];
@@ -334,6 +337,8 @@ export class RecorderService {
           type: entity.constructor.name,
           x: moveable.getX?.() ?? 0,
           y: moveable.getY?.() ?? 0,
+          width: moveable.getWidth?.() ?? 0,
+          height: moveable.getHeight?.() ?? 0,
           angle: moveable.getAngle?.(),
           properties: this.extractEntityProperties(entity, moveable),
         };
@@ -433,7 +438,12 @@ export class RecorderService {
         if (key === 'angle') continue; // Already handled in transform
         
         const lastValue = lastState.properties[key];
-        if (JSON.stringify(value) !== JSON.stringify(lastValue)) {
+        // Use simple equality for primitives, JSON for objects/arrays
+        const isChanged = typeof value === 'object' && value !== null
+          ? JSON.stringify(value) !== JSON.stringify(lastValue)
+          : value !== lastValue;
+          
+        if (isChanged) {
           changedProperties[key] = value;
           lastState.properties[key] = value;
           hasStateChange = true;
@@ -583,6 +593,8 @@ export class RecorderService {
       writer.variableLengthString(event.type);
       writer.float32(event.x);
       writer.float32(event.y);
+      writer.float32(event.width);
+      writer.float32(event.height);
       writer.boolean(event.angle !== undefined);
       if (event.angle !== undefined) {
         writer.float32(event.angle);
@@ -636,7 +648,7 @@ export class RecorderService {
     }
 
     const buffer = writer.toArrayBuffer();
-    const oldSize = this.frames.length * 500; // Rough estimate of old format
+    const oldSize = this.frames.length * ESTIMATED_BYTES_PER_FRAME;
     const reduction = oldSize > 0 ? ((1 - buffer.byteLength / oldSize) * 100).toFixed(1) : 0;
     console.log(`Recording exported as binary: ${buffer.byteLength} bytes (${reduction}% reduction)`);
     console.log(`  Initial: ${this.initialSnapshot.length} entities`);
