@@ -96,8 +96,8 @@ export class BallEntity
     return this.lastPlayer;
   }
 
-  public clearLastPlayerIfMatches(player: GamePlayer | null): void {
-    if (player && this.lastPlayer === player) {
+  public clearLastPlayerIfMatches(player: GamePlayer): void {
+    if (this.lastPlayer === player) {
       this.lastPlayer = null;
     }
   }

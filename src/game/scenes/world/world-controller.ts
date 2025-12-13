@@ -99,9 +99,8 @@ export class WorldController {
     // Note: NPC player is already removed from match by matchmaking service before spawn assignment
     if (this.isSoloMatchWithNpc && playersCount >= 2) {
       // Clear ball's lastPlayer reference if it's the NPC
-      const npcCarEntity = this.npcService.getNpcCarEntity();
-      if (npcCarEntity) {
-        const npcPlayer = npcCarEntity.getPlayer();
+      const npcPlayer = this.npcService.getNpcCarEntity()?.getPlayer();
+      if (npcPlayer) {
         this.ballEntity.clearLastPlayerIfMatches(npcPlayer);
       }
 
