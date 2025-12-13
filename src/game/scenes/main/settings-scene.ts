@@ -70,11 +70,12 @@ export class SettingsScene extends BaseGameScene {
       this.gameState.getDebugSettings().isDebugToolsEnabled();
     const settingEntity = new SettingEntity(
       "debug-tools",
-      "Debug tools",
+      "Show tools",
       debugToolsEnabled
     );
 
     settingEntity.setY(115);
+    settingEntity.setIndented(true); // Indent to show hierarchy
     settingEntity.load();
 
     this.uiEntities.push(settingEntity);
