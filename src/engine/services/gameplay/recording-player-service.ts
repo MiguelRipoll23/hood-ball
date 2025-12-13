@@ -249,13 +249,13 @@ export class RecordingPlayerService {
     const sceneId = parseInt(this.recordingData.metadata.sceneId);
     console.log(`Loading actual scene for replay: ${sceneId} (${SceneType[sceneId] || 'Unknown'})`);
 
-    // Store current scene to restore later
+    // Store current scene to restore later (DON'T dispose it - we want to restore it)
     this.previousScene = this.gameState.getGameFrame().getCurrentScene();
     
-    // Exit current scene
     if (this.previousScene) {
-      console.log(`Exiting current scene (${this.previousScene.constructor.name}) for replay`);
-      this.previousScene.dispose();
+      console.log(`Storing current scene (${this.previousScene.constructor.name}) for later restoration`);
+      // Just clear it from GameFrame, but keep the scene intact for restoration
+      this.gameState.getGameFrame().setCurrentScene(null as any);
     }
 
     // Load the actual WorldScene for replay
@@ -353,13 +353,21 @@ export class RecordingPlayerService {
       setAngle?: (angle: number) => void;
       setWidth?: (width: number) => void;
       setHeight?: (height: number) => void;
+      angle?: number; // Direct property access fallback
     };
 
     if (moveable.setX) moveable.setX(snapshot.x);
     if (moveable.setY) moveable.setY(snapshot.y);
-    if (snapshot.angle !== undefined && moveable.setAngle) {
-      moveable.setAngle(snapshot.angle);
+    
+    // Apply angle - try setter first, then direct property
+    if (snapshot.angle !== undefined) {
+      if (moveable.setAngle) {
+        moveable.setAngle(snapshot.angle);
+      } else if ('angle' in moveable) {
+        moveable.angle = snapshot.angle;
+      }
     }
+    
     if (moveable.setWidth) moveable.setWidth(snapshot.width);
     if (moveable.setHeight) moveable.setHeight(snapshot.height);
 
