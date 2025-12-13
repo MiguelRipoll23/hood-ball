@@ -1,6 +1,11 @@
 import { injectable } from "@needle-di/core";
-import type { RecordingData, RecordedFrame } from "./recorder-service.js";
+import type { RecordingData, RecordedFrame, DeltaRecordingData } from "./recorder-service.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
+import type { EntitySnapshot } from "../../interfaces/recording/entity-snapshot-interface.js";
+import type { EntitySpawnEvent } from "../../interfaces/recording/entity-spawn-event-interface.js";
+import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despawn-event-interface.js";
+import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
+import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 
 export enum PlaybackState {
   Stopped = "stopped",
@@ -11,10 +16,19 @@ export enum PlaybackState {
 @injectable()
 export class MediaPlayerService {
   private recordingData: RecordingData | null = null;
+  private deltaRecordingData: DeltaRecordingData | null = null;
   private currentFrameIndex = 0;
   private playbackState: PlaybackState = PlaybackState.Stopped;
   private playbackSpeed = 1.0;
   private lastFrameTime = 0;
+  
+  // For delta playback
+  private currentEntityStates = new Map<string, EntitySnapshot>();
+  private currentTime = 0;
+  private nextSpawnIndex = 0;
+  private nextDespawnIndex = 0;
+  private nextTransformIndex = 0;
+  private nextStateIndex = 0;
 
   constructor() {
     console.log("MediaPlayerService initialized");
@@ -42,6 +56,31 @@ export class MediaPlayerService {
       const totalFrames = reader.unsignedInt32();
       const fps = reader.unsignedInt16();
 
+      // Handle different versions
+      if (versionMajor === 2) {
+        // New delta format
+        await this.loadDeltaFormat(reader, startTime, endTime, totalFrames, fps);
+      } else {
+        // Old frame-based format
+        await this.loadFrameFormat(reader, startTime, endTime, totalFrames, fps);
+      }
+
+      this.currentFrameIndex = 0;
+      this.playbackState = PlaybackState.Stopped;
+      console.log(`Recording loaded: ${totalFrames} frames, ${fps} FPS`);
+    } catch (error) {
+      console.error("Failed to load recording:", error);
+      throw error;
+    }
+  }
+
+  private async loadFrameFormat(
+    reader: BinaryReader,
+    startTime: number,
+    endTime: number,
+    totalFrames: number,
+    fps: number
+  ): Promise<void> {
       // Read frame count
       const frameCount = reader.unsignedInt32();
       const frames: RecordedFrame[] = [];
@@ -102,7 +141,7 @@ export class MediaPlayerService {
 
       this.recordingData = {
         metadata: {
-          version: `${versionMajor}.${versionMinor}`,
+          version: "1.0",
           startTime,
           endTime,
           totalFrames,
@@ -110,14 +149,138 @@ export class MediaPlayerService {
         },
         frames,
       };
+      this.deltaRecordingData = null;
+  }
 
-      this.currentFrameIndex = 0;
-      this.playbackState = PlaybackState.Stopped;
-      console.log(`Recording loaded: ${totalFrames} frames, ${fps} FPS`);
-    } catch (error) {
-      console.error("Failed to load recording:", error);
-      throw error;
+  private async loadDeltaFormat(
+    reader: BinaryReader,
+    startTime: number,
+    endTime: number,
+    totalFrames: number,
+    fps: number
+  ): Promise<void> {
+    // Read initial snapshot
+    const snapshotCount = reader.unsignedInt32();
+    const initialSnapshot: EntitySnapshot[] = [];
+    for (let i = 0; i < snapshotCount; i++) {
+      initialSnapshot.push(this.readEntitySnapshot(reader));
     }
+
+    // Read spawn events
+    const spawnCount = reader.unsignedInt32();
+    const spawnEvents: EntitySpawnEvent[] = [];
+    for (let i = 0; i < spawnCount; i++) {
+      const timestamp = reader.float64();
+      const id = reader.variableLengthString();
+      const type = reader.variableLengthString();
+      const x = reader.float32();
+      const y = reader.float32();
+      const hasAngle = reader.boolean();
+      const angle = hasAngle ? reader.float32() : undefined;
+      const properties = this.readProperties(reader);
+      spawnEvents.push({ timestamp, id, type, x, y, angle, properties });
+    }
+
+    // Read despawn events
+    const despawnCount = reader.unsignedInt32();
+    const despawnEvents: EntityDespawnEvent[] = [];
+    for (let i = 0; i < despawnCount; i++) {
+      const timestamp = reader.float64();
+      const id = reader.variableLengthString();
+      despawnEvents.push({ timestamp, id });
+    }
+
+    // Read transform deltas
+    const transformCount = reader.unsignedInt32();
+    const transformDeltas: EntityTransformDelta[] = [];
+    for (let i = 0; i < transformCount; i++) {
+      const timestamp = reader.float64();
+      const id = reader.variableLengthString();
+      const flags = reader.unsignedInt8();
+      
+      const delta: EntityTransformDelta = { timestamp, id };
+      if (flags & 0x01) delta.x = reader.float32();
+      if (flags & 0x02) delta.y = reader.float32();
+      if (flags & 0x04) delta.angle = reader.float32();
+      if (flags & 0x08) delta.velocityX = reader.float32();
+      if (flags & 0x10) delta.velocityY = reader.float32();
+      
+      transformDeltas.push(delta);
+    }
+
+    // Read state deltas
+    const stateCount = reader.unsignedInt32();
+    const stateDeltas: EntityStateDelta[] = [];
+    for (let i = 0; i < stateCount; i++) {
+      const timestamp = reader.float64();
+      const id = reader.variableLengthString();
+      const properties = this.readProperties(reader);
+      stateDeltas.push({ timestamp, id, properties });
+    }
+
+    // Read events
+    const eventCount = reader.unsignedInt32();
+    const events = [];
+    for (let i = 0; i < eventCount; i++) {
+      const type = reader.unsignedInt16();
+      const consumed = reader.boolean();
+      const dataJson = reader.variableLengthString();
+      const data = JSON.parse(dataJson);
+      events.push({ type, consumed, data });
+    }
+
+    this.deltaRecordingData = {
+      metadata: {
+        version: "2.0",
+        startTime,
+        endTime,
+        totalFrames,
+        fps,
+      },
+      initialSnapshot,
+      spawnEvents,
+      despawnEvents,
+      transformDeltas,
+      stateDeltas,
+      events,
+    };
+    this.recordingData = null;
+
+    console.log(`Delta recording loaded:`);
+    console.log(`  Initial: ${initialSnapshot.length} entities`);
+    console.log(`  Spawns: ${spawnEvents.length}, Despawns: ${despawnEvents.length}`);
+    console.log(`  Transform deltas: ${transformDeltas.length}, State deltas: ${stateDeltas.length}`);
+  }
+
+  private readEntitySnapshot(reader: BinaryReader): EntitySnapshot {
+    const id = reader.variableLengthString();
+    const type = reader.variableLengthString();
+    const x = reader.float32();
+    const y = reader.float32();
+    const width = reader.float32();
+    const height = reader.float32();
+    const hasAngle = reader.boolean();
+    const angle = hasAngle ? reader.float32() : undefined;
+    const visible = reader.boolean();
+    const opacity = reader.float32();
+    const hasVelocityX = reader.boolean();
+    const velocityX = hasVelocityX ? reader.float32() : undefined;
+    const hasVelocityY = reader.boolean();
+    const velocityY = hasVelocityY ? reader.float32() : undefined;
+    const properties = this.readProperties(reader);
+    
+    return { id, type, x, y, width, height, angle, visible, opacity, velocityX, velocityY, properties };
+  }
+
+  private readProperties(reader: BinaryReader): Record<string, unknown> {
+    const propCount = reader.unsignedInt8();
+    const properties: Record<string, unknown> = {};
+    for (let i = 0; i < propCount; i++) {
+      const key = reader.variableLengthString();
+      const valueJson = reader.variableLengthString();
+      properties[key] = JSON.parse(valueJson);
+    }
+    return properties;
   }
 
   public loadRecordingFromData(data: RecordingData): void {
@@ -150,7 +313,7 @@ export class MediaPlayerService {
   }
 
   public play(): void {
-    if (!this.recordingData) {
+    if (!this.recordingData && !this.deltaRecordingData) {
       console.warn("No recording loaded");
       return;
     }
@@ -162,7 +325,32 @@ export class MediaPlayerService {
 
     this.playbackState = PlaybackState.Playing;
     this.lastFrameTime = 0;
+    
+    // Initialize delta playback if using delta format
+    if (this.deltaRecordingData) {
+      this.initializeDeltaPlayback();
+    }
+    
     console.log("Playback started");
+  }
+
+  private initializeDeltaPlayback(): void {
+    if (!this.deltaRecordingData) return;
+    
+    // Reset entity states to initial snapshot
+    this.currentEntityStates.clear();
+    for (const snapshot of this.deltaRecordingData.initialSnapshot) {
+      this.currentEntityStates.set(snapshot.id, { ...snapshot });
+    }
+    
+    // Reset playback indices
+    this.currentTime = 0;
+    this.nextSpawnIndex = 0;
+    this.nextDespawnIndex = 0;
+    this.nextTransformIndex = 0;
+    this.nextStateIndex = 0;
+    
+    console.log(`Delta playback initialized with ${this.currentEntityStates.size} entities`);
   }
 
   public pause(): void {
@@ -178,6 +366,7 @@ export class MediaPlayerService {
   public stop(): void {
     this.playbackState = PlaybackState.Stopped;
     this.currentFrameIndex = 0;
+    this.currentTime = 0;
     console.log("Playback stopped");
   }
 
@@ -291,7 +480,17 @@ export class MediaPlayerService {
   }
 
   public update(deltaTimeMs: number): RecordedFrame | null {
-    if (!this.recordingData || this.playbackState !== PlaybackState.Playing) {
+    if (this.playbackState !== PlaybackState.Playing) {
+      return null;
+    }
+
+    // Use delta playback if available
+    if (this.deltaRecordingData) {
+      return this.updateDeltaPlayback(deltaTimeMs);
+    }
+
+    // Fall back to old frame-based playback
+    if (!this.recordingData) {
       return null;
     }
 
@@ -332,6 +531,104 @@ export class MediaPlayerService {
     return this.getCurrentFrame();
   }
 
+  private updateDeltaPlayback(deltaTimeMs: number): RecordedFrame | null {
+    if (!this.deltaRecordingData) return null;
+
+    // Calculate how much time has passed adjusted for playback speed
+    const adjustedDelta = deltaTimeMs * this.playbackSpeed;
+    this.currentTime += adjustedDelta;
+
+    // Apply spawn events
+    while (
+      this.nextSpawnIndex < this.deltaRecordingData.spawnEvents.length &&
+      this.deltaRecordingData.spawnEvents[this.nextSpawnIndex].timestamp <= this.currentTime
+    ) {
+      const spawnEvent = this.deltaRecordingData.spawnEvents[this.nextSpawnIndex];
+      this.currentEntityStates.set(spawnEvent.id, {
+        id: spawnEvent.id,
+        type: spawnEvent.type,
+        x: spawnEvent.x,
+        y: spawnEvent.y,
+        width: 50, // Default size
+        height: 50,
+        angle: spawnEvent.angle,
+        visible: true,
+        opacity: 1,
+        properties: { ...spawnEvent.properties },
+      });
+      this.nextSpawnIndex++;
+    }
+
+    // Apply despawn events
+    while (
+      this.nextDespawnIndex < this.deltaRecordingData.despawnEvents.length &&
+      this.deltaRecordingData.despawnEvents[this.nextDespawnIndex].timestamp <= this.currentTime
+    ) {
+      const despawnEvent = this.deltaRecordingData.despawnEvents[this.nextDespawnIndex];
+      this.currentEntityStates.delete(despawnEvent.id);
+      this.nextDespawnIndex++;
+    }
+
+    // Apply transform deltas
+    while (
+      this.nextTransformIndex < this.deltaRecordingData.transformDeltas.length &&
+      this.deltaRecordingData.transformDeltas[this.nextTransformIndex].timestamp <= this.currentTime
+    ) {
+      const delta = this.deltaRecordingData.transformDeltas[this.nextTransformIndex];
+      const entityState = this.currentEntityStates.get(delta.id);
+      if (entityState) {
+        if (delta.x !== undefined) entityState.x = delta.x;
+        if (delta.y !== undefined) entityState.y = delta.y;
+        if (delta.angle !== undefined) entityState.angle = delta.angle;
+        if (delta.velocityX !== undefined) entityState.velocityX = delta.velocityX;
+        if (delta.velocityY !== undefined) entityState.velocityY = delta.velocityY;
+      }
+      this.nextTransformIndex++;
+    }
+
+    // Apply state deltas
+    while (
+      this.nextStateIndex < this.deltaRecordingData.stateDeltas.length &&
+      this.deltaRecordingData.stateDeltas[this.nextStateIndex].timestamp <= this.currentTime
+    ) {
+      const delta = this.deltaRecordingData.stateDeltas[this.nextStateIndex];
+      const entityState = this.currentEntityStates.get(delta.id);
+      if (entityState) {
+        Object.assign(entityState.properties, delta.properties);
+      }
+      this.nextStateIndex++;
+    }
+
+    // Check if playback is finished
+    const totalDuration = this.getTotalDurationMs();
+    if (this.currentTime >= totalDuration) {
+      this.stop();
+    }
+
+    // Convert current state to RecordedFrame format for compatibility
+    return this.buildFrameFromDeltaState();
+  }
+
+  private buildFrameFromDeltaState(): RecordedFrame {
+    const entities = Array.from(this.currentEntityStates.values()).map(state => ({
+      id: state.id,
+      type: state.type,
+      x: state.x,
+      y: state.y,
+      width: state.width,
+      height: state.height,
+      visible: state.visible,
+      opacity: state.opacity,
+      properties: { ...state.properties, angle: state.angle },
+    }));
+
+    return {
+      timestamp: this.currentTime,
+      entities,
+      events: [], // Events are separate in delta format
+    };
+  }
+
   public getCurrentFrame(): RecordedFrame | null {
     if (
       !this.recordingData ||
@@ -348,7 +645,13 @@ export class MediaPlayerService {
   }
 
   public getTotalFrames(): number {
-    return this.recordingData?.frames.length ?? 0;
+    if (this.recordingData) {
+      return this.recordingData.frames.length;
+    }
+    if (this.deltaRecordingData) {
+      return this.deltaRecordingData.metadata.totalFrames;
+    }
+    return 0;
   }
 
   public getPlaybackState(): PlaybackState {
@@ -356,19 +659,27 @@ export class MediaPlayerService {
   }
 
   public isLoaded(): boolean {
-    return this.recordingData !== null;
+    return this.recordingData !== null || this.deltaRecordingData !== null;
   }
 
   public getRecordingMetadata(): RecordingData["metadata"] | null {
-    return this.recordingData?.metadata ?? null;
+    return this.recordingData?.metadata ?? this.deltaRecordingData?.metadata ?? null;
   }
 
   public getCurrentTimeMs(): number {
+    if (this.deltaRecordingData) {
+      return this.currentTime;
+    }
     const frame = this.getCurrentFrame();
     return frame?.timestamp ?? 0;
   }
 
   public getTotalDurationMs(): number {
+    if (this.deltaRecordingData) {
+      const metadata = this.deltaRecordingData.metadata;
+      return metadata.endTime - metadata.startTime;
+    }
+    
     if (!this.recordingData || this.recordingData.frames.length === 0) {
       return 0;
     }
@@ -379,6 +690,15 @@ export class MediaPlayerService {
   }
 
   public getProgress(): number {
+    const totalDuration = this.getTotalDurationMs();
+    if (totalDuration === 0) {
+      return 0;
+    }
+
+    if (this.deltaRecordingData) {
+      return Math.min(this.currentTime / totalDuration, 1.0);
+    }
+
     if (!this.recordingData || this.recordingData.frames.length === 0) {
       return 0;
     }
@@ -392,15 +712,25 @@ export class MediaPlayerService {
   public unload(): void {
     this.stop();
     this.recordingData = null;
+    this.deltaRecordingData = null;
+    this.currentEntityStates.clear();
     console.log("Recording unloaded");
   }
 
   public render(context: CanvasRenderingContext2D): void {
-    if (!this.recordingData || this.playbackState === PlaybackState.Stopped) {
+    if ((!this.recordingData && !this.deltaRecordingData) || this.playbackState === PlaybackState.Stopped) {
       return;
     }
 
-    const currentFrame = this.getCurrentFrame();
+    let currentFrame: RecordedFrame | null;
+    
+    if (this.deltaRecordingData) {
+      // Build frame from current delta state
+      currentFrame = this.buildFrameFromDeltaState();
+    } else {
+      currentFrame = this.getCurrentFrame();
+    }
+    
     if (!currentFrame) {
       return;
     }
