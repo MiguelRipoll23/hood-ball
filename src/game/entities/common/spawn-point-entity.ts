@@ -32,8 +32,8 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
       context.fill();
       context.closePath();
 
-      // Get player name or "Free" for second line
-      let playerInfo = "Free";
+      // Get player name if assigned
+      let playerInfo: string | null = null;
       if (this.matchSessionService) {
         const match = this.matchSessionService.getMatch();
         if (match) {
@@ -54,12 +54,16 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
         this.y - 35,
         "Spawn point"
       );
-      DebugUtils.renderText(
-        context,
-        this.x - 40,
-        this.y - 13,
-        playerInfo
-      );
+      
+      // Only show player name if assigned (with vertical spacing like other entities)
+      if (playerInfo !== null) {
+        DebugUtils.renderText(
+          context,
+          this.x - 40,
+          this.y - 10,
+          playerInfo
+        );
+      }
 
       context.restore();
     }

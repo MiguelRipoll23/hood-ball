@@ -61,17 +61,17 @@ export class SettingsScene extends BaseGameScene {
   }
 
   private loadDebugToolsSettingEntity(): void {
-    // Only show debug tools setting when debug mode is enabled
+    // Only show debug menu setting when debug mode is enabled
     if (!this.gameState.isDebugging()) {
       return;
     }
 
-    const debugToolsEnabled =
-      this.gameState.getDebugSettings().isDebugToolsEnabled();
+    const menuEnabled =
+      this.gameState.getDebugSettings().isMenuEnabled();
     const settingEntity = new SettingEntity(
-      "debug-tools",
-      "Show tools",
-      debugToolsEnabled
+      "debug-menu",
+      "Show menu",
+      menuEnabled
     );
 
     settingEntity.setY(115);
@@ -109,7 +109,7 @@ export class SettingsScene extends BaseGameScene {
       case "debug":
         return this.handleDebugSettingPress(settingEntity);
 
-      case "debug-tools":
+      case "debug-menu":
         return this.handleDebugToolsSettingPress(settingEntity);
 
       default:
@@ -131,7 +131,7 @@ export class SettingsScene extends BaseGameScene {
 
   private handleDebugToolsSettingPress(settingEntity: SettingEntity): void {
     const state = settingEntity.getSettingState();
-    this.gameState.getDebugSettings().setDebugToolsEnabled(state);
+    this.gameState.getDebugSettings().setMenuEnabled(state);
 
     // Initialize debug service if not already initialized
     const debugService = container.get(DebugService);
@@ -143,11 +143,11 @@ export class SettingsScene extends BaseGameScene {
         const debugWindow = new DebugWindow(this.gameState);
         debugService.registerWindow(debugWindow);
       } else {
-        // Re-open debug windows when debug tools is re-enabled
+        // Re-open debug windows when debug menu is re-enabled
         debugService.openWindows();
       }
     } else {
-      // Close debug windows when debug tools is disabled
+      // Close debug windows when debug menu is disabled
       if (debugService.isInitialized()) {
         debugService.closeWindows();
       }
