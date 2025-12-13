@@ -220,18 +220,18 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     if (correction.x !== 0 || correction.y !== 0) {
       const currentX = dynamicCollidingEntity.getX();
       const currentY = dynamicCollidingEntity.getY();
-      dynamicCollidingEntity.setX(currentX + correction.x);
-      dynamicCollidingEntity.setY(currentY + correction.y);
+      const newX = currentX + correction.x;
+      const newY = currentY + correction.y;
+      dynamicCollidingEntity.setX(newX);
+      dynamicCollidingEntity.setY(newY);
 
       // Update hitboxes to match corrected position immediately
-      const entityX = dynamicCollidingEntity.getX();
-      const entityY = dynamicCollidingEntity.getY();
       const entityWidth = dynamicCollidingEntity.getWidth();
       const entityHeight = dynamicCollidingEntity.getHeight();
       
       dynamicCollidingEntity.getHitboxEntities().forEach((hitbox) => {
-        hitbox.setX(entityX - entityWidth / 2);
-        hitbox.setY(entityY - entityHeight / 2);
+        hitbox.setX(newX - entityWidth / 2);
+        hitbox.setY(newY - entityHeight / 2);
       });
     }
 
