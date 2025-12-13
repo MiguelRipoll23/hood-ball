@@ -283,12 +283,21 @@ export class RecordingPlayerService {
       // We'll spawn entities from the recording
       this.replayScene.load();
       
-      // Clear any entities that WorldScene.load() may have created
-      // since we want to spawn from recording data
+      // IMPORTANT: Clear ALL entities that WorldScene.load() may have created
+      // We need to remove them completely to avoid mixing with playback entities
       const worldEntities = this.replayScene.getWorldEntities();
       const uiEntities = this.replayScene.getUIEntities();
+      
+      // Mark all existing entities for removal
+      for (const entity of [...worldEntities, ...uiEntities]) {
+        entity.setRemoved(true);
+      }
+      
+      // Clear the arrays
       worldEntities.length = 0;
       uiEntities.length = 0;
+      
+      console.log("Cleared all scene entities before playback");
     } else {
       console.warn(`Scene type ${sceneId} not yet supported for replay`);
       return;
@@ -385,8 +394,15 @@ export class RecordingPlayerService {
       }
     }
 
-    // Apply any custom properties
-    // This would need entity-specific handling
+    // Apply any custom properties from the snapshot
+    // This applies recorded properties directly to the entity
+    const anyEntity = entity as any;
+    for (const [key, value] of Object.entries(snapshot.properties)) {
+      // Try to set the property if it exists on the entity
+      if (key in anyEntity) {
+        anyEntity[key] = value;
+      }
+    }
   }
 
   public pause(): void {
@@ -416,9 +432,16 @@ export class RecordingPlayerService {
       this.replayScene = null;
     }
     
-    // Optionally restore previous scene
-    // Note: In practice, user might want to manually return to menu
-    // For now, we just clean up
+    // Restore previous scene
+    if (this.previousScene) {
+      console.log(`Restoring previous scene: ${this.previousScene.constructor.name}`);
+      // Resubscribe events if the scene has that method
+      if (typeof this.previousScene.resubscribeEvents === 'function') {
+        this.previousScene.resubscribeEvents();
+      }
+      this.gameState.getGameFrame().setCurrentScene(this.previousScene);
+      this.previousScene = null;
+    }
     
     console.log("Playback stopped and cleaned up");
   }

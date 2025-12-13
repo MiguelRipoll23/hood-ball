@@ -31,7 +31,7 @@ export class RecordingInspectorWindow extends BaseWindow {
     // Create a hidden file input element
     this.fileInputElement = document.createElement("input");
     this.fileInputElement.type = "file";
-    this.fileInputElement.accept = ".hrec";
+    this.fileInputElement.accept = ".rec";
     this.fileInputElement.style.display = "none";
     this.fileInputElement.addEventListener("change", (e) => {
       const target = e.target as HTMLInputElement;

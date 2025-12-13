@@ -493,6 +493,18 @@ export class RecorderService {
       "state",
       "health",
       "score",
+      // Time-related properties for scoreboard and timer entities
+      "elapsedMilliseconds",
+      "durationMilliseconds",
+      "active",
+      // Score properties
+      "blueScore",
+      "redScore",
+      // Team properties
+      "team",
+      "boost",
+      "boosting",
+      "inactive",
     ];
 
     for (const prop of commonProps) {
@@ -637,7 +649,7 @@ export class RecorderService {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = filename || `recording_${new Date().toISOString()}.hrec`;
+    a.download = filename || `recording_${new Date().toISOString()}.rec`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
