@@ -82,21 +82,29 @@ export class NpcService {
       this.idleTimer = null;
     }
 
-    // Remove NPC player from match when transitioning to real multiplayer
+    // Remove NPC player from match if still present
+    // (May have already been removed by matchmaking service before spawn assignment)
     const npcPlayer = this.npcCarEntity.getPlayer();
     if (npcPlayer) {
       const match = this.matchSessionService.getMatch();
       if (match) {
-        match.removePlayer(npcPlayer);
-        console.log(
-          "NPC player removed from match - transitioning to real multiplayer"
-        );
-      }
+        const players = match.getPlayers();
+        if (players.find((p) => p === npcPlayer)) {
+          match.removePlayer(npcPlayer);
+          console.log(
+            "NPC player removed from match - transitioning to real multiplayer"
+          );
 
-      // Release the spawn point back to the pool
-      const spawnIndex = npcPlayer.getSpawnPointIndex();
-      if (spawnIndex !== -1) {
-        this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
+          // Release the spawn point back to the pool
+          const spawnIndex = npcPlayer.getSpawnPointIndex();
+          if (spawnIndex !== -1) {
+            this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
+          }
+        } else {
+          console.log(
+            "NPC player already removed from match (done before spawn assignment)"
+          );
+        }
       }
     }
 
