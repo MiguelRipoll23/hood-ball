@@ -129,4 +129,13 @@ export class BaseDynamicCollidingGameEntity extends BaseStaticCollidingGameEntit
     this.vx = 0;
     this.vy = 0;
   }
+
+  /**
+   * Updates hitbox positions to match the entity's current position.
+   * Subclasses should override this method to implement their specific hitbox update logic.
+   */
+  public updateHitbox(): void {
+    // Default implementation does nothing
+    // Subclasses like CarEntity and BallEntity override this
+  }
 }

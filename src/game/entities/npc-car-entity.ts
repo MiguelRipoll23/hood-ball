@@ -2,6 +2,7 @@ import { CarEntity } from "./car-entity.js";
 import { BallEntity } from "./ball-entity.js";
 import { GamePlayer } from "../models/game-player.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
+import { EntityUtils } from "../../engine/utils/entity-utils.js";
 
 export class NpcCarEntity extends CarEntity {
   private readonly AI_UPDATE_INTERVAL = 50; // Update AI decisions every 50ms
@@ -67,6 +68,11 @@ export class NpcCarEntity extends CarEntity {
 
     // Call parent update for movement, boost, etc.
     super.update(deltaTimeStamp);
+
+    // Ensure NPC stays within bounds (safety check)
+    if (this.canvas) {
+      EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
+    }
   }
 
   public setBoostPads(

@@ -130,9 +130,105 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     return intersecting;
   }
 
+  private calculatePenetrationCorrection(
+    dynamicEntity: BaseDynamicCollidingGameEntity
+  ): { x: number; y: number } {
+    const dynamicHitboxes = dynamicEntity.getHitboxEntities();
+    let maxPenetrationX = 0;
+    let maxPenetrationY = 0;
+    let maxPenetrationDepth = 0;
+
+    // Find the static entity we're colliding with
+    const collidingEntities = dynamicEntity.getCollidingEntities();
+    for (const staticEntity of collidingEntities) {
+      if (staticEntity.isDynamic() || !staticEntity.hasRigidBody()) {
+        continue;
+      }
+
+      const staticHitboxes = staticEntity.getHitboxEntities();
+
+      // Check all hitbox pairs for penetration
+      for (const dynamicHitbox of dynamicHitboxes) {
+        for (const staticHitbox of staticHitboxes) {
+          const dx1 = dynamicHitbox.getX();
+          const dy1 = dynamicHitbox.getY();
+          const dw = dynamicHitbox.getWidth();
+          const dh = dynamicHitbox.getHeight();
+
+          const sx1 = staticHitbox.getX();
+          const sy1 = staticHitbox.getY();
+          const sw = staticHitbox.getWidth();
+          const sh = staticHitbox.getHeight();
+
+          // Check if hitboxes intersect
+          if (
+            dx1 < sx1 + sw &&
+            dx1 + dw > sx1 &&
+            dy1 < sy1 + sh &&
+            dy1 + dh > sy1
+          ) {
+            // Calculate penetration depths on each axis
+            const penetrationLeft = dx1 + dw - sx1;
+            const penetrationRight = sx1 + sw - dx1;
+            const penetrationTop = dy1 + dh - sy1;
+            const penetrationBottom = sy1 + sh - dy1;
+
+            // Find the smallest penetration (the axis of least resistance)
+            const minHorizontal = Math.min(penetrationLeft, penetrationRight);
+            const minVertical = Math.min(penetrationTop, penetrationBottom);
+
+            if (minHorizontal < minVertical) {
+              // Horizontal correction is smaller
+              const depth = minHorizontal;
+              if (depth > maxPenetrationDepth) {
+                maxPenetrationDepth = depth;
+                maxPenetrationX =
+                  penetrationLeft < penetrationRight
+                    ? -penetrationLeft
+                    : penetrationRight;
+                maxPenetrationY = 0;
+              }
+            } else {
+              // Vertical correction is smaller
+              const depth = minVertical;
+              if (depth > maxPenetrationDepth) {
+                maxPenetrationDepth = depth;
+                maxPenetrationX = 0;
+                maxPenetrationY =
+                  penetrationTop < penetrationBottom
+                    ? -penetrationTop
+                    : penetrationBottom;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return { x: maxPenetrationX, y: maxPenetrationY };
+  }
+
   private simulateCollisionBetweenDynamicAndStaticEntities(
     dynamicCollidingEntity: BaseDynamicCollidingGameEntity
   ) {
+    // Calculate penetration depth and correction
+    const correction = this.calculatePenetrationCorrection(
+      dynamicCollidingEntity
+    );
+
+    // Apply position correction to push entity back inside bounds
+    if (correction.x !== 0 || correction.y !== 0) {
+      const currentX = dynamicCollidingEntity.getX();
+      const currentY = dynamicCollidingEntity.getY();
+      const newX = currentX + correction.x;
+      const newY = currentY + correction.y;
+      dynamicCollidingEntity.setX(newX);
+      dynamicCollidingEntity.setY(newY);
+
+      // Update hitboxes to match corrected position immediately
+      dynamicCollidingEntity.updateHitbox();
+    }
+
     const restitution = dynamicCollidingEntity.getBounciness();
     let vx = -dynamicCollidingEntity.getVX() * restitution;
     let vy = -dynamicCollidingEntity.getVY() * restitution;
@@ -194,8 +290,12 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() - pushX);
       dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() - pushY);
 
-      otherDynamicCollidingEntity.setVX(otherDynamicCollidingEntity.getVX() + pushX);
-      otherDynamicCollidingEntity.setVY(otherDynamicCollidingEntity.getVY() + pushY);
+      otherDynamicCollidingEntity.setVX(
+        otherDynamicCollidingEntity.getVX() + pushX
+      );
+      otherDynamicCollidingEntity.setVY(
+        otherDynamicCollidingEntity.getVY() + pushY
+      );
 
       return;
     }
