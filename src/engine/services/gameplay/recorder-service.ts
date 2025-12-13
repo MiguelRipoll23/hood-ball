@@ -33,6 +33,7 @@ export interface RecordingMetadata {
   endTime: number;
   totalFrames: number;
   fps: number;
+  sceneId: string; // ID of the gameplay scene that was recorded
 }
 
 export interface SerializedEvent {
@@ -63,6 +64,7 @@ export class RecorderService {
   private frameCount = 0;
   private autoRecording = false;
   private entityIdCache = new WeakMap<GameEntity, string>();
+  private recordedSceneId: string = "";
 
   // Delta recording data structures
   private initialSnapshot: EntitySnapshot[] = [];
@@ -114,6 +116,7 @@ export class RecorderService {
     this.frameCount = 0;
     this.startTime = Date.now();
     this.autoRecording = auto;
+    this.recordedSceneId = "";
     
     // Reset delta recording structures
     this.initialSnapshot = [];
@@ -174,6 +177,17 @@ export class RecorderService {
     const currentScene = gameFrame.getCurrentScene();
 
     if (currentScene) {
+      // Capture scene ID on first frame
+      if (this.frameCount === 0) {
+        const sceneWithType = currentScene as { getTypeId?: () => number };
+        if (sceneWithType.getTypeId) {
+          this.recordedSceneId = String(sceneWithType.getTypeId());
+        } else {
+          this.recordedSceneId = "unknown";
+        }
+        console.log(`Recording scene ID: ${this.recordedSceneId}`);
+      }
+
       entities.push(...currentScene.getUIEntities());
       entities.push(...currentScene.getWorldEntities());
 
@@ -507,6 +521,7 @@ export class RecorderService {
     writer.float64(endTimeValue);
     writer.unsignedInt32(this.frameCount);
     writer.unsignedInt16(RECORDING_FPS);
+    writer.variableLengthString(this.recordedSceneId);
 
     // Write initial snapshot count
     writer.unsignedInt32(this.initialSnapshot.length);
@@ -633,6 +648,7 @@ export class RecorderService {
   public clearRecording(): void {
     this.frameCount = 0;
     this.endTime = 0;
+    this.recordedSceneId = "";
     this.entityIdCache = new WeakMap<GameEntity, string>();
     
     // Clear delta recording structures
