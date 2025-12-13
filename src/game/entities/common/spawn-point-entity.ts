@@ -9,6 +9,9 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
     super();
     this.x = x;
     this.y = y;
+    // Set dimensions to match the debug circle (radius = 12, diameter = 24)
+    this.width = 24;
+    this.height = 24;
   }
 
   public getIndex(): number {
@@ -48,19 +51,23 @@ export class SpawnPointEntity extends BaseMoveableGameEntity {
       }
 
       // Use DebugUtils to render text like other entities
+      // Position at bottom left of entity (using 24px spacing like matchmaking service)
+      const textX = this.x - this.width / 2;
+      const textY = this.y + this.height / 2 + 5;
+
       DebugUtils.renderText(
         context,
-        this.x - 40,
-        this.y - 35,
+        textX,
+        textY,
         "Spawn point"
       );
-      
-      // Only show player name if assigned (with vertical spacing like other entities)
+
+      // Only show player name if assigned (with 24px vertical spacing like matchmaking service)
       if (playerInfo !== null) {
         DebugUtils.renderText(
           context,
-          this.x - 40,
-          this.y - 10,
+          textX,
+          textY + 24,
           playerInfo
         );
       }
