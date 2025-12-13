@@ -23,6 +23,7 @@ import { MatchActionsLogService } from "../../services/gameplay/match-actions-lo
 import { gameContext } from "../../context/game-context.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
+import { NpcService } from "../../services/gameplay/npc-service.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -46,11 +47,7 @@ export class WorldController {
     private readonly getEntitiesByOwner: (
       player: GamePlayer
     ) => BaseMultiplayerGameEntity[],
-    private readonly onAddNpcCar: (spawnPointIndex: number) => void,
-    private readonly onRemoveNpcCar: () => void,
-    private readonly onActivateNpcCar: () => void,
-    private readonly onDeactivateNpcCar: () => void,
-    private readonly onMoveNpcToSpawn: () => void
+    private readonly npcService: NpcService
   ) {
     this.gamePlayer = gameContext.get(GamePlayer);
     this.matchSessionService = gameContext.get(MatchSessionService);
@@ -72,18 +69,22 @@ export class WorldController {
       this.ballEntity.setInactive(true);
       this.localCarEntity.setActive(false);
       // Deactivate NPC during countdown
-      this.onDeactivateNpcCar();
+      this.npcService.deactivateNpcCar();
     }
   }
 
-  public startSoloMatchWithNpc(): void {
-    // Get a spawn point for the NPC
-    const npcSpawnPointIndex = this.spawnPointService.getAndConsumeSpawnPointIndex();
-    if (npcSpawnPointIndex !== -1) {
-      this.isSoloMatchWithNpc = true;
-      this.onAddNpcCar(npcSpawnPointIndex);
-      console.log("Solo match with NPC started");
-    }
+  public startSoloMatchWithNpc(
+    canvas: HTMLCanvasElement,
+    onEntityAdded: (entity: any) => void
+  ): void {
+    this.isSoloMatchWithNpc = true;
+    this.npcService.addNpcCar(
+      canvas,
+      this.ballEntity,
+      this.spawnPointEntities,
+      onEntityAdded
+    );
+    console.log("Solo match with NPC started");
   }
 
   public showCountdown(): void {
@@ -96,7 +97,8 @@ export class WorldController {
     // Remove NPC car and reset scores when transitioning from solo to multiplayer
     // (when second player joins - player count is now 2)
     if (this.isSoloMatchWithNpc && playersCount >= 2) {
-      this.onRemoveNpcCar();
+      // Remove NPC through service (WorldScene will handle entity removal via onEntityRemoved callback)
+      this.npcService.removeNpcCar(() => {});
       this.isSoloMatchWithNpc = false;
       
       // Reset scores when transitioning from solo match to real match
@@ -163,7 +165,7 @@ export class WorldController {
       this.resetForSoloGoal();
       this.matchSessionService.setMatchState(MatchStateType.InProgress);
       // Reactivate NPC after goal
-      this.onActivateNpcCar();
+      this.npcService.activateNpcCar(this.boostPadsEntities);
     } else {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
       this.showCountdown();
@@ -178,7 +180,7 @@ export class WorldController {
     // Reset boost levels
     this.localCarEntity.refillBoost();
     // Move NPC to spawn and reset its boost
-    this.onMoveNpcToSpawn();
+    this.npcService.moveNpcToSpawn(this.spawnPointEntities);
     // Reset boost pads
     this.boostPadsEntities.forEach((pad) => pad.reset());
   }
@@ -204,7 +206,7 @@ export class WorldController {
     
     // Move NPC to spawn point if in solo match
     if (this.isSoloMatchWithNpc) {
-      this.onMoveNpcToSpawn();
+      this.npcService.moveNpcToSpawn(this.spawnPointEntities);
     }
   }
 
@@ -225,8 +227,8 @@ export class WorldController {
       console.log("Real match - timer started");
     } else {
       console.log("Solo match - timer remains frozen");
-      // Activate NPC AI after countdown completes
-      this.onActivateNpcCar();
+      // Activate NPC AI after 3-second delay
+      this.npcService.activateNpcCarAfterDelay(this.boostPadsEntities);
     }
   }
 

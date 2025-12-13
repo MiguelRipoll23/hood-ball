@@ -46,6 +46,7 @@ import { gameContext } from "../../context/game-context.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
+import { NpcService } from "../../services/gameplay/npc-service.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
@@ -80,6 +81,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private scoreManagerService: ScoreManagerService | null = null;
   private worldController: WorldController | null = null;
+  private npcService: NpcService | null = null;
   private helpShown = false;
 
   // Weather state
@@ -143,6 +145,12 @@ export class WorldScene extends BaseCollidingGameScene {
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
 
+    // Initialize NPC service
+    this.npcService = new NpcService(
+      this.matchSessionService,
+      this.spawnPointService
+    );
+
     this.worldController = new WorldController(
       this.spawnPointService,
       this.timerManagerService,
@@ -156,11 +164,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.boostPadsEntities,
       this.spawnPointEntities,
       this.getEntitiesByOwner.bind(this),
-      this.addNpcCar.bind(this),
-      this.removeNpcCar.bind(this),
-      this.activateNpcCar.bind(this),
-      this.deactivateNpcCar.bind(this),
-      this.moveNpcToSpawn.bind(this)
+      this.npcService
     );
 
     this.scoreManagerService = new ScoreManagerService(
@@ -246,7 +250,13 @@ export class WorldScene extends BaseCollidingGameScene {
   private handleMatchAdvertised(): void {
     if (this.matchSessionService.getMatch()?.getPlayers().length === 1) {
       // Start solo match with NPC
-      this.worldController?.startSoloMatchWithNpc();
+      this.worldController?.startSoloMatchWithNpc(
+        this.canvas,
+        (entity: NpcCarEntity) => {
+          this.npcCarEntity = entity;
+          this.addEntityToSceneLayer(entity);
+        }
+      );
       this.toastEntity?.show("Waiting for players...");
 
       // Skip countdown during solo play - start match immediately
@@ -272,6 +282,14 @@ export class WorldScene extends BaseCollidingGameScene {
       // If player joins during a solo match, transition to real match
       if (this.worldController?.isSoloMatch()) {
         this.toastEntity?.show("Real match starting!", 2);
+        // Remove NPC car entity from scene
+        if (this.npcCarEntity) {
+          const index = this.worldEntities.indexOf(this.npcCarEntity);
+          if (index > -1) {
+            this.worldEntities.splice(index, 1);
+          }
+          this.npcCarEntity = null;
+        }
         // Start countdown to begin real match (this will reset scores)
         this.worldController?.showCountdown();
       }
@@ -542,118 +560,7 @@ export class WorldScene extends BaseCollidingGameScene {
     });
   }
 
-  private addNpcCar(spawnPointIndex: number): void {
-    if (!this.ballEntity || this.npcCarEntity || spawnPointIndex === -1) {
-      return;
-    }
 
-    // Find the spawn point entity with the given index
-    const spawnPoint = this.spawnPointEntities.find(
-      (sp) => sp.getIndex() === spawnPointIndex
-    );
-    if (!spawnPoint) {
-      console.warn(`Spawn point with index ${spawnPointIndex} not found`);
-      return;
-    }
-
-    const spawnX = spawnPoint.getX();
-    const spawnY = spawnPoint.getY();
-
-    this.npcCarEntity = new NpcCarEntity(
-      spawnX,
-      spawnY,
-      Math.PI / 2, // Spawn angle (facing down toward goal)
-      this.canvas,
-      this.ballEntity,
-      spawnPointIndex
-    );
-
-    this.addEntityToSceneLayer(this.npcCarEntity);
-
-    console.log(`NPC car added at spawn point ${spawnPointIndex}`);
-  }
-
-  private removeNpcCar(): void {
-    if (!this.npcCarEntity) {
-      return;
-    }
-
-    // Remove NPC player from match to prevent crashes
-    const npcPlayer = this.npcCarEntity.getPlayer();
-    if (npcPlayer) {
-      const match = this.matchSessionService.getMatch();
-      if (match) {
-        match.removePlayer(npcPlayer);
-        console.log("NPC player removed from match");
-      }
-
-      // Release the spawn point back to the pool
-      const spawnIndex = npcPlayer.getSpawnPointIndex();
-      if (spawnIndex !== -1) {
-        this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
-      }
-    }
-
-    const index = this.worldEntities.indexOf(this.npcCarEntity);
-    if (index > -1) {
-      this.worldEntities.splice(index, 1);
-    }
-
-    this.npcCarEntity = null;
-    console.log("NPC car removed");
-  }
-
-  private activateNpcCar(): void {
-    if (!this.npcCarEntity) {
-      return;
-    }
-
-    // Pass boost pad information to NPC
-    const boostPadsInfo = this.boostPadsEntities.map((pad) => ({
-      x: pad.getX(),
-      y: pad.getY(),
-      consumed: !pad.isActive(), // Boost pad is consumed if not active
-    }));
-    this.npcCarEntity.setBoostPads(boostPadsInfo);
-
-    // Activate NPC AI
-    this.npcCarEntity.setActive(true);
-    console.log("NPC car activated");
-  }
-
-  private deactivateNpcCar(): void {
-    if (!this.npcCarEntity) {
-      return;
-    }
-
-    // Deactivate NPC AI
-    this.npcCarEntity.setActive(false);
-  }
-
-  private moveNpcToSpawn(): void {
-    if (!this.npcCarEntity) {
-      return;
-    }
-
-    const npcPlayer = this.npcCarEntity.getPlayer();
-    if (!npcPlayer) {
-      return;
-    }
-
-    const spawnIndex = npcPlayer.getSpawnPointIndex();
-    const spawnPoint = this.spawnPointEntities.find(
-      (sp) => sp.getIndex() === spawnIndex
-    );
-
-    if (spawnPoint) {
-      const spawnX = spawnPoint.getX();
-      const spawnY = spawnPoint.getY();
-      this.npcCarEntity.teleport(spawnX, spawnY, Math.PI / 2);
-      // Reset NPC boost level
-      this.npcCarEntity.refillBoost();
-      console.log(`NPC moved to spawn point ${spawnIndex} and boost refilled`);
-    }
-  }
 
   public override dispose(): void {
     // Hide chat input when leaving the game scene
@@ -670,7 +577,14 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchActionsLogService.clear();
 
     // Remove NPC car if present
-    this.removeNpcCar();
+    if (this.npcService) {
+      this.npcService.removeNpcCar((entity) => {
+        const index = this.worldEntities.indexOf(entity);
+        if (index > -1) {
+          this.worldEntities.splice(index, 1);
+        }
+      });
+    }
 
     super.dispose();
   }
