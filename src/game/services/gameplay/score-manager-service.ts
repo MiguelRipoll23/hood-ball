@@ -193,10 +193,12 @@ export class ScoreManagerService {
       );
 
       this.showGoalAlert(player, goalTeam);
+      this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
     } else {
-      // In solo match, just show a simple alert without updating scores
+      // In solo match, show alert but with shorter duration (2 seconds instead of 5)
       const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
       this.showGoalAlert(player, goalTeam);
+      this.timerManagerService.createTimer(2, this.goalTimeEndCallback);
     }
     
     this.explosionCallback(
@@ -204,7 +206,6 @@ export class ScoreManagerService {
       this.ballEntity.getY(),
       player === this.gamePlayer ? TeamType.Blue : TeamType.Red
     );
-    this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
   }
 
   private sendGoalEvent(player: GamePlayer): void {

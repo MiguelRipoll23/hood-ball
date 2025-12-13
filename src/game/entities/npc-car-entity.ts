@@ -28,9 +28,9 @@ export class NpcCarEntity extends CarEntity {
     super(x, y, angle, true); // remote=true to use red car
     this.setCanvas(canvas);
 
-    // Increase NPC speed to match player better
-    this.topSpeed = 0.4; // Increased from 0.3
-    this.acceleration = 0.003; // Increased from 0.002
+    // Increase NPC speed to be competitive
+    this.topSpeed = 0.5; // Increased from 0.4 for better long-distance movement
+    this.acceleration = 0.004; // Increased from 0.003 for faster acceleration
 
     // Create a distinctive NPC player with robot emoji
     const npcPlayer = new GamePlayer(
@@ -185,32 +185,36 @@ export class NpcCarEntity extends CarEntity {
 
     // Add NPC-specific debug info
     if (this.debugSettings?.isDebugging()) {
-      console.log("rendering");
       this.renderNpcDebugInfo(context);
     }
   }
 
   private renderNpcDebugInfo(context: CanvasRenderingContext2D): void {
-    // Determine current action
+    // Determine current action with descriptive words
     let action = "Idle";
     if (this.active) {
       if (this.targetBoostPad) {
-        action = "→ Boost Pad";
+        action = "Seeking boost pad";
       } else {
-        action = "→ Ball";
+        action = "Chasing ball";
       }
     }
 
-    // Show action and boost level below the parent's position debug info
-    // Parent renders at y + height/2 + 5, so we render at y + height/2 + 30
-    const boostPercent = Math.round(this.boost);
-    const debugText = `${action} | Boost: ${boostPercent}%`;
-
+    // Show action on one line
     DebugUtils.renderText(
       context,
       this.x - this.width / 2,
       this.y + this.height / 2 + 30,
-      debugText
+      action
+    );
+
+    // Show boost level on a separate line below
+    const boostPercent = Math.round(this.boost);
+    DebugUtils.renderText(
+      context,
+      this.x - this.width / 2,
+      this.y + this.height / 2 + 55,
+      `Boost: ${boostPercent}%`
     );
   }
 }
