@@ -145,10 +145,9 @@ export class WorldScene extends BaseCollidingGameScene {
     // Set total spawn points created to service
     this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
 
-    // Set match session reference for spawn points to show debug info
-    const matchSession = this.matchSessionService.getMatch();
+    // Set match session service for spawn points to show debug info
     this.spawnPointEntities.forEach((spawnPoint) => {
-      spawnPoint.setMatchSession(matchSession);
+      spawnPoint.setMatchSessionService(this.matchSessionService);
     });
 
     // Initialize NPC service

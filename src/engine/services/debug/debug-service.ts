@@ -67,7 +67,8 @@ export class DebugService {
   public render(): void {
     if (!this.initialized) return;
 
-    if (this.gameState.isDebugging()) {
+    const debugSettings = this.gameState.getDebugSettings();
+    if (debugSettings.isDebugging() && debugSettings.isDebugToolsEnabled()) {
       ImGuiImplWeb.BeginRender();
       this.windows.forEach((w) => w.render());
       this.renderErrorMessages();
