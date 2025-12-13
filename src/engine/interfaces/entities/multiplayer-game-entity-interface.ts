@@ -13,8 +13,8 @@ export interface MultiplayerGameEntity extends GameEntity {
   mustSyncReliably(): boolean;
   setSyncReliably(syncReliably: boolean): void;
   // Note: serialize() and synchronize() are inherited from GameEntity
-  // Multiplayer entities must override serialize() to return ArrayBuffer (not null)
-  serialize(): ArrayBuffer;
+  // Multiplayer entities can optionally override serialize() to return ArrayBuffer for recording
+  // If not overridden, returns null and entity is not recorded
 }
 
 export interface StaticMultiplayerGameEntity {

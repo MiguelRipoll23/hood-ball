@@ -207,6 +207,10 @@ export class EntityOrchestratorService {
 
     const entityData = multiplayerEntity.serialize();
 
+    if (entityData === null) {
+      throw new Error(`Multiplayer entity ${entityId} must implement serialize() for network synchronization`);
+    }
+
     return BinaryWriter.build()
       .unsignedInt8(WebRTCType.EntityData)
       .unsignedInt8(sceneTypeId)
