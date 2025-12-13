@@ -82,13 +82,15 @@ export class NpcService {
       this.idleTimer = null;
     }
 
-    // Remove NPC player from match to prevent crashes
+    // Remove NPC player from match when transitioning to real multiplayer
     const npcPlayer = this.npcCarEntity.getPlayer();
     if (npcPlayer) {
       const match = this.matchSessionService.getMatch();
       if (match) {
         match.removePlayer(npcPlayer);
-        console.log("NPC player removed from match");
+        console.log(
+          "NPC player removed from match - transitioning to real multiplayer"
+        );
       }
 
       // Release the spawn point back to the pool

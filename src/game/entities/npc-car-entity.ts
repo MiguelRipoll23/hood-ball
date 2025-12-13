@@ -39,7 +39,8 @@ export class NpcCarEntity extends CarEntity {
       "🤖 NPC",
       false,
       0,
-      spawnPointIndex
+      spawnPointIndex,
+      true // Mark as NPC
     );
     this.setOwner(npcPlayer);
   }

@@ -545,9 +545,12 @@ export class MatchmakingNetworkService
 
     const players = match.getPlayers();
 
-    players.forEach((player: GamePlayer) => {
-      this.sendPlayerConnection(peer, player, true, true);
-    });
+    // Filter out NPC players - they should not be sent to joining players
+    players
+      .filter((player: GamePlayer) => !player.isNpc())
+      .forEach((player: GamePlayer) => {
+        this.sendPlayerConnection(peer, player, true, true);
+      });
   }
 
   private sendPlayerConnection(
