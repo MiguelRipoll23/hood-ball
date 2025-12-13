@@ -224,7 +224,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.worldController?.handleMatchState();
-    
+
     // Always use the normal score detection (works for solo and multiplayer)
     this.scoreManagerService?.detectScoresIfHost();
 
@@ -248,7 +248,7 @@ export class WorldScene extends BaseCollidingGameScene {
       // Start solo match with NPC
       this.worldController?.startSoloMatchWithNpc();
       this.toastEntity?.show("Waiting for players...");
-      
+
       // Start countdown to begin practice match
       this.worldController?.showCountdown();
     }
@@ -384,8 +384,6 @@ export class WorldScene extends BaseCollidingGameScene {
         )
     );
   }
-
-
 
   private setupChatUI(): void {
     const chatInputElement = document.querySelector(
@@ -548,17 +546,19 @@ export class WorldScene extends BaseCollidingGameScene {
     if (!this.ballEntity || this.npcCarEntity || spawnPointIndex === -1) {
       return;
     }
-    
+
     // Find the spawn point entity with the given index
-    const spawnPoint = this.spawnPointEntities.find(sp => sp.getIndex() === spawnPointIndex);
+    const spawnPoint = this.spawnPointEntities.find(
+      (sp) => sp.getIndex() === spawnPointIndex
+    );
     if (!spawnPoint) {
       console.warn(`Spawn point with index ${spawnPointIndex} not found`);
       return;
     }
-    
+
     const spawnX = spawnPoint.getX();
     const spawnY = spawnPoint.getY();
-    
+
     this.npcCarEntity = new NpcCarEntity(
       spawnX,
       spawnY,
@@ -567,10 +567,9 @@ export class WorldScene extends BaseCollidingGameScene {
       this.ballEntity,
       spawnPointIndex
     );
-    
-    this.npcCarEntity.load();
-    this.worldEntities.push(this.npcCarEntity);
-    
+
+    this.addEntityToSceneLayer(this.npcCarEntity);
+
     console.log(`NPC car added at spawn point ${spawnPointIndex}`);
   }
 
@@ -587,7 +586,7 @@ export class WorldScene extends BaseCollidingGameScene {
         match.removePlayer(npcPlayer);
         console.log("NPC player removed from match");
       }
-      
+
       // Release the spawn point back to the pool
       const spawnIndex = npcPlayer.getSpawnPointIndex();
       if (spawnIndex !== -1) {
@@ -599,51 +598,53 @@ export class WorldScene extends BaseCollidingGameScene {
     if (index > -1) {
       this.worldEntities.splice(index, 1);
     }
-    
+
     this.npcCarEntity = null;
     console.log("NPC car removed");
   }
-  
+
   private activateNpcCar(): void {
     if (!this.npcCarEntity) {
       return;
     }
-    
+
     // Pass boost pad information to NPC
-    const boostPadsInfo = this.boostPadsEntities.map(pad => ({
+    const boostPadsInfo = this.boostPadsEntities.map((pad) => ({
       x: pad.getX(),
       y: pad.getY(),
-      consumed: !pad.isActive() // Boost pad is consumed if not active
+      consumed: !pad.isActive(), // Boost pad is consumed if not active
     }));
     this.npcCarEntity.setBoostPads(boostPadsInfo);
-    
+
     // Activate NPC AI
     this.npcCarEntity.setActive(true);
     console.log("NPC car activated");
   }
-  
+
   private deactivateNpcCar(): void {
     if (!this.npcCarEntity) {
       return;
     }
-    
+
     // Deactivate NPC AI
     this.npcCarEntity.setActive(false);
   }
-  
+
   private moveNpcToSpawn(): void {
     if (!this.npcCarEntity) {
       return;
     }
-    
+
     const npcPlayer = this.npcCarEntity.getPlayer();
     if (!npcPlayer) {
       return;
     }
-    
+
     const spawnIndex = npcPlayer.getSpawnPointIndex();
-    const spawnPoint = this.spawnPointEntities.find(sp => sp.getIndex() === spawnIndex);
-    
+    const spawnPoint = this.spawnPointEntities.find(
+      (sp) => sp.getIndex() === spawnIndex
+    );
+
     if (spawnPoint) {
       const spawnX = spawnPoint.getX();
       const spawnY = spawnPoint.getY();
@@ -651,8 +652,6 @@ export class WorldScene extends BaseCollidingGameScene {
       console.log(`NPC moved to spawn point ${spawnIndex}`);
     }
   }
-
-
 
   public override dispose(): void {
     // Hide chat input when leaving the game scene
@@ -667,7 +666,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
     this.matchActionsLogService.clear();
-    
+
     // Remove NPC car if present
     this.removeNpcCar();
 
