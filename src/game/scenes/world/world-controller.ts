@@ -158,8 +158,35 @@ export class WorldController {
       return;
     }
 
-    this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
-    this.showCountdown();
+    // During solo play, skip countdown and restart immediately
+    if (this.isSoloMatchWithNpc) {
+      this.resetForSoloGoal();
+      this.matchSessionService.setMatchState(MatchStateType.InProgress);
+      // Reactivate NPC after goal
+      this.onActivateNpcCar();
+    } else {
+      this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
+      this.showCountdown();
+    }
+  }
+  
+  private resetForSoloGoal(): void {
+    // Reset ball and move players to spawn points
+    this.ballEntity.reset();
+    this.localCarEntity.reset();
+    this.moveCarToSpawnPoint();
+    // Reset boost levels
+    this.localCarEntity.refillBoost();
+    // Move NPC to spawn and reset its boost
+    this.onMoveNpcToSpawn();
+    // Reset boost pads
+    this.boostPadsEntities.forEach((pad) => pad.reset());
+  }
+  
+  public startSoloMatchImmediately(): void {
+    // Skip countdown for solo play - start match directly
+    this.resetForCountdown();
+    this.handleCountdownEnd();
   }
 
   public handleGameOverEnd(): void {

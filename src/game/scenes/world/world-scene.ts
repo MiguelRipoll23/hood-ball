@@ -249,8 +249,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.worldController?.startSoloMatchWithNpc();
       this.toastEntity?.show("Waiting for players...");
       
-      // Start countdown to begin practice match
-      this.worldController?.showCountdown();
+      // Skip countdown during solo play - start match immediately
+      this.worldController?.startSoloMatchImmediately();
     }
   }
 
@@ -648,7 +648,9 @@ export class WorldScene extends BaseCollidingGameScene {
       const spawnX = spawnPoint.getX();
       const spawnY = spawnPoint.getY();
       this.npcCarEntity.teleport(spawnX, spawnY, Math.PI / 2);
-      console.log(`NPC moved to spawn point ${spawnIndex}`);
+      // Reset NPC boost level
+      this.npcCarEntity.refillBoost();
+      console.log(`NPC moved to spawn point ${spawnIndex} and boost refilled`);
     }
   }
 
