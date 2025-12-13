@@ -6,6 +6,7 @@ import { GameServiceRegistry } from "./services/registry/game-service-registry.j
 import { GameLifecycleService } from "./services/lifecycle/game-lifecycle-service.js";
 import { MainScene } from "./scenes/main/main-scene.js";
 import { LoginScene } from "./scenes/main/login/login-scene.js";
+import { registerGameEntityTypes } from "./utils/entity-type-registry.js";
 
 class Game {
   constructor(private canvas: HTMLCanvasElement) {}
@@ -20,6 +21,9 @@ class Game {
     const debug = globalThis.location.search.includes("debug");
     await ServiceRegistry.register(this.canvas, debug);
     GameServiceRegistry.register();
+    
+    // Register entity types for recording/playback
+    registerGameEntityTypes(this.canvas);
   }
 
   private initializeLifecycle(): void {

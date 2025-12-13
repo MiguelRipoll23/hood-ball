@@ -10,6 +10,7 @@ import type { GameEntity } from "../../models/game-entity.js";
 import { EntityRegistry } from "../../utils/entity-registry.js";
 import { GameState } from "../../models/game-state.js";
 import { SceneType } from "../../enums/scene-type.js";
+import { RecordingReplayScene } from "../../scenes/recording-replay-scene.js";
 
 export enum PlaybackState {
   Stopped = "stopped",
@@ -35,6 +36,8 @@ export class RecordingPlayerService {
   // For delta playback
   private currentEntityStates = new Map<string, EntitySnapshot>();
   private spawnedEntities = new Map<string, GameEntity>(); // Track actual spawned entities
+  private replayScene: RecordingReplayScene | null = null;
+  private previousScene: any = null; // Store previous scene to restore later
   private currentTime = 0;
   private nextSpawnIndex = 0;
   private nextDespawnIndex = 0;
@@ -240,21 +243,27 @@ export class RecordingPlayerService {
     if (!this.recordingData) return;
 
     const sceneId = parseInt(this.recordingData.metadata.sceneId);
-    console.log(`Loading recorded scene: ${sceneId} (${SceneType[sceneId] || 'Unknown'})`);
+    console.log(`Loading replay scene for recorded scene: ${sceneId} (${SceneType[sceneId] || 'Unknown'})`);
 
-    // Exit current scene (if any)
-    const currentScene = this.gameState.getGameFrame().getCurrentScene();
-    if (currentScene) {
-      console.log("Exiting current scene for playback");
-      currentScene.dispose();
+    // Store current scene to restore later
+    this.previousScene = this.gameState.getGameFrame().getCurrentScene();
+    
+    // Exit current scene
+    if (this.previousScene) {
+      console.log(`Exiting current scene (${this.previousScene.constructor.name}) for replay`);
+      this.previousScene.dispose();
     }
 
-    // Load the recorded scene
-    // TODO: This needs to be implemented based on how scenes are loaded in the game
-    // For now, we'll log a warning if it's not the world scene
-    if (sceneId !== SceneType.World) {
-      console.warn(`Scene type ${sceneId} playback not yet implemented`);
-    }
+    // Create and load replay scene
+    // This is a minimal scene with gameplay systems disabled
+    this.replayScene = new RecordingReplayScene(this.gameState);
+    this.replayScene.load();
+    
+    // Set as current scene
+    this.gameState.getGameFrame().setCurrentScene(this.replayScene);
+    
+    console.log("Replay scene loaded - input, AI, and physics disabled");
+    console.log("Entities will be spawned from recording data");
   }
 
   private initializeDeltaPlayback(): void {
@@ -358,7 +367,25 @@ export class RecordingPlayerService {
   public stop(): void {
     this.playbackState = PlaybackState.Stopped;
     this.currentTime = 0;
-    console.log("Playback stopped");
+    
+    // Clean up spawned entities
+    for (const entity of this.spawnedEntities.values()) {
+      entity.setRemoved(true);
+    }
+    this.spawnedEntities.clear();
+    
+    // Exit replay scene if active
+    if (this.replayScene) {
+      console.log("Exiting replay scene");
+      this.replayScene.dispose();
+      this.replayScene = null;
+    }
+    
+    // Optionally restore previous scene
+    // Note: In practice, user might want to manually return to menu
+    // For now, we just clean up
+    
+    console.log("Playback stopped and cleaned up");
   }
 
   public seekToTime(timeMs: number): void {
