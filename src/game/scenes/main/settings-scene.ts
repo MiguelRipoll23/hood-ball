@@ -47,6 +47,7 @@ export class SettingsScene extends BaseGameScene {
 
   private loadSettingEntities(): void {
     this.loadDebugSettingEntity();
+    this.loadDebugToolsSettingEntity();
   }
 
   private loadDebugSettingEntity(): void {
@@ -54,6 +55,26 @@ export class SettingsScene extends BaseGameScene {
     const settingEntity = new SettingEntity("debug", "Debug mode", debugging);
 
     settingEntity.setY(75);
+    settingEntity.load();
+
+    this.uiEntities.push(settingEntity);
+  }
+
+  private loadDebugToolsSettingEntity(): void {
+    // Only show debug tools setting when debug mode is enabled
+    if (!this.gameState.isDebugging()) {
+      return;
+    }
+
+    const debugToolsEnabled =
+      this.gameState.getDebugSettings().isDebugToolsEnabled();
+    const settingEntity = new SettingEntity(
+      "debug-tools",
+      "Debug tools",
+      debugToolsEnabled
+    );
+
+    settingEntity.setY(115);
     settingEntity.load();
 
     this.uiEntities.push(settingEntity);
@@ -87,6 +108,9 @@ export class SettingsScene extends BaseGameScene {
       case "debug":
         return this.handleDebugSettingPress(settingEntity);
 
+      case "debug-tools":
+        return this.handleDebugToolsSettingPress(settingEntity);
+
       default:
         console.log("Unknown setting pressed");
         break;
@@ -100,21 +124,38 @@ export class SettingsScene extends BaseGameScene {
     // Update UI if debugging state changes
     this.updateDebugStateForEntities();
 
-    if (state === false) {
-      return;
-    }
+    // Reload the scene to update visibility of debug tools setting
+    this.reloadScene();
+  }
+
+  private handleDebugToolsSettingPress(settingEntity: SettingEntity): void {
+    const state = settingEntity.getSettingState();
+    this.gameState.getDebugSettings().setDebugToolsEnabled(state);
 
     // Initialize debug service if not already initialized
     const debugService = container.get(DebugService);
 
-    if (debugService.isInitialized() === false) {
-      debugService.init();
-      // Register debug window only when first initializing
-      const debugWindow = new DebugWindow(this.gameState);
-      debugService.registerWindow(debugWindow);
+    if (state === true) {
+      if (debugService.isInitialized() === false) {
+        debugService.init();
+        // Register debug window only when first initializing
+        const debugWindow = new DebugWindow(this.gameState);
+        debugService.registerWindow(debugWindow);
+      } else {
+        // Re-open debug windows when debug tools is re-enabled
+        debugService.openWindows();
+      }
     } else {
-      // Re-open debug windows when debug mode is re-enabled
-      debugService.openWindows();
+      // Close debug windows when debug tools is disabled
+      if (debugService.isInitialized()) {
+        debugService.closeWindows();
+      }
     }
+  }
+
+  private reloadScene(): void {
+    // Clear entities and reload
+    this.uiEntities.length = 0;
+    this.load();
   }
 }

@@ -16,6 +16,10 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
   private shakeElapsed = 0;
   private readonly shakeMagnitude = 2;
 
+  private bounceDuration = 0;
+  private bounceElapsed = 0;
+  private readonly bounceMagnitude = 20;
+
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
     this.baseX = this.canvas.width / 2;
@@ -34,21 +38,27 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
   }
 
   public setOnlinePlayers(total: number): void {
-    if (this.onlinePlayers !== total) {
-      this.onlinePlayers = total;
+    const previousTotal = this.onlinePlayers;
+    this.onlinePlayers = total;
+
+    // Ensure font is set before measuring text
+    this.context.font = "bold 28px system-ui";
+    this.countWidth = this.context.measureText(
+      this.onlinePlayers.toString()
+    ).width;
+
+    // Handle visibility and animation
+    if (previousTotal === 0 && total > 0) {
+      // Fade in with bounce when going from 0 to more
+      this.setOpacity(0);
+      this.fadeIn(0.3);
+      this.startBounce();
+    } else if (total === 0) {
+      // Hide immediately when reaching 0
+      this.setOpacity(0);
+    } else if (previousTotal !== total) {
+      // Just shake if already visible and value changed
       this.startShake();
-      // Ensure font is set before measuring text
-      this.context.font = "bold 28px system-ui";
-      this.countWidth = this.context.measureText(
-        this.onlinePlayers.toString()
-      ).width;
-    } else {
-      this.onlinePlayers = total;
-      // Ensure font is set before measuring text
-      this.context.font = "bold 28px system-ui";
-      this.countWidth = this.context.measureText(
-        this.onlinePlayers.toString()
-      ).width;
     }
   }
 
@@ -57,19 +67,34 @@ export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
     this.shakeElapsed = 0;
   }
 
+  private startBounce(): void {
+    this.bounceDuration = 600; // milliseconds
+    this.bounceElapsed = 0;
+  }
+
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.shakeElapsed < this.shakeDuration) {
+    let offsetX = 0;
+    let offsetY = 0;
+
+    // Handle bounce animation (takes priority)
+    if (this.bounceElapsed < this.bounceDuration) {
+      this.bounceElapsed += deltaTimeStamp;
+      const progress = this.bounceElapsed / this.bounceDuration;
+      // Ease-out bounce effect using sine wave
+      const bounceValue = Math.sin(progress * Math.PI * 2) * (1 - progress);
+      offsetY = -bounceValue * this.bounceMagnitude;
+    }
+    // Handle shake animation
+    else if (this.shakeElapsed < this.shakeDuration) {
       this.shakeElapsed += deltaTimeStamp;
       const progress =
         (this.shakeDuration - this.shakeElapsed) / this.shakeDuration;
-      const offsetX = (Math.random() * 2 - 1) * this.shakeMagnitude * progress;
-      const offsetY = (Math.random() * 2 - 1) * this.shakeMagnitude * progress;
-      this.x = this.baseX + offsetX;
-      this.y = this.baseY + offsetY;
-    } else {
-      this.x = this.baseX;
-      this.y = this.baseY;
+      offsetX = (Math.random() * 2 - 1) * this.shakeMagnitude * progress;
+      offsetY = (Math.random() * 2 - 1) * this.shakeMagnitude * progress;
     }
+
+    this.x = this.baseX + offsetX;
+    this.y = this.baseY + offsetY;
 
     super.update(deltaTimeStamp);
   }

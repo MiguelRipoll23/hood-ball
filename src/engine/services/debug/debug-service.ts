@@ -40,6 +40,14 @@ export class DebugService {
     this.windows.forEach((window) => window.open());
   }
 
+  /**
+   * Closes all registered debug windows.
+   * This should be called when debug tools are disabled.
+   */
+  public closeWindows(): void {
+    this.windows.forEach((window) => window.close());
+  }
+
   public isInitialized(): boolean {
     return this.initialized;
   }
