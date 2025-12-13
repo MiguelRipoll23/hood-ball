@@ -306,7 +306,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     ]);
   }
 
-  protected updateHitbox(): void {
+  public updateHitbox(): void {
     this.getHitboxEntities().forEach((entity) => {
       entity.setX(this.x - this.width / 2);
       entity.setY(this.y - this.height / 2);
