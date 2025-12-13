@@ -239,12 +239,9 @@ export class WorldScene extends BaseCollidingGameScene {
   public override render(context: CanvasRenderingContext2D): void {
     super.render(context);
 
-    // Render debug information from matchmaking and webrtc services
+    // Render debug information from matchmaking service (which internally delegates to webrtc)
     if (this.gameState.isDebugging()) {
       this.matchmakingService.renderDebugInformation(context);
-      this.matchmakingService
-        .getWebRTCService()
-        .renderDebugInformation(context);
     }
   }
 

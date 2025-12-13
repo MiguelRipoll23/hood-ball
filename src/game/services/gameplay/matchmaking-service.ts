@@ -29,10 +29,6 @@ export class MatchmakingService implements MatchmakingServiceContract {
     return this.networkService;
   }
 
-  public getWebRTCService(): WebRTCService {
-    return this.webrtcService;
-  }
-
   private registerCommandHandlers(): void {
     this.webSocketService.registerCommandHandlers(this.networkService);
     this.webrtcService.registerCommandHandlers(this.networkService);
@@ -76,5 +72,8 @@ export class MatchmakingService implements MatchmakingServiceContract {
     }
     const state = match.getState();
     DebugUtils.renderText(context, 24, 24, `State: ${MatchStateType[state]}`);
+
+    // Delegate to webrtc service for its debug information
+    this.webrtcService.renderDebugInformation(context);
   }
 }
