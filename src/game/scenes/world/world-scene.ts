@@ -148,7 +148,8 @@ export class WorldScene extends BaseCollidingGameScene {
     // Initialize NPC service
     this.npcService = new NpcService(
       this.matchSessionService,
-      this.spawnPointService
+      this.spawnPointService,
+      this.timerManagerService
     );
 
     this.worldController = new WorldController(
@@ -233,6 +234,15 @@ export class WorldScene extends BaseCollidingGameScene {
     this.scoreManagerService?.detectScoresIfHost();
 
     this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
+  }
+
+  public override render(context: CanvasRenderingContext2D): void {
+    super.render(context);
+
+    // Render debug information from matchmaking service (which internally delegates to webrtc)
+    if (this.gameState.isDebugging()) {
+      this.matchmakingService.renderDebugInformation(context);
+    }
   }
 
   private handleMatchmakingError(error: Error) {

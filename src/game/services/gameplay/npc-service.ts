@@ -2,17 +2,20 @@ import { NpcCarEntity } from "../../entities/npc-car-entity.js";
 import { BallEntity } from "../../entities/ball-entity.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { SpawnPointService } from "./spawn-point-service.js";
+import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import type { BoostPadEntity } from "../../entities/boost-pad-entity.js";
+import type { TimerServiceContract } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
 
 export class NpcService {
   private npcCarEntity: NpcCarEntity | null = null;
-  private readonly INITIAL_IDLE_DELAY = 3000; // 3 seconds before NPC starts moving
-  private idleTimer: number | null = null;
+  private readonly INITIAL_IDLE_DELAY = 3; // 3 seconds before NPC starts moving
+  private idleTimer: TimerServiceContract | null = null;
 
   constructor(
     private readonly matchSessionService: MatchSessionService,
-    private readonly spawnPointService: SpawnPointService
+    private readonly spawnPointService: SpawnPointService,
+    private readonly timerManagerService: TimerManagerService
   ) {}
 
   public addNpcCar(
@@ -22,7 +25,8 @@ export class NpcService {
     onEntityAdded: (entity: NpcCarEntity) => void
   ): NpcCarEntity | null {
     // Get available spawn point
-    const spawnPointIndex = this.spawnPointService.getAndConsumeSpawnPointIndex();
+    const spawnPointIndex =
+      this.spawnPointService.getAndConsumeSpawnPointIndex();
     if (spawnPointIndex === -1) {
       console.warn("No spawn points available for NPC");
       return null;
@@ -57,14 +61,14 @@ export class NpcService {
     return this.npcCarEntity;
   }
 
-  public removeNpcCar(onEntityRemoved: (entity: NpcCarEntity) => void): void {
+  public removeNpcCar(onEntityRemoved?: (entity: NpcCarEntity) => void): void {
     if (!this.npcCarEntity) {
       return;
     }
 
     // Clear idle timer if it exists
     if (this.idleTimer !== null) {
-      clearTimeout(this.idleTimer);
+      this.idleTimer.stop(false);
       this.idleTimer = null;
     }
 
@@ -84,8 +88,8 @@ export class NpcService {
       }
     }
 
-    // Remove entity from scene via callback
-    onEntityRemoved(this.npcCarEntity);
+    // Remove entity from scene via callback if provided
+    onEntityRemoved?.(this.npcCarEntity);
 
     this.npcCarEntity = null;
     console.log("NPC car removed");
@@ -98,14 +102,17 @@ export class NpcService {
 
     // Clear any existing timer
     if (this.idleTimer !== null) {
-      clearTimeout(this.idleTimer);
+      this.idleTimer.stop(false);
     }
 
     // NPC stays idle for 3 seconds before activating
-    this.idleTimer = window.setTimeout(() => {
-      this.activateNpcCar(boostPadsEntities);
-      this.idleTimer = null;
-    }, this.INITIAL_IDLE_DELAY);
+    this.idleTimer = this.timerManagerService.createTimer(
+      this.INITIAL_IDLE_DELAY,
+      () => {
+        this.activateNpcCar(boostPadsEntities);
+        this.idleTimer = null;
+      }
+    );
 
     console.log("NPC car will activate after 3 seconds");
   }
@@ -135,7 +142,7 @@ export class NpcService {
 
     // Clear idle timer if it exists
     if (this.idleTimer !== null) {
-      clearTimeout(this.idleTimer);
+      this.idleTimer.stop(false);
       this.idleTimer = null;
     }
 
