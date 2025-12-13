@@ -226,7 +226,6 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       dynamicCollidingEntity.setY(newY);
 
       // Update hitboxes to match corrected position immediately
-      // Let the entity update its hitboxes to match the corrected position
       dynamicCollidingEntity.updateHitbox();
     }
 
@@ -291,8 +290,12 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() - pushX);
       dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() - pushY);
 
-      otherDynamicCollidingEntity.setVX(otherDynamicCollidingEntity.getVX() + pushX);
-      otherDynamicCollidingEntity.setVY(otherDynamicCollidingEntity.getVY() + pushY);
+      otherDynamicCollidingEntity.setVX(
+        otherDynamicCollidingEntity.getVX() + pushX
+      );
+      otherDynamicCollidingEntity.setVY(
+        otherDynamicCollidingEntity.getVY() + pushY
+      );
 
       return;
     }
