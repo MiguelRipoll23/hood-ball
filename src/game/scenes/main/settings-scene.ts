@@ -155,7 +155,7 @@ export class SettingsScene extends BaseGameScene {
 
   private reloadScene(): void {
     // Clear entities and reload
-    this.uiEntities.length = 0;
+    this.uiEntities.splice(0);
     this.load();
   }
 }
