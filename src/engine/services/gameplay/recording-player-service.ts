@@ -263,7 +263,7 @@ export class RecordingPlayerService {
       // Dynamically import WorldScene to avoid circular dependencies
       const { WorldScene } = await import("../../../game/scenes/world/world-scene.js");
       
-      // Create WorldScene with all its dependencies
+      // Create WorldScene with all its dependencies in REPLAY MODE
       this.replayScene = new WorldScene(
         this.gameState,
         container.get(EventConsumerService),
@@ -276,28 +276,14 @@ export class RecordingPlayerService {
         container.get(EventProcessorService),
         null as any, // spawnPointService
         null as any, // chatService
-        null as any  // matchActionsLogService
+        null as any, // matchActionsLogService
+        true // REPLAY MODE - don't create entities
       );
       
-      // Load the scene but DON'T let it create its own entities
-      // We'll spawn entities from the recording
+      // Load the scene - it will skip entity creation due to replay mode
       this.replayScene.load();
       
-      // IMPORTANT: Clear ALL entities that WorldScene.load() may have created
-      // We need to remove them completely to avoid mixing with playback entities
-      const worldEntities = this.replayScene.getWorldEntities();
-      const uiEntities = this.replayScene.getUIEntities();
-      
-      // Mark all existing entities for removal
-      for (const entity of [...worldEntities, ...uiEntities]) {
-        entity.setRemoved(true);
-      }
-      
-      // Clear the arrays
-      worldEntities.length = 0;
-      uiEntities.length = 0;
-      
-      console.log("Cleared all scene entities before playback");
+      console.log("WorldScene loaded in replay mode - entities will be spawned from recording");
     } else {
       console.warn(`Scene type ${sceneId} not yet supported for replay`);
       return;

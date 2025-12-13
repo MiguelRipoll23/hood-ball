@@ -88,6 +88,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private activeWeatherEntity: SnowEntity | null = null;
   private weatherFrictionMultiplier = 1.0;
 
+  private isReplayMode = false;
+
   constructor(
     protected gameState: GameState,
     eventConsumerService: EventConsumerService,
@@ -99,9 +101,11 @@ export class WorldScene extends BaseCollidingGameScene {
     eventProcessorService: EventProcessorService,
     spawnPointService: SpawnPointService,
     chatService: ChatService,
-    matchActionsLogService: MatchActionsLogService
+    matchActionsLogService: MatchActionsLogService,
+    replayMode = false
   ) {
     super(gameState, eventConsumerService);
+    this.isReplayMode = replayMode;
     this.gamePlayer = gameContext.get(GamePlayer);
     this.gameServer = gameContext.get(GameServer);
     this.matchSessionService = gameContext.get(MatchSessionService);
@@ -121,6 +125,16 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   public override load(): void {
+    // In replay mode, don't create any entities - they'll be spawned from recording
+    if (this.isReplayMode) {
+      console.log("WorldScene loading in replay mode - skipping entity creation");
+      const factory = new WorldEntityFactory(this.gameState, this.canvas);
+      // Only create background
+      factory.createBackground(this.worldEntities);
+      this.loaded = true;
+      return;
+    }
+
     const factory = new WorldEntityFactory(this.gameState, this.canvas);
     factory.createBackground(this.worldEntities);
 
@@ -209,6 +223,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
+
+    // Skip gameplay logic in replay mode - entities are driven by recording data
+    if (this.isReplayMode) {
+      return;
+    }
 
     // Check if weather effect has ended and reset physics
     if (this.activeWeatherEntity && this.activeWeatherEntity.isRemoved()) {
