@@ -81,7 +81,7 @@ export class RecorderService {
     angle?: number;
     velocityX?: number;
     velocityY?: number;
-    properties: Record<string, unknown>;
+    serializedData?: ArrayBuffer;
   }>();
   
   // Track which entities exist (for spawn/despawn detection)
@@ -236,7 +236,7 @@ export class RecorderService {
         angle: snapshot.angle,
         velocityX: snapshot.velocityX,
         velocityY: snapshot.velocityY,
-        properties: { ...snapshot.properties },
+        serializedData: snapshot.serializedData,
       });
     }
   }
@@ -245,9 +245,8 @@ export class RecorderService {
     const moveable = entity as BaseMoveableGameEntity;
     const dynamic = entity as { vx?: number; vy?: number; getVX?: () => number; getVY?: () => number };
     
-    // Check if entity has serialize() method (multiplayer entity)
-    const multiplayerEntity = entity as { serialize?: () => ArrayBuffer };
-    const serializedData = multiplayerEntity.serialize ? multiplayerEntity.serialize() : undefined;
+    // Try to serialize entity - returns null if entity doesn't implement serialization
+    const serializedData = entity.serialize();
     
     return {
       id: this.getEntityId(entity),
@@ -261,8 +260,7 @@ export class RecorderService {
       opacity: entity.getOpacity(),
       velocityX: dynamic.getVX?.() ?? dynamic.vx,
       velocityY: dynamic.getVY?.() ?? dynamic.vy,
-      serializedData, // Include serialized data if available
-      properties: this.extractEntityProperties(entity, moveable),
+      serializedData: serializedData ?? undefined, // Include serialized data if available
     };
   }
 
@@ -278,6 +276,8 @@ export class RecorderService {
         // New entity spawned
         const moveable = entity as BaseMoveableGameEntity;
         const dynamic = entity as { vx?: number; vy?: number; getVX?: () => number; getVY?: () => number };
+        const serializedData = entity.serialize();
+        
         const spawnEvent: EntitySpawnEvent = {
           timestamp,
           id,
@@ -287,7 +287,7 @@ export class RecorderService {
           width: moveable.getWidth?.() ?? 0,
           height: moveable.getHeight?.() ?? 0,
           angle: moveable.getAngle?.(),
-          properties: this.extractEntityProperties(entity, moveable),
+          serializedData: serializedData ?? undefined,
         };
         this.spawnEvents.push(spawnEvent);
         this.trackedEntities.add(id);
@@ -299,7 +299,7 @@ export class RecorderService {
           angle: spawnEvent.angle,
           velocityX: dynamic.getVX?.() ?? dynamic.vx,
           velocityY: dynamic.getVY?.() ?? dynamic.vy,
-          properties: { ...spawnEvent.properties },
+          serializedData: serializedData ?? undefined,
         });
       }
     }
@@ -376,33 +376,35 @@ export class RecorderService {
         this.transformDeltas.push(transformDelta);
       }
       
-      // Check for state property changes
-      const currentProperties = this.extractEntityProperties(entity, moveable);
-      const changedProperties: Record<string, unknown> = {};
-      let hasStateChange = false;
-      
-      for (const [key, value] of Object.entries(currentProperties)) {
-        if (key === 'angle') continue; // Already handled in transform
+      // Check for entity-specific state changes using serialize()
+      const serializedData = entity.serialize();
+      if (serializedData !== null) {
+        // Entity implements custom serialization - check if state changed
+        const lastSerializedData = lastState.serializedData;
         
-        const lastValue = lastState.properties[key];
-        // Use simple equality for primitives, JSON for objects/arrays
-        const isChanged = typeof value === 'object' && value !== null
-          ? JSON.stringify(value) !== JSON.stringify(lastValue)
-          : value !== lastValue;
-          
-        if (isChanged) {
-          changedProperties[key] = value;
-          lastState.properties[key] = value;
+        // Compare serialized data to detect changes
+        let hasStateChange = false;
+        if (!lastSerializedData || lastSerializedData.byteLength !== serializedData.byteLength) {
           hasStateChange = true;
+        } else {
+          const lastView = new Uint8Array(lastSerializedData);
+          const currentView = new Uint8Array(serializedData);
+          for (let i = 0; i < lastView.length; i++) {
+            if (lastView[i] !== currentView[i]) {
+              hasStateChange = true;
+              break;
+            }
+          }
         }
-      }
-      
-      if (hasStateChange) {
-        this.stateDeltas.push({
-          timestamp,
-          id,
-          properties: changedProperties,
-        });
+        
+        if (hasStateChange) {
+          this.stateDeltas.push({
+            timestamp,
+            id,
+            serializedData,
+          });
+          lastState.serializedData = serializedData;
+        }
       }
     }
   }
@@ -445,53 +447,7 @@ export class RecorderService {
     return id;
   }
 
-  private extractEntityProperties(
-    entity: GameEntity,
-    moveable?: BaseMoveableGameEntity
-  ): Record<string, unknown> {
-    const properties: Record<string, unknown> = {};
-    const anyEntity = entity as unknown as Record<string, unknown>;
 
-    // Extract angle from moveable entities using getter
-    if (moveable && typeof moveable.getAngle === 'function') {
-      properties.angle = moveable.getAngle();
-    }
-
-    // Extract common properties that might be useful for replay
-    const commonProps = [
-      "velocityX",
-      "velocityY",
-      "rotation",
-      "scale",
-      "scaleX",
-      "scaleY",
-      "speed",
-      "direction",
-      "state",
-      "health",
-      "score",
-      // Time-related properties for scoreboard and timer entities
-      "elapsedMilliseconds",
-      "durationMilliseconds",
-      "active",
-      // Score properties
-      "blueScore",
-      "redScore",
-      // Team properties
-      "team",
-      "boost",
-      "boosting",
-      "inactive",
-    ];
-
-    for (const prop of commonProps) {
-      if (anyEntity[prop] !== undefined) {
-        properties[prop] = anyEntity[prop];
-      }
-    }
-
-    return properties;
-  }
 
   public exportRecording(): Blob {
     const writer = BinaryWriter.build(1024 * 1024); // Start with 1MB buffer
@@ -532,7 +488,15 @@ export class RecorderService {
       if (event.angle !== undefined) {
         writer.float32(event.angle);
       }
-      this.writeProperties(writer, event.properties);
+      // Write serialized data if available
+      writer.boolean(event.serializedData !== undefined);
+      if (event.serializedData) {
+        const dataView = new Uint8Array(event.serializedData);
+        writer.unsignedInt32(dataView.length);
+        for (let i = 0; i < dataView.length; i++) {
+          writer.unsignedInt8(dataView[i]);
+        }
+      }
     }
 
     // Write despawn events
@@ -569,7 +533,12 @@ export class RecorderService {
     for (const delta of this.stateDeltas) {
       writer.float64(delta.timestamp);
       writer.variableLengthString(delta.id);
-      this.writeProperties(writer, delta.properties);
+      // Write serialized data
+      const dataView = new Uint8Array(delta.serializedData);
+      writer.unsignedInt32(dataView.length);
+      for (let i = 0; i < dataView.length; i++) {
+        writer.unsignedInt8(dataView[i]);
+      }
     }
 
     // Write events
@@ -610,23 +579,14 @@ export class RecorderService {
     writer.boolean(snapshot.serializedData !== undefined);
     if (snapshot.serializedData) {
       const dataView = new Uint8Array(snapshot.serializedData);
-      writer.unsignedInt16(dataView.length);
+      writer.unsignedInt32(dataView.length);
       for (let i = 0; i < dataView.length; i++) {
         writer.unsignedInt8(dataView[i]);
       }
     }
-    
-    this.writeProperties(writer, snapshot.properties);
   }
 
-  private writeProperties(writer: BinaryWriter, properties: Record<string, unknown>): void {
-    const propEntries = Object.entries(properties);
-    writer.unsignedInt8(propEntries.length);
-    for (const [key, value] of propEntries) {
-      writer.variableLengthString(key);
-      writer.variableLengthString(JSON.stringify(value));
-    }
-  }
+
 
   public downloadRecording(filename?: string): void {
     const blob = this.exportRecording();

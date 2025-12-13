@@ -10,5 +10,5 @@ export interface EntitySpawnEvent {
   width: number;
   height: number;
   angle?: number;
-  properties: Record<string, unknown>;
+  serializedData?: ArrayBuffer; // Entity-specific serialized data (if entity implements serialize())
 }

@@ -1,9 +1,9 @@
 /**
  * Represents a change in entity gameplay state
- * Only changed properties are included
+ * Contains serialized data from entity's serialize() method
  */
 export interface EntityStateDelta {
   timestamp: number;
   id: string;
-  properties: Record<string, unknown>;
+  serializedData: ArrayBuffer; // Entity-specific serialized data from serialize() method
 }

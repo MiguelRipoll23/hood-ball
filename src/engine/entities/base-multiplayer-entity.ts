@@ -86,11 +86,13 @@ export class BaseMultiplayerGameEntity
     this.setSyncReliably(true);
   }
 
+  // Override serialize() to enforce that multiplayer entities must implement it
   public serialize(): ArrayBuffer {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented. Multiplayer entities must override serialize().");
   }
 
+  // Override synchronize() to enforce that multiplayer entities must implement it
   public synchronize(_arrayBuffer: ArrayBuffer): void {
-    throw new Error("Method not implemented.");
+    throw new Error("Method not implemented. Multiplayer entities must override synchronize().");
   }
 }

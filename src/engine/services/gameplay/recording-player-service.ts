@@ -116,8 +116,20 @@ export class RecordingPlayerService {
       const height = reader.float32();
       const hasAngle = reader.boolean();
       const angle = hasAngle ? reader.float32() : undefined;
-      const properties = this.readProperties(reader);
-      spawnEvents.push({ timestamp, id, type, x, y, width, height, angle, properties });
+      
+      // Read serialized data if available
+      const hasSerializedData = reader.boolean();
+      let serializedData: ArrayBuffer | undefined = undefined;
+      if (hasSerializedData) {
+        const dataLength = reader.unsignedInt32();
+        const dataBytes = new Uint8Array(dataLength);
+        for (let i = 0; i < dataLength; i++) {
+          dataBytes[i] = reader.unsignedInt8();
+        }
+        serializedData = dataBytes.buffer;
+      }
+      
+      spawnEvents.push({ timestamp, id, type, x, y, width, height, angle, serializedData });
     }
 
     // Read despawn events
@@ -153,8 +165,14 @@ export class RecordingPlayerService {
     for (let i = 0; i < stateCount; i++) {
       const timestamp = reader.float64();
       const id = reader.variableLengthString();
-      const properties = this.readProperties(reader);
-      stateDeltas.push({ timestamp, id, properties });
+      // Read serialized data
+      const dataLength = reader.unsignedInt32();
+      const dataBytes = new Uint8Array(dataLength);
+      for (let j = 0; j < dataLength; j++) {
+        dataBytes[j] = reader.unsignedInt8();
+      }
+      const serializedData = dataBytes.buffer;
+      stateDeltas.push({ timestamp, id, serializedData });
     }
 
     // Read events
@@ -208,7 +226,7 @@ export class RecordingPlayerService {
     const hasSerializedData = reader.boolean();
     let serializedData: ArrayBuffer | undefined = undefined;
     if (hasSerializedData) {
-      const dataLength = reader.unsignedInt16();
+      const dataLength = reader.unsignedInt32();
       const dataBytes = new Uint8Array(dataLength);
       for (let i = 0; i < dataLength; i++) {
         dataBytes[i] = reader.unsignedInt8();
@@ -216,20 +234,7 @@ export class RecordingPlayerService {
       serializedData = dataBytes.buffer;
     }
     
-    const properties = this.readProperties(reader);
-    
-    return { id, type, x, y, width, height, angle, visible, opacity, velocityX, velocityY, serializedData, properties };
-  }
-
-  private readProperties(reader: BinaryReader): Record<string, unknown> {
-    const propCount = reader.unsignedInt8();
-    const properties: Record<string, unknown> = {};
-    for (let i = 0; i < propCount; i++) {
-      const key = reader.variableLengthString();
-      const valueJson = reader.variableLengthString();
-      properties[key] = JSON.parse(valueJson);
-    }
-    return properties;
+    return { id, type, x, y, width, height, angle, visible, opacity, velocityX, velocityY, serializedData };
   }
 
   public async play(): Promise<void> {
@@ -354,18 +359,14 @@ export class RecordingPlayerService {
   }
 
   private applySnapshotToEntity(entity: GameEntity, snapshot: EntitySnapshot): void {
-    // Check if entity has synchronize() method (multiplayer entity)
-    const multiplayerEntity = entity as { synchronize?: (data: ArrayBuffer) => void };
-    
-    // If entity has serialized data and synchronize method, use that (preferred method)
-    if (snapshot.serializedData && multiplayerEntity.synchronize) {
-      multiplayerEntity.synchronize(snapshot.serializedData);
-      // Also apply opacity which may not be in serialized data
-      entity.setOpacity(snapshot.opacity);
-      return;
+    // If entity has serialized data, use synchronize() method
+    if (snapshot.serializedData) {
+      entity.synchronize(snapshot.serializedData);
+      // Note: synchronize() should handle all entity-specific state
+      // We still apply basic transform properties in case they're not in serialized data
     }
     
-    // Otherwise, fall back to manual property application
+    // Apply basic transform properties (position, size, angle)
     const moveable = entity as {
       setX?: (x: number) => void;
       setY?: (y: number) => void;
@@ -404,16 +405,6 @@ export class RecordingPlayerService {
       }
       if (snapshot.velocityY !== undefined && dynamic.setVY) {
         dynamic.setVY(snapshot.velocityY);
-      }
-    }
-
-    // Apply any custom properties from the snapshot
-    // This applies recorded properties directly to the entity
-    const anyEntity = entity as any;
-    for (const [key, value] of Object.entries(snapshot.properties)) {
-      // Try to set the property if it exists on the entity
-      if (key in anyEntity) {
-        anyEntity[key] = value;
       }
     }
   }
@@ -492,7 +483,7 @@ export class RecordingPlayerService {
         angle: spawnEvent.angle,
         visible: true,
         opacity: 1,
-        properties: { ...spawnEvent.properties },
+        serializedData: spawnEvent.serializedData,
       };
       this.currentEntityStates.set(spawnEvent.id, snapshot);
       
@@ -549,13 +540,13 @@ export class RecordingPlayerService {
       this.recordingData.stateDeltas[this.nextStateIndex].timestamp <= targetTime
     ) {
       const delta = this.recordingData.stateDeltas[this.nextStateIndex];
-      const entityState = this.currentEntityStates.get(delta.id);
-      if (entityState) {
-        Object.assign(entityState.properties, delta.properties);
-        
-        // Apply to actual entity (would need entity-specific handling)
-        // For now, we just update the state
+      const entity = this.spawnedEntities.get(delta.id);
+      
+      if (entity) {
+        // Apply serialized data using entity's synchronize() method
+        entity.synchronize(delta.serializedData);
       }
+      
       this.nextStateIndex++;
     }
   }

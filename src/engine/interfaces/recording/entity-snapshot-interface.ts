@@ -14,8 +14,6 @@ export interface EntitySnapshot {
   opacity: number;
   velocityX?: number;
   velocityY?: number;
-  // Serialized data from entity's serialize() method (for multiplayer entities)
+  // Serialized data from entity's serialize() method (if entity implements it)
   serializedData?: ArrayBuffer;
-  // Additional properties for non-multiplayer entities
-  properties: Record<string, unknown>;
 }

@@ -18,4 +18,8 @@ export interface GameEntity {
 
   update(deltaTimeStamp: DOMHighResTimeStamp): void;
   render(context: CanvasRenderingContext2D): void;
+  
+  // Recording/multiplayer serialization methods
+  serialize(): ArrayBuffer | null;
+  synchronize(arrayBuffer: ArrayBuffer): void;
 }
