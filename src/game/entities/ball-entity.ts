@@ -96,6 +96,12 @@ export class BallEntity
     return this.lastPlayer;
   }
 
+  public clearLastPlayerIfMatches(player: GamePlayer): void {
+    if (this.lastPlayer === player) {
+      this.lastPlayer = null;
+    }
+  }
+
   public setWeatherFrictionMultiplier(multiplier: number): void {
     this.weatherFrictionMultiplier = multiplier;
   }
