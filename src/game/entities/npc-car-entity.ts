@@ -147,20 +147,22 @@ export class NpcCarEntity extends CarEntity {
 
   private findNearestAvailableBoostPad(): { x: number; y: number } | null {
     let nearestPad: { x: number; y: number } | null = null;
-    let nearestDistance = Infinity;
+    let nearestDistanceSquared = Infinity;
+    const seekDistanceSquared =
+      this.BOOST_PAD_SEEK_DISTANCE * this.BOOST_PAD_SEEK_DISTANCE;
 
     for (const pad of this.boostPads) {
       if (!pad.consumed) {
         const dx = pad.x - this.x;
         const dy = pad.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distanceSquared = dx * dx + dy * dy;
 
         if (
-          distance < nearestDistance &&
-          distance < this.BOOST_PAD_SEEK_DISTANCE
+          distanceSquared < nearestDistanceSquared &&
+          distanceSquared < seekDistanceSquared
         ) {
-          nearestDistance = distance;
-          nearestPad = { x: pad.x, y: pad.y };
+          nearestDistanceSquared = distanceSquared;
+          nearestPad = pad;
         }
       }
     }

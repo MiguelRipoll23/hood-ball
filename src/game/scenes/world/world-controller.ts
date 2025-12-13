@@ -97,20 +97,22 @@ export class WorldController {
     // Remove NPC car and reset scores when transitioning from solo to multiplayer
     // (when second player joins - player count is now 2)
     if (this.isSoloMatchWithNpc && playersCount >= 2) {
-      // Remove NPC through service (WorldScene will handle entity removal via onEntityRemoved callback)
-      this.npcService.removeNpcCar(() => {});
+      // Remove NPC through service
+      this.npcService.removeNpcCar();
       this.isSoloMatchWithNpc = false;
-      
+
       // Reset scores when transitioning from solo match to real match
       const players = this.matchSessionService.getMatch()?.getPlayers() ?? [];
-      players.forEach(player => {
+      players.forEach((player) => {
         player.setScore(0);
       });
-      
+
       // Reset countdown to start fresh for real match
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
-      
-      console.log("Transitioning from solo to multiplayer - NPC removed, scores reset, countdown restarted");
+
+      console.log(
+        "Transitioning from solo to multiplayer - NPC removed, scores reset, countdown restarted"
+      );
     }
 
     if (this.countdownCurrentNumber < 0) {
@@ -171,7 +173,7 @@ export class WorldController {
       this.showCountdown();
     }
   }
-  
+
   private resetForSoloGoal(): void {
     // Reset ball and move players to spawn points
     this.ballEntity.reset();
@@ -184,7 +186,7 @@ export class WorldController {
     // Reset boost pads
     this.boostPadsEntities.forEach((pad) => pad.reset());
   }
-  
+
   public startSoloMatchImmediately(): void {
     // Skip countdown for solo play - start match directly
     this.resetForCountdown();
@@ -203,7 +205,7 @@ export class WorldController {
     this.markRemoteCarsForSpawn();
     this.localCarEntity.refillBoost();
     this.boostPadsEntities.forEach((pad) => pad.reset());
-    
+
     // Move NPC to spawn point if in solo match
     if (this.isSoloMatchWithNpc) {
       this.npcService.moveNpcToSpawn(this.spawnPointEntities);
@@ -219,7 +221,7 @@ export class WorldController {
     this.moveCarToSpawnPoint();
     this.markRemoteCarsForSpawn();
     this.ballEntity.reset();
-    
+
     // Only start timer if it's not a solo match with NPC
     // In solo matches, timer stays frozen at initial duration
     if (!this.isSoloMatchWithNpc) {
@@ -530,10 +532,5 @@ export class WorldController {
 
   public isSoloMatch(): boolean {
     return this.isSoloMatchWithNpc;
-  }
-  
-  public getNpcSpawnPointIndex(): number | null {
-    // Return a spawn point index for the NPC if available
-    return this.spawnPointService.getAndConsumeSpawnPointIndex();
   }
 }

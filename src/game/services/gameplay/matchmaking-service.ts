@@ -29,6 +29,10 @@ export class MatchmakingService implements MatchmakingServiceContract {
     return this.networkService;
   }
 
+  public getWebRTCService(): WebRTCService {
+    return this.webrtcService;
+  }
+
   private registerCommandHandlers(): void {
     this.webSocketService.registerCommandHandlers(this.networkService);
     this.webrtcService.registerCommandHandlers(this.networkService);
