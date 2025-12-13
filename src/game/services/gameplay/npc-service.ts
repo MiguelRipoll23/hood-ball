@@ -54,6 +54,16 @@ export class NpcService {
       spawnPointIndex
     );
 
+    // Add NPC player to match session so it appears in spawn point debug info
+    const npcPlayer = this.npcCarEntity.getPlayer();
+    if (npcPlayer) {
+      const match = this.matchSessionService.getMatch();
+      if (match) {
+        match.addPlayer(npcPlayer);
+        console.log("NPC player added to match");
+      }
+    }
+
     // Add entity to scene via callback
     onEntityAdded(this.npcCarEntity);
 
@@ -72,27 +82,14 @@ export class NpcService {
       this.idleTimer = null;
     }
 
-    // Remove NPC player from match to prevent crashes
-    const npcPlayer = this.npcCarEntity.getPlayer();
-    if (npcPlayer) {
-      const match = this.matchSessionService.getMatch();
-      if (match) {
-        match.removePlayer(npcPlayer);
-        console.log("NPC player removed from match");
-      }
-
-      // Release the spawn point back to the pool
-      const spawnIndex = npcPlayer.getSpawnPointIndex();
-      if (spawnIndex !== -1) {
-        this.spawnPointService.releaseSpawnPointIndex(spawnIndex);
-      }
-    }
+    // Note: NPC player is removed from match by matchmaking service before spawn assignment
+    // This method only handles entity cleanup
 
     // Remove entity from scene via callback if provided
     onEntityRemoved?.(this.npcCarEntity);
 
     this.npcCarEntity = null;
-    console.log("NPC car removed");
+    console.log("NPC car entity removed");
   }
 
   public activateNpcCarAfterDelay(boostPadsEntities: BoostPadEntity[]): void {

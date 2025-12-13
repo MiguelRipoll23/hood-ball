@@ -26,7 +26,8 @@ export class SpawnPointService {
       return -1;
     }
 
-    const index = [...this.availableSpawnPointIndexes][0];
+    // Get the lowest available index
+    const index = Math.min(...this.availableSpawnPointIndexes);
 
     this.availableSpawnPointIndexes.delete(index);
 

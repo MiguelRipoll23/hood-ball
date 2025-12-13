@@ -40,6 +40,14 @@ export class DebugService {
     this.windows.forEach((window) => window.open());
   }
 
+  /**
+   * Closes all registered debug windows.
+   * This should be called when debug tools are disabled.
+   */
+  public closeWindows(): void {
+    this.windows.forEach((window) => window.close());
+  }
+
   public isInitialized(): boolean {
     return this.initialized;
   }
@@ -59,7 +67,8 @@ export class DebugService {
   public render(): void {
     if (!this.initialized) return;
 
-    if (this.gameState.isDebugging()) {
+    const debugSettings = this.gameState.getDebugSettings();
+    if (debugSettings.isDebugging() && debugSettings.isMenuEnabled()) {
       ImGuiImplWeb.BeginRender();
       this.windows.forEach((w) => w.render());
       this.renderErrorMessages();
