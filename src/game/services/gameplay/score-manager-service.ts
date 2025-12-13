@@ -166,7 +166,8 @@ export class ScoreManagerService {
     }
 
     // Check if this is a solo match (1 real player)
-    const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    const playersCount =
+      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
     const isSoloMatch = playersCount === 1;
 
     this.scoreboardUI.stopTimer();
@@ -178,7 +179,8 @@ export class ScoreManagerService {
       player.sumScore(1);
       this.sendGoalEvent(player);
 
-      const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
+      const goalTeam =
+        player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
 
       if (goalTeam === TeamType.Blue) {
         this.scoreboardUI.incrementBlueScore();
@@ -196,11 +198,12 @@ export class ScoreManagerService {
       this.timerManagerService.createTimer(5, this.goalTimeEndCallback);
     } else {
       // In solo match, show alert but with shorter duration (2 seconds instead of 5)
-      const goalTeam = player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
+      const goalTeam =
+        player === this.gamePlayer ? TeamType.Blue : TeamType.Red;
       this.showGoalAlert(player, goalTeam, 2);
       this.timerManagerService.createTimer(2, this.goalTimeEndCallback);
     }
-    
+
     this.explosionCallback(
       this.ballEntity.getX(),
       this.ballEntity.getY(),
@@ -250,7 +253,8 @@ export class ScoreManagerService {
     }
 
     // Only detect timer end if there are at least 2 real players
-    const playersCount = this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
+    const playersCount =
+      this.matchSessionService.getMatch()?.getPlayers().length ?? 0;
     if (playersCount < 2) {
       return;
     }
