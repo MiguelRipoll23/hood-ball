@@ -54,6 +54,16 @@ export class NpcService {
       spawnPointIndex
     );
 
+    // Add NPC player to match session so it appears in spawn point debug info
+    const npcPlayer = this.npcCarEntity.getPlayer();
+    if (npcPlayer) {
+      const match = this.matchSessionService.getMatch();
+      if (match) {
+        match.addPlayer(npcPlayer);
+        console.log("NPC player added to match");
+      }
+    }
+
     // Add entity to scene via callback
     onEntityAdded(this.npcCarEntity);
 
