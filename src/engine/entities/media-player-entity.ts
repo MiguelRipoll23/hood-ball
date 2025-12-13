@@ -1,8 +1,8 @@
 import { BaseGameEntity } from "./base-game-entity.js";
 import {
-  MediaPlayerService,
+  RecordingPlayerService,
   PlaybackState,
-} from "../services/gameplay/media-player-service.js";
+} from "../services/gameplay/recording-player-service.js";
 import { container } from "../services/di-container.js";
 
 /**
@@ -12,13 +12,11 @@ import { container } from "../services/di-container.js";
  * When active, it renders the recording with playback controls overlay.
  */
 export class MediaPlayerEntity extends BaseGameEntity {
-  private playerService: MediaPlayerService;
-  private canvas: HTMLCanvasElement;
+  private playerService: RecordingPlayerService;
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(_canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
-    this.playerService = container.get(MediaPlayerService);
+    this.playerService = container.get(RecordingPlayerService);
   }
 
   public override load(): void {
@@ -31,19 +29,10 @@ export class MediaPlayerEntity extends BaseGameEntity {
     this.playerService.update(deltaTime);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
-    // Save current state and reset transform to render at full canvas size
-    context.save();
-    context.resetTransform();
-
-    // Fill the canvas with a solid black background
-    context.fillStyle = "#000000";
-    context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Render the recording
-    this.playerService.render(context);
-
-    context.restore();
+  public override render(_context: CanvasRenderingContext2D): void {
+    // Note: Background rendering is handled by the scene itself
+    // This entity only manages playback state, actual entity rendering
+    // happens through the normal entity system
   }
 
   /**
@@ -55,9 +44,9 @@ export class MediaPlayerEntity extends BaseGameEntity {
   }
 
   /**
-   * Get the underlying MediaPlayerService for control operations
+   * Get the underlying RecordingPlayerService for control operations
    */
-  public getPlayerService(): MediaPlayerService {
+  public getPlayerService(): RecordingPlayerService {
     return this.playerService;
   }
 }

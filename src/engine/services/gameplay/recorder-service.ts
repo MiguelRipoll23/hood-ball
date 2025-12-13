@@ -27,36 +27,6 @@ const ANGLE_DELTA_THRESHOLD = 0.01;
 // Velocity delta threshold
 const VELOCITY_DELTA_THRESHOLD = 0.01;
 
-// Maximum number of frames to store (for backwards compatibility)
-const MAX_FRAMES = MAX_RECORDING_DURATION_MINUTES * 60 * RECORDING_FPS;
-
-// Estimated bytes per frame for old format (used for size comparison)
-const ESTIMATED_BYTES_PER_FRAME = 500;
-
-export interface RecordedFrame {
-  timestamp: number;
-  entities: SerializedEntity[];
-  events: SerializedEvent[];
-}
-
-export interface SerializedEntity {
-  id: string;
-  type: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  visible: boolean;
-  opacity: number;
-  properties: Record<string, unknown>;
-}
-
-export interface SerializedEvent {
-  type: number;
-  consumed: boolean;
-  data: unknown;
-}
-
 export interface RecordingMetadata {
   version: string;
   startTime: number;
@@ -65,13 +35,14 @@ export interface RecordingMetadata {
   fps: number;
 }
 
-export interface RecordingData {
-  metadata: RecordingMetadata;
-  frames: RecordedFrame[];
+export interface SerializedEvent {
+  type: number;
+  consumed: boolean;
+  data: unknown;
 }
 
 /**
- * New delta-based recording data structure
+ * Delta-based recording data structure
  */
 export interface DeltaRecordingData {
   metadata: RecordingMetadata;
@@ -87,7 +58,6 @@ export interface DeltaRecordingData {
 export class RecorderService {
   private recording = false;
   private paused = false;
-  private frames: RecordedFrame[] = [];
   private startTime: number = 0;
   private endTime: number = 0;
   private frameCount = 0;
@@ -141,7 +111,6 @@ export class RecorderService {
     console.log(`Starting recording${auto ? " (auto)" : ""}...`);
     this.recording = true;
     this.paused = false;
-    this.frames = [];
     this.frameCount = 0;
     this.startTime = Date.now();
     this.autoRecording = auto;
@@ -257,24 +226,11 @@ export class RecorderService {
     // Record events
     this.recordEvents(events, timestamp);
 
-    // Also maintain old format for backwards compatibility
-    const frame: RecordedFrame = {
-      timestamp,
-      entities: this.serializeEntities(entities),
-      events: this.serializeEvents(events),
-    };
-    this.frames.push(frame);
-
     this.frameCount++;
 
     // Log every 60 frames (once per second at 60fps)
     if (this.frameCount % 60 === 0) {
       console.log(`Recorded ${this.frameCount} frames (${this.transformDeltas.length} transform deltas, ${this.stateDeltas.length} state deltas)`);
-    }
-
-    // Remove oldest frame if we exceed the maximum
-    if (this.frames.length > MAX_FRAMES) {
-      this.frames.shift();
     }
   }
 
@@ -470,33 +426,6 @@ export class RecorderService {
     }
   }
 
-  private serializeEntities(entities: GameEntity[]): SerializedEntity[] {
-    return entities.map((entity) => {
-      const moveable = entity as BaseMoveableGameEntity;
-      const serialized: SerializedEntity = {
-        id: this.getEntityId(entity),
-        type: entity.constructor.name,
-        x: moveable.getX?.() ?? 0,
-        y: moveable.getY?.() ?? 0,
-        width: moveable.getWidth?.() ?? 0,
-        height: moveable.getHeight?.() ?? 0,
-        visible: true,
-        opacity: entity.getOpacity(),
-        properties: this.extractEntityProperties(entity, moveable),
-      };
-
-      return serialized;
-    });
-  }
-
-  private serializeEvents(events: GameEvent[]): SerializedEvent[] {
-    return events.map((event) => ({
-      type: event.getType(),
-      consumed: event.isConsumed(),
-      data: event.getData(),
-    }));
-  }
-
   private getEntityId(entity: GameEntity): string {
     // Check cache first
     const cachedId = this.entityIdCache.get(entity);
@@ -567,8 +496,8 @@ export class RecorderService {
     // Write magic number "HREC" (Hood Recording)
     writer.fixedLengthString("HREC", 4);
 
-    // Write version 2.0 for delta format
-    writer.unsignedInt8(2);
+    // Write version 1.0 for delta format
+    writer.unsignedInt8(1);
     writer.unsignedInt8(0);
 
     const endTimeValue = this.endTime || Date.now();
@@ -648,9 +577,7 @@ export class RecorderService {
     }
 
     const buffer = writer.toArrayBuffer();
-    const oldSize = this.frames.length * ESTIMATED_BYTES_PER_FRAME;
-    const reduction = oldSize > 0 ? ((1 - buffer.byteLength / oldSize) * 100).toFixed(1) : 0;
-    console.log(`Recording exported as binary: ${buffer.byteLength} bytes (${reduction}% reduction)`);
+    console.log(`Recording exported as binary: ${buffer.byteLength} bytes`);
     console.log(`  Initial: ${this.initialSnapshot.length} entities`);
     console.log(`  Spawns: ${this.spawnEvents.length}, Despawns: ${this.despawnEvents.length}`);
     console.log(`  Transform deltas: ${this.transformDeltas.length}, State deltas: ${this.stateDeltas.length}`);
@@ -704,7 +631,6 @@ export class RecorderService {
   }
 
   public clearRecording(): void {
-    this.frames = [];
     this.frameCount = 0;
     this.endTime = 0;
     this.entityIdCache = new WeakMap<GameEntity, string>();

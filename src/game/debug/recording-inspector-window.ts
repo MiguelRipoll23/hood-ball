@@ -1,16 +1,16 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import {
-  MediaPlayerService,
+  RecordingPlayerService,
   PlaybackState,
-} from "../../engine/services/gameplay/media-player-service.js";
+} from "../../engine/services/gameplay/recording-player-service.js";
 import { RecorderService } from "../../engine/services/gameplay/recorder-service.js";
 import { container } from "../../engine/services/di-container.js";
 import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.js";
 import { GameState } from "../../engine/models/game-state.js";
 
 export class RecordingInspectorWindow extends BaseWindow {
-  private playerService: MediaPlayerService;
+  private playerService: RecordingPlayerService;
   private recorderService: RecorderService;
   private gameState: GameState;
   private mediaPlayerEntity: MediaPlayerEntity | null = null;
@@ -20,7 +20,7 @@ export class RecordingInspectorWindow extends BaseWindow {
 
   constructor() {
     super("Recording inspector", new ImVec2(380, 360));
-    this.playerService = container.get(MediaPlayerService);
+    this.playerService = container.get(RecordingPlayerService);
     this.recorderService = container.get(RecorderService);
     this.gameState = container.get(GameState);
     console.log(`${this.constructor.name} created`);
