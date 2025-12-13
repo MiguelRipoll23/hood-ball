@@ -98,6 +98,13 @@ export class WorldController {
     // (when second player joins - player count is now 2)
     // Note: NPC player is already removed from match by matchmaking service before spawn assignment
     if (this.isSoloMatchWithNpc && playersCount >= 2) {
+      // Clear ball's lastPlayer reference if it's the NPC
+      const npcCarEntity = this.npcService.getNpcCarEntity();
+      if (npcCarEntity) {
+        const npcPlayer = npcCarEntity.getPlayer();
+        this.ballEntity.clearLastPlayerIfMatches(npcPlayer);
+      }
+
       // Remove NPC car entity from scene (player already removed from match)
       this.npcService.removeNpcCar();
       this.isSoloMatchWithNpc = false;
