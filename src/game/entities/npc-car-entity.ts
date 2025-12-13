@@ -39,7 +39,8 @@ export class NpcCarEntity extends CarEntity {
       "🤖 NPC",
       false,
       0,
-      spawnPointIndex
+      spawnPointIndex,
+      true // Mark as NPC
     );
     this.setOwner(npcPlayer);
   }
@@ -208,7 +209,7 @@ export class NpcCarEntity extends CarEntity {
       }
     }
 
-    // Show action on one line
+    // Show action on one line (using 24px spacing like matchmaking service)
     DebugUtils.renderText(
       context,
       this.x - this.width / 2,
@@ -216,12 +217,12 @@ export class NpcCarEntity extends CarEntity {
       action
     );
 
-    // Show boost level on a separate line below
+    // Show boost level on a separate line below (24px spacing)
     const boostPercent = Math.round(this.boost);
     DebugUtils.renderText(
       context,
       this.x - this.width / 2,
-      this.y + this.height / 2 + 55,
+      this.y + this.height / 2 + 54,
       `Boost: ${boostPercent}%`
     );
   }

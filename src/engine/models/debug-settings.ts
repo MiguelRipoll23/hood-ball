@@ -7,6 +7,7 @@ export class DebugSettings {
   private tappableAreasVisible: boolean = true;
   private hitboxVisible: boolean = true;
   private gizmosVisible: boolean = false;
+  private menuEnabled: boolean = false;
 
   constructor(debugging: boolean) {
     this.debugging = debugging;
@@ -75,5 +76,14 @@ export class DebugSettings {
   public setGizmosVisibility(value: boolean): void {
     this.gizmosVisible = value;
     console.log(`Gizmos visibility set to: ${value}`);
+  }
+
+  public isMenuEnabled(): boolean {
+    return this.menuEnabled;
+  }
+
+  public setMenuEnabled(value: boolean): void {
+    this.menuEnabled = value;
+    console.log(`Menu enabled set to: ${value}`);
   }
 }

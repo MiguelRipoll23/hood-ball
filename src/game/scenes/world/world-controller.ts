@@ -96,8 +96,15 @@ export class WorldController {
 
     // Remove NPC car and reset scores when transitioning from solo to multiplayer
     // (when second player joins - player count is now 2)
+    // Note: NPC player is already removed from match by matchmaking service before spawn assignment
     if (this.isSoloMatchWithNpc && playersCount >= 2) {
-      // Remove NPC through service
+      // Clear ball's lastPlayer reference if it's the NPC
+      const npcPlayer = this.npcService.getNpcCarEntity()?.getPlayer();
+      if (npcPlayer) {
+        this.ballEntity.clearLastPlayerIfMatches(npcPlayer);
+      }
+
+      // Remove NPC car entity from scene (player already removed from match)
       this.npcService.removeNpcCar();
       this.isSoloMatchWithNpc = false;
 
@@ -111,7 +118,7 @@ export class WorldController {
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
       console.log(
-        "Transitioning from solo to multiplayer - NPC removed, scores reset, countdown restarted"
+        "Transitioning from solo to multiplayer - NPC entity removed, scores reset, countdown restarted"
       );
     }
 

@@ -8,6 +8,7 @@ export class GamePlayer implements Player {
   private host: boolean;
   private score: number;
   private spawnPointIndex: number;
+  private npc: boolean;
 
   private pingTime: number | null = null;
 
@@ -16,7 +17,8 @@ export class GamePlayer implements Player {
     name = "Unknown",
     host = false,
     score = 0,
-    spawnIndex = 0
+    spawnIndex = 0,
+    npc = false
   ) {
     this.id = this.getNormalizedId(id);
     this.networkId = id.replaceAll("-", "");
@@ -24,6 +26,7 @@ export class GamePlayer implements Player {
     this.score = score;
     this.host = host;
     this.spawnPointIndex = spawnIndex;
+    this.npc = npc;
   }
 
   public getId(): string {
@@ -81,6 +84,14 @@ export class GamePlayer implements Player {
 
   public setPingTime(pingTime: number | null): void {
     this.pingTime = pingTime;
+  }
+
+  public isNpc(): boolean {
+    return this.npc;
+  }
+
+  public setNpc(npc: boolean): void {
+    this.npc = npc;
   }
 
   public reset(): void {

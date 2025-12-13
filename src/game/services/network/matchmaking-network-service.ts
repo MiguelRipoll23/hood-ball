@@ -196,6 +196,10 @@ export class MatchmakingNetworkService
     const { playerId, playerName } = identity;
     console.log("Received join request from", playerName);
 
+    // Remove NPC player if present (solo match transition to multiplayer)
+    // This must happen BEFORE assigning a spawn point to the joining player
+    this.removeNpcPlayerAndReleaseSpawnPoint(match);
+
     const gamePlayer = new GamePlayer(playerId, playerName);
     peer.setPlayer(gamePlayer);
 
@@ -545,9 +549,12 @@ export class MatchmakingNetworkService
 
     const players = match.getPlayers();
 
-    players.forEach((player: GamePlayer) => {
-      this.sendPlayerConnection(peer, player, true, true);
-    });
+    // Filter out NPC players - they should not be sent to joining players
+    players
+      .filter((player: GamePlayer) => !player.isNpc())
+      .forEach((player: GamePlayer) => {
+        this.sendPlayerConnection(peer, player, true, true);
+      });
   }
 
   private sendPlayerConnection(
@@ -713,6 +720,21 @@ export class MatchmakingNetworkService
         // Pause auto recording
         console.log("Match has < 2 players - pausing auto recording");
         this.recorderService.pauseRecording();
+      }
+    }
+  }
+
+  private removeNpcPlayerAndReleaseSpawnPoint(match: MatchSession): void {
+    const players = match.getPlayers();
+    const npcPlayer = players.find((p) => p.isNpc());
+    if (npcPlayer) {
+      const npcSpawnIndex = npcPlayer.getSpawnPointIndex();
+      match.removePlayer(npcPlayer);
+      if (npcSpawnIndex !== -1) {
+        this.spawnPointService.releaseSpawnPointIndex(npcSpawnIndex);
+        console.log(
+          `NPC player removed from match, spawn point ${npcSpawnIndex} released before joining player assignment`
+        );
       }
     }
   }

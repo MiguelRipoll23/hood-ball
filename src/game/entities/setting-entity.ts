@@ -4,6 +4,7 @@ import { ToggleEntity } from "./common/toggle-button.js";
 export class SettingEntity extends BaseTappableGameEntity {
   private toggleEntity: ToggleEntity | null = null;
   private updated = false;
+  private indented = false;
 
   constructor(
     private settingId: string,
@@ -12,6 +13,10 @@ export class SettingEntity extends BaseTappableGameEntity {
   ) {
     super();
     this.height = 40;
+  }
+
+  public setIndented(indented: boolean): void {
+    this.indented = indented;
   }
 
   public override load(): void {
@@ -55,12 +60,14 @@ export class SettingEntity extends BaseTappableGameEntity {
 
     // Set the font and alignment for the setting text
     context.fillStyle = "white";
-    context.font = "bold 24px system-ui";
+    // Reduce font size for indented settings to show hierarchy
+    context.font = this.indented ? "bold 20px system-ui" : "bold 24px system-ui";
     context.textAlign = "left";
     context.textBaseline = "middle";
 
-    // Draw the setting text (left side of the canvas)
-    context.fillText(this.settingText, this.x + 30, this.y + this.height / 2);
+    // Draw the setting text with indent if this is a child setting
+    const textX = this.indented ? this.x + 50 : this.x + 30;
+    context.fillText(this.settingText, textX, this.y + this.height / 2);
 
     // Set the position of the toggleEntity (right side of the canvas)
     const toggleX = canvasWidth - 80; // Adjust this value for your toggle entity's width
