@@ -10,7 +10,11 @@ import type { GameEntity } from "../../models/game-entity.js";
 import { EntityRegistry } from "../../utils/entity-registry.js";
 import { GameState } from "../../models/game-state.js";
 import { SceneType } from "../../enums/scene-type.js";
-import { RecordingReplayScene } from "../../scenes/recording-replay-scene.js";
+import { container } from "../di-container.js";
+import { EventConsumerService } from "./event-consumer-service.js";
+import { SceneTransitionService } from "./scene-transition-service.js";
+import { TimerManagerService } from "./timer-manager-service.js";
+import { EventProcessorService } from "./event-processor-service.js";
 
 export enum PlaybackState {
   Stopped = "stopped",
@@ -36,7 +40,7 @@ export class RecordingPlayerService {
   // For delta playback
   private currentEntityStates = new Map<string, EntitySnapshot>();
   private spawnedEntities = new Map<string, GameEntity>(); // Track actual spawned entities
-  private replayScene: RecordingReplayScene | null = null;
+  private replayScene: any = null; // Actual game scene for replay
   private previousScene: any = null; // Store previous scene to restore later
   private currentTime = 0;
   private nextSpawnIndex = 0;
@@ -243,7 +247,7 @@ export class RecordingPlayerService {
     if (!this.recordingData) return;
 
     const sceneId = parseInt(this.recordingData.metadata.sceneId);
-    console.log(`Loading replay scene for recorded scene: ${sceneId} (${SceneType[sceneId] || 'Unknown'})`);
+    console.log(`Loading actual scene for replay: ${sceneId} (${SceneType[sceneId] || 'Unknown'})`);
 
     // Store current scene to restore later
     this.previousScene = this.gameState.getGameFrame().getCurrentScene();
@@ -254,15 +258,46 @@ export class RecordingPlayerService {
       this.previousScene.dispose();
     }
 
-    // Create and load replay scene
-    // This is a minimal scene with gameplay systems disabled
-    this.replayScene = new RecordingReplayScene(this.gameState);
-    this.replayScene.load();
+    // Load the actual WorldScene for replay
+    if (sceneId === SceneType.World) {
+      // Dynamically import WorldScene to avoid circular dependencies
+      const { WorldScene } = await import("../../../game/scenes/world/world-scene.js");
+      
+      // Create WorldScene with all its dependencies
+      this.replayScene = new WorldScene(
+        this.gameState,
+        container.get(EventConsumerService),
+        container.get(SceneTransitionService),
+        container.get(TimerManagerService),
+        // For replay, we pass null/mock services for matchmaking since we don't need them
+        null as any, // matchmakingService
+        null as any, // matchmakingController
+        null as any, // entityOrchestrator
+        container.get(EventProcessorService),
+        null as any, // spawnPointService
+        null as any, // chatService
+        null as any  // matchActionsLogService
+      );
+      
+      // Load the scene but DON'T let it create its own entities
+      // We'll spawn entities from the recording
+      this.replayScene.load();
+      
+      // Clear any entities that WorldScene.load() may have created
+      // since we want to spawn from recording data
+      const worldEntities = this.replayScene.getWorldEntities();
+      const uiEntities = this.replayScene.getUIEntities();
+      worldEntities.length = 0;
+      uiEntities.length = 0;
+    } else {
+      console.warn(`Scene type ${sceneId} not yet supported for replay`);
+      return;
+    }
     
     // Set as current scene
     this.gameState.getGameFrame().setCurrentScene(this.replayScene);
     
-    console.log("Replay scene loaded - input, AI, and physics disabled");
+    console.log("Actual WorldScene loaded for replay");
     console.log("Entities will be spawned from recording data");
   }
 
