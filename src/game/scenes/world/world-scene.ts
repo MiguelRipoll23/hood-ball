@@ -626,7 +626,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
-    this.matchActionsLogService.clear();
+    
+    // Only call clear() if matchActionsLogService is available (not null in replay mode)
+    if (this.matchActionsLogService) {
+      this.matchActionsLogService.clear();
+    }
 
     // Remove NPC car if present
     if (this.npcService) {
