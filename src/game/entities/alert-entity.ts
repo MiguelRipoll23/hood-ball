@@ -104,42 +104,42 @@ export class AlertEntity
   public override getReplayState(): ArrayBuffer | null {
     // Capture alert visual state for replay
     const writer = BinaryWriter.build();
-    
+
     // Store number of text lines
     writer.unsignedInt8(this.textLines.length);
-    
+
     // Store each text line and its color
     for (let i = 0; i < this.textLines.length; i++) {
       writer.variableLengthString(this.textLines[i] ?? "");
       writer.variableLengthString(this.lineColors[i] ?? "white");
     }
-    
+
     // Store visual properties
     writer.float32(this.opacity);
     writer.float32(this.scale);
     writer.unsignedInt8(this.fontSize);
-    
+
     return writer.toArrayBuffer();
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
     const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    
+
     // Read number of text lines
     const lineCount = reader.unsignedInt8();
-    
+
     // Read text lines and colors
     const textLines: string[] = [];
     const lineColors: string[] = [];
-    
+
     for (let i = 0; i < lineCount; i++) {
       textLines.push(reader.variableLengthString());
       lineColors.push(reader.variableLengthString());
     }
-    
+
     this.textLines = textLines;
     this.lineColors = lineColors;
-    
+
     // Update base color from first line color
     const baseColor = lineColors[0] ?? "white";
     if (baseColor === "blue") {
@@ -149,7 +149,7 @@ export class AlertEntity
     } else {
       this.color = baseColor;
     }
-    
+
     // Read and apply visual properties
     this.opacity = reader.float32();
     this.scale = reader.float32();
