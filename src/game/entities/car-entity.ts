@@ -151,49 +151,64 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
-    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-
-    // Read player name from replay data
-    const playerName = binaryReader.variableLengthString();
-
-    // Read car type: 0 = local, 1 = remote, 2 = npc
-    const carType = binaryReader.unsignedInt8();
-    const isNpc = carType === 2;
-    const isRemote = carType === 1;
-
-    // Update remote flag and image path based on car type
-    this.remote = isRemote || isNpc;
-    this.imagePath = this.remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
-
-    // Update or create owner with the player name from replay
-    if (!this.owner) {
-      this.setOwner(
-        new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
-      );
-    } else if (this.owner.getName() !== playerName) {
-      // Owner name changed, create new player with updated name
-      this.setOwner(
-        new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
-      );
+    // Guard against empty or invalid buffers
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      console.warn("CarEntity: applyReplayState received empty buffer");
+      return;
     }
 
-    const scaledX = binaryReader.unsignedInt16();
-    const scaledY = binaryReader.unsignedInt16();
-    const newX = scaledX / SCALE_FACTOR_FOR_COORDINATES;
-    const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
-    const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
-    const newSpeed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
-    const newBoosting = binaryReader.boolean();
-    const newBoost = binaryReader.unsignedInt8();
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    this.x = newX;
-    this.y = newY;
-    this.angle = newAngle;
-    this.speed = newSpeed;
-    this.boosting = newBoosting;
-    this.boost = newBoost;
+    try {
+      // Read player name from replay data
+      const playerName = binaryReader.variableLengthString();
 
-    this.updateHitbox();
+      // Read car type: 0 = local, 1 = remote, 2 = npc
+      const carType = binaryReader.unsignedInt8();
+      const isNpc = carType === 2;
+      const isRemote = carType === 1;
+
+      // Update remote flag and image path based on car type
+      this.remote = isRemote || isNpc;
+      this.imagePath = this.remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
+
+      // Update or create owner with the player name from replay
+      if (!this.owner) {
+        this.setOwner(
+          new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
+        );
+      } else if (this.owner.getName() !== playerName) {
+        // Owner name changed, create new player with updated name
+        this.setOwner(
+          new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
+        );
+      }
+
+      const scaledX = binaryReader.unsignedInt16();
+      const scaledY = binaryReader.unsignedInt16();
+      const newX = scaledX / SCALE_FACTOR_FOR_COORDINATES;
+      const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
+      const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+      const newSpeed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
+      const newBoosting = binaryReader.boolean();
+      const newBoost = binaryReader.unsignedInt8();
+
+      this.x = newX;
+      this.y = newY;
+      this.angle = newAngle;
+      this.speed = newSpeed;
+      this.boosting = newBoosting;
+      this.boost = newBoost;
+
+      this.updateHitbox();
+    } catch (error) {
+      console.error(
+        "CarEntity: Error applying replay state, buffer length:",
+        arrayBuffer.byteLength,
+        error
+      );
+      // Don't update state if we can't read the buffer properly
+    }
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

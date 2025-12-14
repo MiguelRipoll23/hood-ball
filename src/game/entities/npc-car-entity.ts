@@ -3,6 +3,8 @@ import { BallEntity } from "./ball-entity.js";
 import { GamePlayer } from "../models/game-player.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { EntityUtils } from "../../engine/utils/entity-utils.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export class NpcCarEntity extends CarEntity {
   private readonly AI_UPDATE_INTERVAL = 50; // Update AI decisions every 50ms
@@ -228,5 +230,65 @@ export class NpcCarEntity extends CarEntity {
       this.y + this.height / 2 + 54,
       `Boost: ${boostPercent}%`
     );
+  }
+
+  public override getReplayState(): ArrayBuffer | null {
+    // Call parent to get car state, then extend with NPC-specific state
+    const parentState = super.getReplayState();
+    if (!parentState) {
+      return null;
+    }
+
+    const parentBytes = new Uint8Array(parentState);
+    const writer = BinaryWriter.build();
+    
+    // First, write all the parent state bytes
+    for (let i = 0; i < parentBytes.length; i++) {
+      writer.unsignedInt8(parentBytes[i]);
+    }
+    
+    // Then add NPC-specific state: active flag
+    writer.boolean(this.active);
+    
+    return writer.toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    // Guard against empty or invalid buffers
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      console.warn("NpcCarEntity: applyReplayState received empty buffer");
+      return;
+    }
+
+    try {
+      // First apply parent state (all except last boolean for active flag)
+      // The parent state should be: playerName (variable) + carType (1) + networkData (10)
+      // We need to calculate where parent state ends and NPC state begins
+      
+      // Read the parent state first by creating a view of all but the last byte
+      const parentStateLength = arrayBuffer.byteLength - 1; // Last 1 byte is active flag
+      
+      if (parentStateLength > 0) {
+        const parentState = arrayBuffer.slice(0, parentStateLength);
+        super.applyReplayState(parentState);
+      }
+      
+      // Read NPC-specific state: active flag (last byte)
+      const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+      reader.seek(parentStateLength);
+      this.active = reader.boolean();
+    } catch (error) {
+      console.error(
+        "NpcCarEntity: Error applying replay state, buffer length:",
+        arrayBuffer.byteLength,
+        error
+      );
+      // Fallback: just try to apply parent state
+      try {
+        super.applyReplayState(arrayBuffer);
+      } catch (fallbackError) {
+        console.error("NpcCarEntity: Fallback also failed:", fallbackError);
+      }
+    }
   }
 }
