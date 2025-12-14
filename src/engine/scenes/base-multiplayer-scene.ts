@@ -5,7 +5,6 @@ import type {
 } from "../interfaces/entities/multiplayer-game-entity-interface.js";
 import { BaseGameScene } from "./base-game-scene.js";
 import type { MultiplayerScene } from "../interfaces/scenes/multiplayer-scene-interface.js";
-import { SceneType } from "../enums/scene-type.js";
 import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
 
 import type { Player } from "../interfaces/models/player-interface.js";
@@ -16,10 +15,6 @@ export class BaseMultiplayerScene
 {
   protected syncableEntityTypes: Map<EntityType, StaticMultiplayerGameEntity> =
     new Map();
-
-  public getTypeId(): SceneType {
-    return SceneType.Unknown;
-  }
 
   public addSyncableEntity(entityClass: StaticMultiplayerGameEntity): void {
     const typeId = entityClass.getTypeId();

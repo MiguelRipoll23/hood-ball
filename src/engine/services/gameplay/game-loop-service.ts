@@ -181,36 +181,33 @@ export class GameLoopService {
     this.intervalManagerService.update(deltaTimeStamp);
     this.sceneTransitionService.update(deltaTimeStamp);
 
-    // Only update scenes if not in playback mode
-    // During playback, the RecordingPlayerService controls the scene
     const mediaPlayerEntity = this.gameFrame.getMediaPlayerEntity();
-    const isPlaybackActive =
-      mediaPlayerEntity &&
-      this.recordingPlayerService.getPlaybackState() !== PlaybackState.Stopped;
+    const currentScene = this.gameFrame.getCurrentScene();
+    const nextScene = this.gameFrame.getNextScene();
 
-    if (isPlaybackActive) {
-      // Playback mode: update replay scene and media player
-      // The RecordingPlayerService manages the replay scene
-      this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
+    currentScene?.update(deltaTimeStamp);
 
-      // Update media player (handles playback time and deltas)
+    if (this.isPlaybackActive()) {
       mediaPlayerEntity?.update(deltaTimeStamp);
     } else {
-      // Normal mode: update scenes and record if active
-      this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
-      this.gameFrame.getNextScene()?.update(deltaTimeStamp);
-
-      // Record frame if recording is active
+      nextScene?.update(deltaTimeStamp);
       this.recorderService.recordFrameFromGameState(this.gameFrame);
     }
 
-    // Always update UI entities
     this.gameFrame.getNotificationEntity()?.update(deltaTimeStamp);
     this.gameFrame.getLoadingIndicatorEntity()?.update(deltaTimeStamp);
 
     if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugEntity()?.update(deltaTimeStamp);
     }
+  }
+
+  private isPlaybackActive(): boolean {
+    const mediaPlayerEntity = this.gameFrame.getMediaPlayerEntity();
+    return (
+      !!mediaPlayerEntity &&
+      this.recordingPlayerService.getPlaybackState() !== PlaybackState.Stopped
+    );
   }
 
   private render(): void {

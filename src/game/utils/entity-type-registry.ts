@@ -127,10 +127,7 @@ export function getEntityTypeMapper() {
     const type = EntityRegistry.getTypeId(entity.constructor);
 
     if (type === undefined) {
-      console.warn(
-        `Unknown entity type for recording: ${entity.constructor.name}`
-      );
-
+      // Do not log warning, some entities don't need recording
       return null;
     }
 
