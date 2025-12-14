@@ -95,6 +95,11 @@ export class AlertEntity
 
   public override getReplayState(): ArrayBuffer | null {
     const writer = BinaryWriter.build();
+    if (this.textLines.length > 255) {
+      throw new RangeError(
+        `AlertEntity: textLines.length (${this.textLines.length}) exceeds 255, cannot encode as unsignedInt8.`
+      );
+    }
     writer.unsignedInt8(this.textLines.length);
 
     for (let i = 0; i < this.textLines.length; i++) {

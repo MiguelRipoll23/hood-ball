@@ -395,6 +395,18 @@ export class RecorderService {
         // Get layer from entity layer map (defaults to Scene if not found)
         const layer = this.entityLayerMap.get(entity) ?? LayerType.Scene;
 
+        // Clone serializedData if present (ArrayBuffer or object)
+        let clonedSerializedData: ArrayBuffer | undefined = undefined;
+        if (serializedData instanceof ArrayBuffer) {
+          clonedSerializedData = this.cloneArrayBuffer(serializedData);
+        } else if (serializedData && typeof structuredClone === "function") {
+          // For plain objects, use structuredClone if available
+          clonedSerializedData = structuredClone(serializedData);
+        } else if (serializedData) {
+          // Fallback: shallow copy (not ideal, but better than reference)
+          clonedSerializedData = JSON.parse(JSON.stringify(serializedData));
+        }
+
         const spawnEvent: EntitySpawnEvent = {
           timestamp,
           id,
@@ -405,7 +417,7 @@ export class RecorderService {
           width: moveable.getWidth?.() ?? 0,
           height: moveable.getHeight?.() ?? 0,
           angle: moveable.getAngle?.(),
-          serializedData: serializedData ?? undefined,
+          serializedData: clonedSerializedData ?? undefined,
         };
         this.spawnEvents.push(spawnEvent);
         this.trackedEntities.add(id);
@@ -417,9 +429,7 @@ export class RecorderService {
           angle: spawnEvent.angle,
           velocityX: dynamic.getVX?.() ?? dynamic.vx,
           velocityY: dynamic.getVY?.() ?? dynamic.vy,
-          serializedData: serializedData
-            ? this.cloneArrayBuffer(serializedData)
-            : undefined,
+          serializedData: clonedSerializedData,
         });
       }
     }

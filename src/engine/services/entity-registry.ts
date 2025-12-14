@@ -19,12 +19,12 @@ export class EntityRegistry {
    *
    * @param typeId - Numeric entity type identifier (game layer can use enum values)
    * @param factory - Factory function that creates a new instance of the entity
-   * @param constructor - Optional constructor function for reverse lookup (type identification during recording)
+   * @param ctor - Optional constructor function for reverse lookup (type identification during recording)
    */
   public static register(
     typeId: number,
     factory: () => GameEntity,
-    constructor?: Function
+    ctor?: Function
   ): void {
     if (this.registry.has(typeId)) {
       console.warn(
@@ -34,8 +34,8 @@ export class EntityRegistry {
     this.registry.set(typeId, factory);
 
     // Register reverse mapping if constructor provided
-    if (constructor) {
-      this.reverseRegistry.set(constructor, typeId);
+    if (ctor) {
+      this.reverseRegistry.set(ctor, typeId);
     }
   }
 
@@ -79,11 +79,11 @@ export class EntityRegistry {
   /**
    * Get the type ID for an entity constructor (reverse lookup)
    *
-   * @param constructor - The entity constructor function
+   * @param ctor - The entity constructor function
    * @returns The type ID, or undefined if not registered
    */
-  public static getTypeId(constructor: Function): number | undefined {
-    return this.reverseRegistry.get(constructor);
+  public static getTypeId(ctor: Function): number | undefined {
+    return this.reverseRegistry.get(ctor);
   }
 
   /**
