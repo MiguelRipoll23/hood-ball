@@ -239,13 +239,10 @@ export class NpcCarEntity extends CarEntity {
       return null;
     }
 
-    const parentBytes = new Uint8Array(parentState);
     const writer = BinaryWriter.build();
     
-    // First, write all the parent state bytes
-    for (let i = 0; i < parentBytes.length; i++) {
-      writer.unsignedInt8(parentBytes[i]);
-    }
+    // First, write all the parent state bytes efficiently
+    writer.arrayBuffer(parentState);
     
     // Then add NPC-specific state: active flag
     writer.boolean(this.active);
@@ -261,16 +258,22 @@ export class NpcCarEntity extends CarEntity {
     }
 
     try {
-      // The buffer contains: parent state (variable length) + active flag (1 byte)
-      // We need to read the parent state first, then the active flag
+      // The buffer should contain: parent state (variable length) + active flag (1 byte)
+      // Minimum valid buffer size is parent state + 1 byte for active flag
+      
+      // If buffer is too small to contain active flag, treat as old format (parent state only)
+      if (arrayBuffer.byteLength < 2) {
+        // Buffer is too small to contain parent state + active flag
+        // Treat as old format and apply as parent state only
+        super.applyReplayState(arrayBuffer);
+        this.active = false; // Default to inactive for old recordings
+        return;
+      }
       
       // Read the parent state first by creating a view of all but the last byte
       const parentStateLength = arrayBuffer.byteLength - 1; // Last 1 byte is active flag
-      
-      if (parentStateLength > 0) {
-        const parentState = arrayBuffer.slice(0, parentStateLength);
-        super.applyReplayState(parentState);
-      }
+      const parentState = arrayBuffer.slice(0, parentStateLength);
+      super.applyReplayState(parentState);
       
       // Read NPC-specific state: active flag (last byte)
       const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
