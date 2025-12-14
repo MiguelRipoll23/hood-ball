@@ -14,10 +14,23 @@ export class AlertEntity
 {
   private textLines: string[] = ["Unknown", "message"];
   private lineColors: string[] = [];
+  private lineColorsHex: string[] = [];
   private color: string = "white";
   private fontSize: number = 44;
 
   private timer: TimerService | null = null;
+
+  private static COLOR_CODES: Record<string, number> = {
+    white: 0,
+    red: 1,
+    blue: 2,
+  };
+
+  private static COLOR_CODES_REVERSE: Record<number, string> = {
+    0: "white",
+    1: "red",
+    2: "blue",
+  };
 
   constructor(protected readonly canvas: HTMLCanvasElement) {
     super();
@@ -47,20 +60,11 @@ export class AlertEntity
     this.textLines = textLines;
     this.lineColors = colors;
 
-    const baseColor = colors[0] ?? "white";
-    if (baseColor === "blue") {
-      this.color = BLUE_TEAM_COLOR;
-    } else if (baseColor === "red") {
-      this.color = RED_TEAM_COLOR;
-    } else {
-      this.color = baseColor;
-    }
+    // Resolve hex colors once
+    this.lineColorsHex = colors.map((c) => this.resolveColorToHex(c));
+    this.color = this.lineColorsHex[0] ?? "#FFFFFF";
 
-    if (textLines.length === 1) {
-      this.fontSize = 74;
-    } else {
-      this.fontSize = 44;
-    }
+    this.fontSize = textLines.length === 1 ? 74 : 44;
 
     this.fadeIn(0.3);
     this.scaleTo(1, 0.3);
@@ -102,19 +106,19 @@ export class AlertEntity
   }
 
   public override getReplayState(): ArrayBuffer | null {
-    // Capture alert visual state for replay
     const writer = BinaryWriter.build();
-
-    // Store number of text lines
     writer.unsignedInt8(this.textLines.length);
 
-    // Store each text line and its color
     for (let i = 0; i < this.textLines.length; i++) {
       writer.variableLengthString(this.textLines[i] ?? "");
-      writer.variableLengthString(this.lineColors[i] ?? "white");
+
+      // store color as integer code
+      const code =
+        AlertEntity.COLOR_CODES[this.lineColors[i]?.toLowerCase() ?? "white"] ??
+        0;
+      writer.unsignedInt8(code);
     }
 
-    // Store visual properties
     writer.float32(this.opacity);
     writer.float32(this.scale);
     writer.unsignedInt8(this.fontSize);
@@ -123,50 +127,36 @@ export class AlertEntity
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
-    // Guard against empty or invalid buffers
-    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-      console.warn("AlertEntity: applyReplayState received empty buffer");
-      return;
-    }
+    if (!arrayBuffer || arrayBuffer.byteLength < 6) return;
 
     try {
       const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
-
-      // Read number of text lines
       const lineCount = reader.unsignedInt8();
 
-      // Read text lines and colors
       const textLines: string[] = [];
       const lineColors: string[] = [];
+      const lineColorsHex: string[] = [];
 
       for (let i = 0; i < lineCount; i++) {
-        textLines.push(reader.variableLengthString());
-        lineColors.push(reader.variableLengthString());
+        const text = reader.variableLengthString();
+        const code = reader.unsignedInt8();
+        const colorStr = AlertEntity.COLOR_CODES_REVERSE[code] ?? "white";
+
+        textLines.push(text);
+        lineColors.push(colorStr);
+        lineColorsHex.push(this.resolveColorToHex(colorStr));
       }
 
       this.textLines = textLines;
       this.lineColors = lineColors;
+      this.lineColorsHex = lineColorsHex;
+      this.color = this.lineColorsHex[0] ?? "#FFFFFF";
 
-      // Update base color from first line color
-      const baseColor = lineColors[0] ?? "white";
-      if (baseColor === "blue") {
-        this.color = BLUE_TEAM_COLOR;
-      } else if (baseColor === "red") {
-        this.color = RED_TEAM_COLOR;
-      } else {
-        this.color = baseColor;
-      }
-
-      // Read and apply visual properties
       this.opacity = reader.float32();
       this.scale = reader.float32();
       this.fontSize = reader.unsignedInt8();
-    } catch (error) {
-      console.error(
-        "AlertEntity: Error applying replay state, buffer length:",
-        arrayBuffer.byteLength,
-        error
-      );
+    } catch (err) {
+      console.error("AlertEntity: failed to apply replay state", err);
     }
   }
 
@@ -182,22 +172,20 @@ export class AlertEntity
     context.textAlign = "center";
     context.textBaseline = "middle";
 
-    // Adding black shadow to text for readability
     context.shadowColor = "black";
-    context.shadowOffsetX = 0; // Horizontal offset of shadow
-    context.shadowOffsetY = 0; // Vertical offset of shadow
-    context.shadowBlur = 10; // Blur effect for the shadow
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    context.shadowBlur = 10;
   }
 
   private renderMultilineText(context: CanvasRenderingContext2D): void {
     const lineHeight = this.fontSize;
     const blockHeight = this.textLines.length * lineHeight;
-    const startY = this.y - blockHeight / 2 + lineHeight / 2; // Center the block
+    const startY = this.y - blockHeight / 2 + lineHeight / 2;
 
     this.textLines.forEach((line, index) => {
       const yPosition = startY + index * lineHeight;
-      const color = this.resolveColor(this.lineColors[index] ?? this.color);
-      context.fillStyle = color;
+      context.fillStyle = this.lineColorsHex[index] ?? this.color;
       this.drawText(context, line, this.x, yPosition);
     });
   }
@@ -208,17 +196,22 @@ export class AlertEntity
     x: number,
     y: number
   ): void {
-    // Draw filled text with shadow applied
     context.fillText(text, x, y);
   }
 
-  private resolveColor(color: string): string {
-    if (color === "blue") {
-      return BLUE_TEAM_COLOR;
-    } else if (color === "red") {
-      return RED_TEAM_COLOR;
+  private resolveColorToHex(color: string): string {
+    if (!color) return "#FFFFFF";
+
+    switch (color.toLowerCase()) {
+      case "red":
+        return RED_TEAM_COLOR;
+      case "blue":
+        return BLUE_TEAM_COLOR;
+      case "white":
+        return "#FFFFFF";
+      default:
+        return /^#([0-9A-F]{3}){1,2}$/i.test(color) ? color : "#FFFFFF";
     }
-    return color;
   }
 
   private setInitialValues() {

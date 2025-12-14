@@ -97,6 +97,7 @@ export class LocalCarEntity extends CarEntity {
   }
 
   private setSyncableValues(): void {
+    this.syncable = true;
     this.setId(crypto.randomUUID().replaceAll("-", ""));
     this.setTypeId(EntityType.RemoteCar);
   }

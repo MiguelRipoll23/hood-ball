@@ -88,8 +88,6 @@ export class WorldScene extends BaseCollidingGameScene {
   private activeWeatherEntity: SnowEntity | null = null;
   private weatherFrictionMultiplier = 1.0;
 
-  private isReplayMode = false;
-
   constructor(
     protected gameState: GameState,
     eventConsumerService: EventConsumerService,
@@ -105,6 +103,7 @@ export class WorldScene extends BaseCollidingGameScene {
     replayMode = false
   ) {
     super(gameState, eventConsumerService);
+    // Set isReplayMode from parent BaseCollidingGameScene
     this.isReplayMode = replayMode;
     this.gamePlayer = gameContext.get(GamePlayer);
     this.gameServer = gameContext.get(GameServer);

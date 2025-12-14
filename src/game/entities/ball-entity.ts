@@ -191,6 +191,17 @@ export class BallEntity
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    // Guard against empty or invalid buffers
+    // Minimum size: 2 (uint16) * 2 + 2 (int16) * 2 = 8 bytes
+    if (!arrayBuffer || arrayBuffer.byteLength < 8) {
+      console.warn(
+        `BallEntity: applyReplayState received invalid buffer size: ${
+          arrayBuffer ? arrayBuffer.byteLength : 0
+        }`
+      );
+      return;
+    }
+
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
     const newX = binaryReader.unsignedInt16();
@@ -205,7 +216,7 @@ export class BallEntity
   }
 
   private setSyncableValues() {
-    this.setId("94c58aa041c34b22825a15a3834be240");
+    this.syncable = true;
     this.setTypeId(EntityType.Ball);
     this.setSyncableByHost(true);
   }

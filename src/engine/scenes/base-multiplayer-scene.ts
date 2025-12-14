@@ -36,19 +36,13 @@ export class BaseMultiplayerScene
     const result: MultiplayerGameEntity[] = [];
 
     for (const entity of this.uiEntities) {
-      if (
-        entity instanceof BaseMultiplayerGameEntity &&
-        entity.getId() !== null
-      ) {
+      if (entity instanceof BaseMultiplayerGameEntity && entity.isSyncable()) {
         result.push(entity);
       }
     }
 
     for (const entity of this.worldEntities) {
-      if (
-        entity instanceof BaseMultiplayerGameEntity &&
-        entity.getId() !== null
-      ) {
+      if (entity instanceof BaseMultiplayerGameEntity && entity.isSyncable()) {
         result.push(entity);
       }
     }

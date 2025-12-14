@@ -7,7 +7,7 @@ import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despa
 import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 import type { GameEntity } from "../../models/game-entity.js";
-import { EntityRegistry } from "../../utils/entity-registry.js";
+import { EntityRegistry } from "../entity-registry.js";
 import { GameState } from "../../models/game-state.js";
 import { SceneType } from "../../enums/scene-type.js";
 import { LayerType } from "../../enums/layer-type.js";
@@ -191,17 +191,6 @@ export class RecordingPlayerService {
       stateDeltas.push({ timestamp, id, serializedData });
     }
 
-    // Read events
-    const eventCount = reader.unsignedInt32();
-    const events = [];
-    for (let i = 0; i < eventCount; i++) {
-      const type = reader.unsignedInt16();
-      const consumed = reader.boolean();
-      const dataJson = reader.variableLengthString();
-      const data = JSON.parse(dataJson);
-      events.push({ type, consumed, data });
-    }
-
     this.recordingData = {
       metadata: {
         version: "1.0",
@@ -216,7 +205,6 @@ export class RecordingPlayerService {
       despawnEvents,
       transformDeltas,
       stateDeltas,
-      events,
     };
   }
 
@@ -374,6 +362,14 @@ export class RecordingPlayerService {
   }
 
   private spawnEntityFromSnapshot(snapshot: EntitySnapshot): void {
+    // Check if entity is already spawned
+    if (this.spawnedEntities.has(snapshot.id)) {
+      console.warn(
+        `Entity ${snapshot.id} already spawned, skipping duplicate spawn`
+      );
+      return;
+    }
+
     // Try to spawn entity via registry
     const entity = EntityRegistry.create(snapshot.type);
     if (!entity) {
@@ -382,6 +378,9 @@ export class RecordingPlayerService {
       );
       return;
     }
+
+    // Set entity ID to match the recorded ID
+    entity.setId(snapshot.id);
 
     // Set entity state from snapshot
     this.applySnapshotToEntity(entity, snapshot);
@@ -423,7 +422,10 @@ export class RecordingPlayerService {
       entity.applyReplayState(snapshot.serializedData);
       // Note: applyReplayState() should handle all entity-specific state
       // We still apply basic transform properties in case they're not in serialized data
-    } else if (snapshot.serializedData && snapshot.serializedData.byteLength === 0) {
+    } else if (
+      snapshot.serializedData &&
+      snapshot.serializedData.byteLength === 0
+    ) {
       console.warn(
         `Entity ${snapshot.id} (${snapshot.type}) has empty serializedData`
       );

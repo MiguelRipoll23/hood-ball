@@ -2,6 +2,9 @@ import { EntityStateType } from "../enums/entity-state-type.js";
 import type { DebugSettings } from "./debug-settings.js";
 
 export interface GameEntity {
+  getId(): string;
+  setId(id: string): void;
+
   load(): void;
   hasLoaded(): boolean;
 

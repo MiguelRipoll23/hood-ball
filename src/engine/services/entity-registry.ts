@@ -1,14 +1,14 @@
 import type { GameEntity } from "../models/game-entity.js";
 
 /**
- * Entity Registry for recording playback
+ * Entity Registry Service
  *
- * Maps entity type identifiers to their factory functions.
- * This allows us to spawn real entities during playback without
- * storing raw constructors or class names.
+ * Manages entity type registration for recording playback and provides
+ * centralized entity ID generation.
  */
 export class EntityRegistry {
   private static registry = new Map<string, () => GameEntity>();
+  private static entityIdCounter = 0;
 
   /**
    * Register an entity type with its factory function
@@ -63,9 +63,34 @@ export class EntityRegistry {
   }
 
   /**
+   * Get the next entity ID for entity creation
+   *
+   * @returns The next unique entity ID number
+   */
+  public static getNextEntityId(): number {
+    return ++this.entityIdCounter;
+  }
+
+  /**
+   * Get the current entity ID counter value (useful for debugging)
+   *
+   * @returns The current counter value
+   */
+  public static getEntityIdCounter(): number {
+    return this.entityIdCounter;
+  }
+
+  /**
    * Clear all registered entity types (useful for testing)
    */
   public static clear(): void {
     this.registry.clear();
+  }
+
+  /**
+   * Reset the entity ID counter (useful for testing)
+   */
+  public static resetCounter(): void {
+    this.entityIdCounter = 0;
   }
 }

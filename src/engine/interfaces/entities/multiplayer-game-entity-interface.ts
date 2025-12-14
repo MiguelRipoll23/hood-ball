@@ -3,10 +3,11 @@ import { EntityType } from "../../enums/entity-type.js";
 import type { GameEntity } from "../../models/game-entity.js";
 
 export interface MultiplayerGameEntity extends GameEntity {
-  getId(): string | null;
+  getId(): string;
   getTypeId(): EntityType | null;
   getOwner(): Player | null;
   setOwner(player: Player | null): void;
+  isSyncable(): boolean;
   isSyncableByHost(): boolean;
   mustSync(): boolean;
   setSync(sync: boolean): void;

@@ -1,11 +1,8 @@
 import { injectable } from "@needle-di/core";
 import type { GameEntity } from "../../models/game-entity.js";
-import type { GameEvent } from "../../interfaces/models/game-event-interface.js";
 import { BaseMoveableGameEntity } from "../../entities/base-moveable-game-entity.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { GameFrame } from "../../models/game-frame.js";
-import { container } from "../di-container.js";
-import { EventProcessorService } from "./event-processor-service.js";
 import type { EntitySnapshot } from "../../interfaces/recording/entity-snapshot-interface.js";
 import type { EntitySpawnEvent } from "../../interfaces/recording/entity-spawn-event-interface.js";
 import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despawn-event-interface.js";
@@ -37,12 +34,6 @@ export interface RecordingMetadata {
   sceneId: string; // ID of the gameplay scene that was recorded
 }
 
-export interface SerializedEvent {
-  type: number;
-  consumed: boolean;
-  data: unknown;
-}
-
 /**
  * Delta-based recording data structure
  */
@@ -53,7 +44,6 @@ export interface DeltaRecordingData {
   despawnEvents: EntityDespawnEvent[];
   transformDeltas: EntityTransformDelta[];
   stateDeltas: EntityStateDelta[];
-  events: SerializedEvent[];
 }
 
 @injectable()
@@ -73,7 +63,6 @@ export class RecorderService {
   private despawnEvents: EntityDespawnEvent[] = [];
   private transformDeltas: EntityTransformDelta[] = [];
   private stateDeltas: EntityStateDelta[] = [];
-  private recordedEvents: SerializedEvent[] = [];
 
   // Track entity state for delta detection
   private lastEntityState = new Map<
@@ -122,7 +111,6 @@ export class RecorderService {
     this.despawnEvents = [];
     this.transformDeltas = [];
     this.stateDeltas = [];
-    this.recordedEvents = [];
     this.lastEntityState.clear();
     this.trackedEntities.clear();
     this.entityLayerMap = new WeakMap<GameEntity, LayerType>();
@@ -213,20 +201,11 @@ export class RecorderService {
       }
     }
 
-    // Collect events from event queues
-    const events: GameEvent[] = [];
-    const eventProcessor = container.get(EventProcessorService);
-    const localQueue = eventProcessor.getLocalQueue();
-    const remoteQueue = eventProcessor.getRemoteQueue();
-
-    events.push(...localQueue.getEvents());
-    events.push(...remoteQueue.getEvents());
-
     // Record the frame
-    this.recordFrame(entities, events);
+    this.recordFrame(entities);
   }
 
-  public recordFrame(entities: GameEntity[], events: GameEvent[]): void {
+  public recordFrame(entities: GameEntity[]): void {
     if (!this.recording || this.paused) {
       return;
     }
@@ -243,9 +222,6 @@ export class RecorderService {
 
     // Record transform and state deltas
     this.recordDeltas(entities, timestamp);
-
-    // Record events
-    this.recordEvents(events, timestamp);
 
     this.frameCount++;
   }
@@ -475,38 +451,13 @@ export class RecorderService {
     }
   }
 
-  private recordEvents(events: GameEvent[], _timestamp: number): void {
-    for (const event of events) {
-      this.recordedEvents.push({
-        type: event.getType(),
-        consumed: event.isConsumed(),
-        data: event.getData(),
-      });
-    }
-  }
-
   private getEntityId(entity: GameEntity): string {
     // Check cache first
     const cachedId = this.entityIdCache.get(entity);
     if (cachedId) return cachedId;
 
-    // Try to get a unique ID from the entity
-    const anyEntity = entity as unknown as {
-      id?: string;
-      getId?: () => string;
-    };
-
-    let id: string;
-    if (anyEntity.id) {
-      id = anyEntity.id;
-    } else if (anyEntity.getId) {
-      id = anyEntity.getId();
-    } else {
-      // Generate a stable fallback ID and cache it
-      id = `${entity.constructor.name}_${Math.random()
-        .toString(36)
-        .substring(2, 11)}`;
-    }
+    // Use entity's getId() method (always returns a string via BaseGameEntity)
+    const id = entity.getId();
 
     // Cache the ID for this entity instance
     this.entityIdCache.set(entity, id);
@@ -514,68 +465,68 @@ export class RecorderService {
   }
 
   public exportRecording(): Blob {
-    const writer = BinaryWriter.build(1024 * 1024); // Start with 1MB buffer
+    const binaryWriter = BinaryWriter.build(1024 * 1024); // Start with 1MB buffer
 
     // Write magic number "HREC" (Hood Recording)
-    writer.fixedLengthString("HREC", 4);
+    binaryWriter.fixedLengthString("HREC", 4);
 
     // Write version 1.0 for delta format
-    writer.unsignedInt8(1);
-    writer.unsignedInt8(0);
+    binaryWriter.unsignedInt8(1);
+    binaryWriter.unsignedInt8(0);
 
     const endTimeValue = this.endTime || Date.now();
 
     // Write metadata
-    writer.float64(this.startTime);
-    writer.float64(endTimeValue);
-    writer.unsignedInt32(this.frameCount);
-    writer.unsignedInt16(RECORDING_FPS);
-    writer.variableLengthString(this.recordedSceneId);
+    binaryWriter.float64(this.startTime);
+    binaryWriter.float64(endTimeValue);
+    binaryWriter.unsignedInt32(this.frameCount);
+    binaryWriter.unsignedInt16(RECORDING_FPS);
+    binaryWriter.variableLengthString(this.recordedSceneId);
 
     // Write initial snapshot count
-    writer.unsignedInt32(this.initialSnapshot.length);
+    binaryWriter.unsignedInt32(this.initialSnapshot.length);
     for (const snapshot of this.initialSnapshot) {
-      this.writeEntitySnapshot(writer, snapshot);
+      this.writeEntitySnapshot(binaryWriter, snapshot);
     }
 
     // Write spawn events
-    writer.unsignedInt32(this.spawnEvents.length);
+    binaryWriter.unsignedInt32(this.spawnEvents.length);
     for (const event of this.spawnEvents) {
-      writer.float64(event.timestamp);
-      writer.variableLengthString(event.id);
-      writer.variableLengthString(event.type);
-      writer.unsignedInt8(event.layer); // Write layer type (0 = UI, 1 = Scene)
-      writer.float32(event.x);
-      writer.float32(event.y);
-      writer.float32(event.width);
-      writer.float32(event.height);
-      writer.boolean(event.angle !== undefined);
+      binaryWriter.float64(event.timestamp);
+      binaryWriter.variableLengthString(event.id);
+      binaryWriter.variableLengthString(event.type);
+      binaryWriter.unsignedInt8(event.layer); // Write layer type (0 = UI, 1 = Scene)
+      binaryWriter.float32(event.x);
+      binaryWriter.float32(event.y);
+      binaryWriter.float32(event.width);
+      binaryWriter.float32(event.height);
+      binaryWriter.boolean(event.angle !== undefined);
       if (event.angle !== undefined) {
-        writer.float32(event.angle);
+        binaryWriter.float32(event.angle);
       }
       // Write serialized data if available
-      writer.boolean(event.serializedData !== undefined);
+      binaryWriter.boolean(event.serializedData !== undefined);
       if (event.serializedData) {
         const dataView = new Uint8Array(event.serializedData);
-        writer.unsignedInt32(dataView.length);
+        binaryWriter.unsignedInt32(dataView.length);
         for (let i = 0; i < dataView.length; i++) {
-          writer.unsignedInt8(dataView[i]);
+          binaryWriter.unsignedInt8(dataView[i]);
         }
       }
     }
 
     // Write despawn events
-    writer.unsignedInt32(this.despawnEvents.length);
+    binaryWriter.unsignedInt32(this.despawnEvents.length);
     for (const event of this.despawnEvents) {
-      writer.float64(event.timestamp);
-      writer.variableLengthString(event.id);
+      binaryWriter.float64(event.timestamp);
+      binaryWriter.variableLengthString(event.id);
     }
 
     // Write transform deltas
-    writer.unsignedInt32(this.transformDeltas.length);
+    binaryWriter.unsignedInt32(this.transformDeltas.length);
     for (const delta of this.transformDeltas) {
-      writer.float64(delta.timestamp);
-      writer.variableLengthString(delta.id);
+      binaryWriter.float64(delta.timestamp);
+      binaryWriter.variableLengthString(delta.id);
 
       // Write flags to indicate which fields are present
       let flags = 0;
@@ -584,73 +535,65 @@ export class RecorderService {
       if (delta.angle !== undefined) flags |= 0x04;
       if (delta.velocityX !== undefined) flags |= 0x08;
       if (delta.velocityY !== undefined) flags |= 0x10;
-      writer.unsignedInt8(flags);
+      binaryWriter.unsignedInt8(flags);
 
-      if (delta.x !== undefined) writer.float32(delta.x);
-      if (delta.y !== undefined) writer.float32(delta.y);
-      if (delta.angle !== undefined) writer.float32(delta.angle);
-      if (delta.velocityX !== undefined) writer.float32(delta.velocityX);
-      if (delta.velocityY !== undefined) writer.float32(delta.velocityY);
+      if (delta.x !== undefined) binaryWriter.float32(delta.x);
+      if (delta.y !== undefined) binaryWriter.float32(delta.y);
+      if (delta.angle !== undefined) binaryWriter.float32(delta.angle);
+      if (delta.velocityX !== undefined) binaryWriter.float32(delta.velocityX);
+      if (delta.velocityY !== undefined) binaryWriter.float32(delta.velocityY);
     }
 
     // Write state deltas
-    writer.unsignedInt32(this.stateDeltas.length);
+    binaryWriter.unsignedInt32(this.stateDeltas.length);
     for (const delta of this.stateDeltas) {
-      writer.float64(delta.timestamp);
-      writer.variableLengthString(delta.id);
+      binaryWriter.float64(delta.timestamp);
+      binaryWriter.variableLengthString(delta.id);
       // Write serialized data
       const dataView = new Uint8Array(delta.serializedData);
-      writer.unsignedInt32(dataView.length);
+      binaryWriter.unsignedInt32(dataView.length);
       for (let i = 0; i < dataView.length; i++) {
-        writer.unsignedInt8(dataView[i]);
+        binaryWriter.unsignedInt8(dataView[i]);
       }
     }
 
-    // Write events
-    writer.unsignedInt32(this.recordedEvents.length);
-    for (const event of this.recordedEvents) {
-      writer.unsignedInt16(event.type);
-      writer.boolean(event.consumed);
-      writer.variableLengthString(JSON.stringify(event.data));
-    }
-
-    const buffer = writer.toArrayBuffer();
+    const buffer = binaryWriter.toArrayBuffer();
     return new Blob([buffer], { type: "application/octet-stream" });
   }
 
   private writeEntitySnapshot(
-    writer: BinaryWriter,
+    binaryWriter: BinaryWriter,
     snapshot: EntitySnapshot
   ): void {
-    writer.variableLengthString(snapshot.id);
-    writer.variableLengthString(snapshot.type);
-    writer.unsignedInt8(snapshot.layer); // Write layer type (0 = UI, 1 = Scene)
-    writer.float32(snapshot.x);
-    writer.float32(snapshot.y);
-    writer.float32(snapshot.width);
-    writer.float32(snapshot.height);
-    writer.boolean(snapshot.angle !== undefined);
+    binaryWriter.variableLengthString(snapshot.id);
+    binaryWriter.variableLengthString(snapshot.type);
+    binaryWriter.unsignedInt8(snapshot.layer); // Write layer type (0 = UI, 1 = Scene)
+    binaryWriter.float32(snapshot.x);
+    binaryWriter.float32(snapshot.y);
+    binaryWriter.float32(snapshot.width);
+    binaryWriter.float32(snapshot.height);
+    binaryWriter.boolean(snapshot.angle !== undefined);
     if (snapshot.angle !== undefined) {
-      writer.float32(snapshot.angle);
+      binaryWriter.float32(snapshot.angle);
     }
-    writer.boolean(snapshot.visible);
-    writer.float32(snapshot.opacity);
-    writer.boolean(snapshot.velocityX !== undefined);
+    binaryWriter.boolean(snapshot.visible);
+    binaryWriter.float32(snapshot.opacity);
+    binaryWriter.boolean(snapshot.velocityX !== undefined);
     if (snapshot.velocityX !== undefined) {
-      writer.float32(snapshot.velocityX);
+      binaryWriter.float32(snapshot.velocityX);
     }
-    writer.boolean(snapshot.velocityY !== undefined);
+    binaryWriter.boolean(snapshot.velocityY !== undefined);
     if (snapshot.velocityY !== undefined) {
-      writer.float32(snapshot.velocityY);
+      binaryWriter.float32(snapshot.velocityY);
     }
 
     // Write serialized data if available (from entity's getReplayState() method)
-    writer.boolean(snapshot.serializedData !== undefined);
+    binaryWriter.boolean(snapshot.serializedData !== undefined);
     if (snapshot.serializedData) {
       const dataView = new Uint8Array(snapshot.serializedData);
-      writer.unsignedInt32(dataView.length);
+      binaryWriter.unsignedInt32(dataView.length);
       for (let i = 0; i < dataView.length; i++) {
-        writer.unsignedInt8(dataView[i]);
+        binaryWriter.unsignedInt8(dataView[i]);
       }
     }
   }
@@ -679,7 +622,6 @@ export class RecorderService {
     this.despawnEvents = [];
     this.transformDeltas = [];
     this.stateDeltas = [];
-    this.recordedEvents = [];
     this.lastEntityState.clear();
     this.trackedEntities.clear();
     this.entityLayerMap = new WeakMap<GameEntity, LayerType>();

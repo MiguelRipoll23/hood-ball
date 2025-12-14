@@ -1,17 +1,39 @@
 import { EntityStateType } from "../enums/entity-state-type.js";
 import type { GameEntity } from "../models/game-entity.js";
 import type { DebugSettings } from "../models/debug-settings.js";
+import { EntityRegistry } from "../services/entity-registry.js";
 
 export class BaseGameEntity implements GameEntity {
   protected loaded: boolean = false;
   protected state: EntityStateType = EntityStateType.Active;
   protected removed: boolean = false;
   protected opacity: number = 1;
+  protected entityId: string;
 
   protected debugSettings: DebugSettings | null = null;
 
   constructor() {
+    // Generate unique ID using counter and constructor name
+    this.entityId = `${
+      this.constructor.name
+    }_${EntityRegistry.getNextEntityId()}`;
     console.log(`${this.constructor.name} created`);
+  }
+
+  /**
+   * Returns the unique identifier for this entity.
+   * Override this method in subclasses to provide custom ID logic.
+   * Returns the auto-generated ID by default.
+   */
+  public getId(): string {
+    return this.entityId;
+  }
+
+  /**
+   * Sets the entity ID. Useful for restoring entities during replay.
+   */
+  public setId(id: string): void {
+    this.entityId = id;
   }
 
   public load() {

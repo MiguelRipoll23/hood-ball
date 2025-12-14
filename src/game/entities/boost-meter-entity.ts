@@ -101,8 +101,13 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
     // Guard against empty or invalid buffers
-    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
-      console.warn("BoostMeterEntity: applyReplayState received empty buffer");
+    // Minimum size: 4 (float32) + 1 (boolean) = 5 bytes
+    if (!arrayBuffer || arrayBuffer.byteLength < 5) {
+      console.warn(
+        `BoostMeterEntity: applyReplayState received invalid buffer size: ${
+          arrayBuffer ? arrayBuffer.byteLength : 0
+        }`
+      );
       return;
     }
 

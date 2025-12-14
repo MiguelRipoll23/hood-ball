@@ -1,9 +1,11 @@
-import { EntityRegistry } from "../../engine/utils/entity-registry.js";
+import { EntityRegistry } from "../../engine/services/entity-registry.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { LocalCarEntity } from "../entities/local-car-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { NpcCarEntity } from "../entities/npc-car-entity.js";
 import { GoalEntity } from "../entities/goal-entity.js";
+import { GoalExplosionEntity } from "../entities/goal-explosion-entity.js";
+import { CarExplosionEntity } from "../entities/car-explosion-entity.js";
 import { BoostPadEntity } from "../entities/boost-pad-entity.js";
 import { ScoreboardEntity } from "../entities/scoreboard-entity.js";
 import { AlertEntity } from "../entities/alert-entity.js";
@@ -44,6 +46,14 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
   );
 
   EntityRegistry.register("GoalEntity", () => new GoalEntity(canvas));
+  EntityRegistry.register(
+    "GoalExplosionEntity",
+    () => new GoalExplosionEntity(canvas, 0, 0, 0)
+  );
+  EntityRegistry.register(
+    "CarExplosionEntity",
+    () => new CarExplosionEntity(0, 0)
+  );
 
   // Boost pads need index, but for replay we can use 0 as placeholder
   EntityRegistry.register("BoostPadEntity", () => new BoostPadEntity(0, 0, 0));

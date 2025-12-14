@@ -32,4 +32,43 @@ export class CameraService {
       context.translate(this.offsetX, this.offsetY);
     }
   }
+
+  /**
+   * Get camera shake state for recording
+   */
+  public getCameraState(): {
+    shakeDuration: number;
+    shakeElapsed: number;
+    magnitude: number;
+  } {
+    return {
+      shakeDuration: this.shakeDuration,
+      shakeElapsed: this.shakeElapsed,
+      magnitude: this.magnitude,
+    };
+  }
+
+  /**
+   * Set camera shake state for playback
+   */
+  public setCameraState(
+    shakeDuration: number,
+    shakeElapsed: number,
+    magnitude: number
+  ): void {
+    this.shakeDuration = shakeDuration;
+    this.shakeElapsed = shakeElapsed;
+    this.magnitude = magnitude;
+
+    // Recalculate offsets based on current state
+    if (this.shakeElapsed < this.shakeDuration) {
+      const progress =
+        (this.shakeDuration - this.shakeElapsed) / this.shakeDuration;
+      this.offsetX = (Math.random() * 2 - 1) * this.magnitude * progress;
+      this.offsetY = (Math.random() * 2 - 1) * this.magnitude * progress;
+    } else {
+      this.offsetX = 0;
+      this.offsetY = 0;
+    }
+  }
 }
