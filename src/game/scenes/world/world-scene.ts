@@ -119,12 +119,12 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointService = spawnPointService;
     this.chatService = chatService;
     this.matchActionsLogService = matchActionsLogService;
-    
+
     // Only clear if service exists (in replay mode, some services may be null)
     if (this.matchActionsLogService) {
       this.matchActionsLogService.clear();
     }
-    
+
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
@@ -132,7 +132,9 @@ export class WorldScene extends BaseCollidingGameScene {
   public override load(): void {
     // In replay mode, don't create any entities - they'll be spawned from recording
     if (this.isReplayMode) {
-      console.log("WorldScene loading in replay mode - skipping entity creation");
+      console.log(
+        "WorldScene loading in replay mode - skipping entity creation"
+      );
       const factory = new WorldEntityFactory(this.gameState, this.canvas);
       // Only create background
       factory.createBackground(this.worldEntities);
@@ -361,8 +363,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.toastEntity?.show(`<em>${player.getName()}</em> left`, 2);
 
     // Count only real players (excluding NPCs)
-    const allPlayers =
-      this.matchSessionService.getMatch()?.getPlayers() ?? [];
+    const allPlayers = this.matchSessionService.getMatch()?.getPlayers() ?? [];
     const realPlayersCount = allPlayers.filter((p) => !p.isNpc()).length;
 
     // If down to 1 real player, freeze match state
@@ -626,7 +627,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
-    
+
     // Only call clear() if matchActionsLogService is available (not null in replay mode)
     if (this.matchActionsLogService) {
       this.matchActionsLogService.clear();

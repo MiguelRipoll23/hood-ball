@@ -10,6 +10,7 @@ import type { GameEntity } from "../../models/game-entity.js";
 import { EntityRegistry } from "../../utils/entity-registry.js";
 import { GameState } from "../../models/game-state.js";
 import { SceneType } from "../../enums/scene-type.js";
+import { LayerType } from "../../enums/layer-type.js";
 import { container } from "../di-container.js";
 import { EventConsumerService } from "./event-consumer-service.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
@@ -36,7 +37,7 @@ export class RecordingPlayerService {
   private recordingData: DeltaRecordingData | null = null;
   private playbackState: PlaybackState = PlaybackState.Stopped;
   private playbackSpeed = 1.0;
-  
+
   // For delta playback
   private currentEntityStates = new Map<string, EntitySnapshot>();
   private spawnedEntities = new Map<string, GameEntity>(); // Track actual spawned entities
@@ -48,9 +49,7 @@ export class RecordingPlayerService {
   private nextTransformIndex = 0;
   private nextStateIndex = 0;
 
-  constructor(
-    private readonly gameState: GameState = inject(GameState)
-  ) {
+  constructor(private readonly gameState: GameState = inject(GameState)) {
     console.log("RecordingPlayerService initialized");
   }
 
@@ -69,7 +68,6 @@ export class RecordingPlayerService {
       reader.unsignedInt8(); // versionMajor
       reader.unsignedInt8(); // versionMinor
 
-
       // Read metadata
       const startTime = reader.float64();
       const endTime = reader.float64();
@@ -78,10 +76,16 @@ export class RecordingPlayerService {
       const sceneId = reader.variableLengthString();
 
       // Load delta format
-      await this.loadDeltaFormat(reader, startTime, endTime, totalFrames, fps, sceneId);
+      await this.loadDeltaFormat(
+        reader,
+        startTime,
+        endTime,
+        totalFrames,
+        fps,
+        sceneId
+      );
 
       this.playbackState = PlaybackState.Stopped;
-
     } catch (error) {
       console.error("Failed to load recording:", error);
       throw error;
@@ -110,13 +114,14 @@ export class RecordingPlayerService {
       const timestamp = reader.float64();
       const id = reader.variableLengthString();
       const type = reader.variableLengthString();
+      const layer = reader.unsignedInt8() as LayerType; // Read layer type
       const x = reader.float32();
       const y = reader.float32();
       const width = reader.float32();
       const height = reader.float32();
       const hasAngle = reader.boolean();
       const angle = hasAngle ? reader.float32() : undefined;
-      
+
       // Read serialized data if available
       const hasSerializedData = reader.boolean();
       let serializedData: ArrayBuffer | undefined = undefined;
@@ -128,8 +133,19 @@ export class RecordingPlayerService {
         }
         serializedData = dataBytes.buffer;
       }
-      
-      spawnEvents.push({ timestamp, id, type, x, y, width, height, angle, serializedData });
+
+      spawnEvents.push({
+        timestamp,
+        id,
+        type,
+        layer,
+        x,
+        y,
+        width,
+        height,
+        angle,
+        serializedData,
+      });
     }
 
     // Read despawn events
@@ -148,14 +164,14 @@ export class RecordingPlayerService {
       const timestamp = reader.float64();
       const id = reader.variableLengthString();
       const flags = reader.unsignedInt8();
-      
+
       const delta: EntityTransformDelta = { timestamp, id };
       if (flags & 0x01) delta.x = reader.float32();
       if (flags & 0x02) delta.y = reader.float32();
       if (flags & 0x04) delta.angle = reader.float32();
       if (flags & 0x08) delta.velocityX = reader.float32();
       if (flags & 0x10) delta.velocityY = reader.float32();
-      
+
       transformDeltas.push(delta);
     }
 
@@ -202,13 +218,12 @@ export class RecordingPlayerService {
       stateDeltas,
       events,
     };
-
-
   }
 
   private readEntitySnapshot(reader: BinaryReader): EntitySnapshot {
     const id = reader.variableLengthString();
     const type = reader.variableLengthString();
+    const layer = reader.unsignedInt8() as LayerType; // Read layer type
     const x = reader.float32();
     const y = reader.float32();
     const width = reader.float32();
@@ -221,7 +236,7 @@ export class RecordingPlayerService {
     const velocityX = hasVelocityX ? reader.float32() : undefined;
     const hasVelocityY = reader.boolean();
     const velocityY = hasVelocityY ? reader.float32() : undefined;
-    
+
     // Read serialized data if available
     const hasSerializedData = reader.boolean();
     let serializedData: ArrayBuffer | undefined = undefined;
@@ -233,8 +248,22 @@ export class RecordingPlayerService {
       }
       serializedData = dataBytes.buffer;
     }
-    
-    return { id, type, x, y, width, height, angle, visible, opacity, velocityX, velocityY, serializedData };
+
+    return {
+      id,
+      type,
+      layer,
+      x,
+      y,
+      width,
+      height,
+      angle,
+      visible,
+      opacity,
+      velocityX,
+      velocityY,
+      serializedData,
+    };
   }
 
   public async play(): Promise<void> {
@@ -248,26 +277,34 @@ export class RecordingPlayerService {
       return;
     }
 
-    // Load the recorded scene
-    await this.loadRecordedScene();
-
+    // Set state to Playing immediately so the game loop picks it up
+    // (Important: do this before async operations to avoid race conditions)
     this.playbackState = PlaybackState.Playing;
-    this.initializeDeltaPlayback();
-    
 
+    // Only load scene and initialize on first play (when stopped initially)
+    if (this.currentTime === 0 && !this.replayScene) {
+      // Load the recorded scene
+      await this.loadRecordedScene();
+      this.initializeDeltaPlayback();
+    }
+    // If resuming from pause or seeking, scene is already loaded
   }
 
   private async loadRecordedScene(): Promise<void> {
     if (!this.recordingData) return;
 
-    const sceneId = parseInt(this.recordingData.metadata.sceneId);
+    // If already loaded, don't reload
+    if (this.replayScene) {
+      console.log("Replay scene already loaded, skipping reload");
+      return;
+    }
 
+    const sceneId = parseInt(this.recordingData.metadata.sceneId);
 
     // Store current scene to restore later (DON'T dispose it - we want to restore it)
     this.previousScene = this.gameState.getGameFrame().getCurrentScene();
-    
-    if (this.previousScene) {
 
+    if (this.previousScene) {
       // Just clear it from GameFrame, but keep the scene intact for restoration
       this.gameState.getGameFrame().setCurrentScene(null as any);
     }
@@ -275,8 +312,10 @@ export class RecordingPlayerService {
     // Load the actual WorldScene for replay
     if (sceneId === SceneType.World) {
       // Dynamically import WorldScene to avoid circular dependencies
-      const { WorldScene } = await import("../../../game/scenes/world/world-scene.js");
-      
+      const { WorldScene } = await import(
+        "../../../game/scenes/world/world-scene.js"
+      );
+
       // Create WorldScene with all its dependencies in REPLAY MODE
       this.replayScene = new WorldScene(
         this.gameState,
@@ -293,50 +332,54 @@ export class RecordingPlayerService {
         null as any, // matchActionsLogService
         true // REPLAY MODE - don't create entities
       );
-      
+
       // Load the scene - it will skip entity creation due to replay mode
       this.replayScene.load();
-      
-
     } else {
       console.warn(`Scene type ${sceneId} not yet supported for replay`);
       return;
     }
-    
+
     // Set as current scene
     this.gameState.getGameFrame().setCurrentScene(this.replayScene);
-    
 
+    // Set scene opacity to 1 so it's visible during playback
+    this.replayScene.setOpacity(1);
   }
 
   private initializeDeltaPlayback(): void {
     if (!this.recordingData) return;
-    
+
+    // Clean up existing spawned entities before respawning
+    for (const entity of this.spawnedEntities.values()) {
+      entity.setRemoved(true);
+    }
+
     // Reset entity states to initial snapshot
     this.currentEntityStates.clear();
     this.spawnedEntities.clear();
-    
+
     // Spawn initial entities
     for (const snapshot of this.recordingData.initialSnapshot) {
       this.currentEntityStates.set(snapshot.id, { ...snapshot });
       this.spawnEntityFromSnapshot(snapshot);
     }
-    
+
     // Reset playback indices
     this.currentTime = 0;
     this.nextSpawnIndex = 0;
     this.nextDespawnIndex = 0;
     this.nextTransformIndex = 0;
     this.nextStateIndex = 0;
-    
-
   }
 
   private spawnEntityFromSnapshot(snapshot: EntitySnapshot): void {
     // Try to spawn entity via registry
     const entity = EntityRegistry.create(snapshot.type);
     if (!entity) {
-      console.warn(`Cannot spawn entity of type "${snapshot.type}" - not registered`);
+      console.warn(
+        `Cannot spawn entity of type "${snapshot.type}" - not registered`
+      );
       return;
     }
 
@@ -346,26 +389,42 @@ export class RecordingPlayerService {
     // Load the entity
     entity.load();
 
-    // Add to current scene
+    // Add to current scene in the correct layer
     const currentScene = this.gameState.getGameFrame().getCurrentScene();
     if (currentScene) {
-      currentScene.addEntityToSceneLayer(entity);
+      // Use layer from snapshot (stored during recording)
+      if (snapshot.layer === LayerType.UI) {
+        // Add to UI layer
+        const uiEntities = (currentScene as any).uiEntities;
+        if (uiEntities && Array.isArray(uiEntities)) {
+          uiEntities.push(entity);
+        } else {
+          console.warn(
+            `Scene doesn't have uiEntities array, falling back to world layer`
+          );
+          currentScene.addEntityToSceneLayer(entity);
+        }
+      } else {
+        // Add to world/scene layer
+        currentScene.addEntityToSceneLayer(entity);
+      }
     }
 
     // Track spawned entity
     this.spawnedEntities.set(snapshot.id, entity);
-    
-
   }
 
-  private applySnapshotToEntity(entity: GameEntity, snapshot: EntitySnapshot): void {
-    // If entity has serialized data, use synchronize() method
+  private applySnapshotToEntity(
+    entity: GameEntity,
+    snapshot: EntitySnapshot
+  ): void {
+    // If entity has serialized data, use applyReplayState() method
     if (snapshot.serializedData) {
-      entity.synchronize(snapshot.serializedData);
-      // Note: synchronize() should handle all entity-specific state
+      entity.applyReplayState(snapshot.serializedData);
+      // Note: applyReplayState() should handle all entity-specific state
       // We still apply basic transform properties in case they're not in serialized data
     }
-    
+
     // Apply basic transform properties (position, size, angle)
     const moveable = entity as {
       setX?: (x: number) => void;
@@ -378,16 +437,16 @@ export class RecordingPlayerService {
 
     if (moveable.setX) moveable.setX(snapshot.x);
     if (moveable.setY) moveable.setY(snapshot.y);
-    
+
     // Apply angle - try setter first, then direct property
     if (snapshot.angle !== undefined) {
       if (moveable.setAngle) {
         moveable.setAngle(snapshot.angle);
-      } else if ('angle' in moveable) {
+      } else if ("angle" in moveable) {
         moveable.angle = snapshot.angle;
       }
     }
-    
+
     if (moveable.setWidth) moveable.setWidth(snapshot.width);
     if (moveable.setHeight) moveable.setHeight(snapshot.height);
 
@@ -416,38 +475,33 @@ export class RecordingPlayerService {
     }
 
     this.playbackState = PlaybackState.Paused;
-
   }
 
   public stop(): void {
     this.playbackState = PlaybackState.Stopped;
     this.currentTime = 0;
-    
+
     // Clean up spawned entities
     for (const entity of this.spawnedEntities.values()) {
       entity.setRemoved(true);
     }
     this.spawnedEntities.clear();
-    
+
     // Exit replay scene if active
     if (this.replayScene) {
-
       this.replayScene.dispose();
       this.replayScene = null;
     }
-    
+
     // Restore previous scene
     if (this.previousScene) {
-
       // Resubscribe events if the scene has that method
-      if (typeof this.previousScene.resubscribeEvents === 'function') {
+      if (typeof this.previousScene.resubscribeEvents === "function") {
         this.previousScene.resubscribeEvents();
       }
       this.gameState.getGameFrame().setCurrentScene(this.previousScene);
       this.previousScene = null;
     }
-    
-
   }
 
   public seekToTime(timeMs: number): void {
@@ -459,7 +513,7 @@ export class RecordingPlayerService {
     // Reset to initial state and replay up to target time
     this.initializeDeltaPlayback();
     this.currentTime = timeMs;
-    
+
     // Apply all deltas up to this time
     this.applyDeltasUpToTime(timeMs);
   }
@@ -470,12 +524,14 @@ export class RecordingPlayerService {
     // Apply spawn events
     while (
       this.nextSpawnIndex < this.recordingData.spawnEvents.length &&
-      this.recordingData.spawnEvents[this.nextSpawnIndex].timestamp <= targetTime
+      this.recordingData.spawnEvents[this.nextSpawnIndex].timestamp <=
+        targetTime
     ) {
       const spawnEvent = this.recordingData.spawnEvents[this.nextSpawnIndex];
       const snapshot: EntitySnapshot = {
         id: spawnEvent.id,
         type: spawnEvent.type,
+        layer: spawnEvent.layer,
         x: spawnEvent.x,
         y: spawnEvent.y,
         width: spawnEvent.width,
@@ -486,35 +542,38 @@ export class RecordingPlayerService {
         serializedData: spawnEvent.serializedData,
       };
       this.currentEntityStates.set(spawnEvent.id, snapshot);
-      
+
       // Spawn actual entity
       this.spawnEntityFromSnapshot(snapshot);
-      
+
       this.nextSpawnIndex++;
     }
 
     // Apply despawn events
     while (
       this.nextDespawnIndex < this.recordingData.despawnEvents.length &&
-      this.recordingData.despawnEvents[this.nextDespawnIndex].timestamp <= targetTime
+      this.recordingData.despawnEvents[this.nextDespawnIndex].timestamp <=
+        targetTime
     ) {
-      const despawnEvent = this.recordingData.despawnEvents[this.nextDespawnIndex];
+      const despawnEvent =
+        this.recordingData.despawnEvents[this.nextDespawnIndex];
       this.currentEntityStates.delete(despawnEvent.id);
-      
+
       // Remove actual entity
       const entity = this.spawnedEntities.get(despawnEvent.id);
       if (entity) {
         entity.setRemoved(true);
         this.spawnedEntities.delete(despawnEvent.id);
       }
-      
+
       this.nextDespawnIndex++;
     }
 
     // Apply transform deltas to both state and actual entities
     while (
       this.nextTransformIndex < this.recordingData.transformDeltas.length &&
-      this.recordingData.transformDeltas[this.nextTransformIndex].timestamp <= targetTime
+      this.recordingData.transformDeltas[this.nextTransformIndex].timestamp <=
+        targetTime
     ) {
       const delta = this.recordingData.transformDeltas[this.nextTransformIndex];
       const entityState = this.currentEntityStates.get(delta.id);
@@ -522,9 +581,11 @@ export class RecordingPlayerService {
         if (delta.x !== undefined) entityState.x = delta.x;
         if (delta.y !== undefined) entityState.y = delta.y;
         if (delta.angle !== undefined) entityState.angle = delta.angle;
-        if (delta.velocityX !== undefined) entityState.velocityX = delta.velocityX;
-        if (delta.velocityY !== undefined) entityState.velocityY = delta.velocityY;
-        
+        if (delta.velocityX !== undefined)
+          entityState.velocityX = delta.velocityX;
+        if (delta.velocityY !== undefined)
+          entityState.velocityY = delta.velocityY;
+
         // Apply to actual entity
         const entity = this.spawnedEntities.get(delta.id);
         if (entity) {
@@ -537,16 +598,17 @@ export class RecordingPlayerService {
     // Apply state deltas
     while (
       this.nextStateIndex < this.recordingData.stateDeltas.length &&
-      this.recordingData.stateDeltas[this.nextStateIndex].timestamp <= targetTime
+      this.recordingData.stateDeltas[this.nextStateIndex].timestamp <=
+        targetTime
     ) {
       const delta = this.recordingData.stateDeltas[this.nextStateIndex];
       const entity = this.spawnedEntities.get(delta.id);
-      
+
       if (entity) {
-        // Apply serialized data using entity's synchronize() method
-        entity.synchronize(delta.serializedData);
+        // Apply serialized data using entity's applyReplayState() method
+        entity.applyReplayState(delta.serializedData);
       }
-      
+
       this.nextStateIndex++;
     }
   }
@@ -558,7 +620,6 @@ export class RecordingPlayerService {
     }
 
     this.playbackSpeed = speed;
-
   }
 
   public getPlaybackSpeed(): number {
@@ -610,7 +671,7 @@ export class RecordingPlayerService {
       console.warn("No recording loaded");
       return;
     }
-    
+
     // Convert frame index to time
     const fps = this.recordingData.metadata.fps || 60;
     const timeMs = (frameIndex / fps) * 1000;

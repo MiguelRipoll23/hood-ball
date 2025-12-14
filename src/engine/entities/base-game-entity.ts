@@ -66,21 +66,12 @@ export class BaseGameEntity implements GameEntity {
     this.debugSettings = debugSettings;
   }
 
-  /**
-   * Serialize entity state for recording/multiplayer.
-   * Override this method in entities that need to be recorded or synchronized.
-   * @returns ArrayBuffer with serialized data, or null if entity doesn't need serialization
-   */
-  public serialize(): ArrayBuffer | null {
+  public getReplayState(): ArrayBuffer | null {
+    // Base implementation returns null - override in subclasses that need it
     return null;
   }
 
-  /**
-   * Deserialize and apply entity state from recording/multiplayer data.
-   * Override this method in entities that need to be recorded or synchronized.
-   * @param _arrayBuffer The serialized data to apply
-   */
-  public synchronize(_arrayBuffer: ArrayBuffer): void {
+  public applyReplayState(_arrayBuffer: ArrayBuffer): void {
     // Base implementation does nothing - override in subclasses that need it
   }
 

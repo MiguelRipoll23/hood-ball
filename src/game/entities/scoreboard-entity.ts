@@ -114,6 +114,33 @@ export class ScoreboardEntity
     this.elapsedMilliseconds = binaryReader.unsignedInt16();
   }
 
+  public override getReplayState(): ArrayBuffer | null {
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt8(this.blueScore)
+      .unsignedInt8(this.redScore)
+      .boolean(this.active)
+      .unsignedInt32(this.durationMilliseconds)
+      .unsignedInt32(this.elapsedMilliseconds)
+      .toArrayBuffer();
+
+    return arrayBuffer;
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    this.blueScore = binaryReader.unsignedInt8();
+    this.redScore = binaryReader.unsignedInt8();
+    this.active = binaryReader.boolean();
+    this.durationMilliseconds = binaryReader.unsignedInt32();
+    this.elapsedMilliseconds = binaryReader.unsignedInt32();
+
+    // Recalculate remaining seconds based on elapsed and duration
+    this.remainingSeconds = Math.max(
+      0,
+      Math.ceil((this.durationMilliseconds - this.elapsedMilliseconds) / 1000)
+    );
+  }
+
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
       if (this.elapsedMilliseconds < this.durationMilliseconds) {

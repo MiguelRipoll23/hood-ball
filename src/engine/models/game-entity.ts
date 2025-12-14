@@ -16,10 +16,9 @@ export interface GameEntity {
 
   setDebugSettings(debugSettings: DebugSettings): void;
 
+  getReplayState(): ArrayBuffer | null;
+  applyReplayState(arrayBuffer: ArrayBuffer): void;
+
   update(deltaTimeStamp: DOMHighResTimeStamp): void;
   render(context: CanvasRenderingContext2D): void;
-  
-  // Recording/multiplayer serialization methods
-  serialize(): ArrayBuffer | null;
-  synchronize(arrayBuffer: ArrayBuffer): void;
 }

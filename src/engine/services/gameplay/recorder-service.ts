@@ -11,6 +11,7 @@ import type { EntitySpawnEvent } from "../../interfaces/recording/entity-spawn-e
 import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despawn-event-interface.js";
 import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
+import { LayerType } from "../../enums/layer-type.js";
 
 // Maximum recording duration in minutes
 const MAX_RECORDING_DURATION_MINUTES = 15;
@@ -73,17 +74,20 @@ export class RecorderService {
   private transformDeltas: EntityTransformDelta[] = [];
   private stateDeltas: EntityStateDelta[] = [];
   private recordedEvents: SerializedEvent[] = [];
-  
+
   // Track entity state for delta detection
-  private lastEntityState = new Map<string, {
-    x: number;
-    y: number;
-    angle?: number;
-    velocityX?: number;
-    velocityY?: number;
-    serializedData?: ArrayBuffer;
-  }>();
-  
+  private lastEntityState = new Map<
+    string,
+    {
+      x: number;
+      y: number;
+      angle?: number;
+      velocityX?: number;
+      velocityY?: number;
+      serializedData?: ArrayBuffer;
+    }
+  >();
+
   // Track which entities exist (for spawn/despawn detection)
   private trackedEntities = new Set<string>();
 
@@ -111,7 +115,7 @@ export class RecorderService {
     this.startTime = Date.now();
     this.autoRecording = auto;
     this.recordedSceneId = "";
-    
+
     // Reset delta recording structures
     this.initialSnapshot = [];
     this.spawnEvents = [];
@@ -121,6 +125,7 @@ export class RecorderService {
     this.recordedEvents = [];
     this.lastEntityState.clear();
     this.trackedEntities.clear();
+    this.entityLayerMap = new WeakMap<GameEntity, LayerType>();
   }
 
   public pauseRecording(): void {
@@ -154,12 +159,15 @@ export class RecorderService {
     return this.autoRecording;
   }
 
+  // Map to track which layer each entity belongs to
+  private entityLayerMap = new WeakMap<GameEntity, LayerType>();
+
   public recordFrameFromGameState(gameFrame: GameFrame): void {
     if (!this.recording || this.paused) {
       return;
     }
 
-    // Collect all entities from current scene
+    // Collect all entities from current scene with layer information
     const entities: GameEntity[] = [];
     const currentScene = gameFrame.getCurrentScene();
 
@@ -174,14 +182,34 @@ export class RecorderService {
         }
       }
 
-      entities.push(...currentScene.getUIEntities());
-      entities.push(...currentScene.getWorldEntities());
+      // Collect UI entities and track their layer
+      const uiEntities = currentScene.getUIEntities();
+      for (const entity of uiEntities) {
+        this.entityLayerMap.set(entity, LayerType.UI);
+        entities.push(entity);
+      }
+
+      // Collect world entities and track their layer
+      const worldEntities = currentScene.getWorldEntities();
+      for (const entity of worldEntities) {
+        this.entityLayerMap.set(entity, LayerType.Scene);
+        entities.push(entity);
+      }
 
       // Also collect entities from subscene if it exists
       const subScene = currentScene.getSceneManagerService()?.getCurrentScene();
       if (subScene) {
-        entities.push(...subScene.getUIEntities());
-        entities.push(...subScene.getWorldEntities());
+        const subUIEntities = subScene.getUIEntities();
+        for (const entity of subUIEntities) {
+          this.entityLayerMap.set(entity, LayerType.UI);
+          entities.push(entity);
+        }
+
+        const subWorldEntities = subScene.getWorldEntities();
+        for (const entity of subWorldEntities) {
+          this.entityLayerMap.set(entity, LayerType.Scene);
+          entities.push(entity);
+        }
       }
     }
 
@@ -204,18 +232,18 @@ export class RecorderService {
     }
 
     const timestamp = Date.now() - this.startTime;
-    
+
     // On first frame, capture initial snapshot of all entities
     if (this.frameCount === 0) {
       this.captureInitialSnapshot(entities);
     }
-    
+
     // Detect and record spawn/despawn events
     this.recordSpawnDespawnEvents(entities, timestamp);
-    
+
     // Record transform and state deltas
     this.recordDeltas(entities, timestamp);
-    
+
     // Record events
     this.recordEvents(events, timestamp);
 
@@ -226,7 +254,7 @@ export class RecorderService {
     for (const entity of entities) {
       const snapshot = this.createEntitySnapshot(entity);
       this.initialSnapshot.push(snapshot);
-      
+
       // Initialize tracking
       const id = this.getEntityId(entity);
       this.trackedEntities.add(id);
@@ -243,14 +271,23 @@ export class RecorderService {
 
   private createEntitySnapshot(entity: GameEntity): EntitySnapshot {
     const moveable = entity as BaseMoveableGameEntity;
-    const dynamic = entity as { vx?: number; vy?: number; getVX?: () => number; getVY?: () => number };
-    
-    // Try to serialize entity - returns null if entity doesn't implement serialization
-    const serializedData = entity.serialize();
-    
+    const dynamic = entity as {
+      vx?: number;
+      vy?: number;
+      getVX?: () => number;
+      getVY?: () => number;
+    };
+
+    // Get replay state from entity - returns null if entity doesn't implement it
+    const serializedData = entity.getReplayState();
+
+    // Get layer from entity layer map (defaults to Scene if not found)
+    const layer = this.entityLayerMap.get(entity) ?? LayerType.Scene;
+
     return {
       id: this.getEntityId(entity),
       type: entity.constructor.name,
+      layer,
       x: moveable.getX?.() ?? 0,
       y: moveable.getY?.() ?? 0,
       width: moveable.getWidth?.() ?? 0,
@@ -264,24 +301,36 @@ export class RecorderService {
     };
   }
 
-  private recordSpawnDespawnEvents(entities: GameEntity[], timestamp: number): void {
+  private recordSpawnDespawnEvents(
+    entities: GameEntity[],
+    timestamp: number
+  ): void {
     const currentEntityIds = new Set<string>();
-    
+
     // Check for spawns
     for (const entity of entities) {
       const id = this.getEntityId(entity);
       currentEntityIds.add(id);
-      
+
       if (!this.trackedEntities.has(id)) {
         // New entity spawned
         const moveable = entity as BaseMoveableGameEntity;
-        const dynamic = entity as { vx?: number; vy?: number; getVX?: () => number; getVY?: () => number };
-        const serializedData = entity.serialize();
-        
+        const dynamic = entity as {
+          vx?: number;
+          vy?: number;
+          getVX?: () => number;
+          getVY?: () => number;
+        };
+        const serializedData = entity.getReplayState();
+
+        // Get layer from entity layer map (defaults to Scene if not found)
+        const layer = this.entityLayerMap.get(entity) ?? LayerType.Scene;
+
         const spawnEvent: EntitySpawnEvent = {
           timestamp,
           id,
           type: entity.constructor.name,
+          layer,
           x: moveable.getX?.() ?? 0,
           y: moveable.getY?.() ?? 0,
           width: moveable.getWidth?.() ?? 0,
@@ -291,7 +340,7 @@ export class RecorderService {
         };
         this.spawnEvents.push(spawnEvent);
         this.trackedEntities.add(id);
-        
+
         // Initialize state tracking
         this.lastEntityState.set(id, {
           x: spawnEvent.x,
@@ -303,7 +352,7 @@ export class RecorderService {
         });
       }
     }
-    
+
     // Check for despawns
     for (const id of this.trackedEntities) {
       if (!currentEntityIds.has(id)) {
@@ -322,69 +371,86 @@ export class RecorderService {
     for (const entity of entities) {
       const id = this.getEntityId(entity);
       const lastState = this.lastEntityState.get(id);
-      
+
       if (!lastState) {
         continue; // Entity not tracked yet
       }
-      
+
       const moveable = entity as BaseMoveableGameEntity;
-      const dynamic = entity as { vx?: number; vy?: number; getVX?: () => number; getVY?: () => number };
+      const dynamic = entity as {
+        vx?: number;
+        vy?: number;
+        getVX?: () => number;
+        getVY?: () => number;
+      };
       const currentX = moveable.getX?.() ?? 0;
       const currentY = moveable.getY?.() ?? 0;
       const currentAngle = moveable.getAngle?.();
       const currentVx = dynamic.getVX?.() ?? dynamic.vx;
       const currentVy = dynamic.getVY?.() ?? dynamic.vy;
-      
+
       // Check for transform changes
       const transformDelta: EntityTransformDelta = { timestamp, id };
       let hasTransformChange = false;
-      
+
       if (Math.abs(currentX - lastState.x) > POSITION_DELTA_THRESHOLD) {
         transformDelta.x = currentX;
         lastState.x = currentX;
         hasTransformChange = true;
       }
-      
+
       if (Math.abs(currentY - lastState.y) > POSITION_DELTA_THRESHOLD) {
         transformDelta.y = currentY;
         lastState.y = currentY;
         hasTransformChange = true;
       }
-      
-      if (currentAngle !== undefined && lastState.angle !== undefined &&
-          Math.abs(currentAngle - lastState.angle) > ANGLE_DELTA_THRESHOLD) {
+
+      if (
+        currentAngle !== undefined &&
+        lastState.angle !== undefined &&
+        Math.abs(currentAngle - lastState.angle) > ANGLE_DELTA_THRESHOLD
+      ) {
         transformDelta.angle = currentAngle;
         lastState.angle = currentAngle;
         hasTransformChange = true;
       }
-      
-      if (currentVx !== undefined && lastState.velocityX !== undefined &&
-          Math.abs(currentVx - lastState.velocityX) > VELOCITY_DELTA_THRESHOLD) {
+
+      if (
+        currentVx !== undefined &&
+        lastState.velocityX !== undefined &&
+        Math.abs(currentVx - lastState.velocityX) > VELOCITY_DELTA_THRESHOLD
+      ) {
         transformDelta.velocityX = currentVx;
         lastState.velocityX = currentVx;
         hasTransformChange = true;
       }
-      
-      if (currentVy !== undefined && lastState.velocityY !== undefined &&
-          Math.abs(currentVy - lastState.velocityY) > VELOCITY_DELTA_THRESHOLD) {
+
+      if (
+        currentVy !== undefined &&
+        lastState.velocityY !== undefined &&
+        Math.abs(currentVy - lastState.velocityY) > VELOCITY_DELTA_THRESHOLD
+      ) {
         transformDelta.velocityY = currentVy;
         lastState.velocityY = currentVy;
         hasTransformChange = true;
       }
-      
+
       if (hasTransformChange) {
         this.transformDeltas.push(transformDelta);
       }
-      
-      // Check for entity-specific state changes using serialize()
-      const serializedData = entity.serialize();
+
+      // Check for entity-specific state changes using getReplayState()
+      const serializedData = entity.getReplayState();
       if (serializedData !== null) {
         // Entity implements custom serialization - check if state changed
         const lastSerializedData = lastState.serializedData;
-        
+
         // Compare serialized data to detect changes
         let hasStateChange = false;
-        if (!lastSerializedData || lastSerializedData.byteLength !== serializedData.byteLength) {
+        if (
+          !lastSerializedData ||
+          lastSerializedData.byteLength !== serializedData.byteLength
+        ) {
           hasStateChange = true;
         } else {
           const lastView = new Uint8Array(lastSerializedData);
@@ -396,7 +462,7 @@ export class RecorderService {
             }
           }
         }
-        
+
         if (hasStateChange) {
           this.stateDeltas.push({
             timestamp,
@@ -447,8 +513,6 @@ export class RecorderService {
     return id;
   }
 
-
-
   public exportRecording(): Blob {
     const writer = BinaryWriter.build(1024 * 1024); // Start with 1MB buffer
 
@@ -480,6 +544,7 @@ export class RecorderService {
       writer.float64(event.timestamp);
       writer.variableLengthString(event.id);
       writer.variableLengthString(event.type);
+      writer.unsignedInt8(event.layer); // Write layer type (0 = UI, 1 = Scene)
       writer.float32(event.x);
       writer.float32(event.y);
       writer.float32(event.width);
@@ -511,7 +576,7 @@ export class RecorderService {
     for (const delta of this.transformDeltas) {
       writer.float64(delta.timestamp);
       writer.variableLengthString(delta.id);
-      
+
       // Write flags to indicate which fields are present
       let flags = 0;
       if (delta.x !== undefined) flags |= 0x01;
@@ -520,7 +585,7 @@ export class RecorderService {
       if (delta.velocityX !== undefined) flags |= 0x08;
       if (delta.velocityY !== undefined) flags |= 0x10;
       writer.unsignedInt8(flags);
-      
+
       if (delta.x !== undefined) writer.float32(delta.x);
       if (delta.y !== undefined) writer.float32(delta.y);
       if (delta.angle !== undefined) writer.float32(delta.angle);
@@ -553,9 +618,13 @@ export class RecorderService {
     return new Blob([buffer], { type: "application/octet-stream" });
   }
 
-  private writeEntitySnapshot(writer: BinaryWriter, snapshot: EntitySnapshot): void {
+  private writeEntitySnapshot(
+    writer: BinaryWriter,
+    snapshot: EntitySnapshot
+  ): void {
     writer.variableLengthString(snapshot.id);
     writer.variableLengthString(snapshot.type);
+    writer.unsignedInt8(snapshot.layer); // Write layer type (0 = UI, 1 = Scene)
     writer.float32(snapshot.x);
     writer.float32(snapshot.y);
     writer.float32(snapshot.width);
@@ -574,8 +643,8 @@ export class RecorderService {
     if (snapshot.velocityY !== undefined) {
       writer.float32(snapshot.velocityY);
     }
-    
-    // Write serialized data if available (from entity's serialize() method)
+
+    // Write serialized data if available (from entity's getReplayState() method)
     writer.boolean(snapshot.serializedData !== undefined);
     if (snapshot.serializedData) {
       const dataView = new Uint8Array(snapshot.serializedData);
@@ -585,8 +654,6 @@ export class RecorderService {
       }
     }
   }
-
-
 
   public downloadRecording(filename?: string): void {
     const blob = this.exportRecording();
@@ -605,7 +672,7 @@ export class RecorderService {
     this.endTime = 0;
     this.recordedSceneId = "";
     this.entityIdCache = new WeakMap<GameEntity, string>();
-    
+
     // Clear delta recording structures
     this.initialSnapshot = [];
     this.spawnEvents = [];
@@ -615,6 +682,7 @@ export class RecorderService {
     this.recordedEvents = [];
     this.lastEntityState.clear();
     this.trackedEntities.clear();
+    this.entityLayerMap = new WeakMap<GameEntity, LayerType>();
   }
 
   public getFrameCount(): number {

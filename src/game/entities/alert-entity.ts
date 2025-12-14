@@ -4,6 +4,8 @@ import {
 } from "../constants/colors-constants.js";
 import { TimerService } from "../../engine/services/gameplay/timer-service.js";
 import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 
 export class AlertEntity
@@ -97,6 +99,61 @@ export class AlertEntity
     this.timer.start();
 
     return this.timer;
+  }
+
+  public override getReplayState(): ArrayBuffer | null {
+    // Capture alert visual state for replay
+    const writer = BinaryWriter.build();
+    
+    // Store number of text lines
+    writer.unsignedInt8(this.textLines.length);
+    
+    // Store each text line and its color
+    for (let i = 0; i < this.textLines.length; i++) {
+      writer.variableLengthString(this.textLines[i] ?? "");
+      writer.variableLengthString(this.lineColors[i] ?? "white");
+    }
+    
+    // Store visual properties
+    writer.float32(this.opacity);
+    writer.float32(this.scale);
+    writer.unsignedInt8(this.fontSize);
+    
+    return writer.toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    
+    // Read number of text lines
+    const lineCount = reader.unsignedInt8();
+    
+    // Read text lines and colors
+    const textLines: string[] = [];
+    const lineColors: string[] = [];
+    
+    for (let i = 0; i < lineCount; i++) {
+      textLines.push(reader.variableLengthString());
+      lineColors.push(reader.variableLengthString());
+    }
+    
+    this.textLines = textLines;
+    this.lineColors = lineColors;
+    
+    // Update base color from first line color
+    const baseColor = lineColors[0] ?? "white";
+    if (baseColor === "blue") {
+      this.color = BLUE_TEAM_COLOR;
+    } else if (baseColor === "red") {
+      this.color = RED_TEAM_COLOR;
+    } else {
+      this.color = baseColor;
+    }
+    
+    // Read and apply visual properties
+    this.opacity = reader.float32();
+    this.scale = reader.float32();
+    this.fontSize = reader.unsignedInt8();
   }
 
   private setTransformOrigin(context: CanvasRenderingContext2D): void {

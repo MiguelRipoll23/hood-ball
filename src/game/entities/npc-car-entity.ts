@@ -23,7 +23,7 @@ export class NpcCarEntity extends CarEntity {
     y: number,
     angle: number,
     canvas: HTMLCanvasElement,
-    private readonly ballEntity: BallEntity,
+    private readonly ballEntity?: BallEntity,
     spawnPointIndex: number = -1
   ) {
     super(x, y, angle, true); // remote=true to use red car
@@ -59,12 +59,15 @@ export class NpcCarEntity extends CarEntity {
       return;
     }
 
-    // Only update AI when active (after countdown)
-    this.aiUpdateTimer += deltaTimeStamp;
+    // Skip AI during replay (when ballEntity is undefined)
+    if (this.ballEntity) {
+      // Only update AI when active (after countdown)
+      this.aiUpdateTimer += deltaTimeStamp;
 
-    if (this.aiUpdateTimer >= this.AI_UPDATE_INTERVAL) {
-      this.aiUpdateTimer = 0;
-      this.updateAI(deltaTimeStamp);
+      if (this.aiUpdateTimer >= this.AI_UPDATE_INTERVAL) {
+        this.aiUpdateTimer = 0;
+        this.updateAI(deltaTimeStamp);
+      }
     }
 
     // Call parent update for movement, boost, etc.

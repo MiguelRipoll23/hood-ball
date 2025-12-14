@@ -1,3 +1,5 @@
+import { LayerType } from "../../enums/layer-type.js";
+
 /**
  * Represents a complete snapshot of an entity's state
  * Used for initial state capture and as reference points
@@ -5,6 +7,7 @@
 export interface EntitySnapshot {
   id: string;
   type: string;
+  layer: LayerType; // UI or Scene layer
   x: number;
   y: number;
   width: number;
@@ -14,6 +17,6 @@ export interface EntitySnapshot {
   opacity: number;
   velocityX?: number;
   velocityY?: number;
-  // Serialized data from entity's serialize() method (if entity implements it)
+  // Serialized data from entity's getReplayState() method (if entity implements it)
   serializedData?: ArrayBuffer;
 }

@@ -179,6 +179,31 @@ export class BallEntity
     this.updateHitbox();
   }
 
+  public override getReplayState(): ArrayBuffer | null {
+    const arrayBuffer = BinaryWriter.build()
+      .unsignedInt16(this.x)
+      .unsignedInt16(this.y)
+      .signedInt16(this.vx)
+      .signedInt16(this.vy)
+      .toArrayBuffer();
+
+    return arrayBuffer;
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+
+    const newX = binaryReader.unsignedInt16();
+    const newY = binaryReader.unsignedInt16();
+
+    this.x = newX;
+    this.y = newY;
+    this.vx = binaryReader.signedInt16();
+    this.vy = binaryReader.signedInt16();
+
+    this.updateHitbox();
+  }
+
   private setSyncableValues() {
     this.setId("94c58aa041c34b22825a15a3834be240");
     this.setTypeId(EntityType.Ball);

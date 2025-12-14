@@ -10,7 +10,7 @@ import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatButtonEntity } from "./chat-button-entity.js";
 
 export class LocalCarEntity extends CarEntity {
-  private readonly joystickEntity: JoystickEntity;
+  private readonly joystickEntity: JoystickEntity | null;
   private active = true;
   private boostMeterEntity: BoostMeterEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
@@ -20,16 +20,16 @@ export class LocalCarEntity extends CarEntity {
     y: number,
     angle: number,
     protected readonly canvas: HTMLCanvasElement,
-    protected gamePointer: GamePointerContract,
-    protected gameKeyboard: GameKeyboardContract,
-    protected gameGamepad: GameGamepadContract
+    protected gamePointer?: GamePointerContract,
+    protected gameKeyboard?: GameKeyboardContract,
+    protected gameGamepad?: GameGamepadContract
   ) {
     super(x, y, angle);
     this.gamePointer = gamePointer;
     this.gameKeyboard = gameKeyboard;
     this.gameGamepad = gameGamepad;
     this.setSyncableValues();
-    this.joystickEntity = new JoystickEntity(gamePointer);
+    this.joystickEntity = gamePointer ? new JoystickEntity(gamePointer) : null;
   }
 
   public override mustSync(): boolean {
@@ -45,7 +45,7 @@ export class LocalCarEntity extends CarEntity {
     this.active = active;
   }
 
-  public getJoystickEntity(): JoystickEntity {
+  public getJoystickEntity(): JoystickEntity | null {
     return this.joystickEntity;
   }
 
@@ -62,6 +62,10 @@ export class LocalCarEntity extends CarEntity {
   }
 
   private canProcessInput(): boolean {
+    // Skip input processing during replay (when input handlers are undefined)
+    if (!this.gamePointer || !this.gameKeyboard || !this.gameGamepad) {
+      return false;
+    }
     const isChatActive = this.chatButtonEntity?.isInputVisible() ?? false;
     return this.active && !isChatActive;
   }
