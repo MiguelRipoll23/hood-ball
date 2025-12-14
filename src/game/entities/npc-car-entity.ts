@@ -261,9 +261,8 @@ export class NpcCarEntity extends CarEntity {
     }
 
     try {
-      // First apply parent state (all except last boolean for active flag)
-      // The parent state should be: playerName (variable) + carType (1) + networkData (10)
-      // We need to calculate where parent state ends and NPC state begins
+      // The buffer contains: parent state (variable length) + active flag (1 byte)
+      // We need to read the parent state first, then the active flag
       
       // Read the parent state first by creating a view of all but the last byte
       const parentStateLength = arrayBuffer.byteLength - 1; // Last 1 byte is active flag
@@ -283,9 +282,11 @@ export class NpcCarEntity extends CarEntity {
         arrayBuffer.byteLength,
         error
       );
-      // Fallback: just try to apply parent state
+      // Fallback: try to apply as parent state only (old recordings without NPC flag)
       try {
         super.applyReplayState(arrayBuffer);
+        // Set active to false by default for old recordings
+        this.active = false;
       } catch (fallbackError) {
         console.error("NpcCarEntity: Fallback also failed:", fallbackError);
       }
