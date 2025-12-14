@@ -13,7 +13,7 @@ import { injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../interfaces/network/webrtc-peer-interface.js";
 
 export type EventSubscription = {
-  eventType: EventType;
+  eventType: number;
   eventCallback: (data: unknown) => void;
 };
 
