@@ -292,6 +292,8 @@ export class NpcCarEntity extends CarEntity {
         this.active = false;
       } catch (fallbackError) {
         console.error("NpcCarEntity: Fallback also failed:", fallbackError);
+        // Set to safe defaults to prevent further errors
+        this.active = false;
       }
     }
   }
