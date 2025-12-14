@@ -91,6 +91,8 @@ export class NpcCarEntity extends CarEntity {
   private boostPads: Array<{ x: number; y: number; consumed: boolean }> = [];
 
   private updateAI(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (!this.ballEntity) return;
+
     let targetX: number;
     let targetY: number;
 
@@ -240,13 +242,13 @@ export class NpcCarEntity extends CarEntity {
     }
 
     const writer = BinaryWriter.build();
-    
+
     // First, write all the parent state bytes efficiently
     writer.arrayBuffer(parentState);
-    
+
     // Then add NPC-specific state: active flag
     writer.boolean(this.active);
-    
+
     return writer.toArrayBuffer();
   }
 
@@ -260,7 +262,7 @@ export class NpcCarEntity extends CarEntity {
     try {
       // The buffer should contain: parent state (variable length) + active flag (1 byte)
       // Minimum valid buffer size is parent state + 1 byte for active flag
-      
+
       // If buffer is too small to contain active flag, treat as old format (parent state only)
       if (arrayBuffer.byteLength < 2) {
         // Buffer is too small to contain parent state + active flag
@@ -269,12 +271,12 @@ export class NpcCarEntity extends CarEntity {
         this.active = false; // Default to inactive for old recordings
         return;
       }
-      
+
       // Read the parent state first by creating a view of all but the last byte
       const parentStateLength = arrayBuffer.byteLength - 1; // Last 1 byte is active flag
       const parentState = arrayBuffer.slice(0, parentStateLength);
       super.applyReplayState(parentState);
-      
+
       // Read NPC-specific state: active flag (last byte)
       const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
       reader.seek(parentStateLength);

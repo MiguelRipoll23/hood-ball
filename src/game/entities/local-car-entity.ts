@@ -72,9 +72,9 @@ export class LocalCarEntity extends CarEntity {
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.canProcessInput()) {
-      if (this.gameGamepad.get()) {
+      if (this.gameGamepad!.get()) {
         this.handleGamepadControls(deltaTimeStamp);
-      } else if (this.gamePointer.isTouch()) {
+      } else if (this.gamePointer!.isTouch()) {
         this.handleTouchControls(deltaTimeStamp);
       } else {
         this.handleKeyboardControls(deltaTimeStamp);
@@ -102,7 +102,7 @@ export class LocalCarEntity extends CarEntity {
   }
 
   private handleTouchControls(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (!this.joystickEntity.isActive()) return;
+    if (!this.joystickEntity || !this.joystickEntity.isActive()) return;
 
     const magnitude = this.joystickEntity.getMagnitude();
     this.accelerate(magnitude, deltaTimeStamp);
@@ -117,6 +117,7 @@ export class LocalCarEntity extends CarEntity {
   }
 
   private handleKeyboardControls(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (!this.gameKeyboard) return;
     const pressedKeys = this.gameKeyboard.getPressedKeys();
 
     const isAccelerating = pressedKeys.has("ArrowUp") || pressedKeys.has("w");
@@ -141,6 +142,7 @@ export class LocalCarEntity extends CarEntity {
   }
 
   private handleGamepadControls(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (!this.gameGamepad) return;
     const gamepad = this.gameGamepad.get();
     if (!gamepad) return;
 
@@ -215,6 +217,8 @@ export class LocalCarEntity extends CarEntity {
   }
 
   private handleBoostInput(): void {
+    if (!this.gameKeyboard || !this.gamePointer || !this.gameGamepad) return;
+
     let activating = false;
     let attemptingWhileEmpty = false;
 

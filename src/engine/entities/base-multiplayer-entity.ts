@@ -86,15 +86,11 @@ export class BaseMultiplayerGameEntity
     this.setSyncReliably(true);
   }
 
-  // Override serialize() to return null by default
-  // Multiplayer entities that need recording should override this method
-  public serialize(): ArrayBuffer | null {
-    return null;
+  public serialize(): ArrayBuffer {
+    throw new Error("Method not implemented.");
   }
 
-  // Override synchronize() to do nothing by default
-  // Multiplayer entities that need recording should override this method
   public synchronize(_arrayBuffer: ArrayBuffer): void {
-    // Base implementation does nothing - override in subclasses that need it
+    throw new Error("Method not implemented.");
   }
 }

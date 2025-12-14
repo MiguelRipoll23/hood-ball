@@ -77,12 +77,12 @@ export class WorldEntityFactory {
       ...spawnPointEntities
     );
 
-    uiEntities.push(
-      alertEntity,
-      localCarEntity.getJoystickEntity(),
-      boostMeterEntity,
-      helpEntity
-    );
+    uiEntities.push(alertEntity, boostMeterEntity, helpEntity);
+
+    const joystickEntity = localCarEntity.getJoystickEntity();
+    if (joystickEntity) {
+      uiEntities.push(joystickEntity);
+    }
 
     return {
       scoreboardEntity,
