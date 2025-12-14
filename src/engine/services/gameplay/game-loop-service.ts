@@ -182,7 +182,14 @@ export class GameLoopService {
     const isPlaybackActive = mediaPlayerEntity && 
       this.recordingPlayerService.getPlaybackState() !== PlaybackState.Stopped;
     
-    if (!isPlaybackActive) {
+    if (isPlaybackActive) {
+      // Playback mode: update replay scene and media player
+      // The RecordingPlayerService manages the replay scene
+      this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
+      
+      // Update media player (handles playback time and deltas)
+      mediaPlayerEntity?.update(deltaTimeStamp);
+    } else {
       // Normal mode: update scenes and record if active
       this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
       this.gameFrame.getNextScene()?.update(deltaTimeStamp);
@@ -198,9 +205,6 @@ export class GameLoopService {
     if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugEntity()?.update(deltaTimeStamp);
     }
-
-    // Update media player if active (handles playback updates)
-    mediaPlayerEntity?.update(deltaTimeStamp);
   }
 
   private render(): void {
