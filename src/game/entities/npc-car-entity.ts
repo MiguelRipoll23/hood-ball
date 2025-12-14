@@ -3,6 +3,8 @@ import { BallEntity } from "./ball-entity.js";
 import { GamePlayer } from "../models/game-player.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { EntityUtils } from "../../engine/utils/entity-utils.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export class NpcCarEntity extends CarEntity {
   private readonly AI_UPDATE_INTERVAL = 50; // Update AI decisions every 50ms
@@ -228,5 +230,71 @@ export class NpcCarEntity extends CarEntity {
       this.y + this.height / 2 + 54,
       `Boost: ${boostPercent}%`
     );
+  }
+
+  public override getReplayState(): ArrayBuffer | null {
+    // Call parent to get car state, then extend with NPC-specific state
+    const parentState = super.getReplayState();
+    if (!parentState) {
+      return null;
+    }
+
+    const writer = BinaryWriter.build();
+    
+    // First, write all the parent state bytes efficiently
+    writer.arrayBuffer(parentState);
+    
+    // Then add NPC-specific state: active flag
+    writer.boolean(this.active);
+    
+    return writer.toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    // Guard against empty or invalid buffers
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      console.warn("NpcCarEntity: applyReplayState received empty buffer");
+      return;
+    }
+
+    try {
+      // The buffer should contain: parent state (variable length) + active flag (1 byte)
+      // Minimum valid buffer size is parent state + 1 byte for active flag
+      
+      // If buffer is too small to contain active flag, treat as old format (parent state only)
+      if (arrayBuffer.byteLength < 2) {
+        // Buffer is too small to contain parent state + active flag
+        // Treat as old format and apply as parent state only
+        super.applyReplayState(arrayBuffer);
+        this.active = false; // Default to inactive for old recordings
+        return;
+      }
+      
+      // Read the parent state first by creating a view of all but the last byte
+      const parentStateLength = arrayBuffer.byteLength - 1; // Last 1 byte is active flag
+      const parentState = arrayBuffer.slice(0, parentStateLength);
+      super.applyReplayState(parentState);
+      
+      // Read NPC-specific state: active flag (last byte)
+      const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+      reader.seek(parentStateLength);
+      this.active = reader.boolean();
+    } catch (error) {
+      console.error(
+        "NpcCarEntity: Error applying replay state, buffer length:",
+        arrayBuffer.byteLength,
+        error
+      );
+      // Fallback: try to apply as parent state only (old recordings without NPC flag)
+      try {
+        super.applyReplayState(arrayBuffer);
+        // Set active to false by default for old recordings
+        this.active = false;
+      } catch (fallbackError) {
+        console.error("NpcCarEntity: Fallback also failed:", fallbackError);
+        // Set to safe defaults to prevent further errors
+        this.active = false;
+      }
+    }
   }
 }

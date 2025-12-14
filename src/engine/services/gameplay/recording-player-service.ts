@@ -419,10 +419,14 @@ export class RecordingPlayerService {
     snapshot: EntitySnapshot
   ): void {
     // If entity has serialized data, use applyReplayState() method
-    if (snapshot.serializedData) {
+    if (snapshot.serializedData && snapshot.serializedData.byteLength > 0) {
       entity.applyReplayState(snapshot.serializedData);
       // Note: applyReplayState() should handle all entity-specific state
       // We still apply basic transform properties in case they're not in serialized data
+    } else if (snapshot.serializedData && snapshot.serializedData.byteLength === 0) {
+      console.warn(
+        `Entity ${snapshot.id} (${snapshot.type}) has empty serializedData`
+      );
     }
 
     // Apply basic transform properties (position, size, angle)
@@ -605,8 +609,19 @@ export class RecordingPlayerService {
       const entity = this.spawnedEntities.get(delta.id);
 
       if (entity) {
-        // Apply serialized data using entity's applyReplayState() method
-        entity.applyReplayState(delta.serializedData);
+        // Check for empty or invalid serialized data before applying
+        if (!delta.serializedData || delta.serializedData.byteLength === 0) {
+          console.warn(
+            `State delta for entity ${delta.id} has empty serializedData at timestamp ${delta.timestamp}`
+          );
+        } else {
+          // Apply serialized data using entity's applyReplayState() method
+          entity.applyReplayState(delta.serializedData);
+        }
+      } else {
+        console.warn(
+          `State delta for unknown entity ${delta.id} at timestamp ${delta.timestamp}`
+        );
       }
 
       this.nextStateIndex++;

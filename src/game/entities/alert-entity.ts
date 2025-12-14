@@ -123,37 +123,51 @@ export class AlertEntity
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
-    const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
-
-    // Read number of text lines
-    const lineCount = reader.unsignedInt8();
-
-    // Read text lines and colors
-    const textLines: string[] = [];
-    const lineColors: string[] = [];
-
-    for (let i = 0; i < lineCount; i++) {
-      textLines.push(reader.variableLengthString());
-      lineColors.push(reader.variableLengthString());
+    // Guard against empty or invalid buffers
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      console.warn("AlertEntity: applyReplayState received empty buffer");
+      return;
     }
 
-    this.textLines = textLines;
-    this.lineColors = lineColors;
+    try {
+      const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
-    // Update base color from first line color
-    const baseColor = lineColors[0] ?? "white";
-    if (baseColor === "blue") {
-      this.color = BLUE_TEAM_COLOR;
-    } else if (baseColor === "red") {
-      this.color = RED_TEAM_COLOR;
-    } else {
-      this.color = baseColor;
+      // Read number of text lines
+      const lineCount = reader.unsignedInt8();
+
+      // Read text lines and colors
+      const textLines: string[] = [];
+      const lineColors: string[] = [];
+
+      for (let i = 0; i < lineCount; i++) {
+        textLines.push(reader.variableLengthString());
+        lineColors.push(reader.variableLengthString());
+      }
+
+      this.textLines = textLines;
+      this.lineColors = lineColors;
+
+      // Update base color from first line color
+      const baseColor = lineColors[0] ?? "white";
+      if (baseColor === "blue") {
+        this.color = BLUE_TEAM_COLOR;
+      } else if (baseColor === "red") {
+        this.color = RED_TEAM_COLOR;
+      } else {
+        this.color = baseColor;
+      }
+
+      // Read and apply visual properties
+      this.opacity = reader.float32();
+      this.scale = reader.float32();
+      this.fontSize = reader.unsignedInt8();
+    } catch (error) {
+      console.error(
+        "AlertEntity: Error applying replay state, buffer length:",
+        arrayBuffer.byteLength,
+        error
+      );
     }
-
-    // Read and apply visual properties
-    this.opacity = reader.float32();
-    this.scale = reader.float32();
-    this.fontSize = reader.unsignedInt8();
   }
 
   private setTransformOrigin(context: CanvasRenderingContext2D): void {

@@ -100,14 +100,28 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
-    const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    const newBoostLevel = reader.float32();
-    const newBoostAttempt = reader.boolean();
+    // Guard against empty or invalid buffers
+    if (!arrayBuffer || arrayBuffer.byteLength === 0) {
+      console.warn("BoostMeterEntity: applyReplayState received empty buffer");
+      return;
+    }
 
-    // Update boost level and display level for immediate visual update
-    this.boostLevel = newBoostLevel;
-    this.boostAttemptWhileEmpty = newBoostAttempt;
-    this.displayLevel = newBoostLevel; // Sync display immediately during replay
+    try {
+      const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+      const newBoostLevel = reader.float32();
+      const newBoostAttempt = reader.boolean();
+
+      // Update boost level and display level for immediate visual update
+      this.boostLevel = newBoostLevel;
+      this.boostAttemptWhileEmpty = newBoostAttempt;
+      this.displayLevel = newBoostLevel; // Sync display immediately during replay
+    } catch (error) {
+      console.error(
+        "BoostMeterEntity: Error applying replay state, buffer length:",
+        arrayBuffer.byteLength,
+        error
+      );
+    }
   }
 
   public override render(context: CanvasRenderingContext2D): void {
