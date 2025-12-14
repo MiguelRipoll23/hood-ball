@@ -5,6 +5,9 @@ export interface GameEntity {
   getId(): string;
   setId(id: string): void;
 
+  getTypeId(): number | null;
+  setTypeId(typeId: number): void;
+
   load(): void;
   hasLoaded(): boolean;
 

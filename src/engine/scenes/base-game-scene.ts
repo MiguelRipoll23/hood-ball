@@ -8,9 +8,9 @@ import { EventConsumerService } from "../services/gameplay/event-consumer-servic
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
 import { container } from "../services/di-container.js";
-import { EventType } from "../enums/event-type.js";
+import { EventType } from "../../game/enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
-import { SceneType } from "../enums/scene-type.js";
+import { SceneType } from "../../game/enums/scene-type.js";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerService;
@@ -33,7 +33,7 @@ export class BaseGameScene implements GameScene {
 
   constructor(
     protected gameState: GameState,
-    eventConsumerService: EventConsumerService
+    eventConsumerService: EventConsumerService,
   ) {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameState.getCanvas();
@@ -55,7 +55,7 @@ export class BaseGameScene implements GameScene {
   }
 
   public setSceneManagerService(
-    sceneManagerService: SceneManagerServiceContract
+    sceneManagerService: SceneManagerServiceContract,
   ): void {
     this.sceneManagerService = sceneManagerService;
   }
@@ -132,7 +132,7 @@ export class BaseGameScene implements GameScene {
 
   public update(
     deltaTimeStamp: DOMHighResTimeStamp,
-    skipEntityUpdates = false
+    skipEntityUpdates = false,
   ): void {
     this.cameraService.update(deltaTimeStamp);
 
@@ -207,37 +207,41 @@ export class BaseGameScene implements GameScene {
 
   protected subscribeToLocalEvent<T>(
     eventType: EventType,
-    eventCallback: (data: T) => void
+    eventCallback: (data: T) => void,
   ) {
     const sub = this.eventConsumerService.subscribeToLocalEvent(
       eventType,
-      eventCallback
+      eventCallback,
     );
     this.localEventSubscriptions.push(sub);
 
     console.log(
-      `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
+      `${this.constructor.name} subscribed to local event ${
+        EventType[eventType]
+      }`,
     );
   }
 
   protected subscribeToRemoteEvent<T>(
     eventType: EventType,
-    eventCallback: (data: T) => void
+    eventCallback: (data: T) => void,
   ) {
     const sub = this.eventConsumerService.subscribeToRemoteEvent(
       eventType,
-      eventCallback
+      eventCallback,
     );
     this.remoteEventSubscriptions.push(sub);
 
     console.log(
-      `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`
+      `${this.constructor.name} subscribed to remote event ${
+        EventType[eventType]
+      }`,
     );
   }
 
   protected deleteEntityIfRemoved(
     layer: GameEntity[],
-    entity: GameEntity
+    entity: GameEntity,
   ): void {
     if (entity.isRemoved()) {
       const index = layer.indexOf(entity);
@@ -249,7 +253,7 @@ export class BaseGameScene implements GameScene {
     const tappableEntities = this.uiEntities
       .filter(
         (entity): entity is BaseTappableGameEntity =>
-          entity instanceof BaseTappableGameEntity
+          entity instanceof BaseTappableGameEntity,
       )
       .filter((entity) => entity.isActive())
       .reverse();
@@ -265,7 +269,7 @@ export class BaseGameScene implements GameScene {
 
   protected updateEntities(
     entities: GameEntity[],
-    deltaTimeStamp: DOMHighResTimeStamp
+    deltaTimeStamp: DOMHighResTimeStamp,
   ): void {
     entities.forEach((entity) => {
       if (entity.hasLoaded()) {
@@ -276,7 +280,7 @@ export class BaseGameScene implements GameScene {
 
   private renderEntities(
     entities: GameEntity[],
-    context: CanvasRenderingContext2D
+    context: CanvasRenderingContext2D,
   ): void {
     entities.forEach((entity) => {
       if (entity.hasLoaded()) {
@@ -286,7 +290,7 @@ export class BaseGameScene implements GameScene {
   }
 
   protected returnToPreviousScene(
-    crossfadeDurationSeconds: number = 0.2
+    crossfadeDurationSeconds: number = 0.2,
   ): void {
     const previousScene = this.sceneManagerService?.getPreviousScene() ?? null;
 
@@ -303,7 +307,7 @@ export class BaseGameScene implements GameScene {
       .crossfade(
         this.sceneManagerService,
         previousScene,
-        crossfadeDurationSeconds
+        crossfadeDurationSeconds,
       );
   }
 

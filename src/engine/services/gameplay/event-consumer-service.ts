@@ -1,4 +1,4 @@
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../game/enums/event-type.js";
 import type { EventQueueServiceContract } from "../../interfaces/services/events/event-queue-service-contract.js";
 import type { EventSubscription } from "../../types/event-subscription.js";
 import { LocalEvent } from "../../models/local-event.js";

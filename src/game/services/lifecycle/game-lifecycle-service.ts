@@ -1,8 +1,8 @@
-import { injectable, inject } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { EventType } from "../../enums/event-type.js";
 import { MainScene } from "../../scenes/main/main-scene.js";
 import { MainMenuScene } from "../../scenes/main/main-menu/main-menu-scene.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
@@ -14,16 +14,16 @@ import { GamePlayer } from "../../models/game-player.js";
 export class GameLifecycleService {
   constructor(
     private eventConsumerService: EventConsumerService = inject(
-      EventConsumerService
+      EventConsumerService,
     ),
     private sceneTransitionService: SceneTransitionService = inject(
-      SceneTransitionService
+      SceneTransitionService,
     ),
     private gameState: GameState = inject(GameState),
     private matchSessionService: MatchSessionService = inject(
-      MatchSessionService
+      MatchSessionService,
     ),
-    private gamePlayer: GamePlayer = inject(GamePlayer)
+    private gamePlayer: GamePlayer = inject(GamePlayer),
   ) {}
 
   public start(): void {
@@ -34,24 +34,24 @@ export class GameLifecycleService {
     this.eventConsumerService.subscribeToLocalEvent(
       EventType.ServerDisconnected,
       this.handleServerDisconnectedEvent.bind(this),
-      true
+      true,
     );
 
     this.eventConsumerService.subscribeToLocalEvent(
       EventType.HostDisconnected,
       this.handleHostDisconnectedEvent.bind(this),
-      true
+      true,
     );
 
     this.eventConsumerService.subscribeToLocalEvent(
       EventType.ServerNotification,
       this.handleServerNotificationEvent.bind(this),
-      true
+      true,
     );
   }
 
   private handleServerDisconnectedEvent(
-    payload: ServerDisconnectedPayload
+    payload: ServerDisconnectedPayload,
   ): void {
     const currentScene = this.gameState.getGameFrame().getCurrentScene();
 
@@ -76,7 +76,7 @@ export class GameLifecycleService {
   }
 
   private handleServerNotificationEvent(
-    payload: ServerNotificationPayload
+    payload: ServerNotificationPayload,
   ): void {
     this.gameState
       .getGameFrame()
@@ -97,7 +97,7 @@ export class GameLifecycleService {
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       this.eventConsumerService,
-      false
+      false,
     );
 
     mainScene.activateScene(mainMenuScene);
@@ -111,7 +111,7 @@ export class GameLifecycleService {
       this.gameState.getGameFrame(),
       mainScene,
       1,
-      1
+      1,
     );
 
     if (reconnect) {

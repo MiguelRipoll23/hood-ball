@@ -11,7 +11,6 @@ import type { GameEntity } from "../models/game-entity.js";
  */
 export class EntityRegistry {
   private static registry = new Map<number, () => GameEntity>();
-  private static reverseRegistry = new Map<Function, number>();
   private static entityIdCounter = 0;
 
   /**
@@ -19,24 +18,18 @@ export class EntityRegistry {
    *
    * @param typeId - Numeric entity type identifier (game layer can use enum values)
    * @param factory - Factory function that creates a new instance of the entity
-   * @param ctor - Optional constructor function for reverse lookup (type identification during recording)
    */
   public static register(
     typeId: number,
     factory: () => GameEntity,
-    ctor?: Function
   ): void {
     if (this.registry.has(typeId)) {
       console.warn(
         `Entity type "${typeId}" is already registered, overwriting`
       );
     }
+    
     this.registry.set(typeId, factory);
-
-    // Register reverse mapping if constructor provided
-    if (ctor) {
-      this.reverseRegistry.set(ctor, typeId);
-    }
   }
 
   /**
@@ -77,21 +70,11 @@ export class EntityRegistry {
   }
 
   /**
-   * Get the type ID for an entity constructor (reverse lookup)
-   *
-   * @param ctor - The entity constructor function
-   * @returns The type ID, or undefined if not registered
-   */
-  public static getTypeId(ctor: Function): number | undefined {
-    return this.reverseRegistry.get(ctor);
-  }
-
-  /**
    * Get the next entity ID for entity creation
    *
    * @returns The next unique entity ID number
    */
-  public static getNextEntityId(): number {
+  public static getNextId(): number {
     return ++this.entityIdCounter;
   }
 
@@ -109,7 +92,6 @@ export class EntityRegistry {
    */
   public static clear(): void {
     this.registry.clear();
-    this.reverseRegistry.clear();
   }
 
   /**

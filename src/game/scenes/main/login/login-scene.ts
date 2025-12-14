@@ -4,7 +4,7 @@ import { CryptoService } from "../../../services/security/crypto-service.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { APIService } from "../../../services/network/api-service.js";
 import { GameState } from "../../../../engine/models/game-state.js";
-import { EventType } from "../../../../engine/enums/event-type.js";
+import { EventType } from "../../../enums/event-type.js";
 import { CredentialService } from "../../../services/security/credential-service.js";
 import { container } from "../../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
@@ -36,14 +36,14 @@ export class LoginScene extends BaseGameScene {
     this.controller = new LoginController(
       apiService,
       cryptoService,
-      webSocketService
+      webSocketService,
     );
     this.credentialService = container.get(CredentialService);
     this.dialogElement = document.querySelector(
-      "#player-id-dialog"
+      "#player-id-dialog",
     ) as HTMLDialogElement | null;
     this.displayNameInputElement = document.querySelector(
-      "#display-name-input"
+      "#display-name-input",
     );
     this.registerButtonElement = document.querySelector("#register-button");
     this.signInButtonElement = document.querySelector("#sign-in-button");
@@ -56,7 +56,7 @@ export class LoginScene extends BaseGameScene {
 
     this.uiEntities.push(
       this.entities.messageEntity,
-      this.entities.closeableMessageEntity
+      this.entities.closeableMessageEntity,
     );
 
     super.load();
@@ -79,12 +79,12 @@ export class LoginScene extends BaseGameScene {
   private subscribeToLocalEvents(): void {
     this.subscribeToLocalEvent(
       EventType.ServerAuthenticated,
-      this.downloadConfiguration.bind(this)
+      this.downloadConfiguration.bind(this),
     );
 
     this.subscribeToLocalEvent(
       EventType.ServerConnected,
-      this.handleServerConnectedEvent.bind(this)
+      this.handleServerConnectedEvent.bind(this),
     );
   }
 
@@ -128,7 +128,7 @@ export class LoginScene extends BaseGameScene {
 
     this.displayNameInputElement?.addEventListener(
       "input",
-      this.handleDisplayNameInputEvent.bind(this)
+      this.handleDisplayNameInputEvent.bind(this),
     );
 
     this.registerButtonElement?.addEventListener("pointerup", () => {
@@ -181,7 +181,7 @@ export class LoginScene extends BaseGameScene {
 
   private handleCredentialError(
     error: Error,
-    buttonElement: HTMLElement
+    buttonElement: HTMLElement,
   ): void {
     console.error(error);
 
@@ -210,7 +210,7 @@ export class LoginScene extends BaseGameScene {
   }
 
   private async applyConfiguration(
-    configuration: ConfigurationType
+    configuration: ConfigurationType,
   ): Promise<void> {
     this.gameServer.setConfiguration(configuration);
 
@@ -232,7 +232,7 @@ export class LoginScene extends BaseGameScene {
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
-      true
+      true,
     );
     mainMenuScene.load();
 

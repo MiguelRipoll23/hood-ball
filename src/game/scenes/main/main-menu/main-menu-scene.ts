@@ -8,7 +8,7 @@ import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
 import { SettingsScene } from "../settings-scene.js";
-import { EventType } from "../../../../engine/enums/event-type.js";
+import { EventType } from "../../../enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
 import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload-interface.js";
@@ -41,7 +41,7 @@ export class MainMenuScene extends BaseGameScene {
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    private showNews: boolean
+    private showNews: boolean,
   ) {
     super(gameState, eventConsumerService);
     this.gameServer = gameContext.get(GameServer);
@@ -55,7 +55,7 @@ export class MainMenuScene extends BaseGameScene {
     const factory = new MainMenuEntityFactory(
       this.canvas,
       this.MENU_OPTIONS_TEXT,
-      this.ONLINE_REQUIRED_BUTTONS
+      this.ONLINE_REQUIRED_BUTTONS,
     );
     this.entities = factory.createEntities();
 
@@ -84,7 +84,7 @@ export class MainMenuScene extends BaseGameScene {
       onlinePlayersEntity,
       serverMessageWindowEntity,
       closeableMessageEntity,
-      toastEntity
+      toastEntity,
     );
 
     super.load();
@@ -122,21 +122,21 @@ export class MainMenuScene extends BaseGameScene {
   private subscribeToLocalEvents(): void {
     this.subscribeToLocalEvent(
       EventType.DebugChanged,
-      this.updateDebugStateForEntities.bind(this)
+      this.updateDebugStateForEntities.bind(this),
     );
     this.subscribeToLocalEvent(
       EventType.OnlinePlayers,
-      this.handleOnlinePlayersEvent.bind(this)
+      this.handleOnlinePlayersEvent.bind(this),
     );
 
     this.subscribeToLocalEvent(
       EventType.ServerDisconnected,
-      this.handleServerDisconnectedEvent.bind(this)
+      this.handleServerDisconnectedEvent.bind(this),
     );
 
     this.subscribeToLocalEvent(
       EventType.ServerConnected,
-      this.handleServerConnectedEvent.bind(this)
+      this.handleServerConnectedEvent.bind(this),
     );
   }
 
@@ -203,7 +203,7 @@ export class MainMenuScene extends BaseGameScene {
       length,
       item.title,
       item.content,
-      item.createdAt
+      item.createdAt,
     );
   }
 
@@ -229,7 +229,7 @@ export class MainMenuScene extends BaseGameScene {
       menuOptionEntity.getRequiresOnlineConnection()
     ) {
       this.closeableMessageEntity?.show(
-        "This feature requires an online connection"
+        "This feature requires an online connection",
       );
       return;
     }
@@ -259,7 +259,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const loadingScene = new LoadingScene(
       this.gameState,
-      container.get(EventConsumerService)
+      container.get(EventConsumerService),
     );
     loadingScene.load();
 
@@ -273,7 +273,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const scoreboardScene = new ScoreboardScene(
       this.gameState,
-      container.get(EventConsumerService)
+      container.get(EventConsumerService),
     );
     scoreboardScene.load();
 
@@ -287,7 +287,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const settingsScene = new SettingsScene(
       this.gameState,
-      container.get(EventConsumerService)
+      container.get(EventConsumerService),
     );
     settingsScene.load();
 
@@ -338,7 +338,7 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private handleServerDisconnectedEvent(
-    payload: ServerDisconnectedPayload
+    payload: ServerDisconnectedPayload,
   ): void {
     if (!payload.connectionLost) {
       return;

@@ -7,7 +7,7 @@ import type { FindMatchesRequest } from "../../interfaces/requests/find-matches-
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { MatchSession } from "../../models/match-session.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { EventType } from "../../enums/event-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
 import { GAME_VERSION } from "../../constants/game-constants.js";

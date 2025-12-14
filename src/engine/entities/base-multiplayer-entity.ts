@@ -1,4 +1,3 @@
-import type { EntityType } from "../enums/entity-type.js";
 import type { Player } from "../interfaces/models/player-interface.js";
 import { BaseGameEntity } from "./base-game-entity.js";
 import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity-interface.js";
@@ -7,18 +6,12 @@ export class BaseMultiplayerGameEntity
   extends BaseGameEntity
   implements MultiplayerGameEntity
 {
-  protected id: string | null = null;
-  protected typeId: EntityType | null = null;
   protected syncable: boolean = false;
   protected syncableByHost: boolean = false;
   protected owner: Player | null = null;
 
   protected sync: boolean = false;
   protected syncReliably: boolean = false;
-
-  public static getTypeId(): EntityType {
-    throw new Error("Method not implemented.");
-  }
 
   public static deserialize(
     _id: string,
@@ -31,19 +24,11 @@ export class BaseMultiplayerGameEntity
    * Returns the multiplayer ID if set, otherwise falls back to the auto-generated ID.
    */
   public override getId(): string {
-    return this.id ?? this.entityId;
+    return this.id ?? this.id;
   }
 
   public override setId(id: string): void {
     this.id = id;
-  }
-
-  public getTypeId(): EntityType | null {
-    return this.typeId;
-  }
-
-  public setTypeId(entityTypeId: EntityType): void {
-    this.typeId = entityTypeId;
   }
 
   public isSyncable(): boolean {

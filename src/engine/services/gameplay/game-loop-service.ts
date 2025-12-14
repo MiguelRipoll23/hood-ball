@@ -15,10 +15,10 @@ import { IntervalManagerService } from "./interval-manager-service.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { RecorderService } from "./recorder-service.js";
 import {
-  RecordingPlayerService,
   PlaybackState,
+  RecordingPlayerService,
 } from "./recording-player-service.js";
-import { injectable, inject } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 import { DebugService } from "../debug/debug-service.js";
 import { GameConfig } from "../../models/game-config.js";
 
@@ -43,23 +43,23 @@ export class GameLoopService {
     private readonly canvas: HTMLCanvasElement = inject(HTMLCanvasElement),
     private readonly gameState: GameState = inject(GameState),
     private readonly sceneTransitionService: SceneTransitionService = inject(
-      SceneTransitionService
+      SceneTransitionService,
     ),
     private readonly timerManagerService: TimerManagerService = inject(
-      TimerManagerService
+      TimerManagerService,
     ),
     private readonly intervalManagerService: IntervalManagerService = inject(
-      IntervalManagerService
+      IntervalManagerService,
     ),
     private readonly eventConsumerService: EventConsumerService = inject(
-      EventConsumerService
+      EventConsumerService,
     ),
     private readonly recorderService: RecorderService = inject(RecorderService),
     private readonly recordingPlayerService: RecordingPlayerService = inject(
-      RecordingPlayerService
+      RecordingPlayerService,
     ),
     private readonly debugService: DebugService = inject(DebugService),
-    private readonly gameConfig: GameConfig = inject(GameConfig)
+    private readonly gameConfig: GameConfig = inject(GameConfig),
   ) {
     this.logDebugInfo();
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -91,7 +91,7 @@ export class GameLoopService {
 
     console.info(
       "%cDebug mode on",
-      "color: #b6ff35; font-size: 20px; font-weight: bold"
+      "color: #b6ff35; font-size: 20px; font-weight: bold",
     );
   }
 
@@ -251,7 +251,7 @@ export class GameLoopService {
       this.canvas.height - 24,
       `v${this.gameConfig.version}`,
       true,
-      true
+      true,
     );
   }
 
@@ -261,7 +261,7 @@ export class GameLoopService {
       this.canvas.width - 24,
       24,
       `FPS: ${this.currentFPS.toFixed(1)}`,
-      true
+      true,
     );
 
     const currentScene = this.gameFrame.getCurrentScene();
@@ -272,7 +272,7 @@ export class GameLoopService {
       this.canvas.width - 24,
       48,
       currentSceneName,
-      true
+      true,
     );
 
     this.renderDebugSubSceneInformation(currentScene);
@@ -292,7 +292,7 @@ export class GameLoopService {
       this.canvas.width - 24,
       72,
       currentSubSceneName,
-      true
+      true,
     );
   }
 }

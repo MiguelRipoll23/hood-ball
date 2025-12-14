@@ -7,8 +7,8 @@ import { GameLifecycleService } from "./services/lifecycle/game-lifecycle-servic
 import { MainScene } from "./scenes/main/main-scene.js";
 import { LoginScene } from "./scenes/main/login/login-scene.js";
 import {
-  registerGameEntityTypes,
   getEntityTypeMapper,
+  registerGameEntityTypes,
 } from "./utils/entity-type-registry.js";
 import { RecorderService } from "../engine/services/gameplay/recorder-service.js";
 

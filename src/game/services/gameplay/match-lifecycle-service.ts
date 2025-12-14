@@ -4,7 +4,7 @@ import { WebRTCService } from "../network/webrtc-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { EventType } from "../../enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request-interface.js";
 import { GamePlayer } from "../../models/game-player.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
@@ -27,14 +27,14 @@ export class MatchLifecycleService {
     private readonly apiService = inject(APIService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly networkService: MatchmakingNetworkServiceContract = inject(
-      MatchmakingNetworkService
+      MatchmakingNetworkService,
     ),
     private readonly eventProcessor = inject(EventProcessorService),
     private readonly eventConsumer = inject(EventConsumerService),
     private readonly disconnectionMonitor = inject(DisconnectionMonitor),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
     private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
-    private readonly matchSessionService = inject(MatchSessionService)
+    private readonly matchSessionService = inject(MatchSessionService),
   ) {
     this.eventConsumer.subscribeToLocalEvent(
       EventType.PlayerDisconnected,
@@ -43,10 +43,11 @@ export class MatchLifecycleService {
           return;
         }
         const playerId = data.player.getId();
-        this.disconnectionMonitor.markDisconnected(playerId, () =>
-          this.finalizeGameOver()
+        this.disconnectionMonitor.markDisconnected(
+          playerId,
+          () => this.finalizeGameOver(),
         );
-      }
+      },
     );
   }
 

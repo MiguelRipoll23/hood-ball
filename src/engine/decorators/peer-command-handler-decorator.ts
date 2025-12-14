@@ -1,4 +1,4 @@
-import type { WebRTCType } from "../enums/webrtc-type.js";
+import type { WebRTCType } from "../../game/enums/webrtc-type.js";
 import type { PeerCommandHandlerMetadata } from "../interfaces/network/peer-command-handler-metadata-interface.js";
 
 const commandHandlers: PeerCommandHandlerMetadata[] = [];

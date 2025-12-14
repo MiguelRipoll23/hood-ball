@@ -1,7 +1,7 @@
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../game/enums/event-type.js";
 import { RemoteEvent } from "../../models/remote-event.js";
 import { LocalEvent } from "../../models/local-event.js";
-import { WebRTCType } from "../../enums/webrtc-type.js";
+import { WebRTCType } from "../../../game/enums/webrtc-type.js";
 import { EventQueueService } from "./event-queue-service.js";
 import type { EventProcessorServiceContract } from "../../interfaces/services/events/event-processor-service-contract.js";
 import type { EventQueueServiceContract } from "../../interfaces/services/events/event-queue-service-contract.js";
