@@ -228,18 +228,10 @@ export class RecorderService {
     if (currentScene) {
       // Capture scene ID on first frame
       if (this.frameCount === 0) {
-        const sceneWithType = currentScene as { getTypeId?: () => SceneType };
-        if (sceneWithType.getTypeId) {
-          this.recordedSceneId = sceneWithType.getTypeId();
-          if (this.recordedSceneId === SceneType.Unknown) {
-            throw new Error(
-              "Cannot record scene with Unknown type. Scene must have a stable SceneType identifier."
-            );
-          }
-        } else {
-          throw new Error(
-            "Cannot record scene without getTypeId() method. Scene must implement SceneType identifier."
-          );
+        this.recordedSceneId = currentScene.getTypeId();
+
+        if (this.recordedSceneId === SceneType.Unknown) {
+          return; // Do not record if scene type is unknown
         }
       }
 
