@@ -9,6 +9,7 @@ export class BaseMultiplayerGameEntity
 {
   protected id: string | null = null;
   protected typeId: EntityType | null = null;
+  protected syncable: boolean = false;
   protected syncableByHost: boolean = false;
   protected owner: Player | null = null;
 
@@ -26,11 +27,14 @@ export class BaseMultiplayerGameEntity
     throw new Error("Method not implemented.");
   }
 
-  public getId(): string | null {
-    return this.id;
+  /**
+   * Returns the multiplayer ID if set, otherwise falls back to the auto-generated ID.
+   */
+  public override getId(): string {
+    return this.id ?? this.entityId;
   }
 
-  public setId(id: string): void {
+  public override setId(id: string): void {
     this.id = id;
   }
 
@@ -40,6 +44,10 @@ export class BaseMultiplayerGameEntity
 
   public setTypeId(entityTypeId: EntityType): void {
     this.typeId = entityTypeId;
+  }
+
+  public isSyncable(): boolean {
+    return this.syncable;
   }
 
   public isSyncableByHost(): boolean {

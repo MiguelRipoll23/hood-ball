@@ -13,6 +13,7 @@ import {
 } from "../constants/webrtc-constants.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
 export class CarEntity extends BaseDynamicCollidingGameEntity {
@@ -107,7 +108,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     super.reset();
   }
 
-  public override serialize(): ArrayBuffer {
+  private serializeNetworkData(writer: BinaryWriter): void {
     const angle = Math.round(this.angle * SCALE_FACTOR_FOR_ANGLES);
     const speed = Math.round(this.speed * SCALE_FACTOR_FOR_SPEED);
     const boost = Math.round(this.boost);
@@ -115,16 +116,93 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     const scaledX = Math.round(this.x * SCALE_FACTOR_FOR_COORDINATES);
     const scaledY = Math.round(this.y * SCALE_FACTOR_FOR_COORDINATES);
 
-    const arrayBuffer = BinaryWriter.build()
+    writer
       .unsignedInt16(scaledX)
       .unsignedInt16(scaledY)
       .signedInt16(angle)
       .signedInt16(speed)
       .boolean(this.boosting)
       .unsignedInt8(boost)
-      .toArrayBuffer();
+      .boolean(this.demolished);
+  }
 
-    return arrayBuffer;
+  public override serialize(): ArrayBuffer {
+    const writer = BinaryWriter.build();
+    this.serializeNetworkData(writer);
+    return writer.toArrayBuffer();
+  }
+
+  public override getReplayState(): ArrayBuffer | null {
+    const owner = this.getOwner();
+    const playerName = owner?.getName() ?? "Unknown";
+
+    // Determine car type: 0 = local, 1 = remote, 2 = npc
+    let carType = 0;
+    if (owner && owner.isNpc()) {
+      carType = 2; // NPC
+    } else if (this.remote) {
+      carType = 1; // Remote
+    }
+
+    const binaryWriter = BinaryWriter.build();
+    binaryWriter.variableLengthString(playerName);
+    binaryWriter.unsignedInt8(carType);
+    this.serializeNetworkData(binaryWriter);
+
+    return binaryWriter.toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
+
+    // Read player name from replay data
+    const playerName = binaryReader.variableLengthString();
+
+    // Read car type: 0 = local, 1 = remote, 2 = npc
+    const carType = binaryReader.unsignedInt8();
+    const isNpc = carType === 2;
+    const isRemote = carType === 1;
+
+    // Update remote flag and image path based on car type
+    this.remote = isRemote || isNpc;
+    this.imagePath = this.remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
+
+    // Reload the car image to reflect the new path
+    this.loadCarImage();
+
+    // Update or create owner with the player name from replay
+    if (!this.owner) {
+      this.setOwner(
+        new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
+      );
+    } else if (this.owner.getName() !== playerName) {
+      // Owner name changed, create new player with updated name
+      this.setOwner(
+        new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
+      );
+    }
+
+    const scaledX = binaryReader.unsignedInt16();
+    const scaledY = binaryReader.unsignedInt16();
+    const newX = scaledX / SCALE_FACTOR_FOR_COORDINATES;
+    const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
+    const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+    const newSpeed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
+    const newBoosting = binaryReader.boolean();
+    const newBoost = binaryReader.unsignedInt8();
+
+    const newDemolished = binaryReader.boolean();
+
+    this.x = newX;
+    this.y = newY;
+    this.angle = newAngle;
+    this.speed = newSpeed;
+    this.boosting = newBoosting;
+    this.boost = newBoost;
+    this.demolished = newDemolished;
+    this.opacity = newDemolished ? 0 : 1;
+
+    this.updateHitbox();
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

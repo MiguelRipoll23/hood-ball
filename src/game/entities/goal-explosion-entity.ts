@@ -1,6 +1,11 @@
 import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
-import { BLUE_TEAM_COLOR, RED_TEAM_COLOR } from "../constants/colors-constants.js";
+import {
+  BLUE_TEAM_COLOR,
+  RED_TEAM_COLOR,
+} from "../constants/colors-constants.js";
 import { TeamType } from "../enums/team-type.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 interface Particle {
   x: number;
@@ -18,7 +23,8 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
   private distortionRadius = 0;
   private distortionOpacity = 1;
   private flashOpacity = 1;
-  private readonly color: string;
+  private color: string;
+  private team: TeamType;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -29,6 +35,7 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
     super();
     this.x = x;
     this.y = y;
+    this.team = team;
     this.color = team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
     this.createParticles();
   }
@@ -113,5 +120,32 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
     context.globalAlpha = 1;
 
     context.restore();
+  }
+
+  public override getReplayState(): ArrayBuffer | null {
+    return BinaryWriter.build()
+      .unsignedInt16(this.x)
+      .unsignedInt16(this.y)
+      .unsignedInt8(this.team)
+      .unsignedInt16(this.elapsed)
+      .toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+    this.x = reader.unsignedInt16();
+    this.y = reader.unsignedInt16();
+    this.team = reader.unsignedInt8();
+    this.elapsed = reader.unsignedInt16();
+
+    // Update color based on restored team
+    this.color = this.team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
+
+    // Recalculate visual state based on elapsed time
+    const t = Math.min(this.elapsed / this.duration, 1);
+    this.shockwaveRadius = 120 * t;
+    this.distortionRadius = 80 * t;
+    this.flashOpacity = 1 - Math.min(this.elapsed / 200, 1);
+    this.distortionOpacity = 1 - t;
   }
 }

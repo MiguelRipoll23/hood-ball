@@ -16,7 +16,6 @@ import {
 } from "./matchmaking-tokens.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
-import { RecorderService } from "../../../engine/services/gameplay/recorder-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 
 @injectable()
@@ -33,7 +32,6 @@ export class MatchLifecycleService {
     private readonly eventProcessor = inject(EventProcessorService),
     private readonly eventConsumer = inject(EventConsumerService),
     private readonly disconnectionMonitor = inject(DisconnectionMonitor),
-    private readonly recorderService = inject(RecorderService),
     private readonly pendingIdentities = inject(PendingIdentitiesToken),
     private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
     private readonly matchSessionService = inject(MatchSessionService)
@@ -70,12 +68,6 @@ export class MatchLifecycleService {
   public async handleGameOver(): Promise<void> {
     if (this.gameOverFinalized || this.gameOverInProgress) {
       return;
-    }
-
-    // Stop auto-recording when match ends
-    if (this.recorderService.isAutoRecording()) {
-      console.log("Match ended - stopping auto recording");
-      this.recorderService.stopRecording();
     }
 
     this.gameOverInProgress = true;

@@ -4,6 +4,8 @@ import {
 } from "../constants/colors-constants.js";
 import { TimerService } from "../../engine/services/gameplay/timer-service.js";
 import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 
 export class AlertEntity
@@ -12,6 +14,7 @@ export class AlertEntity
 {
   private textLines: string[] = ["Unknown", "message"];
   private lineColors: string[] = [];
+  private lineColorsHex: string[] = [];
   private color: string = "white";
   private fontSize: number = 44;
 
@@ -45,20 +48,11 @@ export class AlertEntity
     this.textLines = textLines;
     this.lineColors = colors;
 
-    const baseColor = colors[0] ?? "white";
-    if (baseColor === "blue") {
-      this.color = BLUE_TEAM_COLOR;
-    } else if (baseColor === "red") {
-      this.color = RED_TEAM_COLOR;
-    } else {
-      this.color = baseColor;
-    }
+    // Resolve hex colors once
+    this.lineColorsHex = colors.map((c) => this.resolveColorToHex(c));
+    this.color = this.lineColorsHex[0] ?? "#FFFFFF";
 
-    if (textLines.length === 1) {
-      this.fontSize = 74;
-    } else {
-      this.fontSize = 44;
-    }
+    this.fontSize = textLines.length === 1 ? 74 : 44;
 
     this.fadeIn(0.3);
     this.scaleTo(1, 0.3);
@@ -99,6 +93,61 @@ export class AlertEntity
     return this.timer;
   }
 
+  public override getReplayState(): ArrayBuffer | null {
+    const writer = BinaryWriter.build();
+    if (this.textLines.length > 255) {
+      throw new RangeError(
+        `AlertEntity: textLines.length (${this.textLines.length}) exceeds 255, cannot encode as unsignedInt8.`
+      );
+    }
+    writer.unsignedInt8(this.textLines.length);
+
+    for (let i = 0; i < this.textLines.length; i++) {
+      writer.variableLengthString(this.textLines[i] ?? "");
+      // Store color as string (supports both named colors and hex values)
+      writer.variableLengthString(this.lineColors[i] ?? "white");
+    }
+
+    writer.float32(this.opacity);
+    writer.float32(this.scale);
+    writer.unsignedInt8(this.fontSize);
+
+    return writer.toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    if (!arrayBuffer || arrayBuffer.byteLength < 6) return;
+
+    try {
+      const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+      const lineCount = reader.unsignedInt8();
+
+      const textLines: string[] = [];
+      const lineColors: string[] = [];
+      const lineColorsHex: string[] = [];
+
+      for (let i = 0; i < lineCount; i++) {
+        const text = reader.variableLengthString();
+        const colorStr = reader.variableLengthString();
+
+        textLines.push(text);
+        lineColors.push(colorStr);
+        lineColorsHex.push(this.resolveColorToHex(colorStr));
+      }
+
+      this.textLines = textLines;
+      this.lineColors = lineColors;
+      this.lineColorsHex = lineColorsHex;
+      this.color = this.lineColorsHex[0] ?? "#FFFFFF";
+
+      this.opacity = reader.float32();
+      this.scale = reader.float32();
+      this.fontSize = reader.unsignedInt8();
+    } catch (err) {
+      console.error("AlertEntity: failed to apply replay state", err);
+    }
+  }
+
   private setTransformOrigin(context: CanvasRenderingContext2D): void {
     context.translate(this.x, this.y);
     context.scale(this.scale, this.scale);
@@ -111,22 +160,20 @@ export class AlertEntity
     context.textAlign = "center";
     context.textBaseline = "middle";
 
-    // Adding black shadow to text for readability
     context.shadowColor = "black";
-    context.shadowOffsetX = 0; // Horizontal offset of shadow
-    context.shadowOffsetY = 0; // Vertical offset of shadow
-    context.shadowBlur = 10; // Blur effect for the shadow
+    context.shadowOffsetX = 0;
+    context.shadowOffsetY = 0;
+    context.shadowBlur = 10;
   }
 
   private renderMultilineText(context: CanvasRenderingContext2D): void {
     const lineHeight = this.fontSize;
     const blockHeight = this.textLines.length * lineHeight;
-    const startY = this.y - blockHeight / 2 + lineHeight / 2; // Center the block
+    const startY = this.y - blockHeight / 2 + lineHeight / 2;
 
     this.textLines.forEach((line, index) => {
       const yPosition = startY + index * lineHeight;
-      const color = this.resolveColor(this.lineColors[index] ?? this.color);
-      context.fillStyle = color;
+      context.fillStyle = this.lineColorsHex[index] ?? this.color;
       this.drawText(context, line, this.x, yPosition);
     });
   }
@@ -137,17 +184,22 @@ export class AlertEntity
     x: number,
     y: number
   ): void {
-    // Draw filled text with shadow applied
     context.fillText(text, x, y);
   }
 
-  private resolveColor(color: string): string {
-    if (color === "blue") {
-      return BLUE_TEAM_COLOR;
-    } else if (color === "red") {
-      return RED_TEAM_COLOR;
+  private resolveColorToHex(color: string): string {
+    if (!color) return "#FFFFFF";
+
+    switch (color.toLowerCase()) {
+      case "red":
+        return RED_TEAM_COLOR;
+      case "blue":
+        return BLUE_TEAM_COLOR;
+      case "white":
+        return "#FFFFFF";
+      default:
+        return /^#([0-9A-F]{3}){1,2}$/i.test(color) ? color : "#FFFFFF";
     }
-    return color;
   }
 
   private setInitialValues() {

@@ -14,6 +14,10 @@ import { TimerManagerService } from "./timer-manager-service.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { RecorderService } from "./recorder-service.js";
+import {
+  RecordingPlayerService,
+  PlaybackState,
+} from "./recording-player-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { DebugService } from "../debug/debug-service.js";
 import { GameConfig } from "../../models/game-config.js";
@@ -51,6 +55,9 @@ export class GameLoopService {
       EventConsumerService
     ),
     private readonly recorderService: RecorderService = inject(RecorderService),
+    private readonly recordingPlayerService: RecordingPlayerService = inject(
+      RecordingPlayerService
+    ),
     private readonly debugService: DebugService = inject(DebugService),
     private readonly gameConfig: GameConfig = inject(GameConfig)
   ) {
@@ -174,20 +181,36 @@ export class GameLoopService {
     this.intervalManagerService.update(deltaTimeStamp);
     this.sceneTransitionService.update(deltaTimeStamp);
 
-    this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
-    this.gameFrame.getNextScene()?.update(deltaTimeStamp);
+    // Only update scenes if not in playback mode
+    // During playback, the RecordingPlayerService controls the scene
+    const mediaPlayerEntity = this.gameFrame.getMediaPlayerEntity();
+    const isPlaybackActive =
+      mediaPlayerEntity &&
+      this.recordingPlayerService.getPlaybackState() !== PlaybackState.Stopped;
+
+    if (isPlaybackActive) {
+      // Playback mode: update replay scene and media player
+      // The RecordingPlayerService manages the replay scene
+      this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
+
+      // Update media player (handles playback time and deltas)
+      mediaPlayerEntity?.update(deltaTimeStamp);
+    } else {
+      // Normal mode: update scenes and record if active
+      this.gameFrame.getCurrentScene()?.update(deltaTimeStamp);
+      this.gameFrame.getNextScene()?.update(deltaTimeStamp);
+
+      // Record frame if recording is active
+      this.recorderService.recordFrameFromGameState(this.gameFrame);
+    }
+
+    // Always update UI entities
     this.gameFrame.getNotificationEntity()?.update(deltaTimeStamp);
     this.gameFrame.getLoadingIndicatorEntity()?.update(deltaTimeStamp);
 
     if (this.gameState.isDebugging()) {
       this.gameFrame.getDebugEntity()?.update(deltaTimeStamp);
     }
-
-    // Record frame if recording is active
-    this.recorderService.recordFrameFromGameState(this.gameFrame);
-
-    // Update media player if active
-    this.gameFrame.getMediaPlayerEntity()?.update(deltaTimeStamp);
   }
 
   private render(): void {

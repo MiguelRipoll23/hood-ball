@@ -1,5 +1,7 @@
 import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export class BoostMeterEntity extends BaseAnimatedGameEntity {
   private readonly RADIUS = 32;
@@ -45,6 +47,10 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
     this.boostAttemptWhileEmpty = active;
   }
 
+  public getBoostLevel(): number {
+    return this.boostLevel;
+  }
+
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     const diff = this.boostLevel - this.displayLevel;
     if (diff !== 0) {
@@ -85,6 +91,43 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
     }
   }
 
+  public override getReplayState(): ArrayBuffer | null {
+    // Store boost level and boost attempt state for replay
+    return BinaryWriter.build()
+      .float32(this.boostLevel)
+      .boolean(this.boostAttemptWhileEmpty)
+      .toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    // Guard against empty or invalid buffers
+    // Minimum size: 4 (float32) + 1 (boolean) = 5 bytes
+    if (!arrayBuffer || arrayBuffer.byteLength < 5) {
+      console.warn(
+        `BoostMeterEntity: applyReplayState received invalid buffer size: ${
+          arrayBuffer ? arrayBuffer.byteLength : 0
+        }`
+      );
+      return;
+    }
+
+    try {
+      const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+      const newBoostLevel = reader.float32();
+      const newBoostAttempt = reader.boolean();
+
+      // Update boost level and display level for immediate visual update
+      this.boostLevel = newBoostLevel;
+      this.boostAttemptWhileEmpty = newBoostAttempt;
+      this.displayLevel = newBoostLevel; // Sync display immediately during replay
+    } catch (error) {
+      console.error(
+        "BoostMeterEntity: Error applying replay state, buffer length:",
+        arrayBuffer.byteLength,
+        error
+      );
+    }
+  }
 
   public override render(context: CanvasRenderingContext2D): void {
     context.save();
@@ -103,11 +146,12 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
     context.beginPath();
     context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
     context.closePath();
-    context.fillStyle = this.displayLevel === 0
-      ? this.boostAttemptWhileEmpty
-        ? "rgba(255,0,0,0.6)"
-        : "rgba(255,0,0,0.3)"
-      : "rgba(0,0,0,0.2)";
+    context.fillStyle =
+      this.displayLevel === 0
+        ? this.boostAttemptWhileEmpty
+          ? "rgba(255,0,0,0.6)"
+          : "rgba(255,0,0,0.3)"
+        : "rgba(0,0,0,0.2)";
     context.fill();
 
     if (this.displayLevel > 0) {
@@ -126,7 +170,6 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
       );
       context.restore();
     }
-
 
     context.font = `${this.RADIUS * 1.0}px system-ui`;
     context.textAlign = "center";

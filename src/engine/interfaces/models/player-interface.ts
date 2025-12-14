@@ -3,4 +3,5 @@ export interface Player {
   getNetworkId(): string;
   getName(): string;
   isHost(): boolean;
+  isNpc(): boolean;
 }

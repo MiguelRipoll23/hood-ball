@@ -3,6 +3,8 @@ import { BallEntity } from "./ball-entity.js";
 import { GamePlayer } from "../models/game-player.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { EntityUtils } from "../../engine/utils/entity-utils.js";
+import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
+import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
 export class NpcCarEntity extends CarEntity {
   private readonly AI_UPDATE_INTERVAL = 50; // Update AI decisions every 50ms
@@ -23,7 +25,7 @@ export class NpcCarEntity extends CarEntity {
     y: number,
     angle: number,
     canvas: HTMLCanvasElement,
-    private readonly ballEntity: BallEntity,
+    private readonly ballEntity?: BallEntity,
     spawnPointIndex: number = -1
   ) {
     super(x, y, angle, true); // remote=true to use red car
@@ -59,12 +61,15 @@ export class NpcCarEntity extends CarEntity {
       return;
     }
 
-    // Only update AI when active (after countdown)
-    this.aiUpdateTimer += deltaTimeStamp;
+    // Skip AI during replay (when ballEntity is undefined)
+    if (this.ballEntity) {
+      // Only update AI when active (after countdown)
+      this.aiUpdateTimer += deltaTimeStamp;
 
-    if (this.aiUpdateTimer >= this.AI_UPDATE_INTERVAL) {
-      this.aiUpdateTimer = 0;
-      this.updateAI(deltaTimeStamp);
+      if (this.aiUpdateTimer >= this.AI_UPDATE_INTERVAL) {
+        this.aiUpdateTimer = 0;
+        this.updateAI(deltaTimeStamp);
+      }
     }
 
     // Call parent update for movement, boost, etc.
@@ -86,6 +91,8 @@ export class NpcCarEntity extends CarEntity {
   private boostPads: Array<{ x: number; y: number; consumed: boolean }> = [];
 
   private updateAI(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (!this.ballEntity) return;
+
     let targetX: number;
     let targetY: number;
 
@@ -225,5 +232,38 @@ export class NpcCarEntity extends CarEntity {
       this.y + this.height / 2 + 54,
       `Boost: ${boostPercent}%`
     );
+  }
+
+  public override getReplayState(): ArrayBuffer | null {
+    // Call parent to get car state, then extend with NPC-specific state
+    const parentState = super.getReplayState();
+    if (!parentState) {
+      return null;
+    }
+
+    const binaryWriter = BinaryWriter.build();
+
+    // First, write all the parent state bytes efficiently
+    binaryWriter.arrayBuffer(parentState);
+
+    // Then add NPC-specific state: active flag
+    binaryWriter.boolean(this.active);
+
+    return binaryWriter.toArrayBuffer();
+  }
+
+  public override applyReplayState(arrayBuffer: ArrayBuffer): void {
+    const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
+
+    // Calculate parent state length (all bytes except the last 1 for `active`)
+    const parentStateLength = arrayBuffer.byteLength - 1;
+
+    // Grab exactly that slice and pass as ArrayBuffer
+    const parentState = arrayBuffer.slice(0, parentStateLength);
+    super.applyReplayState(parentState);
+
+    // Read NPC-specific state
+    reader.seek(parentStateLength);
+    this.active = reader.boolean();
   }
 }

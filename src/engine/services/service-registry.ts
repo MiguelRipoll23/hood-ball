@@ -5,7 +5,7 @@ import { EventConsumerService } from "./gameplay/event-consumer-service.ts";
 import { CameraService } from "./gameplay/camera-service.ts";
 import { AnimationLogService } from "./gameplay/animation-log-service.ts";
 import { RecorderService } from "./gameplay/recorder-service.ts";
-import { MediaPlayerService } from "./gameplay/media-player-service.ts";
+import { RecordingPlayerService } from "./gameplay/recording-player-service.ts";
 import { SceneTransitionService } from "./gameplay/scene-transition-service.ts";
 import { SceneManagerService } from "./gameplay/scene-manager-service.ts";
 import { TimerManagerService } from "./gameplay/timer-manager-service.ts";
@@ -35,8 +35,8 @@ export class ServiceRegistry {
     container.bind({ provide: CameraService, useClass: CameraService });
     container.bind({ provide: RecorderService, useClass: RecorderService });
     container.bind({
-      provide: MediaPlayerService,
-      useClass: MediaPlayerService,
+      provide: RecordingPlayerService,
+      useClass: RecordingPlayerService,
     });
     container.bind({
       provide: SceneTransitionService,

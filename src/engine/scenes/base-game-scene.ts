@@ -151,10 +151,16 @@ export class BaseGameScene implements GameScene {
     this.worldEntities.push(entity);
   }
 
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  public update(
+    deltaTimeStamp: DOMHighResTimeStamp,
+    skipEntityUpdates = false
+  ): void {
     this.cameraService.update(deltaTimeStamp);
-    this.updateEntities(this.worldEntities, deltaTimeStamp);
-    this.updateEntities(this.uiEntities, deltaTimeStamp);
+
+    if (!skipEntityUpdates) {
+      this.updateEntities(this.worldEntities, deltaTimeStamp);
+      this.updateEntities(this.uiEntities, deltaTimeStamp);
+    }
 
     for (let i = this.uiEntities.length - 1; i >= 0; i--) {
       this.deleteEntityIfRemoved(this.uiEntities, this.uiEntities[i]);
@@ -223,14 +229,17 @@ export class BaseGameScene implements GameScene {
     );
   }
 
-  private deleteEntityIfRemoved(layer: GameEntity[], entity: GameEntity): void {
+  protected deleteEntityIfRemoved(
+    layer: GameEntity[],
+    entity: GameEntity
+  ): void {
     if (entity.isRemoved()) {
       const index = layer.indexOf(entity);
       layer.splice(index, 1);
     }
   }
 
-  private handlePointerEvent(): void {
+  protected handlePointerEvent(): void {
     const tappableEntities = this.uiEntities
       .filter(
         (entity): entity is BaseTappableGameEntity =>
@@ -248,7 +257,7 @@ export class BaseGameScene implements GameScene {
     }
   }
 
-  private updateEntities(
+  protected updateEntities(
     entities: GameEntity[],
     deltaTimeStamp: DOMHighResTimeStamp
   ): void {

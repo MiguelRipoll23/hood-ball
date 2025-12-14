@@ -52,16 +52,17 @@ export class WorldScene extends BaseCollidingGameScene {
   private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
 
   private readonly sceneTransitionService: SceneTransitionService;
-  private readonly spawnPointService: SpawnPointService;
+  private readonly spawnPointService: SpawnPointService | null;
   private readonly timerManagerService: TimerManagerService;
-  private readonly matchmakingService: MatchmakingServiceContract;
-  private readonly matchmakingController: MatchmakingControllerContract;
+  private readonly matchmakingService: MatchmakingServiceContract | null;
+  private readonly matchmakingController: MatchmakingControllerContract | null;
   private readonly eventProcessorService: EventProcessorService;
-  private readonly entityOrchestrator: EntityOrchestratorService;
-  private readonly chatService: ChatService;
+  private readonly entityOrchestrator: EntityOrchestratorService | null;
+  private readonly chatService: ChatService | null;
   private readonly gamePlayer: GamePlayer;
   private readonly gameServer: GameServer;
   private readonly matchSessionService: MatchSessionService;
+  private readonly matchActionsLogService: MatchActionsLogService | null;
 
   private scoreboardEntity: ScoreboardEntity | null = null;
   private localCarEntity: LocalCarEntity | null = null;
@@ -76,7 +77,6 @@ export class WorldScene extends BaseCollidingGameScene {
   private matchLogEntity: MatchLogEntity | null = null;
   private npcCarEntity: NpcCarEntity | null = null;
 
-  private readonly matchActionsLogService: MatchActionsLogService;
   private matchActionsLogUnsubscribe: (() => void) | null = null;
 
   private scoreManagerService: ScoreManagerService | null = null;
@@ -93,15 +93,18 @@ export class WorldScene extends BaseCollidingGameScene {
     eventConsumerService: EventConsumerService,
     sceneTransitionService: SceneTransitionService,
     timerManagerService: TimerManagerService,
-    matchmakingService: MatchmakingServiceContract,
-    matchmakingController: MatchmakingControllerContract,
-    entityOrchestrator: EntityOrchestratorService,
+    matchmakingService: MatchmakingServiceContract | null,
+    matchmakingController: MatchmakingControllerContract | null,
+    entityOrchestrator: EntityOrchestratorService | null,
     eventProcessorService: EventProcessorService,
-    spawnPointService: SpawnPointService,
-    chatService: ChatService,
-    matchActionsLogService: MatchActionsLogService
+    spawnPointService: SpawnPointService | null,
+    chatService: ChatService | null,
+    matchActionsLogService: MatchActionsLogService | null,
+    replayMode = false
   ) {
     super(gameState, eventConsumerService);
+    // Set isReplayMode from parent BaseCollidingGameScene
+    this.isReplayMode = replayMode;
     this.gamePlayer = gameContext.get(GamePlayer);
     this.gameServer = gameContext.get(GameServer);
     this.matchSessionService = gameContext.get(MatchSessionService);
@@ -115,12 +118,29 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointService = spawnPointService;
     this.chatService = chatService;
     this.matchActionsLogService = matchActionsLogService;
-    this.matchActionsLogService.clear();
+
+    // Only clear if service exists (in replay mode, some services may be null)
+    if (this.matchActionsLogService) {
+      this.matchActionsLogService.clear();
+    }
+
     this.addSyncableEntities();
     this.subscribeToEvents();
   }
 
   public override load(): void {
+    // In replay mode, don't create any entities - they'll be spawned from recording
+    if (this.isReplayMode) {
+      console.log(
+        "WorldScene loading in replay mode - skipping entity creation"
+      );
+      const factory = new WorldEntityFactory(this.gameState, this.canvas);
+      // Only create background
+      factory.createBackground(this.worldEntities);
+      this.loaded = true;
+      return;
+    }
+
     const factory = new WorldEntityFactory(this.gameState, this.canvas);
     factory.createBackground(this.worldEntities);
 
@@ -142,20 +162,35 @@ export class WorldScene extends BaseCollidingGameScene {
     this.setupMatchLog();
     this.setupChatUI();
 
-    // Set total spawn points created to service
-    this.spawnPointService.setTotalSpawnPoints(this.spawnPointEntities.length);
+    // Set total spawn points created to service (skip in replay mode)
+    if (this.spawnPointService) {
+      this.spawnPointService.setTotalSpawnPoints(
+        this.spawnPointEntities.length
+      );
+    }
 
     // Set match session service for spawn points to show debug info
     this.spawnPointEntities.forEach((spawnPoint) => {
       spawnPoint.setMatchSessionService(this.matchSessionService);
     });
 
-    // Initialize NPC service
-    this.npcService = new NpcService(
-      this.matchSessionService,
-      this.spawnPointService,
-      this.timerManagerService
-    );
+    // Initialize NPC service (skip in replay mode)
+    if (this.spawnPointService) {
+      this.npcService = new NpcService(
+        this.matchSessionService,
+        this.spawnPointService,
+        this.timerManagerService
+      );
+    }
+
+    // Skip WorldController in replay mode if required services are null
+    if (
+      !this.spawnPointService ||
+      !this.matchmakingService ||
+      !this.matchActionsLogService
+    ) {
+      return;
+    }
 
     this.worldController = new WorldController(
       this.spawnPointService,
@@ -170,8 +205,13 @@ export class WorldScene extends BaseCollidingGameScene {
       this.boostPadsEntities,
       this.spawnPointEntities,
       this.getEntitiesByOwner.bind(this),
-      this.npcService
+      this.npcService!
     );
+
+    // Skip ScoreManagerService in replay mode if required services are null
+    if (!this.matchActionsLogService || !this.matchmakingService) {
+      return;
+    }
 
     this.scoreManagerService = new ScoreManagerService(
       this.ballEntity,
@@ -207,13 +247,21 @@ export class WorldScene extends BaseCollidingGameScene {
       this.helpEntity?.show(text, 4);
       this.helpShown = true;
     }
-    this.matchmakingController
-      .startMatchmaking()
-      .catch(this.handleMatchmakingError.bind(this));
+    // Skip matchmaking in replay mode
+    if (this.matchmakingController) {
+      this.matchmakingController
+        .startMatchmaking()
+        .catch(this.handleMatchmakingError.bind(this));
+    }
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
+
+    // Skip gameplay logic in replay mode - entities are driven by recording data
+    if (this.isReplayMode) {
+      return;
+    }
 
     // Check if weather effect has ended and reset physics
     if (this.activeWeatherEntity && this.activeWeatherEntity.isRemoved()) {
@@ -238,14 +286,18 @@ export class WorldScene extends BaseCollidingGameScene {
     // Always use the normal score detection (works for solo and multiplayer)
     this.scoreManagerService?.detectScoresIfHost();
 
-    this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
+    // Skip network sync in replay mode
+    if (this.entityOrchestrator) {
+      this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
+    }
   }
 
   public override render(context: CanvasRenderingContext2D): void {
     super.render(context);
 
     // Render debug information from matchmaking service (which internally delegates to webrtc)
-    if (this.gameState.isDebugging()) {
+    // Skip in replay mode where matchmakingService may be null
+    if (this.gameState.isDebugging() && this.matchmakingService) {
       this.matchmakingService.renderDebugInformation(context);
     }
   }
@@ -319,11 +371,13 @@ export class WorldScene extends BaseCollidingGameScene {
       }
     }
 
-    this.matchActionsLogService.addAction(
-      MatchAction.playerJoined(player.getNetworkId(), {
-        playerName: player.getName(),
-      })
-    );
+    if (this.matchActionsLogService) {
+      this.matchActionsLogService.addAction(
+        MatchAction.playerJoined(player.getNetworkId(), {
+          playerName: player.getName(),
+        })
+      );
+    }
   }
 
   private handlePlayerDisconnection(payload: PlayerDisconnectedPayload): void {
@@ -336,8 +390,7 @@ export class WorldScene extends BaseCollidingGameScene {
     this.toastEntity?.show(`<em>${player.getName()}</em> left`, 2);
 
     // Count only real players (excluding NPCs)
-    const allPlayers =
-      this.matchSessionService.getMatch()?.getPlayers() ?? [];
+    const allPlayers = this.matchSessionService.getMatch()?.getPlayers() ?? [];
     const realPlayersCount = allPlayers.filter((p) => !p.isNpc()).length;
 
     // If down to 1 real player, freeze match state
@@ -350,11 +403,13 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.scoreManagerService?.updateScoreboard();
 
-    this.matchActionsLogService.addAction(
-      MatchAction.playerLeft(player.getNetworkId(), {
-        playerName: player.getName(),
-      })
-    );
+    if (this.matchActionsLogService) {
+      this.matchActionsLogService.addAction(
+        MatchAction.playerLeft(player.getNetworkId(), {
+          playerName: player.getName(),
+        })
+      );
+    }
   }
 
   private subscribeToEvents(): void {
@@ -455,16 +510,24 @@ export class WorldScene extends BaseCollidingGameScene {
       this.uiEntities.push(boostMeterEntity);
     }
 
-    const initialMsgs = this.chatService.getMessages();
-    if (initialMsgs.length > 0) {
-      const recentMessages = initialMsgs.slice(-5);
-      recentMessages.forEach((message) => {
-        this.matchActionsLogService.addAction(
-          MatchAction.chatMessage(message.getUserId(), message.getText(), {
-            timestamp: message.getTimestamp(),
-          })
-        );
-      });
+    // Skip chat setup in replay mode
+    if (this.chatService && this.matchActionsLogService) {
+      const initialMsgs = this.chatService.getMessages();
+      if (initialMsgs.length > 0) {
+        const recentMessages = initialMsgs.slice(-5);
+        recentMessages.forEach((message) => {
+          this.matchActionsLogService!.addAction(
+            MatchAction.chatMessage(message.getUserId(), message.getText(), {
+              timestamp: message.getTimestamp(),
+            })
+          );
+        });
+      }
+    }
+
+    // Skip chat button in replay mode if chatService is null
+    if (!this.chatService) {
+      return;
     }
 
     this.chatButtonEntity = new ChatButtonEntity(
@@ -489,9 +552,12 @@ export class WorldScene extends BaseCollidingGameScene {
     }
     this.matchLogEntity = new MatchLogEntity(this.canvas);
     this.uiEntities.push(this.matchLogEntity);
-    this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
-      (actions) => this.matchLogEntity?.show(actions)
-    );
+    // Only subscribe to match actions if service is available (not null in replay mode)
+    if (this.matchActionsLogService) {
+      this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
+        (actions) => this.matchLogEntity?.show(actions)
+      );
+    }
   }
 
   private triggerGoalExplosion(x: number, y: number, team: TeamType): void {
@@ -601,7 +667,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
-    this.matchActionsLogService.clear();
+
+    // Only call clear() if matchActionsLogService is available (not null in replay mode)
+    if (this.matchActionsLogService) {
+      this.matchActionsLogService.clear();
+    }
 
     // Remove NPC car if present
     if (this.npcService) {

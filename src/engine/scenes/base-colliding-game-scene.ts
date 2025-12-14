@@ -7,6 +7,8 @@ import { EventConsumerService } from "../services/gameplay/event-consumer-servic
 import type { GameEntity } from "../models/game-entity.js";
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
+  protected isReplayMode = false;
+
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService
@@ -14,9 +16,18 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     super(gameState, eventConsumerService);
   }
 
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    super.update(deltaTimeStamp);
-    this.detectCollisions();
+  public getIsReplayMode(): boolean {
+    return this.isReplayMode;
+  }
+
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    // During replay mode, skip entity updates (entities are driven by recorded data)
+    super.update(deltaTimeStamp, this.isReplayMode);
+
+    // Skip collision detection in replay mode
+    if (!this.isReplayMode) {
+      this.detectCollisions();
+    }
   }
 
   public detectCollisions(): void {

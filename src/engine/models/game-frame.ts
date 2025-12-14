@@ -21,7 +21,7 @@ export class GameFrame implements SceneManager {
     return null;
   }
 
-  public setCurrentScene(scene: GameScene): void {
+  public setCurrentScene(scene: GameScene | null): void {
     this.currentScene = scene;
   }
 
