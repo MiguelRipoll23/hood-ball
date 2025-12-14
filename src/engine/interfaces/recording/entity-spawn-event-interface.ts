@@ -6,7 +6,7 @@ import { LayerType } from "../../enums/layer-type.js";
 export interface EntitySpawnEvent {
   timestamp: number;
   id: string;
-  type: string; // Entity type/prefab name
+  type: number; // EntityType enum value (-1 if entity doesn't have a type)
   layer: LayerType; // UI or Scene layer
   x: number;
   y: number;

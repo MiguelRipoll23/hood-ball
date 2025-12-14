@@ -29,7 +29,7 @@ export interface RecordingMetadata {
   endTime: number;
   totalFrames: number;
   fps: number;
-  sceneId: string;
+  sceneId: number; // SceneType enum value
 }
 
 @injectable()
@@ -73,7 +73,7 @@ export class RecordingPlayerService {
       const endTime = reader.float64();
       const totalFrames = reader.unsignedInt32();
       const fps = reader.unsignedInt16();
-      const sceneId = reader.variableLengthString();
+      const sceneId = reader.unsignedInt8();
 
       // Load delta format
       await this.loadDeltaFormat(
@@ -98,7 +98,7 @@ export class RecordingPlayerService {
     endTime: number,
     totalFrames: number,
     fps: number,
-    sceneId: string
+    sceneId: number
   ): Promise<void> {
     // Read initial snapshot
     const snapshotCount = reader.unsignedInt32();
@@ -113,7 +113,7 @@ export class RecordingPlayerService {
     for (let i = 0; i < spawnCount; i++) {
       const timestamp = reader.float64();
       const id = reader.variableLengthString();
-      const type = reader.variableLengthString();
+      const type = reader.signedInt16();
       const layer = reader.unsignedInt8() as LayerType; // Read layer type
       const x = reader.float32();
       const y = reader.float32();
@@ -128,8 +128,8 @@ export class RecordingPlayerService {
       if (hasSerializedData) {
         const dataLength = reader.unsignedInt32();
         const dataBytes = new Uint8Array(dataLength);
-        for (let i = 0; i < dataLength; i++) {
-          dataBytes[i] = reader.unsignedInt8();
+        for (let j = 0; j < dataLength; j++) {
+          dataBytes[j] = reader.unsignedInt8();
         }
         serializedData = dataBytes.buffer;
       }
@@ -210,7 +210,7 @@ export class RecordingPlayerService {
 
   private readEntitySnapshot(reader: BinaryReader): EntitySnapshot {
     const id = reader.variableLengthString();
-    const type = reader.variableLengthString();
+    const type = reader.signedInt16();
     const layer = reader.unsignedInt8() as LayerType; // Read layer type
     const x = reader.float32();
     const y = reader.float32();
@@ -231,8 +231,8 @@ export class RecordingPlayerService {
     if (hasSerializedData) {
       const dataLength = reader.unsignedInt32();
       const dataBytes = new Uint8Array(dataLength);
-      for (let i = 0; i < dataLength; i++) {
-        dataBytes[i] = reader.unsignedInt8();
+      for (let j = 0; j < dataLength; j++) {
+        dataBytes[j] = reader.unsignedInt8();
       }
       serializedData = dataBytes.buffer;
     }
@@ -287,14 +287,14 @@ export class RecordingPlayerService {
       return;
     }
 
-    const sceneId = parseInt(this.recordingData.metadata.sceneId);
+    const sceneId = this.recordingData.metadata.sceneId;
 
     // Store current scene to restore later (DON'T dispose it - we want to restore it)
     this.previousScene = this.gameState.getGameFrame().getCurrentScene();
 
     if (this.previousScene) {
       // Just clear it from GameFrame, but keep the scene intact for restoration
-      this.gameState.getGameFrame().setCurrentScene(null as any);
+      this.gameState.getGameFrame().setCurrentScene(null);
     }
 
     // Load the actual WorldScene for replay
@@ -310,14 +310,14 @@ export class RecordingPlayerService {
         container.get(EventConsumerService),
         container.get(SceneTransitionService),
         container.get(TimerManagerService),
-        // For replay, we pass null/mock services for matchmaking since we don't need them
-        null as any, // matchmakingService
-        null as any, // matchmakingController
-        null as any, // entityOrchestrator
+        // For replay, we pass null for services not needed in replay mode
+        null, // matchmakingService - not needed for replay
+        null, // matchmakingController - not needed for replay
+        null, // entityOrchestrator - not needed for replay
         container.get(EventProcessorService),
-        null as any, // spawnPointService
-        null as any, // chatService
-        null as any, // matchActionsLogService
+        null, // spawnPointService - not needed for replay
+        null, // chatService - not needed for replay
+        null, // matchActionsLogService - not needed for replay
         true // REPLAY MODE - don't create entities
       );
 

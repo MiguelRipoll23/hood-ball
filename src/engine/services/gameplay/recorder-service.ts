@@ -9,6 +9,7 @@ import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despa
 import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 import { LayerType } from "../../enums/layer-type.js";
+import { SceneType } from "../../enums/scene-type.js";
 
 // Maximum recording duration in minutes
 const MAX_RECORDING_DURATION_MINUTES = 15;
@@ -31,7 +32,7 @@ export interface RecordingMetadata {
   endTime: number;
   totalFrames: number;
   fps: number;
-  sceneId: string; // ID of the gameplay scene that was recorded
+  sceneId: number; // SceneType enum value of the gameplay scene that was recorded
 }
 
 /**
@@ -55,7 +56,7 @@ export class RecorderService {
   private frameCount = 0;
   private autoRecording = false;
   private entityIdCache = new WeakMap<GameEntity, string>();
-  private recordedSceneId: string = "";
+  private recordedSceneId: SceneType = SceneType.Unknown;
 
   // Delta recording data structures
   private initialSnapshot: EntitySnapshot[] = [];
@@ -84,6 +85,71 @@ export class RecorderService {
     console.log("RecorderService initialized");
   }
 
+  /**
+   * Clones an ArrayBuffer to prevent mutation issues
+   */
+  private cloneArrayBuffer(buffer: ArrayBuffer): ArrayBuffer {
+    const cloned = new ArrayBuffer(buffer.byteLength);
+    new Uint8Array(cloned).set(new Uint8Array(buffer));
+    return cloned;
+  }
+
+  // Entity type mapper injected from game layer
+  private entityTypeMapper?: (entity: GameEntity) => number | null;
+
+  /**
+   * Sets the entity type mapper function.
+   * This allows the game layer to provide entity type mapping logic
+   * without creating dependencies from engine to game.
+   */
+  public setEntityTypeMapper(
+    mapper: (entity: GameEntity) => number | null
+  ): void {
+    this.entityTypeMapper = mapper;
+  }
+
+  /**
+   * Gets the entity type ID using the injected mapper.
+   * Returns null if no mapper is set or entity type is unknown.
+   */
+  private getEntityTypeId(entity: GameEntity): number | null {
+    if (!this.entityTypeMapper) {
+      console.warn(
+        "No entity type mapper set. Call setEntityTypeMapper() before recording."
+      );
+      return null;
+    }
+    return this.entityTypeMapper(entity);
+  }
+
+  /**
+   * Efficiently compares two ArrayBuffers for equality.
+   * Uses 32-bit comparison for better performance on aligned data.
+   */
+  private areBuffersEqual(a: ArrayBuffer, b: ArrayBuffer): boolean {
+    if (a.byteLength !== b.byteLength) return false;
+
+    const view1 = new Uint8Array(a);
+    const view2 = new Uint8Array(b);
+    const len = view1.length;
+
+    // Compare in 4-byte chunks for better performance (when aligned)
+    const chunks = Math.floor(len / 4);
+    const view1_32 = new Uint32Array(a, 0, chunks);
+    const view2_32 = new Uint32Array(b, 0, chunks);
+
+    for (let i = 0; i < chunks; i++) {
+      if (view1_32[i] !== view2_32[i]) return false;
+    }
+
+    // Compare remaining bytes
+    for (let i = chunks * 4; i < len; i++) {
+      if (view1[i] !== view2[i]) return false;
+    }
+
+    return true;
+  }
+
   public isRecording(): boolean {
     return this.recording;
   }
@@ -103,7 +169,7 @@ export class RecorderService {
     this.frameCount = 0;
     this.startTime = Date.now();
     this.autoRecording = auto;
-    this.recordedSceneId = "";
+    this.recordedSceneId = SceneType.Unknown;
 
     // Reset delta recording structures
     this.initialSnapshot = [];
@@ -162,11 +228,18 @@ export class RecorderService {
     if (currentScene) {
       // Capture scene ID on first frame
       if (this.frameCount === 0) {
-        const sceneWithType = currentScene as { getTypeId?: () => number };
+        const sceneWithType = currentScene as { getTypeId?: () => SceneType };
         if (sceneWithType.getTypeId) {
-          this.recordedSceneId = String(sceneWithType.getTypeId());
+          this.recordedSceneId = sceneWithType.getTypeId();
+          if (this.recordedSceneId === SceneType.Unknown) {
+            throw new Error(
+              "Cannot record scene with Unknown type. Scene must have a stable SceneType identifier."
+            );
+          }
         } else {
-          this.recordedSceneId = "unknown";
+          throw new Error(
+            "Cannot record scene without getTypeId() method. Scene must implement SceneType identifier."
+          );
         }
       }
 
@@ -229,6 +302,9 @@ export class RecorderService {
   private captureInitialSnapshot(entities: GameEntity[]): void {
     for (const entity of entities) {
       const snapshot = this.createEntitySnapshot(entity);
+      if (snapshot === null) {
+        continue; // Skip entities with unknown types
+      }
       this.initialSnapshot.push(snapshot);
 
       // Initialize tracking
@@ -240,12 +316,14 @@ export class RecorderService {
         angle: snapshot.angle,
         velocityX: snapshot.velocityX,
         velocityY: snapshot.velocityY,
-        serializedData: snapshot.serializedData,
+        serializedData: snapshot.serializedData
+          ? this.cloneArrayBuffer(snapshot.serializedData)
+          : undefined,
       });
     }
   }
 
-  private createEntitySnapshot(entity: GameEntity): EntitySnapshot {
+  private createEntitySnapshot(entity: GameEntity): EntitySnapshot | null {
     const moveable = entity as BaseMoveableGameEntity;
     const dynamic = entity as {
       vx?: number;
@@ -253,6 +331,12 @@ export class RecorderService {
       getVX?: () => number;
       getVY?: () => number;
     };
+
+    // Get entity type - skip if unknown
+    const type = this.getEntityTypeId(entity);
+    if (type === null) {
+      return null;
+    }
 
     // Get replay state from entity - returns null if entity doesn't implement it
     const serializedData = entity.getReplayState();
@@ -262,7 +346,7 @@ export class RecorderService {
 
     return {
       id: this.getEntityId(entity),
-      type: entity.constructor.name,
+      type,
       layer,
       x: moveable.getX?.() ?? 0,
       y: moveable.getY?.() ?? 0,
@@ -273,7 +357,9 @@ export class RecorderService {
       opacity: entity.getOpacity(),
       velocityX: dynamic.getVX?.() ?? dynamic.vx,
       velocityY: dynamic.getVY?.() ?? dynamic.vy,
-      serializedData: serializedData ?? undefined, // Include serialized data if available
+      serializedData: serializedData
+        ? this.cloneArrayBuffer(serializedData)
+        : undefined, // Clone to prevent mutation
     };
   }
 
@@ -297,6 +383,13 @@ export class RecorderService {
           getVX?: () => number;
           getVY?: () => number;
         };
+
+        // Get entity type - skip if unknown
+        const type = this.getEntityTypeId(entity);
+        if (type === null) {
+          continue; // Skip entities with unknown types
+        }
+
         const serializedData = entity.getReplayState();
 
         // Get layer from entity layer map (defaults to Scene if not found)
@@ -305,7 +398,7 @@ export class RecorderService {
         const spawnEvent: EntitySpawnEvent = {
           timestamp,
           id,
-          type: entity.constructor.name,
+          type,
           layer,
           x: moveable.getX?.() ?? 0,
           y: moveable.getY?.() ?? 0,
@@ -324,7 +417,9 @@ export class RecorderService {
           angle: spawnEvent.angle,
           velocityX: dynamic.getVX?.() ?? dynamic.vx,
           velocityY: dynamic.getVY?.() ?? dynamic.vy,
-          serializedData: serializedData ?? undefined,
+          serializedData: serializedData
+            ? this.cloneArrayBuffer(serializedData)
+            : undefined,
         });
       }
     }
@@ -421,31 +516,21 @@ export class RecorderService {
         // Entity implements custom serialization - check if state changed
         const lastSerializedData = lastState.serializedData;
 
-        // Compare serialized data to detect changes
-        let hasStateChange = false;
-        if (
+        // Compare serialized data to detect changes (optimized for small/medium buffers)
+        const hasStateChange =
           !lastSerializedData ||
-          lastSerializedData.byteLength !== serializedData.byteLength
-        ) {
-          hasStateChange = true;
-        } else {
-          const lastView = new Uint8Array(lastSerializedData);
-          const currentView = new Uint8Array(serializedData);
-          for (let i = 0; i < lastView.length; i++) {
-            if (lastView[i] !== currentView[i]) {
-              hasStateChange = true;
-              break;
-            }
-          }
-        }
+          lastSerializedData.byteLength !== serializedData.byteLength ||
+          !this.areBuffersEqual(lastSerializedData, serializedData);
 
         if (hasStateChange) {
+          // Clone to prevent mutation issues
+          const clonedData = this.cloneArrayBuffer(serializedData);
           this.stateDeltas.push({
             timestamp,
             id,
-            serializedData,
+            serializedData: clonedData,
           });
-          lastState.serializedData = serializedData;
+          lastState.serializedData = clonedData;
         }
       }
     }
@@ -481,7 +566,7 @@ export class RecorderService {
     binaryWriter.float64(endTimeValue);
     binaryWriter.unsignedInt32(this.frameCount);
     binaryWriter.unsignedInt16(RECORDING_FPS);
-    binaryWriter.variableLengthString(this.recordedSceneId);
+    binaryWriter.unsignedInt8(this.recordedSceneId);
 
     // Write initial snapshot count
     binaryWriter.unsignedInt32(this.initialSnapshot.length);
@@ -494,7 +579,7 @@ export class RecorderService {
     for (const event of this.spawnEvents) {
       binaryWriter.float64(event.timestamp);
       binaryWriter.variableLengthString(event.id);
-      binaryWriter.variableLengthString(event.type);
+      binaryWriter.signedInt16(event.type);
       binaryWriter.unsignedInt8(event.layer); // Write layer type (0 = UI, 1 = Scene)
       binaryWriter.float32(event.x);
       binaryWriter.float32(event.y);
@@ -566,7 +651,7 @@ export class RecorderService {
     snapshot: EntitySnapshot
   ): void {
     binaryWriter.variableLengthString(snapshot.id);
-    binaryWriter.variableLengthString(snapshot.type);
+    binaryWriter.signedInt16(snapshot.type);
     binaryWriter.unsignedInt8(snapshot.layer); // Write layer type (0 = UI, 1 = Scene)
     binaryWriter.float32(snapshot.x);
     binaryWriter.float32(snapshot.y);
@@ -613,7 +698,7 @@ export class RecorderService {
   public clearRecording(): void {
     this.frameCount = 0;
     this.endTime = 0;
-    this.recordedSceneId = "";
+    this.recordedSceneId = SceneType.Unknown;
     this.entityIdCache = new WeakMap<GameEntity, string>();
 
     // Clear delta recording structures

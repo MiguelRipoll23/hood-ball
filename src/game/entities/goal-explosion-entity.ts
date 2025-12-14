@@ -23,7 +23,7 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
   private distortionRadius = 0;
   private distortionOpacity = 1;
   private flashOpacity = 1;
-  private readonly color: string;
+  private color: string;
   private team: TeamType;
 
   constructor(
@@ -137,6 +137,9 @@ export class GoalExplosionEntity extends BaseMoveableGameEntity {
     this.y = reader.unsignedInt16();
     this.team = reader.unsignedInt8();
     this.elapsed = reader.unsignedInt16();
+
+    // Update color based on restored team
+    this.color = this.team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
 
     // Recalculate visual state based on elapsed time
     const t = Math.min(this.elapsed / this.duration, 1);

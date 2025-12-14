@@ -5,33 +5,47 @@ import type { GameEntity } from "../models/game-entity.js";
  *
  * Manages entity type registration for recording playback and provides
  * centralized entity ID generation.
+ *
+ * Uses numeric type IDs to remain game-agnostic. Game layer can define
+ * its own enum (e.g., EntityRegistryType) that maps to these numbers.
  */
 export class EntityRegistry {
-  private static registry = new Map<string, () => GameEntity>();
+  private static registry = new Map<number, () => GameEntity>();
+  private static reverseRegistry = new Map<Function, number>();
   private static entityIdCounter = 0;
 
   /**
    * Register an entity type with its factory function
    *
-   * @param typeId - Unique identifier for the entity type (e.g., "ball", "car", "boost-pad")
+   * @param typeId - Numeric entity type identifier (game layer can use enum values)
    * @param factory - Factory function that creates a new instance of the entity
+   * @param constructor - Optional constructor function for reverse lookup (type identification during recording)
    */
-  public static register(typeId: string, factory: () => GameEntity): void {
+  public static register(
+    typeId: number,
+    factory: () => GameEntity,
+    constructor?: Function
+  ): void {
     if (this.registry.has(typeId)) {
       console.warn(
         `Entity type "${typeId}" is already registered, overwriting`
       );
     }
     this.registry.set(typeId, factory);
+
+    // Register reverse mapping if constructor provided
+    if (constructor) {
+      this.reverseRegistry.set(constructor, typeId);
+    }
   }
 
   /**
    * Create an entity instance by its type ID
    *
-   * @param typeId - The entity type identifier
+   * @param typeId - Numeric entity type identifier (game layer can use enum values)
    * @returns A new entity instance, or null if the type is not registered
    */
-  public static create(typeId: string): GameEntity | null {
+  public static create(typeId: number): GameEntity | null {
     const factory = this.registry.get(typeId);
     if (!factory) {
       console.warn(
@@ -51,15 +65,25 @@ export class EntityRegistry {
   /**
    * Check if an entity type is registered
    */
-  public static has(typeId: string): boolean {
+  public static has(typeId: number): boolean {
     return this.registry.has(typeId);
   }
 
   /**
    * Get all registered entity type IDs
    */
-  public static getRegisteredTypes(): string[] {
+  public static getRegisteredTypes(): number[] {
     return Array.from(this.registry.keys());
+  }
+
+  /**
+   * Get the type ID for an entity constructor (reverse lookup)
+   *
+   * @param constructor - The entity constructor function
+   * @returns The type ID, or undefined if not registered
+   */
+  public static getTypeId(constructor: Function): number | undefined {
+    return this.reverseRegistry.get(constructor);
   }
 
   /**
@@ -85,6 +109,7 @@ export class EntityRegistry {
    */
   public static clear(): void {
     this.registry.clear();
+    this.reverseRegistry.clear();
   }
 
   /**

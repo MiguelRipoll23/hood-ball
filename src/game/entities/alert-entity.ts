@@ -20,18 +20,6 @@ export class AlertEntity
 
   private timer: TimerService | null = null;
 
-  private static COLOR_CODES: Record<string, number> = {
-    white: 0,
-    red: 1,
-    blue: 2,
-  };
-
-  private static COLOR_CODES_REVERSE: Record<number, string> = {
-    0: "white",
-    1: "red",
-    2: "blue",
-  };
-
   constructor(protected readonly canvas: HTMLCanvasElement) {
     super();
     this.setInitialValues();
@@ -111,12 +99,8 @@ export class AlertEntity
 
     for (let i = 0; i < this.textLines.length; i++) {
       writer.variableLengthString(this.textLines[i] ?? "");
-
-      // store color as integer code
-      const code =
-        AlertEntity.COLOR_CODES[this.lineColors[i]?.toLowerCase() ?? "white"] ??
-        0;
-      writer.unsignedInt8(code);
+      // Store color as string (supports both named colors and hex values)
+      writer.variableLengthString(this.lineColors[i] ?? "white");
     }
 
     writer.float32(this.opacity);
@@ -139,8 +123,7 @@ export class AlertEntity
 
       for (let i = 0; i < lineCount; i++) {
         const text = reader.variableLengthString();
-        const code = reader.unsignedInt8();
-        const colorStr = AlertEntity.COLOR_CODES_REVERSE[code] ?? "white";
+        const colorStr = reader.variableLengthString();
 
         textLines.push(text);
         lineColors.push(colorStr);

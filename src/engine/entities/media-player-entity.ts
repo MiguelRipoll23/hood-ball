@@ -73,11 +73,16 @@ export class MediaPlayerEntity extends BaseGameEntity {
     context.fillStyle = "white";
     context.font = "14px monospace";
     context.textAlign = "left";
-    context.fillText(`${currentTimeStr} / ${totalTimeStr}`, barX, barY + barHeight + 20);
+    context.fillText(
+      `${currentTimeStr} / ${totalTimeStr}`,
+      barX,
+      barY + barHeight + 20
+    );
 
     // Playback state indicator
     context.textAlign = "right";
-    const stateText = state === PlaybackState.Playing ? "▶ Playing" : "⏸ Paused";
+    const stateText =
+      state === PlaybackState.Playing ? "▶ Playing" : "⏸ Paused";
     context.fillText(stateText, canvas.width - padding, barY + barHeight + 20);
 
     context.restore();
@@ -87,7 +92,7 @@ export class MediaPlayerEntity extends BaseGameEntity {
     const totalSeconds = Math.floor(ms / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   }
 
   /**

@@ -167,6 +167,9 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.remote = isRemote || isNpc;
     this.imagePath = this.remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
 
+    // Reload the car image to reflect the new path
+    this.loadCarImage();
+
     // Update or create owner with the player name from replay
     if (!this.owner) {
       this.setOwner(

@@ -1,4 +1,5 @@
 import { EntityRegistry } from "../../engine/services/entity-registry.js";
+import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { LocalCarEntity } from "../entities/local-car-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
@@ -24,60 +25,90 @@ import { WorldBackgroundEntity } from "../entities/backgrounds/world-background-
  */
 export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
   // Register core gameplay entities
-  EntityRegistry.register("BallEntity", () => new BallEntity(0, 0, canvas));
+  EntityRegistry.register(
+    EntityRegistryType.Ball,
+    () => new BallEntity(0, 0, canvas),
+    BallEntity
+  );
 
   // Register car entities with their actual classes
   // Note: LocalCarEntity ignores input handlers when undefined (replay mode)
   EntityRegistry.register(
-    "LocalCarEntity",
-    () => new LocalCarEntity(0, 0, 0, canvas)
+    EntityRegistryType.LocalCar,
+    () => new LocalCarEntity(0, 0, 0, canvas),
+    LocalCarEntity
   );
   EntityRegistry.register(
-    "RemoteCarEntity",
-    () => new RemoteCarEntity("", 0, 0, 0, 0, false, 100)
+    EntityRegistryType.RemoteCar,
+    () => new RemoteCarEntity("", 0, 0, 0, 0, false, 100),
+    RemoteCarEntity
   );
   EntityRegistry.register(
-    "CarEntity",
-    () => new RemoteCarEntity("", 0, 0, 0, 0, false, 100)
-  );
-  EntityRegistry.register(
-    "NpcCarEntity",
-    () => new NpcCarEntity(0, 0, 0, canvas)
+    EntityRegistryType.NpcCar,
+    () => new NpcCarEntity(0, 0, 0, canvas),
+    NpcCarEntity
   );
 
-  EntityRegistry.register("GoalEntity", () => new GoalEntity(canvas));
   EntityRegistry.register(
-    "GoalExplosionEntity",
-    () => new GoalExplosionEntity(canvas, 0, 0, 0)
+    EntityRegistryType.Goal,
+    () => new GoalEntity(canvas),
+    GoalEntity
   );
   EntityRegistry.register(
-    "CarExplosionEntity",
-    () => new CarExplosionEntity(0, 0)
+    EntityRegistryType.GoalExplosion,
+    () => new GoalExplosionEntity(canvas, 0, 0, 0),
+    GoalExplosionEntity
+  );
+  EntityRegistry.register(
+    EntityRegistryType.CarExplosion,
+    () => new CarExplosionEntity(0, 0),
+    CarExplosionEntity
   );
 
   // Boost pads need index, but for replay we can use 0 as placeholder
-  EntityRegistry.register("BoostPadEntity", () => new BoostPadEntity(0, 0, 0));
+  EntityRegistry.register(
+    EntityRegistryType.BoostPad,
+    () => new BoostPadEntity(0, 0, 0),
+    BoostPadEntity
+  );
 
   // UI Entities
   EntityRegistry.register(
-    "ScoreboardEntity",
-    () => new ScoreboardEntity(canvas)
+    EntityRegistryType.Scoreboard,
+    () => new ScoreboardEntity(canvas),
+    ScoreboardEntity
   );
-  EntityRegistry.register("AlertEntity", () => new AlertEntity(canvas));
-  EntityRegistry.register("ToastEntity", () => new ToastEntity(canvas));
-  EntityRegistry.register("HelpEntity", () => new HelpEntity(canvas));
-  EntityRegistry.register("MatchLogEntity", () => new MatchLogEntity(canvas));
   EntityRegistry.register(
-    "BoostMeterEntity",
-    () => new BoostMeterEntity(canvas)
+    EntityRegistryType.Alert,
+    () => new AlertEntity(canvas),
+    AlertEntity
   );
-
-  // Skip ChatButtonEntity - requires too many dependencies for replay
+  EntityRegistry.register(
+    EntityRegistryType.Toast,
+    () => new ToastEntity(canvas),
+    ToastEntity
+  );
+  EntityRegistry.register(
+    EntityRegistryType.Help,
+    () => new HelpEntity(canvas),
+    HelpEntity
+  );
+  EntityRegistry.register(
+    EntityRegistryType.MatchLog,
+    () => new MatchLogEntity(canvas),
+    MatchLogEntity
+  );
+  EntityRegistry.register(
+    EntityRegistryType.BoostMeter,
+    () => new BoostMeterEntity(canvas),
+    BoostMeterEntity
+  );
 
   // Background
   EntityRegistry.register(
-    "WorldBackgroundEntity",
-    () => new WorldBackgroundEntity(canvas)
+    EntityRegistryType.WorldBackground,
+    () => new WorldBackgroundEntity(canvas),
+    WorldBackgroundEntity
   );
 
   console.log(
@@ -85,4 +116,24 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
       EntityRegistry.getRegisteredTypes().length
     } entity types for recording playback`
   );
+}
+
+/**
+ * Returns a mapper function that uses EntityRegistry reverse lookup to determine entity types.
+ * This mapper is injected into the recorder service to avoid engine->game dependencies.
+ */
+export function getEntityTypeMapper() {
+  return (entity: any): number | null => {
+    const type = EntityRegistry.getTypeId(entity.constructor);
+
+    if (type === undefined) {
+      console.warn(
+        `Unknown entity type for recording: ${entity.constructor.name}`
+      );
+
+      return null;
+    }
+
+    return type;
+  };
 }
