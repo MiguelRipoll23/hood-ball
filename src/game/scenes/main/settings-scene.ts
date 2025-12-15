@@ -14,7 +14,7 @@ export class SettingsScene extends BaseGameScene {
 
   constructor(
     gameState: GameState,
-    eventConsumerService: EventConsumerService,
+    eventConsumerService: EventConsumerService
   ) {
     super(gameState, eventConsumerService);
   }
@@ -40,7 +40,7 @@ export class SettingsScene extends BaseGameScene {
     this.buttonEntity = new ButtonEntity(this.canvas, "Back");
     this.buttonEntity.setPosition(
       this.canvas.width / 2,
-      this.canvas.height - 60 - 20,
+      this.canvas.height - 60 - 20
     );
     this.uiEntities.push(this.buttonEntity);
   }
@@ -66,11 +66,12 @@ export class SettingsScene extends BaseGameScene {
       return;
     }
 
-    const menuEnabled = this.gameState.getDebugSettings().isMenuEnabled();
+    const menuEnabled =
+      this.gameState.getDebugSettings().isMenuEnabled();
     const settingEntity = new SettingEntity(
       "debug-menu",
       "Show menu",
-      menuEnabled,
+      menuEnabled
     );
 
     settingEntity.setY(115);

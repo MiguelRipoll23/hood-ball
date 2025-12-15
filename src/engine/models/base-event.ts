@@ -1,4 +1,4 @@
-import type { EventType } from "../../game/enums/event-type.js";
+import type { EventType } from "../enums/event-type.js";
 import type { GameEvent } from "../interfaces/models/game-event-interface.js";
 
 export class BaseEvent<T> implements GameEvent {

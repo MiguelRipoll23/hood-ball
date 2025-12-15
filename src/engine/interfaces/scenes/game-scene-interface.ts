@@ -1,5 +1,5 @@
 import { LayerType } from "../../enums/layer-type.js";
-import type { SceneType } from "../../../game/enums/scene-type.js";
+import type { SceneType } from "../../enums/scene-type.js";
 import type { GameEntity } from "../../models/game-entity.js";
 import type { SceneManagerServiceContract } from "../services/scene/scene-manager-service-contract.js";
 

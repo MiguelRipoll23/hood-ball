@@ -1,4 +1,4 @@
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options-interface.js";
 import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request-interface.js";
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request-interface.js";

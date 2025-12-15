@@ -21,8 +21,8 @@ export class LoadingScene extends BaseGameScene {
     gameState: GameState,
     eventConsumerService: EventConsumerService,
     sceneTransitionService: SceneTransitionService = container.get(
-      SceneTransitionService,
-    ),
+      SceneTransitionService
+    )
   ) {
     super(gameState, eventConsumerService);
     this.sceneTransitionService = sceneTransitionService;
@@ -50,7 +50,7 @@ export class LoadingScene extends BaseGameScene {
     const loadedEntities = this.worldScene?.getLoadedEntitiesCount() || 0;
 
     this.entities?.progressBarEntity.setProgress(
-      loadedEntities / totalEntities,
+      loadedEntities / totalEntities
     );
 
     if (
@@ -63,7 +63,7 @@ export class LoadingScene extends BaseGameScene {
         this.gameState.getGameFrame(),
         this.worldScene!,
         1,
-        1,
+        1
       );
     }
 

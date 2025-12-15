@@ -1,7 +1,7 @@
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";

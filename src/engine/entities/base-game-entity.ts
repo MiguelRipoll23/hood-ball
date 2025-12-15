@@ -4,26 +4,20 @@ import type { DebugSettings } from "../models/debug-settings.js";
 import { EntityRegistry } from "../services/entity-registry.js";
 
 export class BaseGameEntity implements GameEntity {
-  protected id: string;
-  protected typeId: number | null = null;
-
   protected loaded: boolean = false;
   protected state: EntityStateType = EntityStateType.Active;
   protected removed: boolean = false;
   protected opacity: number = 1;
+  protected entityId: string;
 
   protected debugSettings: DebugSettings | null = null;
 
   constructor() {
     // Generate unique ID using counter and constructor name
-    this.id = `${
+    this.entityId = `${
       this.constructor.name
-    }_${EntityRegistry.getNextId()}`;
+    }_${EntityRegistry.getNextEntityId()}`;
     console.log(`${this.constructor.name} created`);
-  }
-
-  public static getTypeId(): number {
-    throw new Error("Method not implemented.");
   }
 
   /**
@@ -32,22 +26,14 @@ export class BaseGameEntity implements GameEntity {
    * Returns the auto-generated ID by default.
    */
   public getId(): string {
-    return this.id;
-  }
-
-  public getTypeId(): number | null {
-    return this.typeId;
-  }
-
-  public setTypeId(typeId: number): void {
-    this.typeId = typeId;
+    return this.entityId;
   }
 
   /**
    * Sets the entity ID. Useful for restoring entities during replay.
    */
   public setId(id: string): void {
-    this.id = id;
+    this.entityId = id;
   }
 
   public load() {

@@ -27,7 +27,7 @@ export class LoadingController {
       container.get(EventProcessorService),
       container.get(SpawnPointService),
       container.get(ChatService),
-      container.get(MatchActionsLogService),
+      container.get(MatchActionsLogService)
     );
     worldScene.load();
     return worldScene;

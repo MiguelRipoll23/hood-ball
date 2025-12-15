@@ -11,7 +11,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
   constructor(
     gameState: GameState,
-    eventConsumerService: EventConsumerService,
+    eventConsumerService: EventConsumerService
   ) {
     super(gameState, eventConsumerService);
   }
@@ -31,8 +31,8 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   public detectCollisions(): void {
-    const collidingEntities: BaseStaticCollidingGameEntity[] = this
-      .worldEntities.filter(this.isCollidingEntity);
+    const collidingEntities: BaseStaticCollidingGameEntity[] =
+      this.worldEntities.filter(this.isCollidingEntity);
 
     collidingEntities.forEach((collidingEntity) => {
       // Reset colliding state for hitboxes
@@ -47,7 +47,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
         this.detectStaticAndDynamicCollisions(
           collidingEntity,
-          otherCollidingEntity,
+          otherCollidingEntity
         );
       });
 
@@ -58,7 +58,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   private isCollidingEntity(
-    gameEntity: GameEntity,
+    gameEntity: GameEntity
   ): gameEntity is
     | BaseStaticCollidingGameEntity
     | BaseDynamicCollidingGameEntity {
@@ -74,7 +74,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       | BaseDynamicCollidingGameEntity,
     otherCollidingEntity:
       | BaseStaticCollidingGameEntity
-      | BaseDynamicCollidingGameEntity,
+      | BaseDynamicCollidingGameEntity
   ): void {
     const hitboxes = collidingEntity.getHitboxEntities();
     const otherHitboxes = otherCollidingEntity.getHitboxEntities();
@@ -106,7 +106,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     if (areDynamicEntitiesColliding) {
       this.simulateCollisionBetweenDynamicEntities(
         collidingEntity,
-        otherCollidingEntity,
+        otherCollidingEntity
       );
     } else if (isDynamicEntityCollidingWithStatic) {
       if (collidingEntity.isAvoidingCollision()) {
@@ -119,7 +119,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
   private doesHitboxesIntersect(
     hitboxEntities: HitboxEntity[],
-    otherHitboxEntities: HitboxEntity[],
+    otherHitboxEntities: HitboxEntity[]
   ) {
     let intersecting = false;
 
@@ -142,7 +142,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   private calculatePenetrationCorrection(
-    dynamicEntity: BaseDynamicCollidingGameEntity,
+    dynamicEntity: BaseDynamicCollidingGameEntity
   ): { x: number; y: number } {
     const dynamicHitboxes = dynamicEntity.getHitboxEntities();
     let maxPenetrationX = 0;
@@ -193,9 +193,10 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
               const depth = minHorizontal;
               if (depth > maxPenetrationDepth) {
                 maxPenetrationDepth = depth;
-                maxPenetrationX = penetrationLeft < penetrationRight
-                  ? -penetrationLeft
-                  : penetrationRight;
+                maxPenetrationX =
+                  penetrationLeft < penetrationRight
+                    ? -penetrationLeft
+                    : penetrationRight;
                 maxPenetrationY = 0;
               }
             } else {
@@ -204,9 +205,10 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
               if (depth > maxPenetrationDepth) {
                 maxPenetrationDepth = depth;
                 maxPenetrationX = 0;
-                maxPenetrationY = penetrationTop < penetrationBottom
-                  ? -penetrationTop
-                  : penetrationBottom;
+                maxPenetrationY =
+                  penetrationTop < penetrationBottom
+                    ? -penetrationTop
+                    : penetrationBottom;
               }
             }
           }
@@ -218,11 +220,11 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   private simulateCollisionBetweenDynamicAndStaticEntities(
-    dynamicCollidingEntity: BaseDynamicCollidingGameEntity,
+    dynamicCollidingEntity: BaseDynamicCollidingGameEntity
   ) {
     // Calculate penetration depth and correction
     const correction = this.calculatePenetrationCorrection(
-      dynamicCollidingEntity,
+      dynamicCollidingEntity
     );
 
     // Apply position correction to push entity back inside bounds
@@ -258,7 +260,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
   private simulateCollisionBetweenDynamicEntities(
     dynamicCollidingEntity: BaseDynamicCollidingGameEntity,
-    otherDynamicCollidingEntity: BaseDynamicCollidingGameEntity,
+    otherDynamicCollidingEntity: BaseDynamicCollidingGameEntity
   ) {
     // Calculate collision vector
     const vCollision = {
@@ -268,7 +270,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
     // Calculate distance between entities
     let distance = Math.sqrt(
-      Math.pow(vCollision.x, 2) + Math.pow(vCollision.y, 2),
+      Math.pow(vCollision.x, 2) + Math.pow(vCollision.y, 2)
     );
 
     const MIN_DISTANCE = 1;
@@ -300,10 +302,10 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
       dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() - pushY);
 
       otherDynamicCollidingEntity.setVX(
-        otherDynamicCollidingEntity.getVX() + pushX,
+        otherDynamicCollidingEntity.getVX() + pushX
       );
       otherDynamicCollidingEntity.setVY(
-        otherDynamicCollidingEntity.getVY() + pushY,
+        otherDynamicCollidingEntity.getVY() + pushY
       );
 
       return;
@@ -322,7 +324,8 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     };
 
     // Calculate speed along collision normal
-    const speed = vRelativeVelocity.x * vCollisionNorm.x +
+    const speed =
+      vRelativeVelocity.x * vCollisionNorm.x +
       vRelativeVelocity.y * vCollisionNorm.y;
 
     if (speed < 0) {
@@ -333,26 +336,27 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     // Calculate impulse with restitution
     const restitution = Math.min(
       dynamicCollidingEntity.getBounciness(),
-      otherDynamicCollidingEntity.getBounciness(),
+      otherDynamicCollidingEntity.getBounciness()
     );
-    const impulse = ((1 + restitution) * speed) /
+    const impulse =
+      ((1 + restitution) * speed) /
       (dynamicCollidingEntity.getMass() +
         otherDynamicCollidingEntity.getMass());
 
     // Update velocities for both movable entities
-    const impulseX = impulse * otherDynamicCollidingEntity.getMass() *
-      vCollisionNorm.x;
-    const impulseY = impulse * otherDynamicCollidingEntity.getMass() *
-      vCollisionNorm.y;
+    const impulseX =
+      impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.x;
+    const impulseY =
+      impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.y;
 
     dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() + impulseX);
     dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() + impulseY);
 
     otherDynamicCollidingEntity.setVX(
-      otherDynamicCollidingEntity.getVX() - impulseX,
+      otherDynamicCollidingEntity.getVX() - impulseX
     );
     otherDynamicCollidingEntity.setVY(
-      otherDynamicCollidingEntity.getVY() - impulseY,
+      otherDynamicCollidingEntity.getVY() - impulseY
     );
   }
 }
