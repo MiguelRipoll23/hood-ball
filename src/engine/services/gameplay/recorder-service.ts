@@ -9,7 +9,7 @@ import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despa
 import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 import { LayerType } from "../../enums/layer-type.js";
-import { SceneType } from "../../enums/scene-type.js";
+import { SceneType } from "../../../game/enums/scene-type.js";
 
 // Maximum recording duration in minutes
 const MAX_RECORDING_DURATION_MINUTES = 15;
@@ -325,7 +325,8 @@ export class RecorderService {
     };
 
     // Get entity type - skip if unknown
-    const type = this.getEntityTypeId(entity);
+    const type = entity.getTypeId();
+
     if (type === null) {
       return null;
     }

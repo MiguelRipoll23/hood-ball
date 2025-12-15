@@ -1,6 +1,6 @@
 import { GamePlayer } from "../../models/game-player.js";
 import type { PeerConnectionListener } from "../../interfaces/peer-connection-listener-interface.js";
-import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
 import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";

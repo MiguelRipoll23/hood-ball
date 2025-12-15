@@ -1,4 +1,4 @@
-import { injectable, inject } from "@needle-di/core";
+import { inject, injectable } from "@needle-di/core";
 import type { DeltaRecordingData } from "./recorder-service.js";
 import { BinaryReader } from "../../utils/binary-reader-utils.js";
 import type { EntitySnapshot } from "../../interfaces/recording/entity-snapshot-interface.js";
@@ -9,7 +9,7 @@ import type { EntityStateDelta } from "../../interfaces/recording/entity-state-d
 import type { GameEntity } from "../../models/game-entity.js";
 import { EntityRegistry } from "../entity-registry.js";
 import { GameState } from "../../models/game-state.js";
-import { SceneType } from "../../enums/scene-type.js";
+import { SceneType } from "../../../game/enums/scene-type.js";
 import { LayerType } from "../../enums/layer-type.js";
 import { container } from "../di-container.js";
 import { EventConsumerService } from "./event-consumer-service.js";
@@ -82,7 +82,7 @@ export class RecordingPlayerService {
         endTime,
         totalFrames,
         fps,
-        sceneId
+        sceneId,
       );
 
       this.playbackState = PlaybackState.Stopped;
@@ -98,7 +98,7 @@ export class RecordingPlayerService {
     endTime: number,
     totalFrames: number,
     fps: number,
-    sceneId: number
+    sceneId: number,
   ): Promise<void> {
     // Read initial snapshot
     const snapshotCount = reader.unsignedInt32();
@@ -318,7 +318,7 @@ export class RecordingPlayerService {
         null, // spawnPointService - not needed for replay
         null, // chatService - not needed for replay
         null, // matchActionsLogService - not needed for replay
-        true // REPLAY MODE - don't create entities
+        true, // REPLAY MODE - don't create entities
       );
 
       // Load the scene - it will skip entity creation due to replay mode
@@ -365,7 +365,7 @@ export class RecordingPlayerService {
     // Check if entity is already spawned
     if (this.spawnedEntities.has(snapshot.id)) {
       console.warn(
-        `Entity ${snapshot.id} already spawned, skipping duplicate spawn`
+        `Entity ${snapshot.id} already spawned, skipping duplicate spawn`,
       );
       return;
     }
@@ -374,7 +374,7 @@ export class RecordingPlayerService {
     const entity = EntityRegistry.create(snapshot.type);
     if (!entity) {
       console.warn(
-        `Cannot spawn entity of type "${snapshot.type}" - not registered`
+        `Cannot spawn entity of type "${snapshot.type}" - not registered`,
       );
       return;
     }
@@ -399,7 +399,7 @@ export class RecordingPlayerService {
           uiEntities.push(entity);
         } else {
           console.warn(
-            `Scene doesn't have uiEntities array, falling back to world layer`
+            `Scene doesn't have uiEntities array, falling back to world layer`,
           );
           currentScene.addEntityToSceneLayer(entity);
         }
@@ -415,7 +415,7 @@ export class RecordingPlayerService {
 
   private applySnapshotToEntity(
     entity: GameEntity,
-    snapshot: EntitySnapshot
+    snapshot: EntitySnapshot,
   ): void {
     // If entity has serialized data, use applyReplayState() method
     if (snapshot.serializedData && snapshot.serializedData.byteLength > 0) {
@@ -427,7 +427,7 @@ export class RecordingPlayerService {
       snapshot.serializedData.byteLength === 0
     ) {
       console.warn(
-        `Entity ${snapshot.id} (${snapshot.type}) has empty serializedData`
+        `Entity ${snapshot.id} (${snapshot.type}) has empty serializedData`,
       );
     }
 
@@ -587,10 +587,12 @@ export class RecordingPlayerService {
         if (delta.x !== undefined) entityState.x = delta.x;
         if (delta.y !== undefined) entityState.y = delta.y;
         if (delta.angle !== undefined) entityState.angle = delta.angle;
-        if (delta.velocityX !== undefined)
+        if (delta.velocityX !== undefined) {
           entityState.velocityX = delta.velocityX;
-        if (delta.velocityY !== undefined)
+        }
+        if (delta.velocityY !== undefined) {
           entityState.velocityY = delta.velocityY;
+        }
 
         // Apply to actual entity
         const entity = this.spawnedEntities.get(delta.id);
@@ -614,7 +616,7 @@ export class RecordingPlayerService {
         // Check for empty or invalid serialized data before applying
         if (!delta.serializedData || delta.serializedData.byteLength === 0) {
           console.warn(
-            `State delta for entity ${delta.id} has empty serializedData at timestamp ${delta.timestamp}`
+            `State delta for entity ${delta.id} has empty serializedData at timestamp ${delta.timestamp}`,
           );
         } else {
           // Apply serialized data using entity's applyReplayState() method
@@ -622,7 +624,7 @@ export class RecordingPlayerService {
         }
       } else {
         console.warn(
-          `State delta for unknown entity ${delta.id} at timestamp ${delta.timestamp}`
+          `State delta for unknown entity ${delta.id} at timestamp ${delta.timestamp}`,
         );
       }
 

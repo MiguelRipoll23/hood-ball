@@ -6,7 +6,7 @@ import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import type { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
-import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
+import { WebRTCType } from "../../enums/webrtc-type.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";

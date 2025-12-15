@@ -1,4 +1,4 @@
-import { EntityType } from "../enums/entity-type.js";
+import { EntityType } from "../../game/enums/entity-type.js";
 import type {
   MultiplayerGameEntity,
   StaticMultiplayerGameEntity,

@@ -2,7 +2,7 @@ import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import type { EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { EventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload-interface.js";
 import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload-interface.js";
