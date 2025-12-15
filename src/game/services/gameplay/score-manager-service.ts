@@ -1,5 +1,5 @@
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { EventType } from "../../enums/event-type.js";
+import { EventType } from "../../../engine/enums/event-type.js";
 import { TeamType } from "../../enums/team-type.js";
 
 import { RemoteEvent } from "../../../engine/models/remote-event.js";

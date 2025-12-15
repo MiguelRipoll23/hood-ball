@@ -15,7 +15,6 @@ import { HelpEntity } from "../entities/help-entity.js";
 import { MatchLogEntity } from "../entities/match-log-entity.js";
 import { BoostMeterEntity } from "../entities/boost-meter-entity.js";
 import { WorldBackgroundEntity } from "../entities/backgrounds/world-background-entity.js";
-import type { GameEntity } from "../../engine/models/game-entity.js";
 
 /**
  * Register all game entity types for recording/playback
@@ -29,6 +28,7 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
   EntityRegistry.register(
     EntityRegistryType.Ball,
     () => new BallEntity(0, 0, canvas),
+    BallEntity
   );
 
   // Register car entities with their actual classes
@@ -36,78 +36,85 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
   EntityRegistry.register(
     EntityRegistryType.LocalCar,
     () => new LocalCarEntity(0, 0, 0, canvas),
+    LocalCarEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.RemoteCar,
     () => new RemoteCarEntity("", 0, 0, 0, 0, false, 100),
+    RemoteCarEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.NpcCar,
     () => new NpcCarEntity(0, 0, 0, canvas),
+    NpcCarEntity
   );
 
   EntityRegistry.register(
     EntityRegistryType.Goal,
     () => new GoalEntity(canvas),
+    GoalEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.GoalExplosion,
     () => new GoalExplosionEntity(canvas, 0, 0, 0),
+    GoalExplosionEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.CarExplosion,
     () => new CarExplosionEntity(0, 0),
+    CarExplosionEntity
   );
 
   // Boost pads need index, but for replay we can use 0 as placeholder
   EntityRegistry.register(
     EntityRegistryType.BoostPad,
     () => new BoostPadEntity(0, 0, 0),
+    BoostPadEntity
   );
 
   // UI Entities
   EntityRegistry.register(
     EntityRegistryType.Scoreboard,
     () => new ScoreboardEntity(canvas),
+    ScoreboardEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.Alert,
     () => new AlertEntity(canvas),
+    AlertEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.Toast,
     () => new ToastEntity(canvas),
+    ToastEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.Help,
     () => new HelpEntity(canvas),
+    HelpEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.MatchLog,
     () => new MatchLogEntity(canvas),
+    MatchLogEntity
   );
-
   EntityRegistry.register(
     EntityRegistryType.BoostMeter,
     () => new BoostMeterEntity(canvas),
+    BoostMeterEntity
   );
 
   // Background
   EntityRegistry.register(
     EntityRegistryType.WorldBackground,
     () => new WorldBackgroundEntity(canvas),
+    WorldBackgroundEntity
   );
 
   console.log(
-    `Registered ${EntityRegistry.getRegisteredTypes().length} entity types for recording playback`,
+    `Registered ${
+      EntityRegistry.getRegisteredTypes().length
+    } entity types for recording playback`
   );
 }
 
@@ -116,8 +123,8 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
  * This mapper is injected into the recorder service to avoid engine->game dependencies.
  */
 export function getEntityTypeMapper() {
-  return (entity: GameEntity): number | null => {
-    const type = entity.getTypeId();
+  return (entity: any): number | null => {
+    const type = EntityRegistry.getTypeId(entity.constructor);
 
     if (type === undefined) {
       // Do not log warning, some entities don't need recording

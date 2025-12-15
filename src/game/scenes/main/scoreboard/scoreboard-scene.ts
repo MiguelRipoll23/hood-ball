@@ -17,7 +17,7 @@ export class ScoreboardScene extends BaseGameScene {
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    apiService: APIService = container.get(APIService),
+    apiService: APIService = container.get(APIService)
   ) {
     super(gameState, eventConsumerService);
     this.controller = new ScoreboardController(apiService);
@@ -38,7 +38,7 @@ export class ScoreboardScene extends BaseGameScene {
       titleEntity,
       buttonEntity,
       rankingTableEntity,
-      closeableMessageEntity,
+      closeableMessageEntity
     );
 
     super.load();

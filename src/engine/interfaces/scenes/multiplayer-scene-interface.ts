@@ -3,7 +3,7 @@ import type {
   StaticMultiplayerGameEntity,
 } from "../entities/multiplayer-game-entity-interface.js";
 import type { GameScene } from "./game-scene-interface.js";
-import type { EntityType } from "../../../game/enums/entity-type.js";
+import type { EntityType } from "../../enums/entity-type.js";
 
 export interface MultiplayerScene extends GameScene {
   getSyncableEntities(): MultiplayerGameEntity[];

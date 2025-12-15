@@ -1,7 +1,7 @@
 import { GameState } from "../models/game-state.ts";
 import { container } from "./di-container.ts";
 import { EventProcessorService } from "./gameplay/event-processor-service.ts";
-import { EventConsumerService } from "./gameplay/event-consumer-service.js";
+import { EventConsumerService } from "./gameplay/event-consumer-service.ts";
 import { CameraService } from "./gameplay/camera-service.ts";
 import { AnimationLogService } from "./gameplay/animation-log-service.ts";
 import { RecorderService } from "./gameplay/recorder-service.ts";
@@ -15,7 +15,7 @@ import { DebugService } from "./debug/debug-service.ts";
 export class ServiceRegistry {
   public static async register(
     canvas: HTMLCanvasElement,
-    debugging: boolean,
+    debugging: boolean
   ): Promise<void> {
     container.bind({ provide: HTMLCanvasElement, useValue: canvas });
     const gameState = new GameState(canvas, debugging);

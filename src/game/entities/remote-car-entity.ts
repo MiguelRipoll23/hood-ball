@@ -1,4 +1,4 @@
-import { EntityType } from "../enums/entity-type.js";
+import { EntityType } from "../../engine/enums/entity-type.js";
 import { CarEntity } from "./car-entity.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import {
