@@ -19,6 +19,7 @@ import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
+import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
 
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {
@@ -43,9 +44,16 @@ export class WebRTCService implements WebRTCServiceContract {
     private readonly gameState: GameState = inject(GameState),
     private readonly webSocketService: WebSocketServiceContract = inject(
       WebSocketService
+    ),
+    private readonly intervalManagerService: IntervalManagerService = inject(
+      IntervalManagerService
     )
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
+    this.intervalManagerService.createInterval(
+      1,
+      this.resetNetworkStats.bind(this)
+    );
     this.registerCommandHandlers(this);
   }
 
