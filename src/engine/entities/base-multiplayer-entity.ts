@@ -24,7 +24,7 @@ export class BaseMultiplayerGameEntity
    * Returns the multiplayer ID if set, otherwise falls back to the auto-generated ID.
    */
   public override getId(): string {
-    return this.id ?? this.id;
+    return this.id;
   }
 
   public override setId(id: string): void {
