@@ -16,7 +16,7 @@
     "vite": "^7.2.7"
   },
   "dependencies": {
-    "@mori2003/jsimgui": "^0.11.0",
+    "@mori2003/jsimgui": "^0.12.0",
     "@needle-di/core": "^1.1.0"
   }
 }
