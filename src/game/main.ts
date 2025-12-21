@@ -1,4 +1,5 @@
 import "./main.css";
+import { inject } from "@vercel/analytics";
 import { container } from "../engine/services/di-container.js";
 import { GameLoopService } from "../engine/services/gameplay/game-loop-service.js";
 import { ServiceRegistry } from "../engine/services/service-registry.js";
@@ -59,3 +60,6 @@ if (!canvas) {
 
 const game = new Game(canvas);
 await game.start();
+
+// Initialize Vercel Web Analytics
+inject();
