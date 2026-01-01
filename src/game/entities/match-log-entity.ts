@@ -274,6 +274,17 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
           { text: messageText, color: "white" },
         ];
       }
+      case MatchActionType.PlayerBanned: {
+        const playerId = action.getActorId();
+        const playerName =
+          action.getActorName() ?? this.getPlayerName(playerId);
+        const playerColor = this.getPlayerColor(playerId);
+
+        return [
+          { text: playerName, color: playerColor },
+          { text: " has been banned", color: "white" },
+        ];
+      }
       default:
         return [{ text: "Unknown action", color: "white" }];
     }

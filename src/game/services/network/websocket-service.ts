@@ -16,6 +16,9 @@ import { ServerCommandHandler } from "../../decorators/server-command-handler.js
 import { injectable, inject } from "@needle-di/core";
 import { GameState } from "../../../engine/models/game-state.js";
 import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
+import { MatchSessionService } from "../session/match-session-service.js";
+import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
+import { MatchAction } from "../../models/match-action.js";
 
 @injectable()
 export class WebSocketService implements WebSocketServiceContract {
@@ -39,7 +42,9 @@ export class WebSocketService implements WebSocketServiceContract {
     private readonly gameState: GameState = inject(GameState),
     private readonly eventProcessorService: EventProcessorServiceContract = inject(
       EventProcessorService
-    )
+    ),
+    private readonly matchSessionService: MatchSessionService = inject(MatchSessionService),
+    private readonly matchActionsLogService: MatchActionsLogService = inject(MatchActionsLogService)
   ) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.dispatcherService = new WebSocketDispatcherService();
@@ -215,6 +220,13 @@ export class WebSocketService implements WebSocketServiceContract {
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
+  @ServerCommandHandler(WebSocketType.UserBan)
+  public handleUserBan(binaryReader: BinaryReader) {
+    const userId = binaryReader.fixedLengthString(32);
+
+    this.processUserBan(userId);
+  }
+
   private addEventListeners(webSocket: WebSocket): void {
     webSocket.addEventListener("open", this.handleOpenEvent.bind(this));
     webSocket.addEventListener("close", this.handleCloseEvent.bind(this));
@@ -316,6 +328,31 @@ export class WebSocketService implements WebSocketServiceContract {
         error
       );
     }
+  }
+
+  private processUserBan(userId: string): void {
+    const match = this.matchSessionService.getMatch();
+
+    if (match === null) {
+      console.debug("Received UserBan message but no active match");
+      return;
+    }
+
+    if (!match.isHost()) {
+      console.debug("Received UserBan message but not host, ignoring");
+      return;
+    }
+
+    const player = match.getPlayerByNetworkId(userId);
+    const playerName = player?.getName() ?? userId;
+
+    console.log(`User banned: ${playerName} (${userId})`);
+
+    const action = MatchAction.playerBanned(userId, {
+      playerName,
+    });
+
+    this.matchActionsLogService.addAction(action);
   }
 
   private isLoggingEnabled(): boolean {

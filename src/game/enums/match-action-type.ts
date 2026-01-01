@@ -5,4 +5,5 @@ export enum MatchActionType {
   PlayerLeft = "player_left",
   ChatCommand = "chat_command",
   ChatMessage = "chat_message",
+  PlayerBanned = "player_banned",
 }

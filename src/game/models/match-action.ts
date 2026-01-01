@@ -158,6 +158,26 @@ export class MatchAction {
     );
   }
 
+  public static playerBanned(
+    playerId: string,
+    options: PlayerActionOptions = {}
+  ): MatchAction {
+    const { timestamp = Date.now(), playerName = null } = options;
+
+    return new MatchAction(
+      MatchActionType.PlayerBanned,
+      timestamp,
+      playerId,
+      null,
+      null,
+      null,
+      null,
+      playerName,
+      null,
+      null
+    );
+  }
+
   public getType(): MatchActionType {
     return this.type;
   }
