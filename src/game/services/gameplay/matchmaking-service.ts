@@ -43,6 +43,7 @@ export class MatchmakingService implements MatchmakingServiceContract {
       this.setupAdvertiseCallback();
       await this.matchFinderService.createAndAdvertiseMatch();
       this.networkService.startPingCheckInterval();
+      this.networkService.startMatchAdvertiseInterval();
       return;
     }
 
@@ -55,6 +56,7 @@ export class MatchmakingService implements MatchmakingServiceContract {
     this.setupAdvertiseCallback();
     await this.matchFinderService.createAndAdvertiseMatch();
     this.networkService.startPingCheckInterval();
+    this.networkService.startMatchAdvertiseInterval();
   }
 
   private setupAdvertiseCallback(): void {

@@ -6,6 +6,8 @@ export interface MatchmakingNetworkServiceContract {
   stopFindMatchesTimer(): void;
   startPingCheckInterval(): void;
   removePingCheckInterval(): void;
+  startMatchAdvertiseInterval(): void;
+  removeMatchAdvertiseInterval(): void;
   handlePlayerIdentity(binaryReader: BinaryReader): void;
   onPeerConnected(peer: WebRTCPeer): void;
   onPeerDisconnected(peer: WebRTCPeer, graceful: boolean): void;
