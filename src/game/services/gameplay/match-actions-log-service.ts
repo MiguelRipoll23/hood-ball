@@ -6,10 +6,8 @@ type MatchActionListener = (actions: MatchAction[]) => void;
 @injectable()
 export class MatchActionsLogService {
   private readonly maxActions = 5;
-  private readonly defaultDisplayDurationMs = 10000; // 10 seconds when not near limit
-  private readonly shortDisplayDurationMs = 3000; // 3 seconds when near limit
+  private readonly displayDurationMs = 10000; // 10 seconds
   private readonly fadeDurationMs = 500;
-  private readonly nearLimitThreshold = 4; // Start using shorter duration at 4 actions
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];
   private readonly removalTimeouts = new Map<
@@ -67,33 +65,24 @@ export class MatchActionsLogService {
   }
 
   private scheduleFadeOut(action: MatchAction): void {
-    const displayDuration = this.getDisplayDuration();
     const timeoutId = setTimeout(() => {
       action.startFadeOut(this.fadeDurationMs);
       this.fadeTimeouts.delete(action);
       this.notifyListeners();
-    }, displayDuration);
+    }, this.displayDurationMs);
 
     this.cancelFadeTimeout(action);
     this.fadeTimeouts.set(action, timeoutId);
   }
 
   private scheduleRemoval(action: MatchAction): void {
-    const displayDuration = this.getDisplayDuration();
-    const removalDelay = displayDuration + this.fadeDurationMs;
+    const removalDelay = this.displayDurationMs + this.fadeDurationMs;
     const timeoutId = setTimeout(() => {
       this.removeAction(action);
     }, removalDelay);
 
     this.cancelRemovalTimeout(action);
     this.removalTimeouts.set(action, timeoutId);
-  }
-
-  private getDisplayDuration(): number {
-    // Use shorter duration when we have 4 or more actions (approaching limit)
-    return this.actions.length >= this.nearLimitThreshold
-      ? this.shortDisplayDurationMs
-      : this.defaultDisplayDurationMs;
   }
 
   private removeAction(action: MatchAction): void {
