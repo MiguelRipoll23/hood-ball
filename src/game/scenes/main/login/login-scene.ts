@@ -24,6 +24,7 @@ export class LoginScene extends BaseGameScene {
   private registerButtonElement: HTMLElement | null = null;
   private signInButtonElement: HTMLElement | null = null;
   private readonly gameServer: GameServer;
+  private pendingErrorMessage: string | null = null;
 
   constructor() {
     const gameState = container.get(GameState);
@@ -64,6 +65,14 @@ export class LoginScene extends BaseGameScene {
 
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
+    
+    // Show pending error message if set (e.g., from ban)
+    if (this.pendingErrorMessage) {
+      this.showError(this.pendingErrorMessage);
+      this.pendingErrorMessage = null;
+      return;
+    }
+    
     this.checkForUpdates();
   }
 
@@ -226,6 +235,10 @@ export class LoginScene extends BaseGameScene {
 
   public override resubscribeEvents(): void {
     this.subscribeToEvents();
+  }
+
+  public setPendingError(message: string): void {
+    this.pendingErrorMessage = message;
   }
 
   private transitionToMainMenuScene(): void {

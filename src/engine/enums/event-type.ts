@@ -18,4 +18,5 @@ export enum EventType {
   ReturnToMainMenu,
   SnowWeather,
   PlayerBanned,
+  UserBannedByServer,
 }
