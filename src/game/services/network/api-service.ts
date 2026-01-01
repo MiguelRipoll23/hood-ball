@@ -61,6 +61,10 @@ export class APIService {
     this.authenticationToken = authenticationToken;
   }
 
+  public getAuthenticationToken(): string | null {
+    return this.authenticationToken;
+  }
+
   public async checkForUpdates(): Promise<boolean> {
     const response = await this.fetchWithLoading(
       this.baseURL + VERSION_ENDPOINT

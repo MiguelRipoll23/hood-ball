@@ -190,7 +190,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
           );
 
           // Add report button clickable area
-          const playerId = player.getId();
+          const playerId = player.getNetworkId();
           this.clickableAreas.push({
             x: buttonX,
             y: buttonY,
