@@ -428,6 +428,34 @@ export class WorldController {
     }
   }
 
+  public handleRemotePlayerBanned(data: ArrayBuffer | null): void {
+    if (data === null) {
+      console.warn("Array buffer is null");
+      return;
+    }
+
+    if (this.matchSessionService.getMatch()?.isHost()) {
+      console.warn("Host should not receive player banned event");
+      return;
+    }
+
+    const binaryReader = BinaryReader.fromArrayBuffer(data);
+    const playerId = binaryReader.fixedLengthString(32);
+
+    const player =
+      this.matchSessionService.getMatch()?.getPlayerByNetworkId(playerId) ??
+      null;
+    const playerName = player?.getName() ?? playerId;
+
+    console.log(`Player banned: ${playerName} (${playerId})`);
+
+    const action = MatchAction.playerBanned(playerId, {
+      playerName,
+    });
+
+    this.matchActionsLogService.addAction(action);
+  }
+
   public handleCarDemolitions(
     worldEntities: GameEntity[],
     triggerCarExplosion: (x: number, y: number) => void
