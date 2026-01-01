@@ -40,9 +40,9 @@ export class MatchmakingService implements MatchmakingServiceContract {
 
     if (matches.length === 0) {
       console.log("No matches found");
+      this.setupAdvertiseCallback();
       await this.matchFinderService.createAndAdvertiseMatch();
       this.networkService.startPingCheckInterval();
-      this.setupAdvertiseCallback();
       return;
     }
 
@@ -52,9 +52,9 @@ export class MatchmakingService implements MatchmakingServiceContract {
       this.networkService.startFindMatchesTimer(() => resolve());
     });
 
+    this.setupAdvertiseCallback();
     await this.matchFinderService.createAndAdvertiseMatch();
     this.networkService.startPingCheckInterval();
-    this.setupAdvertiseCallback();
   }
 
   private setupAdvertiseCallback(): void {

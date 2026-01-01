@@ -75,10 +75,15 @@ export class MatchSessionService {
     this.advertiseDebounceTimer = this.timerManagerService.createTimer(
       0.1, // 100ms in seconds
       () => {
-        if (this.advertiseCallback !== null) {
-          this.advertiseCallback();
-        }
+        const callback = this.advertiseCallback;
         this.advertiseDebounceTimer = null;
+        try {
+          if (callback !== null) {
+            callback();
+          }
+        } catch (error) {
+          console.error("Error in advertise callback:", error);
+        }
       },
       true // autoStart
     );
