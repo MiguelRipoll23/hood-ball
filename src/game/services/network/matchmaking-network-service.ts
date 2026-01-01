@@ -352,7 +352,7 @@ export class MatchmakingNetworkService
     const match = this.matchSessionService.getMatch();
 
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      await this.matchFinderService.advertiseMatch();
+      await this.matchFinderService.advertiseMatch(true);
     }
   }
 
@@ -435,7 +435,7 @@ export class MatchmakingNetworkService
 
     // Advertise match to update players count
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      await this.matchFinderService.advertiseMatch();
+      await this.matchFinderService.advertiseMatch(true);
     }
   }
 
