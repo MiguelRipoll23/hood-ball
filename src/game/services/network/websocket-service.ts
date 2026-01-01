@@ -339,7 +339,7 @@ export class WebSocketService implements WebSocketServiceContract {
     }
 
     if (!match.isHost()) {
-      console.warn("Received UserBan message but not host, ignoring");
+      console.debug("Received UserBan message but not host, ignoring");
       return;
     }
 
