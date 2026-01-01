@@ -16,6 +16,7 @@ import { MatchmakingCoordinator } from "../gameplay/matchmaking-coordinator.js";
 import { CredentialService } from "../security/credential-service.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 import { ChatService } from "../network/chat-service.js";
+import { PlayerModerationService } from "../network/player-moderation-service.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
@@ -72,6 +73,10 @@ export class GameServiceRegistry {
     });
     container.bind({ provide: WebRTCService, useClass: WebRTCService });
     container.bind({ provide: ChatService, useClass: ChatService });
+    container.bind({
+      provide: PlayerModerationService,
+      useClass: PlayerModerationService,
+    });
     container.bind({ provide: SpawnPointService, useClass: SpawnPointService });
     container.bind({
       provide: MatchActionsLogService,
