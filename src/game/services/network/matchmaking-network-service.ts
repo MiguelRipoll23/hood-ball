@@ -94,12 +94,14 @@ export class MatchmakingNetworkService
   public removePingCheckInterval(): void {
     if (this.pingCheckInterval !== null) {
       this.intervalManagerService.removeInterval(this.pingCheckInterval);
+      this.pingCheckInterval = null;
     }
   }
 
   public removeMatchAdvertiseInterval(): void {
     if (this.matchAdvertiseInterval !== null) {
       this.intervalManagerService.removeInterval(this.matchAdvertiseInterval);
+      this.matchAdvertiseInterval = null;
     }
   }
 
