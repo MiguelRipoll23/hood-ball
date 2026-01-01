@@ -334,7 +334,7 @@ export class WebSocketService implements WebSocketServiceContract {
     const match = this.matchSessionService.getMatch();
 
     if (match === null) {
-      console.warn("Received UserBan message but no active match");
+      console.debug("Received UserBan message but no active match");
       return;
     }
 
