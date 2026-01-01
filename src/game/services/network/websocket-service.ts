@@ -19,6 +19,7 @@ import type { WebSocketServiceContract } from "../../interfaces/services/network
 import { MatchSessionService } from "../session/match-session-service.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 import { MatchAction } from "../../models/match-action.js";
+import { RemoteEvent } from "../../../engine/models/remote-event.js";
 
 @injectable()
 export class WebSocketService implements WebSocketServiceContract {
@@ -348,11 +349,22 @@ export class WebSocketService implements WebSocketServiceContract {
 
     console.log(`User banned: ${playerName} (${userId})`);
 
+    // Add to local match log
     const action = MatchAction.playerBanned(userId, {
       playerName,
     });
 
     this.matchActionsLogService.addAction(action);
+
+    // Broadcast the ban event to all peers
+    const payload = BinaryWriter.build()
+      .fixedLengthString(userId, 32)
+      .toArrayBuffer();
+
+    const banEvent = new RemoteEvent(EventType.PlayerBanned);
+    banEvent.setData(payload);
+
+    this.eventProcessorService.sendEvent(banEvent);
   }
 
   private isLoggingEnabled(): boolean {
