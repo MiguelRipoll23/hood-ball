@@ -17,3 +17,4 @@ export const MATCHES_FIND_ENDPOINT = `${MATCHES_ENDPOINT}/find`;
 export const MATCHES_ADVERTISE_ENDPOINT = `${MATCHES_ENDPOINT}/advertise`;
 export const MATCHES_REMOVE_ENDPOINT = `${MATCHES_ENDPOINT}/owned`;
 export const USER_SCORES_PATH = "/user-scores";
+export const USER_MODERATION_REPORT_ENDPOINT = "/user-moderation/report";
