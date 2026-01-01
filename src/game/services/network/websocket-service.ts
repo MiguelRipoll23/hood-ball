@@ -253,6 +253,20 @@ export class WebSocketService implements WebSocketServiceContract {
     const wasConnected = this.gameServer.isConnected();
     this.gameServer.setConnected(false);
 
+    // Check if the user has been banned
+    if (event.code === 1000 && event.reason === "User has been banned") {
+      console.log("User has been banned from the server");
+      
+      // Stop any reconnection attempts
+      this.stopReconnection();
+      
+      // Emit user banned event
+      const localEvent = new LocalEvent(EventType.UserBannedByServer);
+      this.eventProcessorService.addLocalEvent(localEvent);
+      
+      return;
+    }
+
     // Only emit disconnected event if we were actually connected
     if (wasConnected) {
       const payload = {

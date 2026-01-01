@@ -8,6 +8,7 @@ import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
 import { SettingsScene } from "../settings-scene.js";
+import { LoginScene } from "../login/login-scene.js";
 import { EventType } from "../../../../engine/enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
@@ -21,6 +22,7 @@ import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
+import { MainScene } from "../main-scene.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -137,6 +139,11 @@ export class MainMenuScene extends BaseGameScene {
     this.subscribeToLocalEvent(
       EventType.ServerConnected,
       this.handleServerConnectedEvent.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.UserBannedByServer,
+      this.handleUserBannedByServerEvent.bind(this)
     );
   }
 
@@ -296,6 +303,18 @@ export class MainMenuScene extends BaseGameScene {
       .crossfade(this.sceneManagerService, settingsScene, 0.2);
   }
 
+  private transitionToLoginScene(): void {
+    const mainScene = new MainScene();
+    const loginScene = new LoginScene();
+
+    mainScene.activateScene(loginScene);
+    mainScene.load();
+
+    this.sceneManagerService
+      ?.getTransitionService()
+      .fadeOutAndIn(this.sceneManagerService, mainScene, 0.5, 0.5);
+  }
+
   private updateMenuButtonsConnectionState(): void {
     const isConnected = this.gameServer.isConnected();
 
@@ -350,6 +369,11 @@ export class MainMenuScene extends BaseGameScene {
   private handleServerConnectedEvent(): void {
     this.toastEntity?.hide();
     this.enableMenuButtons();
+  }
+
+  private handleUserBannedByServerEvent(): void {
+    console.log("User banned by server, transitioning to login scene");
+    this.transitionToLoginScene();
   }
 
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
