@@ -640,7 +640,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
   }
 
-  private async returnToLoginScene(): Promise<void> {
+  private returnToLoginScene(): void {
     console.log("Returning to login scene due to user ban");
     
     const mainScene = new MainScene();
