@@ -29,6 +29,7 @@ import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { SceneTransitionUtils } from "../../utils/scene-transition-utils.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
@@ -449,6 +450,11 @@ export class WorldScene extends BaseCollidingGameScene {
       () => void this.returnToMainMenuScene()
     );
 
+    this.subscribeToLocalEvent(
+      EventType.UserBannedByServer,
+      () => void this.returnToLoginScene()
+    );
+
     this.subscribeToLocalEvent(EventType.SnowWeather, () => {
       this.activateSnowWeather();
     });
@@ -702,6 +708,16 @@ export class WorldScene extends BaseCollidingGameScene {
       1,
       1
     );
+  }
+
+  private returnToLoginScene(): void {
+    console.log("Returning to login scene due to user ban");
+    
+    SceneTransitionUtils.transitionToLoginScene({
+      transitionService: this.sceneTransitionService,
+      gameFrame: this.gameState.getGameFrame(),
+      errorMessage: "You have been banned from the server"
+    });
   }
 
   private activateSnowWeather(): void {
