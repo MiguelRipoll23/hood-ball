@@ -22,7 +22,6 @@ import type { MatchmakingNetworkServiceContract } from "../../interfaces/service
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
-import { MatchFinderService } from "../gameplay/match-finder-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { injectable, inject } from "@needle-di/core";
 import {
@@ -37,7 +36,6 @@ export class MatchmakingNetworkService
 {
   private findMatchesTimerService: TimerServiceContract | null = null;
   private pingCheckInterval: IntervalServiceContract | null = null;
-  private advertiseMatchInterval: IntervalServiceContract | null = null;
 
   constructor(
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
@@ -56,9 +54,6 @@ export class MatchmakingNetworkService
     private readonly webrtcService: WebRTCService = inject(WebRTCService),
     private readonly eventProcessorService: EventProcessorService = inject(
       EventProcessorService
-    ),
-    private readonly matchFinderService: MatchFinderService = inject(
-      MatchFinderService
     ),
     private readonly spawnPointService: SpawnPointService = inject(
       SpawnPointService
@@ -91,27 +86,6 @@ export class MatchmakingNetworkService
   public removePingCheckInterval(): void {
     if (this.pingCheckInterval !== null) {
       this.intervalManagerService.removeInterval(this.pingCheckInterval);
-    }
-  }
-
-  public startAdvertiseMatchInterval(): void {
-    this.advertiseMatchInterval = this.intervalManagerService.createInterval(
-      60,
-      () => {
-        const match = this.matchSessionService.getMatch();
-        if (match === null || match.getPlayers().length < 2) {
-          return;
-        }
-        this.matchFinderService
-          .advertiseMatch()
-          .catch((error: unknown) => console.error(error));
-      }
-    );
-  }
-
-  public removeAdvertiseMatchInterval(): void {
-    if (this.advertiseMatchInterval !== null) {
-      this.intervalManagerService.removeInterval(this.advertiseMatchInterval);
     }
   }
 
@@ -315,7 +289,7 @@ export class MatchmakingNetworkService
   }
 
   @PeerCommandHandler(WebRTCType.SnapshotACK)
-  public async handleSnapshotACK(peer: WebRTCPeer): Promise<void> {
+  public handleSnapshotACK(peer: WebRTCPeer): void {
     console.log("Received snapshot ACK from", peer.getName());
 
     peer.setJoined(true);
@@ -348,11 +322,11 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(localEvent);
 
-    // Advertise match to update players count
+    // Advertise match to update players count (debounced)
     const match = this.matchSessionService.getMatch();
 
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      await this.matchFinderService.advertiseMatch(true);
+      this.matchSessionService.triggerAdvertise();
     }
   }
 
@@ -403,7 +377,7 @@ export class MatchmakingNetworkService
     peer.disconnect(true);
   }
 
-  private async handlePlayerDisconnection(peer: WebRTCPeer): Promise<void> {
+  private handlePlayerDisconnection(peer: WebRTCPeer): void {
     const player = peer.getPlayer() as GamePlayer | null;
 
     if (player === null) {
@@ -433,9 +407,9 @@ export class MatchmakingNetworkService
 
     this.eventProcessorService.addLocalEvent(playerDisconnectedEvent);
 
-    // Advertise match to update players count
+    // Advertise match to update players count (debounced)
     if (match !== null && match.getState() !== MatchStateType.GameOver) {
-      await this.matchFinderService.advertiseMatch(true);
+      this.matchSessionService.triggerAdvertise();
     }
   }
 

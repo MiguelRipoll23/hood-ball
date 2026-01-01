@@ -4,5 +4,5 @@ export interface MatchFinderServiceContract {
   findMatches(): Promise<FindMatchesResponse>;
   createAndAdvertiseMatch(): Promise<void>;
   joinMatches(matches: FindMatchesResponse): Promise<void>;
-  advertiseMatch(includeUsersList?: boolean): Promise<void>;
+  advertiseMatch(): Promise<void>;
 }
