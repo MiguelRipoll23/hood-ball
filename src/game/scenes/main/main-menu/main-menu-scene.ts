@@ -21,6 +21,8 @@ import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
+import { MainScene } from "../main-scene.js";
+import { LoginScene } from "../login/login-scene.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -137,6 +139,11 @@ export class MainMenuScene extends BaseGameScene {
     this.subscribeToLocalEvent(
       EventType.ServerConnected,
       this.handleServerConnectedEvent.bind(this)
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.PlayerBanned,
+      this.handlePlayerBannedEvent.bind(this)
     );
   }
 
@@ -354,5 +361,22 @@ export class MainMenuScene extends BaseGameScene {
 
   private handleOnlinePlayersEvent(payload: OnlinePlayersPayload): void {
     this.onlinePlayersEntity?.setOnlinePlayers(payload.total);
+  }
+
+  private handlePlayerBannedEvent(): void {
+    console.log("Player has been banned, transitioning to login scene");
+    this.transitionToLoginScene();
+  }
+
+  private transitionToLoginScene(): void {
+    const mainScene = new MainScene();
+    const loginScene = new LoginScene();
+
+    mainScene.activateScene(loginScene);
+    mainScene.load();
+
+    this.sceneManagerService
+      ?.getTransitionService()
+      .crossfade(this.sceneManagerService, mainScene, 0.2);
   }
 }

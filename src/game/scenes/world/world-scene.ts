@@ -25,6 +25,7 @@ import { SceneTransitionService } from "../../../engine/services/gameplay/scene-
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
+import { LoginScene } from "../main/login/login-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
@@ -446,6 +447,11 @@ export class WorldScene extends BaseCollidingGameScene {
     this.subscribeToLocalEvent(EventType.SnowWeather, () => {
       this.activateSnowWeather();
     });
+
+    this.subscribeToLocalEvent(
+      EventType.PlayerBanned,
+      () => void this.returnToLoginScene()
+    );
   }
 
   private subscribeToRemoteEvents(): void {
@@ -618,6 +624,23 @@ export class WorldScene extends BaseCollidingGameScene {
     }
 
     mainScene.activateScene(mainMenuScene);
+    mainScene.load();
+
+    this.sceneTransitionService.fadeOutAndIn(
+      this.gameState.getGameFrame(),
+      mainScene,
+      1,
+      1
+    );
+  }
+
+  private async returnToLoginScene(): Promise<void> {
+    console.log("Player has been banned, transitioning to login scene");
+    
+    const mainScene = new MainScene();
+    const loginScene = new LoginScene();
+
+    mainScene.activateScene(loginScene);
     mainScene.load();
 
     this.sceneTransitionService.fadeOutAndIn(

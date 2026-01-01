@@ -17,4 +17,5 @@ export enum EventType {
   CarDemolished,
   ReturnToMainMenu,
   SnowWeather,
+  PlayerBanned,
 }
