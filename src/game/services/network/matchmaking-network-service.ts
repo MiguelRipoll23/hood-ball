@@ -85,6 +85,12 @@ export class MatchmakingNetworkService
   }
 
   public startMatchAdvertiseInterval(): void {
+    if (this.matchAdvertiseInterval !== null) {
+      console.warn(
+        "Match advertise interval already exists, removing before creating new one"
+      );
+      this.removeMatchAdvertiseInterval();
+    }
     this.matchAdvertiseInterval = this.intervalManagerService.createInterval(
       60,
       this.triggerMatchAdvertise.bind(this)
