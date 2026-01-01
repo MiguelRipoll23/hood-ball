@@ -491,6 +491,12 @@ export class WorldScene extends BaseCollidingGameScene {
           this.triggerCarExplosion.bind(this)
         )
     );
+
+    this.subscribeToRemoteEvent(
+      EventType.PlayerBanned,
+      (data: ArrayBuffer | null) =>
+        this.worldController?.handleRemotePlayerBanned(data)
+    );
   }
 
   private setupChatUI(): void {
