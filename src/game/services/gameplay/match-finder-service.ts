@@ -75,7 +75,7 @@ export class MatchFinderService {
     await Promise.all(matches.map((m) => this.joinMatch(m)));
   }
 
-  public async advertiseMatch(): Promise<void> {
+  public async advertiseMatch(includeUsersList = false): Promise<void> {
     const match = this.matchSessionService.getMatch();
 
     if (match === null) {
@@ -86,7 +86,6 @@ export class MatchFinderService {
     const body: AdvertiseMatchRequest = {
       version: GAME_VERSION,
       totalSlots: match.getTotalSlots(),
-      availableSlots: match.getAvailableSlots(),
       attributes: match.getAttributes(),
     };
 
@@ -95,6 +94,17 @@ export class MatchFinderService {
       if (pingMedian !== null) {
         body.pingMedianMilliseconds = pingMedian;
       }
+    }
+
+    if (includeUsersList) {
+      const players = match.getPlayers();
+      
+      // Get all player IDs excluding the host
+      const usersList = players
+        .filter((player) => !player.isHost())
+        .map((player) => player.getId());
+      
+      body.usersList = usersList;
     }
 
     await this.apiService.advertiseMatch(body);
