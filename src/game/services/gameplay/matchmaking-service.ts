@@ -40,9 +40,9 @@ export class MatchmakingService implements MatchmakingServiceContract {
 
     if (matches.length === 0) {
       console.log("No matches found");
+      this.setupAdvertiseCallback();
       await this.matchFinderService.createAndAdvertiseMatch();
       this.networkService.startPingCheckInterval();
-      this.networkService.startAdvertiseMatchInterval();
       return;
     }
 
@@ -52,9 +52,20 @@ export class MatchmakingService implements MatchmakingServiceContract {
       this.networkService.startFindMatchesTimer(() => resolve());
     });
 
+    this.setupAdvertiseCallback();
     await this.matchFinderService.createAndAdvertiseMatch();
     this.networkService.startPingCheckInterval();
-    this.networkService.startAdvertiseMatchInterval();
+  }
+
+  private setupAdvertiseCallback(): void {
+    this.matchSessionService.setAdvertiseCallback(() => {
+      const match = this.matchSessionService.getMatch();
+      if (match !== null && match.getState() !== MatchStateType.GameOver) {
+        this.matchFinderService.advertiseMatch().catch((error: unknown) => {
+          console.error("Failed to advertise match:", error);
+        });
+      }
+    });
   }
 
   public async savePlayerScore(): Promise<void> {
