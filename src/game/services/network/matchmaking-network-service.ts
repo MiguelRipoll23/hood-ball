@@ -36,6 +36,7 @@ export class MatchmakingNetworkService
 {
   private findMatchesTimerService: TimerServiceContract | null = null;
   private pingCheckInterval: IntervalServiceContract | null = null;
+  private matchAdvertiseInterval: IntervalServiceContract | null = null;
 
   constructor(
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
@@ -83,9 +84,30 @@ export class MatchmakingNetworkService
     );
   }
 
+  public startMatchAdvertiseInterval(): void {
+    if (this.matchAdvertiseInterval !== null) {
+      console.warn(
+        "Match advertise interval already exists, removing before creating new one"
+      );
+      this.removeMatchAdvertiseInterval();
+    }
+    this.matchAdvertiseInterval = this.intervalManagerService.createInterval(
+      60,
+      this.triggerMatchAdvertise.bind(this)
+    );
+  }
+
   public removePingCheckInterval(): void {
     if (this.pingCheckInterval !== null) {
       this.intervalManagerService.removeInterval(this.pingCheckInterval);
+      this.pingCheckInterval = null;
+    }
+  }
+
+  public removeMatchAdvertiseInterval(): void {
+    if (this.matchAdvertiseInterval !== null) {
+      this.intervalManagerService.removeInterval(this.matchAdvertiseInterval);
+      this.matchAdvertiseInterval = null;
     }
   }
 
@@ -614,6 +636,15 @@ export class MatchmakingNetworkService
       .forEach((p: WebRTCPeer) => {
         p.sendPingRequest();
       });
+  }
+
+  private triggerMatchAdvertise(): void {
+    if (!this.gamePlayer.isHost()) return;
+
+    const match = this.matchSessionService.getMatch();
+    if (match !== null && match.getState() !== MatchStateType.GameOver) {
+      this.matchSessionService.triggerAdvertise();
+    }
   }
 
   private sendPingInformationToJoinedPlayers(): void {
