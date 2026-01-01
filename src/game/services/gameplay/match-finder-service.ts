@@ -85,9 +85,9 @@ export class MatchFinderService {
 
     const players = match.getPlayers();
     
-    // Get all player IDs excluding the host
+    // Get all player IDs excluding the host and NPC players
     const usersList = players
-      .filter((player) => !player.isHost())
+      .filter((player) => !player.isHost() && !player.isNpc())
       .map((player) => player.getId());
 
     const body: AdvertiseMatchRequest = {
