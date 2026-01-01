@@ -6,7 +6,7 @@ type MatchActionListener = (actions: MatchAction[]) => void;
 @injectable()
 export class MatchActionsLogService {
   private readonly maxActions = 5;
-  private readonly displayDurationMs = 10000; // 10 seconds
+  private readonly displayDurationMs = 5000; // 5 seconds
   private readonly fadeDurationMs = 500;
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];

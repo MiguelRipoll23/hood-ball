@@ -22,7 +22,17 @@ export class SnowEntity extends BaseMoveableGameEntity {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    // Don't create initial burst - let snow appear gradually
+    // Create initial burst to avoid gap at start
+    this.createInitialSnowflakes();
+  }
+
+  private createInitialSnowflakes(): void {
+    // Create snowflakes across the entire canvas height for immediate coverage
+    const initialCount = Math.floor(this.MAX_SNOWFLAKES * 0.5);
+    for (let i = 0; i < initialCount; i++) {
+      const randomY = Math.random() * this.canvas.height;
+      this.createSnowflake(randomY);
+    }
   }
 
   private createSnowflake(initialY?: number): void {
