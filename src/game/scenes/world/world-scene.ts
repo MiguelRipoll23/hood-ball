@@ -25,9 +25,9 @@ import { SceneTransitionService } from "../../../engine/services/gameplay/scene-
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
-import { LoginScene } from "../main/login/login-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { SceneTransitionUtils } from "../../utils/scene-transition-utils.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
@@ -643,18 +643,11 @@ export class WorldScene extends BaseCollidingGameScene {
   private returnToLoginScene(): void {
     console.log("Returning to login scene due to user ban");
     
-    const mainScene = new MainScene();
-    const loginScene = new LoginScene();
-
-    mainScene.activateScene(loginScene);
-    mainScene.load();
-
-    this.sceneTransitionService.fadeOutAndIn(
-      this.gameState.getGameFrame(),
-      mainScene,
-      1,
-      1
-    );
+    SceneTransitionUtils.transitionToLoginScene({
+      transitionService: this.sceneTransitionService,
+      gameFrame: this.gameState.getGameFrame(),
+      errorMessage: "You have been banned from the server"
+    });
   }
 
   private activateSnowWeather(): void {

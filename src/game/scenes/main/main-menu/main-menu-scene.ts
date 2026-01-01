@@ -8,7 +8,6 @@ import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
 import { SettingsScene } from "../settings-scene.js";
-import { LoginScene } from "../login/login-scene.js";
 import { EventType } from "../../../../engine/enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
@@ -22,7 +21,7 @@ import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
-import { MainScene } from "../main-scene.js";
+import { SceneTransitionUtils } from "../../../utils/scene-transition-utils.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -304,15 +303,10 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private transitionToLoginScene(): void {
-    const mainScene = new MainScene();
-    const loginScene = new LoginScene();
-
-    mainScene.activateScene(loginScene);
-    mainScene.load();
-
-    this.sceneManagerService
-      ?.getTransitionService()
-      .fadeOutAndIn(this.sceneManagerService, mainScene, 0.5, 0.5);
+    SceneTransitionUtils.transitionToLoginScene({
+      sceneManager: this.sceneManagerService!,
+      errorMessage: "You have been banned from the server"
+    });
   }
 
   private updateMenuButtonsConnectionState(): void {

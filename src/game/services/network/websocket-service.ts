@@ -260,6 +260,12 @@ export class WebSocketService implements WebSocketServiceContract {
       // Stop any reconnection attempts
       this.stopReconnection();
       
+      // Clean up the WebSocket connection
+      if (this.webSocket) {
+        this.webSocket.close();
+        this.webSocket = null;
+      }
+      
       // Emit user banned event
       const localEvent = new LocalEvent(EventType.UserBannedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
