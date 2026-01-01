@@ -303,8 +303,13 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private transitionToLoginScene(): void {
+    if (!this.sceneManagerService) {
+      console.error("Cannot transition to login scene: sceneManagerService is null");
+      return;
+    }
+
     SceneTransitionUtils.transitionToLoginScene({
-      sceneManager: this.sceneManagerService!,
+      sceneManager: this.sceneManagerService,
       errorMessage: "You have been banned from the server"
     });
   }
