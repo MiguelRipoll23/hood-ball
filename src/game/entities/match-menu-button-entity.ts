@@ -38,7 +38,7 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
     this.y =
       this.boostMeterEntity.getY() +
       this.boostMeterEntity.getHeight() / 2 -
-      this.SIZE / 2 - 3;
+      this.SIZE / 2 - 1;
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
