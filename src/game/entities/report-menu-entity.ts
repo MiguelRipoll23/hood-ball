@@ -193,11 +193,7 @@ export class ReportMenuEntity extends BaseTappableGameEntity {
       this.reportOptions.some((opt) => opt.hovered);
 
     // Set pressed when touch is pressed and hovering over an interactive element
-    if (this.hovering && touch.pressed) {
-      this.pressed = true;
-    } else {
-      this.pressed = false;
-    }
+    this.pressed = this.hovering && touch.pressed;
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
