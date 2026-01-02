@@ -1,10 +1,11 @@
 import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
+import { HelpEntity } from "./help-entity.js";
 
 export class MatchMenuButtonEntity extends BaseTappableGameEntity {
   private readonly SIZE = 32;
   private readonly OFFSET = 20;
-  private readonly emoji = "☰"; // menu emoji
+  private readonly emoji = "🍔"; // menu emoji
   private readonly DEFAULT_OPACITY = 0.7;
 
   private prevButtonPressed = false;
@@ -12,7 +13,10 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
 
   private onToggleMenu: (() => void) | null = null;
 
-  constructor(private readonly boostMeterEntity: BoostMeterEntity) {
+  constructor(
+    private readonly boostMeterEntity: BoostMeterEntity,
+    private readonly helpEntity: HelpEntity
+  ) {
     super();
     this.width = this.SIZE;
     this.height = this.SIZE;
@@ -34,7 +38,7 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
     this.y =
       this.boostMeterEntity.getY() +
       this.boostMeterEntity.getHeight() / 2 -
-      this.SIZE / 2;
+      this.SIZE / 2 - 3;
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
@@ -50,7 +54,7 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    if (this.menuVisible) {
+    if (this.menuVisible || this.helpEntity.getOpacity() > 0) {
       return;
     }
 

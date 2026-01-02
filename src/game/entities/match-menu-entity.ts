@@ -1,305 +1,277 @@
 import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
-import { PlayerModerationService } from "../services/network/player-moderation-service.js";
+import { BackdropEntity } from "./common/backdrop-entity.js";
+import { CloseButtonEntity } from "./close-button-entity.js";
+import { SmallButtonEntity } from "./common/small-button-entity.js";
+import { PlayersListEntity } from "./players-list-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
+import type { PlayerModerationService } from "../services/network/player-moderation-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 
-interface ClickableArea {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  action: () => void;
-}
-
 export class MatchMenuEntity extends BaseTappableGameEntity {
-  private readonly MENU_WIDTH = 400;
-  private readonly MENU_HEIGHT = 500;
-  private readonly BORDER_RADIUS = 16;
-  private readonly BACKGROUND_COLOR = "rgba(0, 0, 0, 0.85)";
-  private readonly TEXT_COLOR = "#ffffff";
+  private readonly WINDOW_WIDTH_RATIO = 0.85;
+  private readonly WINDOW_HEIGHT = 400;
+  private readonly TITLE_BAR_HEIGHT = 50;
   private readonly PADDING = 20;
-  private readonly LINE_HEIGHT = 40;
-  private readonly BUTTON_HEIGHT = 32;
 
-  private players: GamePlayer[] = [];
-  private localPlayerId: string = "";
-  private selectedPlayerId: string | null = null;
-  private showReportReasons = false;
-  private clickableAreas: ClickableArea[] = [];
+  private backdropEntity: BackdropEntity;
+  private closeButtonEntity: CloseButtonEntity;
+  private leaveMatchButton: SmallButtonEntity;
+  private playersListEntity: PlayersListEntity;
 
-  private readonly reportReasons = [
-    "Offensive language",
-    "Inappropriate behavior",
-    "Cheating",
-    "Spam",
-    "Other misconduct",
-  ];
+  private windowX = 0;
+  private windowY = 0;
+  private windowWidth = 0;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
-    private readonly playerModerationService: PlayerModerationService,
+    private readonly moderationService: PlayerModerationService,
     private readonly gamePointer: GamePointerContract,
-    private readonly onClose: () => void
+    private readonly onClose: () => void,
+    private readonly onLeaveMatch: () => void
   ) {
-    super(true); // stealFocus = true to capture all clicks
-    this.width = this.MENU_WIDTH;
-    this.height = this.MENU_HEIGHT;
-    this.setPosition();
-  }
+    super(false);
+    this.opacity = 0;
 
-  public setPlayers(players: GamePlayer[], localPlayerId: string): void {
-    this.players = players;
-    this.localPlayerId = localPlayerId;
-  }
-
-  private setPosition(): void {
-    this.x = (this.canvas.width - this.MENU_WIDTH) / 2;
-    this.y = (this.canvas.height - this.MENU_HEIGHT) / 2;
-  }
-
-  private async handleReport(reason: string): Promise<void> {
-    if (!this.selectedPlayerId) {
-      return;
-    }
-
-    try {
-      await this.playerModerationService.reportUser(
-        this.selectedPlayerId,
-        reason,
-        false
-      );
-      console.log(`Reported player ${this.selectedPlayerId} for: ${reason}`);
-      this.selectedPlayerId = null;
-      this.showReportReasons = false;
-      this.onClose();
-    } catch (error) {
-      console.error("Failed to report user:", error);
-    }
-  }
-
-  public override update(delta: DOMHighResTimeStamp): void {
-    // Handle clicks
-    if (this.pressed) {
-      const touches = this.gamePointer.getTouchPoints();
-      for (const touch of touches) {
-        if (touch.pressed) {
-          // Check clickable areas
-          for (const area of this.clickableAreas) {
-            if (
-              touch.x >= area.x &&
-              touch.x <= area.x + area.width &&
-              touch.y >= area.y &&
-              touch.y <= area.y + area.height
-            ) {
-              area.action();
-              break;
-            }
-          }
-        }
+    // Create subentities
+    this.backdropEntity = new BackdropEntity(canvas);
+            this.closeButtonEntity = new CloseButtonEntity(0, 0);
+            this.leaveMatchButton = new SmallButtonEntity(
+              "Leave match",
+              140,
+              40,
+              "#e74c3c", // Red background
+              "#7ed321"  // Green hover color
+            );        this.playersListEntity = new PlayersListEntity();
+    
+        this.calculateLayout();
       }
-    }
-
-    super.update(delta);
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    // Reset clickable areas before rendering
-    this.clickableAreas = [];
-
-    context.save();
-
-    // Draw semi-transparent background
-    context.fillStyle = this.BACKGROUND_COLOR;
-    this.drawRoundedRect(
-      context,
-      this.x,
-      this.y,
-      this.width,
-      this.height,
-      this.BORDER_RADIUS
-    );
-    context.fill();
-
-    // Draw title
-    context.fillStyle = this.TEXT_COLOR;
-    context.font = "bold 24px system-ui";
-    context.textAlign = "left";
-    context.textBaseline = "top";
-    context.fillText(
-      "Match Menu",
-      this.x + this.PADDING,
-      this.y + this.PADDING
-    );
-
-    // Draw close button (X in top-right)
-    const closeButtonX = this.x + this.width - this.PADDING - 30;
-    const closeButtonY = this.y + this.PADDING;
-    context.font = "24px system-ui";
-    context.textAlign = "right";
-    context.fillText(
-      "✕",
-      this.x + this.width - this.PADDING,
-      this.y + this.PADDING
-    );
-
-    // Add close button clickable area
-    this.clickableAreas.push({
-      x: closeButtonX,
-      y: closeButtonY - 5,
-      width: 30,
-      height: 30,
-      action: () => this.onClose(),
-    });
-
-    let yOffset = this.y + this.PADDING + 40;
-
-    if (!this.showReportReasons) {
-      // Draw player list
-      context.font = "bold 18px system-ui";
-      context.textAlign = "left";
-      context.fillText("Players:", this.x + this.PADDING, yOffset);
-      yOffset += this.LINE_HEIGHT;
-
-      context.font = "16px system-ui";
-      for (const player of this.players) {
-        const isLocalPlayer = player.getNetworkId() === this.localPlayerId;
-        const playerName = player.getName() + (isLocalPlayer ? " (You)" : "");
-
-        context.fillStyle = this.TEXT_COLOR;
-        context.fillText(playerName, this.x + this.PADDING + 10, yOffset);
-
-        // Draw report button for other players
-        if (!isLocalPlayer) {
-          const buttonX = this.x + this.width - this.PADDING - 80;
-          const buttonY = yOffset - 5;
-          const buttonWidth = 80;
-
-          // Draw button background
-          context.fillStyle = "rgba(200, 50, 50, 0.8)";
-          this.drawRoundedRect(
-            context,
-            buttonX,
-            buttonY,
-            buttonWidth,
-            this.BUTTON_HEIGHT,
-            4
-          );
-          context.fill();
-
-          // Draw button text
-          context.fillStyle = "#ffffff";
-          context.textAlign = "center";
-          context.fillText(
-            "Report",
-            buttonX + buttonWidth / 2,
-            buttonY + this.BUTTON_HEIGHT / 2 + 5
-          );
-
-          // Add report button clickable area
-          const playerId = player.getNetworkId();
-          this.clickableAreas.push({
-            x: buttonX,
-            y: buttonY,
-            width: buttonWidth,
-            height: this.BUTTON_HEIGHT,
-            action: () => {
-              this.selectedPlayerId = playerId;
-              this.showReportReasons = true;
-            },
+    
+      public override load(): void {
+        this.backdropEntity.load();
+        this.closeButtonEntity.load();
+        this.leaveMatchButton.load();
+        this.playersListEntity.load();
+        super.load();
+      }
+    
+      public show(): void {
+        this.setActive(true);
+        this.opacity = 1;
+      }
+    
+      public close(): void {
+        this.setActive(false);
+        this.opacity = 0;
+      }
+    
+      public setPlayers(players: GamePlayer[], localPlayerId: string): void {
+        this.playersListEntity.setPlayers(
+          players,
+          localPlayerId,
+          this.windowX + this.PADDING,
+          this.windowY + this.TITLE_BAR_HEIGHT + 45,
+          this.windowWidth - this.PADDING * 2,
+          this.gamePointer,
+          (playerId: string, reason: string) =>
+            this.handlePlayerReport(playerId, reason),
+          this.canvas
+        );
+      }
+    
+      private calculateLayout(): void {
+        this.windowWidth = this.canvas.width * this.WINDOW_WIDTH_RATIO;
+        this.windowX = (this.canvas.width - this.windowWidth) / 2;
+        this.windowY = (this.canvas.height - this.WINDOW_HEIGHT) / 2;
+    
+            // Position close button
+            this.closeButtonEntity.setPosition(
+              this.windowX + this.windowWidth - 45,
+              this.windowY + 7
+            );    
+        // Position leave match button at bottom of window
+        this.leaveMatchButton.setPosition(
+          this.windowX + this.windowWidth / 2 - 70, // Centered (half of button width)
+          this.windowY + this.WINDOW_HEIGHT - 60
+        );
+      }
+    
+      private handlePlayerReport(playerId: string, reason: string): void {
+        // Report the player
+        this.moderationService
+          .reportUser(playerId, reason, false)
+          .catch((error) => {
+            console.error("Failed to report user:", error);
           });
-        }
-
-        yOffset += this.LINE_HEIGHT;
+    
+        // Close the menu after reporting
+        this.onClose();
       }
-    } else {
-      // Draw report reasons
-      context.font = "bold 18px system-ui";
-      context.textAlign = "left";
-      context.fillText("Select reason:", this.x + this.PADDING, yOffset);
-      yOffset += this.LINE_HEIGHT;
-
-      context.font = "16px system-ui";
-      for (const reason of this.reportReasons) {
-        const buttonX = this.x + this.PADDING + 10;
-        const buttonY = yOffset - 5;
-        const buttonWidth = this.width - 2 * this.PADDING - 20;
-
-        // Draw button background
-        context.fillStyle = "rgba(100, 100, 100, 0.6)";
+    
+      public override handlePointerEvent(gamePointer: GamePointerContract): void {
+        // Only handle pointer events if active and visible
+        if (!this.active || this.opacity === 0) {
+          return;
+        }
+    
+        // Forward pointer events to subentities
+        this.closeButtonEntity.handlePointerEvent(gamePointer);
+        this.leaveMatchButton.handlePointerEvent(gamePointer);
+        this.playersListEntity.handlePointerEvent(gamePointer);
+        
+        // Check if any subentity captured the event
+        if (
+          this.closeButtonEntity.isHovering() ||
+          this.closeButtonEntity.isPressed() ||
+          this.leaveMatchButton.isHovering() ||
+          this.leaveMatchButton.isPressed()
+        ) {
+          // Subentity handled it, we're done
+          return;
+        }
+    
+        // No subentity handled it, let base class handle it (for backdrop click detection if needed)
+        super.handlePointerEvent(gamePointer);
+      }
+    
+      public override update(delta: DOMHighResTimeStamp): void {
+        // Check if close button was pressed BEFORE updating subentities
+        if (this.closeButtonEntity.isPressed()) {
+          this.onClose();
+        }
+    
+        // Check if leave match button was pressed BEFORE updating subentities
+        if (this.leaveMatchButton.isButtonPressed()) {
+          console.log("Leave match requested");
+          this.onLeaveMatch();
+          this.onClose();
+        }
+    
+        // Update subentities (this resets their pressed state)
+        this.backdropEntity.update(delta);
+        this.closeButtonEntity.update(delta);
+        this.leaveMatchButton.update(delta);
+        this.playersListEntity.update(delta);
+    
+        super.update(delta);
+      }
+    
+      public override render(context: CanvasRenderingContext2D): void {
+        if (this.opacity === 0) {
+          return;
+        }
+    
+        context.save();
+        context.globalAlpha = this.opacity;
+    
+        // Render backdrop
+        this.backdropEntity.render(context);
+    
+        // Render window background
+        this.renderWindow(context);
+    
+        // Render title bar
+        this.renderTitleBar(context);
+    
+        // Render close button
+        this.closeButtonEntity.render(context);
+    
+        // Render leave match button
+        this.leaveMatchButton.render(context);
+    
+        // Render players list
+        this.playersListEntity.render(context);
+    
+        context.restore();
+        super.render(context);
+      }
+    
+      private renderWindow(context: CanvasRenderingContext2D): void {
+        context.shadowColor = "rgba(0, 0, 0, 0.5)";
+        context.shadowBlur = 20;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 10;
+    
+        context.fillStyle = "#ffffff";
         this.drawRoundedRect(
           context,
-          buttonX,
-          buttonY,
-          buttonWidth,
-          this.BUTTON_HEIGHT,
-          4
+          this.windowX,
+          this.windowY,
+          this.windowWidth,
+          this.WINDOW_HEIGHT,
+          12 // Increased border radius
         );
         context.fill();
-
-        // Draw button text
-        context.fillStyle = "#ffffff";
-        context.textAlign = "center";
-        context.fillText(
-          reason,
-          buttonX + buttonWidth / 2,
-          buttonY + this.BUTTON_HEIGHT / 2 + 5
-        );
-
-        // Add reason button clickable area
-        this.clickableAreas.push({
-          x: buttonX,
-          y: buttonY,
-          width: buttonWidth,
-          height: this.BUTTON_HEIGHT,
-          action: () => this.handleReport(reason),
-        });
-
-        yOffset += this.LINE_HEIGHT;
+        
+        // Reset shadow
+        context.shadowColor = "transparent";
+        context.shadowBlur = 0;
+        context.shadowOffsetX = 0;
+        context.shadowOffsetY = 0;
       }
-
-      // Back button
-      yOffset += 20;
-      const backButtonX = this.x + this.PADDING + 10;
-      const backButtonY = yOffset - 5;
-      const backButtonWidth = this.width - 2 * this.PADDING - 20;
-
-      context.fillStyle = "rgba(80, 80, 80, 0.6)";
-      this.drawRoundedRect(
-        context,
-        backButtonX,
-        backButtonY,
-        backButtonWidth,
-        this.BUTTON_HEIGHT,
-        4
-      );
-      context.fill();
-
-      context.fillStyle = "#ffffff";
-      context.textAlign = "center";
-      context.fillText(
-        "Back",
-        backButtonX + backButtonWidth / 2,
-        backButtonY + this.BUTTON_HEIGHT / 2 + 5
-      );
-
-      // Add back button clickable area
-      this.clickableAreas.push({
-        x: backButtonX,
-        y: backButtonY,
-        width: backButtonWidth,
-        height: this.BUTTON_HEIGHT,
-        action: () => {
-          this.showReportReasons = false;
-          this.selectedPlayerId = null;
-        },
-      });
-    }
-
-    context.restore();
-    super.render(context);
-  }
-
-  private drawRoundedRect(
+    
+      private renderTitleBar(context: CanvasRenderingContext2D): void {
+        const radius = 12;
+    
+        context.save();
+        // Clip to rounded top corners
+        context.beginPath();
+        context.moveTo(this.windowX + radius, this.windowY);
+        context.lineTo(this.windowX + this.windowWidth - radius, this.windowY);
+        context.quadraticCurveTo(
+          this.windowX + this.windowWidth,
+          this.windowY,
+          this.windowX + this.windowWidth,
+          this.windowY + radius
+        );
+        context.lineTo(this.windowX + this.windowWidth, this.windowY + this.TITLE_BAR_HEIGHT);
+        context.lineTo(this.windowX, this.windowY + this.TITLE_BAR_HEIGHT);
+        context.lineTo(this.windowX, this.windowY + radius);
+        context.quadraticCurveTo(
+          this.windowX,
+          this.windowY,
+          this.windowX + radius,
+          this.windowY
+        );
+        context.closePath();
+        context.clip();
+    
+        // Gradient background
+        const gradient = context.createLinearGradient(
+          this.windowX,
+          this.windowY,
+          this.windowX,
+          this.windowY + this.TITLE_BAR_HEIGHT
+        );
+        gradient.addColorStop(0, "#4a90e2");
+        gradient.addColorStop(1, "#357abd");
+    
+        context.fillStyle = gradient;
+        context.fillRect(
+          this.windowX,
+          this.windowY,
+          this.windowWidth,
+          this.TITLE_BAR_HEIGHT
+        );
+    
+        context.restore();
+    
+        // Title text with slight shadow for better readability
+        context.save();
+        context.fillStyle = "#ffffff";
+        context.shadowColor = "rgba(0, 0, 0, 0.3)";
+        context.shadowBlur = 2;
+        context.shadowOffsetX = 1;
+        context.shadowOffsetY = 1;
+        context.font = "bold 24px system-ui";
+        context.textAlign = "left";
+        context.textBaseline = "middle";
+            context.fillText(
+              "Match menu",
+              this.windowX + this.PADDING,
+              this.windowY + this.TITLE_BAR_HEIGHT / 2 + 2
+            );
+            context.restore();
+          }  private drawRoundedRect(
     context: CanvasRenderingContext2D,
     x: number,
     y: number,

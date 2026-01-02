@@ -126,6 +126,10 @@ export class WorldScene extends BaseCollidingGameScene {
     this.chatService = chatService;
     this.matchActionsLogService = matchActionsLogService;
 
+    // Fix for hovering acting as press:
+    // Ensure pointer events are cleared automatically after update
+    this.clearPointerEventsAutomatically = true;
+
     // Only clear if service exists (in replay mode, some services may be null)
     if (this.matchActionsLogService) {
       this.matchActionsLogService.clear();
@@ -576,13 +580,17 @@ export class WorldScene extends BaseCollidingGameScene {
       this.canvas,
       playerModerationService,
       this.gameState.getGamePointer(),
-      () => this.hideMatchMenu()
+      () => this.hideMatchMenu(),
+      () => void this.returnToMainMenuScene()
     );
     this.matchMenuEntity.setOpacity(0);
     this.uiEntities.push(this.matchMenuEntity);
 
     // Create match menu button
-    this.matchMenuButtonEntity = new MatchMenuButtonEntity(boostMeterEntity);
+    this.matchMenuButtonEntity = new MatchMenuButtonEntity(
+      boostMeterEntity,
+      this.helpEntity as HelpEntity
+    );
     this.matchMenuButtonEntity.setOnToggleMenu(() => this.toggleMatchMenu());
     this.uiEntities.push(this.matchMenuButtonEntity);
   }
@@ -613,7 +621,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.matchMenuEntity.setPlayers(players, localPlayerId);
     }
 
-    this.matchMenuEntity.setOpacity(1);
+    this.matchMenuEntity.show();
     this.matchMenuButtonEntity.setMenuVisible(true);
     this.matchMenuButtonEntity.setActive(false);
   }
@@ -623,7 +631,7 @@ export class WorldScene extends BaseCollidingGameScene {
       return;
     }
 
-    this.matchMenuEntity.setOpacity(0);
+    this.matchMenuEntity.close();
     this.matchMenuButtonEntity.setMenuVisible(false);
     this.matchMenuButtonEntity.setActive(true);
   }
