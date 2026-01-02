@@ -7,6 +7,8 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { HelpEntity } from "../../entities/help-entity.js";
 import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
+import { MatchMenuButtonEntity } from "../../entities/match-menu-button-entity.js";
+import { MatchMenuEntity } from "../../entities/match-menu-entity.js";
 import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
 import { NpcCarEntity } from "../../entities/npc-car-entity.js";
@@ -32,6 +34,7 @@ import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
+import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
@@ -42,6 +45,7 @@ import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
+import { PlayerModerationService } from "../../services/network/player-moderation-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import { gameContext } from "../../context/game-context.js";
 import { GamePlayer } from "../../models/game-player.js";
@@ -75,6 +79,8 @@ export class WorldScene extends BaseCollidingGameScene {
   private toastEntity: ToastEntity | null = null;
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
+  private matchMenuButtonEntity: MatchMenuButtonEntity | null = null;
+  private matchMenuEntity: MatchMenuEntity | null = null;
   private matchLogEntity: MatchLogEntity | null = null;
   private npcCarEntity: NpcCarEntity | null = null;
 
@@ -119,6 +125,10 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointService = spawnPointService;
     this.chatService = chatService;
     this.matchActionsLogService = matchActionsLogService;
+
+    // Fix for hovering acting as press:
+    // Ensure pointer events are cleared automatically after update
+    this.clearPointerEventsAutomatically = true;
 
     // Only clear if service exists (in replay mode, some services may be null)
     if (this.matchActionsLogService) {
@@ -556,6 +566,74 @@ export class WorldScene extends BaseCollidingGameScene {
     if (this.localCarEntity) {
       this.localCarEntity.setChatButtonEntity(this.chatButtonEntity);
     }
+
+    // Setup match menu button and menu
+    this.setupMatchMenu(boostMeterEntity);
+  }
+
+  private setupMatchMenu(boostMeterEntity: BoostMeterEntity): void {
+    // Create PlayerModerationService instance
+    const playerModerationService = container.get(PlayerModerationService);
+
+    // Create match menu entity
+    this.matchMenuEntity = new MatchMenuEntity(
+      this.canvas,
+      playerModerationService,
+      this.gameState.getGamePointer(),
+      () => this.hideMatchMenu(),
+      () => void this.returnToMainMenuScene()
+    );
+    this.matchMenuEntity.setOpacity(0);
+    this.uiEntities.push(this.matchMenuEntity);
+
+    // Create match menu button
+    this.matchMenuButtonEntity = new MatchMenuButtonEntity(
+      boostMeterEntity,
+      this.helpEntity as HelpEntity
+    );
+    this.matchMenuButtonEntity.setOnToggleMenu(() => this.toggleMatchMenu());
+    this.uiEntities.push(this.matchMenuButtonEntity);
+  }
+
+  private toggleMatchMenu(): void {
+    if (!this.matchMenuEntity || !this.matchMenuButtonEntity) {
+      return;
+    }
+
+    const isVisible = this.matchMenuEntity.getOpacity() > 0;
+    if (isVisible) {
+      this.hideMatchMenu();
+    } else {
+      this.showMatchMenu();
+    }
+  }
+
+  private showMatchMenu(): void {
+    if (!this.matchMenuEntity || !this.matchMenuButtonEntity) {
+      return;
+    }
+
+    // Get current players from match session
+    const match = this.matchSessionService.getMatch();
+    if (match) {
+      const players = match.getPlayers();
+      const localPlayerId = this.gamePlayer.getNetworkId();
+      this.matchMenuEntity.setPlayers(players, localPlayerId);
+    }
+
+    this.matchMenuEntity.show();
+    this.matchMenuButtonEntity.setMenuVisible(true);
+    this.matchMenuButtonEntity.setActive(false);
+  }
+
+  private hideMatchMenu(): void {
+    if (!this.matchMenuEntity || !this.matchMenuButtonEntity) {
+      return;
+    }
+
+    this.matchMenuEntity.close();
+    this.matchMenuButtonEntity.setMenuVisible(false);
+    this.matchMenuButtonEntity.setActive(true);
   }
 
   private setupMatchLog(): void {
@@ -642,11 +720,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private returnToLoginScene(): void {
     console.log("Returning to login scene due to user ban");
-    
+
     SceneTransitionUtils.transitionToLoginScene({
       transitionService: this.sceneTransitionService,
       gameFrame: this.gameState.getGameFrame(),
-      errorMessage: "You have been banned from the server"
+      errorMessage: "You have been banned from the server",
     });
   }
 
