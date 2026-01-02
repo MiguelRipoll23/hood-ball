@@ -29,14 +29,17 @@ export class PlayerModerationService {
       throw new Error("Authentication token not found");
     }
 
-    const response = await fetch(this.baseURL + USER_MODERATION_REPORT_ENDPOINT, {
-      method: "POST",
-      headers: {
-        Content-Type: "application/json",
-        Authorization: authToken,
-      },
-      body: JSON.stringify(reportRequest),
-    });
+    const response = await fetch(
+      this.baseURL + USER_MODERATION_REPORT_ENDPOINT,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: authToken,
+        },
+        body: JSON.stringify(reportRequest),
+      }
+    );
 
     if (!response.ok) {
       await APIUtils.throwAPIError(response);
