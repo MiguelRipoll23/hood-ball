@@ -6,9 +6,8 @@ type MatchActionListener = (actions: MatchAction[]) => void;
 @injectable()
 export class MatchActionsLogService {
   private readonly maxActions = 5;
-  private readonly displayDurationMs = 3000;
+  private readonly displayDurationMs = 5000; // 5 seconds
   private readonly fadeDurationMs = 500;
-  private readonly removalDelayMs = this.displayDurationMs + this.fadeDurationMs;
   private actions: MatchAction[] = [];
   private listeners: MatchActionListener[] = [];
   private readonly removalTimeouts = new Map<
@@ -77,9 +76,10 @@ export class MatchActionsLogService {
   }
 
   private scheduleRemoval(action: MatchAction): void {
+    const removalDelay = this.displayDurationMs + this.fadeDurationMs;
     const timeoutId = setTimeout(() => {
       this.removeAction(action);
-    }, this.removalDelayMs);
+    }, removalDelay);
 
     this.cancelRemovalTimeout(action);
     this.removalTimeouts.set(action, timeoutId);

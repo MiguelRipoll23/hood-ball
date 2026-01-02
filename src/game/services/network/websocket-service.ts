@@ -19,6 +19,7 @@ import type { WebSocketServiceContract } from "../../interfaces/services/network
 import { MatchSessionService } from "../session/match-session-service.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 import { MatchAction } from "../../models/match-action.js";
+import { RemoteEvent } from "../../../engine/models/remote-event.js";
 
 @injectable()
 export class WebSocketService implements WebSocketServiceContract {
@@ -252,6 +253,23 @@ export class WebSocketService implements WebSocketServiceContract {
     const wasConnected = this.gameServer.isConnected();
     this.gameServer.setConnected(false);
 
+    // Check if the user has been banned
+    if (event.code === 1000 && event.reason === "User has been banned") {
+      console.log("User has been banned from the server");
+      
+      // Stop any reconnection attempts
+      this.stopReconnection();
+      
+      // Clean up the WebSocket connection reference
+      this.webSocket = null;
+      
+      // Emit user banned event
+      const localEvent = new LocalEvent(EventType.UserBannedByServer);
+      this.eventProcessorService.addLocalEvent(localEvent);
+      
+      return;
+    }
+
     // Only emit disconnected event if we were actually connected
     if (wasConnected) {
       const payload = {
@@ -348,11 +366,22 @@ export class WebSocketService implements WebSocketServiceContract {
 
     console.log(`User banned: ${playerName} (${userId})`);
 
+    // Add to local match log
     const action = MatchAction.playerBanned(userId, {
       playerName,
     });
 
     this.matchActionsLogService.addAction(action);
+
+    // Broadcast the ban event to all peers
+    const payload = BinaryWriter.build()
+      .fixedLengthString(userId, 32)
+      .toArrayBuffer();
+
+    const banEvent = new RemoteEvent(EventType.PlayerBanned);
+    banEvent.setData(payload);
+
+    this.eventProcessorService.sendEvent(banEvent);
   }
 
   private isLoggingEnabled(): boolean {
