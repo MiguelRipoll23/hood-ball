@@ -195,6 +195,8 @@ export class ReportMenuEntity extends BaseTappableGameEntity {
     // Set pressed when touch is pressed and hovering over an interactive element
     if (this.hovering && touch.pressed) {
       this.pressed = true;
+    } else {
+      this.pressed = false;
     }
   }
 
