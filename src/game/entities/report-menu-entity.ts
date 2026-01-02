@@ -192,15 +192,9 @@ export class ReportMenuEntity extends BaseTappableGameEntity {
       isInCancel ||
       this.reportOptions.some((opt) => opt.hovered);
 
-    // Set hovering if mouse is over the element, and pressed when touch is pressed
-    if (this.hovering) {
-      const mouse = touch.type === "mouse";
-      if (touch.pressing || mouse) {
-        this.hovering = true;
-      }
-      if (touch.pressed) {
-        this.pressed = true;
-      }
+    // Set pressed when touch is pressed and hovering over an interactive element
+    if (this.hovering && touch.pressed) {
+      this.pressed = true;
     }
   }
 
