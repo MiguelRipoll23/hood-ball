@@ -3,7 +3,6 @@ import { PlayerListItemEntity } from "./player-list-item-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { ReportMenuEntity } from "./report-menu-entity.js";
-import { PURPLE_COLOR } from "../constants/colors-constants.js";
 
 export class PlayersListEntity extends BaseGameEntity {
   private playerItems: PlayerListItemEntity[] = [];
