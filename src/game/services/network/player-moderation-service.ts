@@ -32,8 +32,8 @@ export class PlayerModerationService {
     const response = await fetch(this.baseURL + USER_MODERATION_REPORT_ENDPOINT, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": authToken,
+        Content-Type: "application/json",
+        Authorization: authToken,
       },
       body: JSON.stringify(reportRequest),
     });
