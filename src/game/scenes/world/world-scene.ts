@@ -569,7 +569,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private setupMatchMenu(boostMeterEntity: BoostMeterEntity): void {
     // Create PlayerModerationService instance
-    const playerModerationService = container.resolve(PlayerModerationService);
+    const playerModerationService = container.get(PlayerModerationService);
 
     // Create match menu entity
     this.matchMenuEntity = new MatchMenuEntity(
@@ -712,11 +712,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private returnToLoginScene(): void {
     console.log("Returning to login scene due to user ban");
-    
+
     SceneTransitionUtils.transitionToLoginScene({
       transitionService: this.sceneTransitionService,
       gameFrame: this.gameState.getGameFrame(),
-      errorMessage: "You have been banned from the server"
+      errorMessage: "You have been banned from the server",
     });
   }
 

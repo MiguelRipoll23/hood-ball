@@ -68,9 +68,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
         reason,
         false
       );
-      console.log(
-        `Reported player ${this.selectedPlayerId} for: ${reason}`
-      );
+      console.log(`Reported player ${this.selectedPlayerId} for: ${reason}`);
       this.selectedPlayerId = null;
       this.showReportReasons = false;
       this.onClose();
@@ -127,15 +125,23 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.font = "bold 24px system-ui";
     context.textAlign = "left";
     context.textBaseline = "top";
-    context.fillText("Match Menu", this.x + this.PADDING, this.y + this.PADDING);
+    context.fillText(
+      "Match Menu",
+      this.x + this.PADDING,
+      this.y + this.PADDING
+    );
 
     // Draw close button (X in top-right)
     const closeButtonX = this.x + this.width - this.PADDING - 30;
     const closeButtonY = this.y + this.PADDING;
     context.font = "24px system-ui";
     context.textAlign = "right";
-    context.fillText("✕", this.x + this.width - this.PADDING, this.y + this.PADDING);
-    
+    context.fillText(
+      "✕",
+      this.x + this.width - this.PADDING,
+      this.y + this.PADDING
+    );
+
     // Add close button clickable area
     this.clickableAreas.push({
       x: closeButtonX,
@@ -158,7 +164,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       for (const player of this.players) {
         const isLocalPlayer = player.getNetworkId() === this.localPlayerId;
         const playerName = player.getName() + (isLocalPlayer ? " (You)" : "");
-        
+
         context.fillStyle = this.TEXT_COLOR;
         context.fillText(playerName, this.x + this.PADDING + 10, yOffset);
 
@@ -306,7 +312,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.lineTo(x + width - radius, y);
     context.quadraticCurveTo(x + width, y, x + width, y + radius);
     context.lineTo(x + width, y + height - radius);
-    context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    context.quadraticCurveTo(
+      x + width,
+      y + height,
+      x + width - radius,
+      y + height
+    );
     context.lineTo(x + radius, y + height);
     context.quadraticCurveTo(x, y + height, x, y + height - radius);
     context.lineTo(x, y + radius);
