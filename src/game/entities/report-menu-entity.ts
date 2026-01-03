@@ -168,10 +168,6 @@ export class ReportMenuEntity extends BaseTappableGameEntity {
         touch.x <= this.confirmButtonX + this.confirmButtonWidth &&
         touch.y >= this.confirmButtonY &&
         touch.y <= this.confirmButtonY + this.confirmButtonHeight;
-      
-      if (isInConfirm) {
-        this.confirmButtonHovered = true;
-      }
 
       // Check cancel button
       const isInCancel =
@@ -179,34 +175,39 @@ export class ReportMenuEntity extends BaseTappableGameEntity {
         touch.x <= this.cancelButtonX + this.cancelButtonWidth &&
         touch.y >= this.cancelButtonY &&
         touch.y <= this.cancelButtonY + this.cancelButtonHeight;
-      
-      if (isInCancel) {
-        this.cancelButtonHovered = true;
-      }
 
       // Check report options
+      let touchedOption: ReportOption | null = null;
       for (const option of this.reportOptions) {
         const isInOption =
           touch.x >= option.x &&
           touch.x <= option.x + option.width &&
           touch.y >= option.y &&
           touch.y <= option.y + option.height;
-        
         if (isInOption) {
-          option.hovered = true;
+          touchedOption = option;
+          break;
         }
       }
 
-      const isHoveringSomething =
-        isInConfirm ||
-        isInCancel ||
-        this.reportOptions.some((opt) => opt.hovered);
+      const isHoveringSomething = !!(isInConfirm || isInCancel || touchedOption);
 
       if (isHoveringSomething) {
         this.hovering = true;
+        
+        // Set visual hover states for all touches
+        if (isInConfirm) this.confirmButtonHovered = true;
+        if (isInCancel) this.cancelButtonHovered = true;
+        if (touchedOption) touchedOption.hovered = true;
+
         if (touch.pressed) {
           this.pressed = true;
-          // If we found a press, we can stop processing other touches
+          // On press, lock the hover state to only the pressed element
+          this.confirmButtonHovered = isInConfirm;
+          this.cancelButtonHovered = isInCancel;
+          this.reportOptions.forEach(
+            (opt) => (opt.hovered = opt === touchedOption)
+          );
           break;
         }
       }

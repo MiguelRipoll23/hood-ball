@@ -87,12 +87,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     // Position close button
     this.closeButtonEntity.setPosition(
       this.windowX + this.windowWidth - 45,
-      this.windowY + 7
+      this.windowY + 6
     );
     // Position leave match button at bottom of window
     this.leaveMatchButton.setPosition(
       this.windowX + this.windowWidth / 2 - 70, // Centered (half of button width)
-      this.windowY + this.WINDOW_HEIGHT - 60
+      this.windowY + this.WINDOW_HEIGHT - 58
     );
   }
 
@@ -285,7 +285,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.fillText(
       "Match menu",
       this.windowX + this.PADDING,
-      this.windowY + this.TITLE_BAR_HEIGHT / 2 + 2
+      this.windowY + this.TITLE_BAR_HEIGHT / 2 + 1
     );
     context.restore();
   }
