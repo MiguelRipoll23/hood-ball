@@ -6,6 +6,7 @@ import { ReportMenuEntity } from "./report-menu-entity.js";
 import { BanMenuEntity } from "./ban-menu-entity.js";
 import { container } from "../../engine/services/di-container.js";
 import { APIService } from "../services/network/api-service.js";
+import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
 
 export class PlayersListEntity extends BaseGameEntity {
   private playerItems: PlayerListItemEntity[] = [];
@@ -74,7 +75,7 @@ export class PlayersListEntity extends BaseGameEntity {
     return this.playerItems;
   }
 
-  public isReportMenuOpen(): boolean {
+  public isActionMenuOpen(): boolean {
     return (this.reportMenuEntity?.isOpen() ?? false) || (this.banMenuEntity?.isOpen() ?? false);
   }
 
@@ -98,73 +99,50 @@ export class PlayersListEntity extends BaseGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
-    // Check if report menu is open
+    // Process report menu
     if (this.reportMenuEntity && this.reportMenuEntity.isOpen()) {
-      // Handle report menu
-      this.reportMenuEntity.update(delta);
-
-      // Check if confirmed
-      const selectedReason = this.reportMenuEntity.getConfirmedReason();
-      if (selectedReason && this.onReport) {
-        const reportedPlayer = this.reportMenuEntity.getReportedPlayer();
-        if (reportedPlayer) {
-          this.onReport(reportedPlayer.getId(), selectedReason);
+      this.processActionMenu(
+        this.reportMenuEntity,
+        delta,
+        () => {
+          const selectedReason = this.reportMenuEntity!.getConfirmedReason();
+          const reportedPlayer = this.reportMenuEntity!.getReportedPlayer();
+          if (selectedReason && reportedPlayer && this.onReport) {
+            this.onReport(reportedPlayer.getId(), selectedReason);
+            return true;
+          }
+          return false;
         }
-        this.reportMenuEntity.close();
-
-        // Consume the event
-        if (this.gamePointer) {
-          this.gamePointer.clearPressed();
-        }
-      }
-
-      // Check if cancelled
-      if (this.reportMenuEntity.isCancelled()) {
-        this.reportMenuEntity.close();
-        // Consume the event so MatchMenuEntity doesn't process it
-        if (this.gamePointer) {
-          this.gamePointer.clearPressed();
-        }
-      }
-
+      );
       return;
     }
 
-    // Check if ban menu is open
+    // Process ban menu
     if (this.banMenuEntity && this.banMenuEntity.isOpen()) {
-      this.banMenuEntity.update(delta);
-
-      const confirmedData = this.banMenuEntity.getConfirmedData();
-      if (confirmedData && this.onBan) {
-        const bannedPlayer = this.banMenuEntity.getBannedPlayer();
-        if (bannedPlayer) {
+      this.processActionMenu(
+        this.banMenuEntity,
+        delta,
+        () => {
+          const confirmedData = this.banMenuEntity!.getConfirmedData();
+          const bannedPlayer = this.banMenuEntity!.getBannedPlayer();
+          if (confirmedData && bannedPlayer && this.onBan) {
             this.onBan(bannedPlayer.getId(), confirmedData.reason, confirmedData.duration);
+            return true;
+          }
+          return false;
         }
-        this.banMenuEntity.close();
-        
-        if (this.gamePointer) {
-            this.gamePointer.clearPressed();
-        }
-      }
-
-      if (this.banMenuEntity.isCancelled()) {
-        this.banMenuEntity.close();
-        if (this.gamePointer) {
-            this.gamePointer.clearPressed();
-        }
-      }
-
+      );
       return;
     }
 
     // Update player items and check for buttons
     for (const item of this.playerItems) {
       // Check if report button was pressed
-      if (item.isReportButtonPressed()) {
+      if (item.isReportButtonPressed() && !this.isActionMenuOpen()) {
         this.openReportMenu(item.getPlayer());
       }
       // Check if ban button was pressed
-      if (item.isBanButtonPressed()) {
+      if (item.isBanButtonPressed() && !this.isActionMenuOpen()) {
         this.openBanMenu(item.getPlayer());
       }
 
@@ -172,6 +150,22 @@ export class PlayersListEntity extends BaseGameEntity {
     }
 
     super.update(delta);
+  }
+
+  private processActionMenu(
+    menu: ActionMenuContract,
+    delta: DOMHighResTimeStamp,
+    onConfirm: () => boolean
+  ): void {
+    menu.update(delta);
+
+    if (onConfirm()) {
+      menu.close();
+      this.gamePointer?.clearPressed();
+    } else if (menu.isCancelled()) {
+      menu.close();
+      this.gamePointer?.clearPressed();
+    }
   }
 
   private openReportMenu(player: GamePlayer): void {

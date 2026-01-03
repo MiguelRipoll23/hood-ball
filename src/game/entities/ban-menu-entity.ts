@@ -2,8 +2,9 @@ import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game
 import type { GamePlayer } from "../models/game-player.js";
 import type { BanOption } from "../interfaces/ui/ban-option.js";
 import type { DurationUnit } from "../interfaces/ui/duration-unit.js";
+import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
 
-export class BanMenuEntity extends BaseTappableGameEntity {
+export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuContract {
   private readonly WINDOW_WIDTH = 400;
   private readonly WINDOW_HEIGHT = 500;
   private readonly TITLE_BAR_HEIGHT = 50;

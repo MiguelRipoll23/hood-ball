@@ -66,10 +66,6 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   public setPlayers(players: GamePlayer[], localPlayerId: string): void {
-    this.refreshPlayers(players, localPlayerId);
-  }
-
-  public refreshPlayers(players: GamePlayer[], localPlayerId: string): void {
     this.playersListEntity.setPlayers(
       players,
       localPlayerId,
@@ -79,7 +75,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       this.gamePointer,
       (playerId: string, reason: string) =>
         this.handlePlayerReport(playerId, reason),
-      (playerId: string, reason: string, duration?: {value: number, unit: string}) =>
+      (playerId: string, reason: string, duration?: { value: number; unit: string }) =>
         this.handlePlayerBan(playerId, reason, duration),
       this.canvas
     );
@@ -133,7 +129,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     }
 
     // Check if report menu is open
-    if (this.playersListEntity.isReportMenuOpen()) {
+    if (this.playersListEntity.isActionMenuOpen()) {
       this.playersListEntity.handlePointerEvent(gamePointer);
       return;
     }
@@ -159,7 +155,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
-    if (this.playersListEntity.isReportMenuOpen()) {
+    if (this.playersListEntity.isActionMenuOpen()) {
       this.playersListEntity.update(delta);
       super.update(delta);
       return;

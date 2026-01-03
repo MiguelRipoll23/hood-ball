@@ -5,16 +5,8 @@ import {
   USER_MODERATION_BAN_ENDPOINT,
 } from "../../constants/api-constants.js";
 import type { ReportUserRequest } from "../../interfaces/requests/report-user-request-interface.js";
+import type { BanUserRequest } from "../../interfaces/requests/ban-user-request-interface.js";
 import { APIUtils } from "../../utils/api-utils.js";
-
-interface BanUserRequest {
-  userId: string;
-  reason: string;
-  duration?: {
-    value: number;
-    unit: string;
-  };
-}
 
 @injectable()
 export class PlayerModerationService {
