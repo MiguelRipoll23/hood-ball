@@ -117,7 +117,6 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     // Check if report menu is open
     if (this.playersListEntity.isReportMenuOpen()) {
       this.playersListEntity.handlePointerEvent(gamePointer);
-      this.hovering = true;
       return;
     }
 
