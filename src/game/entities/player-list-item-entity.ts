@@ -17,13 +17,15 @@ export class PlayerListItemEntity extends BaseTappableGameEntity {
   private containerWidth: number;
   
   private reportButton: SmallButtonEntity | null = null;
+  private banButton: SmallButtonEntity | null = null;
 
   constructor(
     player: GamePlayer,
     isLocalPlayer: boolean,
     x: number,
     y: number,
-    containerWidth: number
+    containerWidth: number,
+    isModerator: boolean
   ) {
     super();
     this.player = player;
@@ -44,9 +46,17 @@ export class PlayerListItemEntity extends BaseTappableGameEntity {
     
     if (isLocalPlayer || player.isNpc()) {
       this.reportButton.setDisabled(true);
+    } else if (isModerator) {
+      this.banButton = new SmallButtonEntity(
+        "Ban",
+        this.BUTTON_WIDTH,
+        this.BUTTON_HEIGHT,
+        "rgba(200, 50, 50, 0.8)", // Default red background
+        "#7ed321" // Green hover color
+      );
     }
 
-    this.calculateReportButtonPosition();
+    this.calculateButtonPositions();
   }
 
   public getPlayer(): GamePlayer {
@@ -56,25 +66,34 @@ export class PlayerListItemEntity extends BaseTappableGameEntity {
   public setPosition(x: number, y: number): void {
     this.x = x;
     this.y = y;
-    this.calculateReportButtonPosition();
+    this.calculateButtonPositions();
   }
 
   public setContainerWidth(width: number): void {
     this.containerWidth = width;
     this.width = width;
-    this.calculateReportButtonPosition();
+    this.calculateButtonPositions();
   }
 
   public override load(): void {
     this.reportButton?.load();
+    this.banButton?.load();
     super.load();
   }
 
-  private calculateReportButtonPosition(): void {
+  private calculateButtonPositions(): void {
+    // Report button (Rightmost)
     if (this.reportButton) {
       const buttonX = this.x + this.containerWidth - 10 - this.BUTTON_WIDTH;
       const buttonY = this.y - 5;
       this.reportButton.setPosition(buttonX, buttonY);
+    }
+    
+    // Ban button (Left of Report button)
+    if (this.banButton) {
+      const buttonX = this.x + this.containerWidth - 20 - (this.BUTTON_WIDTH * 2);
+      const buttonY = this.y - 5;
+      this.banButton.setPosition(buttonX, buttonY);
     }
   }
 
@@ -82,15 +101,21 @@ export class PlayerListItemEntity extends BaseTappableGameEntity {
     gamePointer: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract
   ): void {
     this.reportButton?.handlePointerEvent(gamePointer);
+    this.banButton?.handlePointerEvent(gamePointer);
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
     this.reportButton?.update(delta);
+    this.banButton?.update(delta);
     super.update(delta);
   }
 
   public isReportButtonPressed(): boolean {
     return this.reportButton?.isButtonPressed() ?? false;
+  }
+  
+  public isBanButtonPressed(): boolean {
+    return this.banButton?.isButtonPressed() ?? false;
   }
 
   public render(context: CanvasRenderingContext2D): void {
@@ -110,8 +135,9 @@ export class PlayerListItemEntity extends BaseTappableGameEntity {
     context.textBaseline = "top";
     context.fillText(playerName, this.x, this.y);
 
-    // Draw report button if it exists
+    // Draw buttons if they exist
     this.reportButton?.render(context);
+    this.banButton?.render(context);
 
     context.restore();
   }

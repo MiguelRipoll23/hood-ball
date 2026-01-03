@@ -65,6 +65,28 @@ export class APIService {
     return this.authenticationToken;
   }
 
+  public hasRole(role: string): boolean {
+    if (!this.authenticationToken) {
+      return false;
+    }
+
+    try {
+      const payload = this.authenticationToken.split(".")[1];
+      if (!payload) return false;
+
+      // Basic base64 decode (works in browser for standard JWT)
+      const decoded = JSON.parse(atob(payload));
+      
+      if (Array.isArray(decoded.roles)) {
+        return decoded.roles.includes(role);
+      }
+      return false;
+    } catch (e) {
+      console.error("Failed to parse token roles", e);
+      return false;
+    }
+  }
+
   public async checkForUpdates(): Promise<boolean> {
     const response = await this.fetchWithLoading(
       this.baseURL + VERSION_ENDPOINT
