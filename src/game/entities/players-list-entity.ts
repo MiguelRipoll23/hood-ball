@@ -57,6 +57,10 @@ export class PlayersListEntity extends BaseGameEntity {
     return this.playerItems;
   }
 
+  public isReportMenuOpen(): boolean {
+    return this.reportMenuEntity?.isOpen() ?? false;
+  }
+
   public handlePointerEvent(gamePointer: GamePointerContract): void {
     // Check if report menu is open
     if (this.reportMenuEntity && this.reportMenuEntity.isOpen()) {
@@ -81,9 +85,14 @@ export class PlayersListEntity extends BaseGameEntity {
       if (selectedReason && this.onReport) {
         const reportedPlayer = this.reportMenuEntity.getReportedPlayer();
         if (reportedPlayer) {
-          this.onReport(reportedPlayer.getNetworkId(), selectedReason);
+          this.onReport(reportedPlayer.getId(), selectedReason);
         }
         this.reportMenuEntity.close();
+
+        // Consume the event
+        if (this.gamePointer) {
+          this.gamePointer.clearPressed();
+        }
       }
 
       // Check if cancelled

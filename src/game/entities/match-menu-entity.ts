@@ -114,6 +114,13 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       return;
     }
 
+    // Check if report menu is open
+    if (this.playersListEntity.isReportMenuOpen()) {
+      this.playersListEntity.handlePointerEvent(gamePointer);
+      this.hovering = true;
+      return;
+    }
+
     // Forward pointer events to subentities
     this.closeButtonEntity.handlePointerEvent(gamePointer);
     this.leaveMatchButton.handlePointerEvent(gamePointer);
@@ -135,6 +142,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
+    if (this.playersListEntity.isReportMenuOpen()) {
+      this.playersListEntity.update(delta);
+      super.update(delta);
+      return;
+    }
+
     // Check if close button was pressed BEFORE updating subentities
     if (this.closeButtonEntity.isPressed()) {
       this.onClose();
