@@ -1,10 +1,11 @@
 import { injectable, inject } from "@needle-di/core";
 import { APIService } from "./api-service.js";
-import { USER_MODERATION_REPORT_ENDPOINT } from "../../constants/api-constants.js";
+import {
+  USER_MODERATION_REPORT_ENDPOINT,
+  USER_MODERATION_BAN_ENDPOINT,
+} from "../../constants/api-constants.js";
 import type { ReportUserRequest } from "../../interfaces/requests/report-user-request-interface.js";
 import { APIUtils } from "../../utils/api-utils.js";
-
-const USER_MODERATION_BAN_ENDPOINT = "/api/v1/user-moderation/ban";
 
 interface BanUserRequest {
   userId: string;
