@@ -1,6 +1,7 @@
 import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
 import { BackdropEntity } from "./common/backdrop-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
+import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
 
 interface ReportOption {
   id: string;
@@ -12,7 +13,7 @@ interface ReportOption {
   hovered: boolean;
 }
 
-export class ReportMenuEntity extends BaseTappableGameEntity {
+export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMenuContract {
   private readonly WINDOW_WIDTH = 400;
   private readonly WINDOW_HEIGHT = 450;
   private readonly TITLE_BAR_HEIGHT = 50;
