@@ -87,12 +87,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     // Position close button
     this.closeButtonEntity.setPosition(
       this.windowX + this.windowWidth - 45,
-      this.windowY + 7
+      this.windowY + 6
     );
     // Position leave match button at bottom of window
     this.leaveMatchButton.setPosition(
       this.windowX + this.windowWidth / 2 - 70, // Centered (half of button width)
-      this.windowY + this.WINDOW_HEIGHT - 60
+      this.windowY + this.WINDOW_HEIGHT - 58
     );
   }
 
@@ -111,6 +111,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   public override handlePointerEvent(gamePointer: GamePointerContract): void {
     // Only handle pointer events if active and visible
     if (!this.active || this.opacity === 0) {
+      return;
+    }
+
+    // Check if report menu is open
+    if (this.playersListEntity.isReportMenuOpen()) {
+      this.playersListEntity.handlePointerEvent(gamePointer);
       return;
     }
 
@@ -135,6 +141,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
+    if (this.playersListEntity.isReportMenuOpen()) {
+      this.playersListEntity.update(delta);
+      super.update(delta);
+      return;
+    }
+
     // Check if close button was pressed BEFORE updating subentities
     if (this.closeButtonEntity.isPressed()) {
       this.onClose();
@@ -272,7 +284,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.fillText(
       "Match menu",
       this.windowX + this.PADDING,
-      this.windowY + this.TITLE_BAR_HEIGHT / 2 + 2
+      this.windowY + this.TITLE_BAR_HEIGHT / 2 + 1
     );
     context.restore();
   }

@@ -150,50 +150,68 @@ export class ReportMenuEntity extends BaseTappableGameEntity {
     gamePointer: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract
   ): void {
     const touches = gamePointer.getTouchPoints();
+    
+    this.hovering = false;
+    this.pressed = false;
+    this.confirmButtonHovered = false;
+    this.cancelButtonHovered = false;
+    this.reportOptions.forEach((opt) => (opt.hovered = false));
+
     if (touches.length === 0) {
-      this.hovering = false;
-      this.pressed = false;
-      this.confirmButtonHovered = false;
-      this.cancelButtonHovered = false;
-      this.reportOptions.forEach((opt) => (opt.hovered = false));
       return;
     }
 
-    const touch = touches[0];
+    for (const touch of touches) {
+      // Check confirm button
+      const isInConfirm =
+        touch.x >= this.confirmButtonX &&
+        touch.x <= this.confirmButtonX + this.confirmButtonWidth &&
+        touch.y >= this.confirmButtonY &&
+        touch.y <= this.confirmButtonY + this.confirmButtonHeight;
 
-    // Check confirm button
-    const isInConfirm =
-      touch.x >= this.confirmButtonX &&
-      touch.x <= this.confirmButtonX + this.confirmButtonWidth &&
-      touch.y >= this.confirmButtonY &&
-      touch.y <= this.confirmButtonY + this.confirmButtonHeight;
-    this.confirmButtonHovered = isInConfirm;
+      // Check cancel button
+      const isInCancel =
+        touch.x >= this.cancelButtonX &&
+        touch.x <= this.cancelButtonX + this.cancelButtonWidth &&
+        touch.y >= this.cancelButtonY &&
+        touch.y <= this.cancelButtonY + this.cancelButtonHeight;
 
-    // Check cancel button
-    const isInCancel =
-      touch.x >= this.cancelButtonX &&
-      touch.x <= this.cancelButtonX + this.cancelButtonWidth &&
-      touch.y >= this.cancelButtonY &&
-      touch.y <= this.cancelButtonY + this.cancelButtonHeight;
-    this.cancelButtonHovered = isInCancel;
+      // Check report options
+      let touchedOption: ReportOption | null = null;
+      for (const option of this.reportOptions) {
+        const isInOption =
+          touch.x >= option.x &&
+          touch.x <= option.x + option.width &&
+          touch.y >= option.y &&
+          touch.y <= option.y + option.height;
+        if (isInOption) {
+          touchedOption = option;
+          break;
+        }
+      }
 
-    // Check report options
-    for (const option of this.reportOptions) {
-      const isInOption =
-        touch.x >= option.x &&
-        touch.x <= option.x + option.width &&
-        touch.y >= option.y &&
-        touch.y <= option.y + option.height;
-      option.hovered = isInOption;
+      const isHoveringSomething = !!(isInConfirm || isInCancel || touchedOption);
+
+      if (isHoveringSomething) {
+        this.hovering = true;
+        
+        // Set visual hover states for all touches
+        if (isInConfirm) this.confirmButtonHovered = true;
+        if (isInCancel) this.cancelButtonHovered = true;
+        if (touchedOption) touchedOption.hovered = true;
+
+        if (touch.pressed) {
+          this.pressed = true;
+          // On press, lock the hover state to only the pressed element
+          this.confirmButtonHovered = isInConfirm;
+          this.cancelButtonHovered = isInCancel;
+          this.reportOptions.forEach(
+            (opt) => (opt.hovered = opt === touchedOption)
+          );
+          break;
+        }
+      }
     }
-
-    this.hovering =
-      isInConfirm ||
-      isInCancel ||
-      this.reportOptions.some((opt) => opt.hovered);
-
-    // Only set pressed to true when actually clicked (touch.pressed), not just hovering
-    this.pressed = this.hovering && touch.pressed;
   }
 
   public override update(delta: DOMHighResTimeStamp): void {
