@@ -382,6 +382,16 @@ export class WorldScene extends BaseCollidingGameScene {
       }
     }
 
+    if (this.matchMenuEntity) {
+      const match = this.matchSessionService.getMatch();
+      if (match) {
+        this.matchMenuEntity.refreshPlayers(
+          match.getPlayers(),
+          this.gamePlayer.getNetworkId()
+        );
+      }
+    }
+
     if (this.matchActionsLogService) {
       this.matchActionsLogService.addAction(
         MatchAction.playerJoined(player.getNetworkId(), {
@@ -399,6 +409,16 @@ export class WorldScene extends BaseCollidingGameScene {
     });
 
     this.toastEntity?.show(`<em>${player.getName()}</em> left`, 2);
+
+    if (this.matchMenuEntity) {
+      const match = this.matchSessionService.getMatch();
+      if (match) {
+        this.matchMenuEntity.refreshPlayers(
+          match.getPlayers(),
+          this.gamePlayer.getNetworkId()
+        );
+      }
+    }
 
     // Count only real players (excluding NPCs)
     const allPlayers = this.matchSessionService.getMatch()?.getPlayers() ?? [];

@@ -66,6 +66,10 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   public setPlayers(players: GamePlayer[], localPlayerId: string): void {
+    this.refreshPlayers(players, localPlayerId);
+  }
+
+  public refreshPlayers(players: GamePlayer[], localPlayerId: string): void {
     this.playersListEntity.setPlayers(
       players,
       localPlayerId,
@@ -75,6 +79,8 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       this.gamePointer,
       (playerId: string, reason: string) =>
         this.handlePlayerReport(playerId, reason),
+      (playerId: string, reason: string, duration?: {value: number, unit: string}) =>
+        this.handlePlayerBan(playerId, reason, duration),
       this.canvas
     );
   }
@@ -87,12 +93,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     // Position close button
     this.closeButtonEntity.setPosition(
       this.windowX + this.windowWidth - 45,
-      this.windowY + 6
+      this.windowY + 5
     );
     // Position leave match button at bottom of window
     this.leaveMatchButton.setPosition(
       this.windowX + this.windowWidth / 2 - 70, // Centered (half of button width)
-      this.windowY + this.WINDOW_HEIGHT - 58
+      this.windowY + this.WINDOW_HEIGHT - 57
     );
   }
 
@@ -105,6 +111,18 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       });
 
     // Close the menu after reporting
+    this.onClose();
+  }
+
+  private handlePlayerBan(playerId: string, reason: string, duration?: {value: number, unit: string}): void {
+    // Ban the player
+    this.moderationService
+      .banUser(playerId, reason, duration)
+      .catch((error) => {
+        console.error("Failed to ban user:", error);
+      });
+
+    // Close the menu after banning
     this.onClose();
   }
 
