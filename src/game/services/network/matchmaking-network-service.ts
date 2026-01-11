@@ -167,9 +167,9 @@ export class MatchmakingNetworkService
 
     if (match === null) {
       // If we are not in a match but receive a disconnect, it might be a delayed event
-      // after we already left. If it was graceful, we should handle it.
-      if (!graceful && !match) {
-         this.handleHostDisconnected(peer);
+      // after we already left. If it was ungraceful, we should handle it.
+      if (!graceful) {
+        this.handleHostDisconnected(peer);
       }
       return;
     }
