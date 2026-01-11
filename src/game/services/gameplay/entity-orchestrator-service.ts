@@ -131,6 +131,10 @@ export class EntityOrchestratorService {
   ): void {
     this.updateOwnerToSharedEntities(multiplayerEntity);
 
+    if (multiplayerEntity.getOwner() === null) {
+      return;
+    }
+
     if (this.skipUnownedEntity(multiplayerEntity)) {
       return;
     }

@@ -53,6 +53,11 @@ export class WorldController {
     this.matchSessionService = gameContext.get(MatchSessionService);
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
+
+    // Ensure ball has owner if we are host
+    if (this.matchSessionService.getMatch()?.isHost()) {
+      this.ballEntity.setOwner(this.gamePlayer);
+    }
   }
 
   public handleMatchState(): void {

@@ -48,6 +48,36 @@ export class BallEntity
     return EntityType.Ball;
   }
 
+  public static override deserialize(
+    id: string,
+    arrayBuffer: ArrayBuffer
+  ): MultiplayerGameEntity {
+    // This is a special case since BallEntity needs a canvas reference in constructor
+    // For synchronization, we don't usually create new balls from network data,
+    // we sync the existing one. However, if needed (like late join), we need access to the canvas.
+    // Since static methods don't have access to instance/scene context, we can't easily get the canvas.
+    //
+    // For Hood Ball, the ball is created by the scene (WorldScene) on load.
+    // The createOrSynchronizeEntity method in EntityOrchestratorService attempts to find existing entity first.
+    //
+    // If we reach here, it means the system is trying to CREATE a new ball from network data,
+    // which shouldn't happen for the main game ball as it's pre-created.
+    //
+    // However, to satisfy the interface and prevent crashes if it DOES happen (e.g. multi-ball mode in future),
+    // we would need a way to get the canvas. For now, we'll return a ball with a dummy canvas
+    // or throw a more descriptive error if we can't support dynamic ball creation yet.
+
+    const canvas = document.querySelector("canvas");
+    if (!canvas) {
+      throw new Error("Canvas not found for BallEntity deserialization");
+    }
+
+    const ball = new BallEntity(0, 0, canvas);
+    ball.setId(id);
+    ball.synchronize(arrayBuffer);
+    return ball;
+  }
+
   public override load(): void {
     this.createHitbox();
     super.load();
@@ -217,6 +247,7 @@ export class BallEntity
 
   private setSyncableValues() {
     this.syncable = true;
+    this.setId("00000000000000000000000000000000");
     this.setTypeId(EntityType.Ball);
     this.setSyncableByHost(true);
   }
