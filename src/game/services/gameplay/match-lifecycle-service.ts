@@ -120,24 +120,15 @@ export class MatchLifecycleService {
     this.pendingIdentities.clear();
     this.receivedIdentities.clear();
 
-    if (isHost) {
-      const peers = this.webrtcService.getPeers();
-      peers.forEach((peer: WebRTCPeer) => {
-        peer.disconnectGracefully();
-      });
+    this.networkService.disconnect();
 
+    if (isHost) {
       this.networkService.removePingCheckInterval();
       this.networkService.removeMatchAdvertiseInterval();
       // Remove match from the backend in the background so we don't block the UI
       this.apiService
         .removeMatch()
         .catch((error: unknown) => console.error(error));
-    } else {
-      // Disconnect from host
-      const peers = this.webrtcService.getPeers();
-      peers.forEach((peer: WebRTCPeer) => {
-        peer.disconnectGracefully();
-      });
     }
 
     console.log("Left match");
