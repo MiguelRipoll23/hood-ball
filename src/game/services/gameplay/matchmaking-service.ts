@@ -78,6 +78,10 @@ export class MatchmakingService implements MatchmakingServiceContract {
     await this.lifecycleService.handleGameOver();
   }
 
+  public async leaveMatch(): Promise<void> {
+    await this.lifecycleService.leaveMatch();
+  }
+
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
     const match = this.matchSessionService.getMatch();
     if (match === null) {

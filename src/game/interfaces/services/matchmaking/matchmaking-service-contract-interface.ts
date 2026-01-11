@@ -5,5 +5,7 @@ export interface MatchmakingServiceContract {
   findOrAdvertiseMatch(): Promise<void>;
   savePlayerScore(): Promise<void>;
   handleGameOver(): Promise<void>;
+  leaveMatch(): Promise<void>;
   renderDebugInformation(context: CanvasRenderingContext2D): void;
 }
+

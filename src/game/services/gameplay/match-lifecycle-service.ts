@@ -103,6 +103,37 @@ export class MatchLifecycleService {
     }
   }
 
+  public async leaveMatch(): Promise<void> {
+    if (this.gameOverFinalized || this.gameOverInProgress) {
+      return;
+    }
+
+    const match = this.matchSessionService.getMatch();
+    if (!match) {
+      return;
+    }
+
+    const isHost = match.isHost();
+
+    // Clear match immediately so network callbacks know we are leaving intentionally
+    this.matchSessionService.setMatch(null);
+    this.pendingIdentities.clear();
+    this.receivedIdentities.clear();
+
+    this.networkService.disconnect();
+
+    if (isHost) {
+      this.networkService.removePingCheckInterval();
+      this.networkService.removeMatchAdvertiseInterval();
+      // Remove match from the backend in the background so we don't block the UI
+      this.apiService
+        .removeMatch()
+        .catch((error: unknown) => console.error(error));
+    }
+
+    console.log("Left match");
+  }
+
   private finalizeGameOver(): void {
     if (this.gameOverFinalized) {
       console.log("Game over already finalized, skipping");
