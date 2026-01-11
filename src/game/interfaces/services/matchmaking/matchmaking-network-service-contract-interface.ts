@@ -17,4 +17,6 @@ export interface MatchmakingNetworkServiceContract {
   handleSnapshotEnd(peer: WebRTCPeer): void;
   handleSnapshotACK(peer: WebRTCPeer): void;
   handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void;
+  disconnect(): void;
 }
+

@@ -7,6 +7,7 @@ import { MainScene } from "../../scenes/main/main-scene.js";
 import { MainMenuScene } from "../../scenes/main/main-menu/main-menu-scene.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload-interface.js";
+import type { HostDisconnectedPayload } from "../../interfaces/events/host-disconnected-payload-interface.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 
@@ -84,8 +85,10 @@ export class GameLifecycleService {
       ?.show(payload.message);
   }
 
-  private handleHostDisconnectedEvent(): void {
-    const message = "Host has disconnected";
+  private handleHostDisconnectedEvent(payload: HostDisconnectedPayload): void {
+    const message = payload.graceful
+      ? "Host has left the match"
+      : "Host has disconnected";
     this.returnToMainMenuScene(false, message);
   }
 

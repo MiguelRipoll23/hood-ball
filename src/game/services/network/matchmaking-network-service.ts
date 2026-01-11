@@ -8,6 +8,8 @@ import { EventType } from "../../../engine/enums/event-type.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
+import type { HostDisconnectedPayload } from "../../interfaces/events/host-disconnected-payload-interface.js";
+
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
 import type { IntervalServiceContract } from "../../../engine/interfaces/services/gameplay/interval-service-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
@@ -161,10 +163,30 @@ export class MatchmakingNetworkService
       return;
     }
 
-    if (this.matchSessionService.getMatch()?.isHost()) {
+    const match = this.matchSessionService.getMatch();
+
+    if (match === null) {
+      // If we are not in a match but receive a disconnect, it might be a delayed event
+      // after we already left. If it was graceful, we should handle it.
+      if (!graceful && !match) {
+         this.handleHostDisconnected(peer);
+      }
+      return;
+    }
+
+    if (match.isHost()) {
       this.handlePlayerDisconnection(peer);
     } else if (!graceful) {
       this.handleHostDisconnected(peer);
+    } else {
+      // Graceful disconnect from host
+      console.log(`Host ${peer.getName()} disconnected gracefully`);
+      this.matchSessionService.setMatch(null);
+      const localEvent = new LocalEvent<HostDisconnectedPayload>(
+        EventType.HostDisconnected
+      );
+      localEvent.setData({ graceful: true });
+      this.eventProcessorService.addLocalEvent(localEvent);
     }
   }
 
@@ -375,6 +397,15 @@ export class MatchmakingNetworkService
       ?.setPingTime(playerPingTime);
   }
 
+  public disconnect(): void {
+    const peers = this.webrtcService.getPeers();
+
+    peers.forEach((peer: WebRTCPeer) => {
+      console.log(`Disconnecting peer ${peer.getName()}`);
+      peer.disconnectGracefully();
+    });
+  }
+
   private handlePlayerIdentityAsHost(
     token: string,
     tokenBytes: Uint8Array
@@ -471,7 +502,10 @@ export class MatchmakingNetworkService
     console.log(`Host ${peer.getName()} disconnected`);
     this.matchSessionService.setMatch(null);
 
-    const localEvent = new LocalEvent(EventType.HostDisconnected);
+    const localEvent = new LocalEvent<HostDisconnectedPayload>(
+      EventType.HostDisconnected
+    );
+    localEvent.setData({ graceful: false });
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 

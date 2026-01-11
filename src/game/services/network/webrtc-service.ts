@@ -173,6 +173,7 @@ export class WebRTCService implements WebRTCServiceContract {
   public handleGracefulDisconnect(peer: WebRTCPeer): void {
     console.log("Received graceful disconnect message");
     peer.disconnect(true);
+    this.connectionListener?.onPeerDisconnected(peer, true);
   }
 
   @PeerCommandHandler(WebRTCType.PingRequest)

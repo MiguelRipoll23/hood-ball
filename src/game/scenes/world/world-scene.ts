@@ -598,7 +598,15 @@ export class WorldScene extends BaseCollidingGameScene {
       playerModerationService,
       this.gameState.getGamePointer(),
       () => this.hideMatchMenu(),
-      () => void this.returnToMainMenuScene()
+      () => {
+        if (this.matchmakingService) {
+          void this.matchmakingService.leaveMatch().then(() => {
+            void this.returnToMainMenuScene();
+          });
+        } else {
+          void this.returnToMainMenuScene();
+        }
+      }
     );
     this.matchMenuEntity.setOpacity(0);
     this.uiEntities.push(this.matchMenuEntity);
