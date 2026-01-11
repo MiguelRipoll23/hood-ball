@@ -123,6 +123,11 @@ export class MatchmakingNetworkService
       `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
     );
 
+    if (this.receivedIdentities.has(token)) {
+      console.warn("Received duplicate player identity for token", token);
+      return;
+    }
+
     this.receivedIdentities.set(token, { playerId, playerName });
 
     if (this.matchSessionService.getMatch()?.isHost()) {

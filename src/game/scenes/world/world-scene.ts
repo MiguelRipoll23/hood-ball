@@ -322,6 +322,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private addSyncableEntities(): void {
+    this.addSyncableEntity(BallEntity);
     this.addSyncableEntity(RemoteCarEntity);
   }
 
