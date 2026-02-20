@@ -113,39 +113,31 @@ export class LoginScene extends BaseGameScene {
     }
   }
 
-  private checkForUpdates(): void {
+  private async checkForUpdates(): Promise<void> {
     this.entities?.messageEntity.show("Checking for updates...");
 
-    this.controller
-      .checkForUpdates()
-      .then((requiresUpdate) => {
-        if (requiresUpdate) {
-          return this.showError("An update is required to play the game");
-        }
+    try {
+      const requiresUpdate = await this.controller.checkForUpdates();
 
-        this.entities?.messageEntity.show("Restoring session...");
+      if (requiresUpdate) {
+        this.showError("An update is required to play the game");
+        return;
+      }
 
-        this.controller
-          .tryRestoreSession()
-          .then((restored) => {
-            if (!restored) {
-              this.entities?.messageEntity.hide();
-              this.showDialog();
-              return;
-            }
+      this.entities?.messageEntity.show("Restoring session...");
+      const restored = await this.controller.tryRestoreSession();
 
-            this.downloadConfiguration();
-          })
-          .catch((error) => {
-            console.error(error);
-            this.entities?.messageEntity.hide();
-            this.showDialog();
-          });
-      })
-      .catch((error) => {
-        console.error(error);
-        this.showError("Failed to check for updates");
-      });
+      if (!restored) {
+        this.entities?.messageEntity.hide();
+        this.showDialog();
+        return;
+      }
+
+      this.downloadConfiguration();
+    } catch (error) {
+      console.error(error);
+      this.showError("Failed to check for updates");
+    }
   }
 
   private showDialog(): void {

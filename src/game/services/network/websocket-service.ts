@@ -38,9 +38,16 @@ export class WebSocketService implements WebSocketServiceContract {
   private maxReconnectDelay = 30000; // Max 30 seconds between attempts
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private sessionClearedListenerAttached = false;
+
   private readonly sessionClearedHandler = (): void => {
     this.disconnect();
   };
+
+  private readonly boundHandleOpenEvent = this.handleOpenEvent.bind(this);
+  private readonly boundHandleCloseEvent = this.handleCloseEvent.bind(this);
+  private readonly boundHandleErrorEvent = this.handleErrorEvent.bind(this);
+  private readonly boundHandleMessage = this.handleMessage.bind(this);
 
   constructor(
     private readonly gameServer: GameServer = inject(GameServer),
@@ -56,7 +63,7 @@ export class WebSocketService implements WebSocketServiceContract {
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
 
-    window.addEventListener("hoodball:session-cleared", this.sessionClearedHandler);
+    this.attachSessionClearedListener();
   }
 
   public getOnlinePlayers(): number {
@@ -68,6 +75,7 @@ export class WebSocketService implements WebSocketServiceContract {
   }
 
   public connectToServer(): void {
+    this.attachSessionClearedListener();
     this.attemptConnection();
   }
 
@@ -75,9 +83,33 @@ export class WebSocketService implements WebSocketServiceContract {
     this.stopReconnection();
 
     if (this.webSocket) {
+      this.removeEventListeners(this.webSocket);
       this.webSocket.close();
       this.webSocket = null;
     }
+  }
+
+  public dispose(): void {
+    this.detachSessionClearedListener();
+    this.disconnect();
+  }
+
+  private attachSessionClearedListener(): void {
+    if (this.sessionClearedListenerAttached) {
+      return;
+    }
+
+    window.addEventListener("hoodball:session-cleared", this.sessionClearedHandler);
+    this.sessionClearedListenerAttached = true;
+  }
+
+  private detachSessionClearedListener(): void {
+    if (!this.sessionClearedListenerAttached) {
+      return;
+    }
+
+    window.removeEventListener("hoodball:session-cleared", this.sessionClearedHandler);
+    this.sessionClearedListenerAttached = false;
   }
 
   private attemptConnection(): void {
@@ -95,11 +127,15 @@ export class WebSocketService implements WebSocketServiceContract {
 
     if (!accessToken) {
       console.error("Access token not found, cannot connect websocket");
+      if (this.isReconnecting) {
+        this.scheduleReconnection();
+      }
       return;
     }
 
     // Close existing connection if any
     if (this.webSocket) {
+      this.removeEventListeners(this.webSocket);
       this.webSocket.close();
     }
 
@@ -241,10 +277,17 @@ export class WebSocketService implements WebSocketServiceContract {
   }
 
   private addEventListeners(webSocket: WebSocket): void {
-    webSocket.addEventListener("open", this.handleOpenEvent.bind(this));
-    webSocket.addEventListener("close", this.handleCloseEvent.bind(this));
-    webSocket.addEventListener("error", this.handleErrorEvent.bind(this));
-    webSocket.addEventListener("message", this.handleMessage.bind(this));
+    webSocket.addEventListener("open", this.boundHandleOpenEvent);
+    webSocket.addEventListener("close", this.boundHandleCloseEvent);
+    webSocket.addEventListener("error", this.boundHandleErrorEvent);
+    webSocket.addEventListener("message", this.boundHandleMessage);
+  }
+
+  private removeEventListeners(webSocket: WebSocket): void {
+    webSocket.removeEventListener("open", this.boundHandleOpenEvent);
+    webSocket.removeEventListener("close", this.boundHandleCloseEvent);
+    webSocket.removeEventListener("error", this.boundHandleErrorEvent);
+    webSocket.removeEventListener("message", this.boundHandleMessage);
   }
 
   private handleOpenEvent(): void {

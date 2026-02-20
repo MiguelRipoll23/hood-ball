@@ -49,6 +49,8 @@ export class GameServer {
         typeof persisted.serverSignaturePublicKey !== "string" ||
         Array.isArray(persisted.rtcIceServers) === false
       ) {
+        console.warn("Invalid persisted server registration shape, clearing it");
+        localStorage.removeItem(SERVER_REGISTRATION_STORAGE_KEY);
         return false;
       }
 
