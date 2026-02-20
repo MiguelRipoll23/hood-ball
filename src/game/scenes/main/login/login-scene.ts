@@ -123,8 +123,24 @@ export class LoginScene extends BaseGameScene {
           return this.showError("An update is required to play the game");
         }
 
-        this.entities?.messageEntity.hide();
-        this.showDialog();
+        this.entities?.messageEntity.show("Restoring session...");
+
+        this.controller
+          .tryRestoreSession()
+          .then((restored) => {
+            if (!restored) {
+              this.entities?.messageEntity.hide();
+              this.showDialog();
+              return;
+            }
+
+            this.downloadConfiguration();
+          })
+          .catch((error) => {
+            console.error(error);
+            this.entities?.messageEntity.hide();
+            this.showDialog();
+          });
       })
       .catch((error) => {
         console.error(error);

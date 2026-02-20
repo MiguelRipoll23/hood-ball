@@ -38,6 +38,9 @@ export class WebSocketService implements WebSocketServiceContract {
   private maxReconnectDelay = 30000; // Max 30 seconds between attempts
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private readonly sessionClearedHandler = (): void => {
+    this.disconnect();
+  };
 
   constructor(
     private readonly gameServer: GameServer = inject(GameServer),
@@ -52,6 +55,8 @@ export class WebSocketService implements WebSocketServiceContract {
     this.baseURL = APIUtils.getWSBaseURL();
     this.dispatcherService = new WebSocketDispatcherService();
     this.dispatcherService.registerCommandHandlers(this);
+
+    window.addEventListener("hoodball:session-cleared", this.sessionClearedHandler);
   }
 
   public getOnlinePlayers(): number {
@@ -86,7 +91,12 @@ export class WebSocketService implements WebSocketServiceContract {
       return;
     }
 
-    const accessToken = this.apiService.getAccessToken() ?? serverRegistration.getAccessToken();
+    const accessToken = this.apiService.getAccessToken();
+
+    if (!accessToken) {
+      console.error("Access token not found, cannot connect websocket");
+      return;
+    }
 
     // Close existing connection if any
     if (this.webSocket) {

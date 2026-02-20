@@ -1,5 +1,14 @@
 import type { AuthenticationResponse } from "../interfaces/responses/authentication-response-interface.js";
 
+export interface PersistedServerRegistration {
+  userId: string;
+  userDisplayName: string;
+  userPublicIp: string;
+  userSymmetricKey: string;
+  serverSignaturePublicKey: string;
+  rtcIceServers: RTCIceServer[];
+}
+
 export class ServerRegistration {
   private accessToken: string;
   private userId: string;
@@ -18,6 +27,33 @@ export class ServerRegistration {
     this.serverSignaturePublicKey =
       registrationResponse.serverSignaturePublicKey;
     this.rtcIceServers = registrationResponse.rtcIceServers;
+  }
+
+  public static fromPersisted(
+    persisted: PersistedServerRegistration,
+    accessToken: string
+  ): ServerRegistration {
+    return new ServerRegistration({
+      accessToken,
+      refreshToken: "",
+      userId: persisted.userId,
+      userDisplayName: persisted.userDisplayName,
+      userPublicIp: persisted.userPublicIp,
+      userSymmetricKey: persisted.userSymmetricKey,
+      serverSignaturePublicKey: persisted.serverSignaturePublicKey,
+      rtcIceServers: persisted.rtcIceServers,
+    });
+  }
+
+  public toPersisted(): PersistedServerRegistration {
+    return {
+      userId: this.userId,
+      userDisplayName: this.userDisplayName,
+      userPublicIp: this.userPublicIp,
+      userSymmetricKey: this.userSymmetricKey,
+      serverSignaturePublicKey: this.serverSignaturePublicKey,
+      rtcIceServers: this.rtcIceServers,
+    };
   }
 
   public getAccessToken(): string {

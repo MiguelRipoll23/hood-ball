@@ -30,6 +30,7 @@ import { CryptoService } from "../security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
 import { injectable, inject } from "@needle-di/core";
+import { GameServer } from "../../models/game-server.js";
 
 interface RefreshResponse {
   accessToken: string;
@@ -49,7 +50,8 @@ export class APIService {
     private readonly cryptoService: CryptoService = inject(CryptoService),
     private readonly loadingIndicatorService: LoadingIndicatorService = inject(
       LoadingIndicatorService
-    )
+    ),
+    private readonly gameServer: GameServer = inject(GameServer)
   ) {
     this.baseURL = APIUtils.getBaseURL();
     this.refreshToken = this.readPersistedRefreshToken();
@@ -78,6 +80,12 @@ export class APIService {
 
   public setAccessToken(accessToken: string): void {
     this.accessToken = accessToken;
+
+    const registration = this.gameServer.getServerRegistration();
+
+    if (registration !== null) {
+      registration.setAccessToken(accessToken);
+    }
   }
 
   public getAccessToken(): string | null {
@@ -105,6 +113,9 @@ export class APIService {
   public clearSession(): void {
     this.accessToken = null;
     this.setRefreshToken(null);
+    this.gameServer.clearServerRegistration();
+
+    window.dispatchEvent(new CustomEvent("hoodball:session-cleared"));
   }
 
   public async tryRestoreSession(): Promise<boolean> {
@@ -118,9 +129,25 @@ export class APIService {
 
     try {
       await this.refreshAccessToken();
+
+      if (!this.accessToken) {
+        return false;
+      }
+
+      const registration = this.gameServer.getServerRegistration();
+      if (registration === null) {
+        const restored = this.gameServer.restoreServerRegistration(this.accessToken);
+
+        if (!restored) {
+          this.clearSession();
+          throw new Error(
+            "Unable to restore server registration after refresh; full re-authentication required."
+          );
+        }
+      }
+
       return true;
     } catch {
-      this.clearSession();
       return false;
     }
   }
@@ -153,9 +180,24 @@ export class APIService {
         throw new Error("Session expired. Please sign in again.");
       }
 
-      const refreshResponse: RefreshResponse = await response.json();
-      this.setAccessToken(refreshResponse.accessToken);
-      this.setRefreshToken(refreshResponse.refreshToken);
+      const refreshResponse = (await response.json()) as Partial<RefreshResponse>;
+      const accessToken = refreshResponse.accessToken;
+      const refreshToken = refreshResponse.refreshToken;
+
+      if (typeof accessToken !== "string" || accessToken.length === 0) {
+        this.clearSession();
+        console.error("Refresh response missing valid accessToken");
+        throw new Error("Session expired. Please sign in again.");
+      }
+
+      if (typeof refreshToken !== "string" || refreshToken.length === 0) {
+        this.clearSession();
+        console.error("Refresh response missing valid refreshToken");
+        throw new Error("Session expired. Please sign in again.");
+      }
+
+      this.setAccessToken(accessToken);
+      this.setRefreshToken(refreshToken);
     })();
 
     try {
@@ -170,11 +212,11 @@ export class APIService {
     init: RequestInit = {},
     retried = false
   ): Promise<Response> {
-    if (this.accessToken === null) {
+    if (!this.accessToken) {
       await this.tryRestoreSession();
     }
 
-    if (this.accessToken === null) {
+    if (!this.accessToken) {
       throw new Error("Authentication required");
     }
 

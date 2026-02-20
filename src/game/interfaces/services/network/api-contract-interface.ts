@@ -19,6 +19,10 @@ export interface APIServiceContract {
   getRefreshToken(): string | null;
   tryRestoreSession(): Promise<boolean>;
   clearSession(): void;
+  fetchWithAuthentication(
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response>;
   checkForUpdates(): Promise<boolean>;
   getRegistrationOptions(
     registrationOptionsRequest: RegistrationOptionsRequest

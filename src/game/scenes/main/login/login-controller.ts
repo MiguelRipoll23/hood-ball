@@ -14,6 +14,10 @@ export class LoginController {
     return this.apiService.checkForUpdates();
   }
 
+  public tryRestoreSession(): Promise<boolean> {
+    return this.apiService.tryRestoreSession();
+  }
+
   public async downloadConfiguration(): Promise<ConfigurationType> {
     const response = await this.apiService.getConfiguration();
     const decrypted = await this.cryptoService.decryptResponse(response);
