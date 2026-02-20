@@ -13,7 +13,6 @@ interface TextPart {
 
 export class MatchLogEntity extends BaseAnimatedGameEntity {
   private readonly padding = 10;
-  private readonly cornerRadius = 8;
   private readonly fontSize = 16;
   private readonly lineHeight = 16;
   private readonly actionMargin = 4;
@@ -101,7 +100,6 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
 
     context.save();
     this.applyOpacity(context);
-    this.drawBackground(context);
     this.drawText(context);
     context.restore();
   }
@@ -136,37 +134,6 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
   private setPosition(): void {
     this.x = 20;
     this.y = 20;
-  }
-
-  private drawBackground(ctx: CanvasRenderingContext2D): void {
-    ctx.fillStyle = "rgba(0,0,0,0.6)";
-    ctx.beginPath();
-    ctx.moveTo(this.x + this.cornerRadius, this.y);
-    ctx.lineTo(this.x + this.width - this.cornerRadius, this.y);
-    ctx.quadraticCurveTo(
-      this.x + this.width,
-      this.y,
-      this.x + this.width,
-      this.y + this.cornerRadius
-    );
-    ctx.lineTo(this.x + this.width, this.y + this.height - this.cornerRadius);
-    ctx.quadraticCurveTo(
-      this.x + this.width,
-      this.y + this.height,
-      this.x + this.width - this.cornerRadius,
-      this.y + this.height
-    );
-    ctx.lineTo(this.x + this.cornerRadius, this.y + this.height);
-    ctx.quadraticCurveTo(
-      this.x,
-      this.y + this.height,
-      this.x,
-      this.y + this.height - this.cornerRadius
-    );
-    ctx.lineTo(this.x, this.y + this.cornerRadius);
-    ctx.quadraticCurveTo(this.x, this.y, this.x + this.cornerRadius, this.y);
-    ctx.closePath();
-    ctx.fill();
   }
 
   private drawText(ctx: CanvasRenderingContext2D): void {
