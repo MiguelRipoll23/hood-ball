@@ -27,19 +27,12 @@ export class PlayerModerationService {
       automatic,
     };
 
-    const authToken = this.apiService.getAuthenticationToken();
-
-    if (!authToken) {
-      throw new Error("Authentication token not found");
-    }
-
-    const response = await fetch(
+    const response = await this.apiService.fetchWithAuthentication(
       this.baseURL + USER_MODERATION_REPORT_ENDPOINT,
       {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: authToken,
         },
         body: JSON.stringify(reportRequest),
       }
@@ -48,8 +41,6 @@ export class PlayerModerationService {
     if (!response.ok) {
       await APIUtils.throwAPIError(response);
     }
-
-    console.log(`User ${userId} reported for: ${reason}`);
   }
 
   public async banUser(
@@ -63,25 +54,19 @@ export class PlayerModerationService {
       duration,
     };
 
-    const authToken = this.apiService.getAuthenticationToken();
-
-    if (!authToken) {
-      throw new Error("Authentication token not found");
-    }
-
-    const response = await fetch(this.baseURL + USER_MODERATION_BAN_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authToken,
-      },
-      body: JSON.stringify(banRequest),
-    });
+    const response = await this.apiService.fetchWithAuthentication(
+      this.baseURL + USER_MODERATION_BAN_ENDPOINT,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(banRequest),
+      }
+    );
 
     if (!response.ok) {
       await APIUtils.throwAPIError(response);
     }
-
-    console.log(`User ${userId} banned for: ${reason}`);
   }
 }

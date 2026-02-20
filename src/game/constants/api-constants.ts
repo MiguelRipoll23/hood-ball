@@ -9,6 +9,7 @@ export const VERIFY_REGISTRATION_RESPONSE_ENDPOINT = `${REGISTRATION_ENDPOINT}/r
 export const AUTHENTICATION_ENDPOINT = `/authentication`;
 export const AUTHENTICATION_OPTIONS_ENDPOINT = `${AUTHENTICATION_ENDPOINT}/options`;
 export const VERIFY_AUTHENTICATION_RESPONSE_ENDPOINT = `${AUTHENTICATION_ENDPOINT}/response`;
+export const AUTHENTICATION_REFRESH_ENDPOINT = `${AUTHENTICATION_ENDPOINT}/refresh`;
 export const CONFIGURATION_BLOB_ENDPOINT = "/game-configuration/encrypted";
 export const WEBSOCKET_ENDPOINT = "/websocket";
 export const MESSAGES_ENDPOINT = "/server-messages";

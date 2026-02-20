@@ -9,6 +9,7 @@ import type { OnlinePlayersPayload } from "../../interfaces/events/online-player
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIUtils } from "../../utils/api-utils.js";
 import { GameServer } from "../../models/game-server.js";
+import { APIService } from "./api-service.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { WebSocketDispatcherService } from "./websocket-dispatcher-service.js";
@@ -40,6 +41,7 @@ export class WebSocketService implements WebSocketServiceContract {
 
   constructor(
     private readonly gameServer: GameServer = inject(GameServer),
+    private readonly apiService: APIService = inject(APIService),
     private readonly gameState: GameState = inject(GameState),
     private readonly eventProcessorService: EventProcessorServiceContract = inject(
       EventProcessorService
@@ -84,7 +86,7 @@ export class WebSocketService implements WebSocketServiceContract {
       return;
     }
 
-    const authenticationToken = serverRegistration.getAuthenticationToken();
+    const accessToken = this.apiService.getAccessToken() ?? serverRegistration.getAccessToken();
 
     // Close existing connection if any
     if (this.webSocket) {
@@ -95,7 +97,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.webSocket = new WebSocket(
         this.baseURL +
           WEBSOCKET_ENDPOINT +
-          `?access_token=${authenticationToken}`
+          `?access_token=${accessToken}`
       );
 
       this.webSocket.binaryType = "arraybuffer";

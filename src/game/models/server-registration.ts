@@ -1,7 +1,7 @@
 import type { AuthenticationResponse } from "../interfaces/responses/authentication-response-interface.js";
 
 export class ServerRegistration {
-  private authenticationToken: string;
+  private accessToken: string;
   private userId: string;
   private userDisplayName: string;
   private userPublicIp: string;
@@ -10,7 +10,7 @@ export class ServerRegistration {
   private rtcIceServers: RTCIceServer[];
 
   constructor(registrationResponse: AuthenticationResponse) {
-    this.authenticationToken = registrationResponse.authenticationToken;
+    this.accessToken = registrationResponse.accessToken;
     this.userId = registrationResponse.userId;
     this.userDisplayName = registrationResponse.userDisplayName;
     this.userPublicIp = registrationResponse.userPublicIp;
@@ -20,8 +20,12 @@ export class ServerRegistration {
     this.rtcIceServers = registrationResponse.rtcIceServers;
   }
 
-  public getAuthenticationToken(): string {
-    return this.authenticationToken;
+  public getAccessToken(): string {
+    return this.accessToken;
+  }
+
+  public setAccessToken(accessToken: string): void {
+    this.accessToken = accessToken;
   }
 
   public getUserId(): string {
