@@ -13,7 +13,16 @@ import type { ServerMessagesResponse } from "../../responses/server-messages-res
 import type { UserScoresResponse } from "../../responses/user-scores-response-interface.js";
 
 export interface APIServiceContract {
-  setAuthenticationToken(authenticationToken: string): void;
+  setAccessToken(accessToken: string): void;
+  setRefreshToken(refreshToken: string | null): void;
+  getAccessToken(): string | null;
+  getRefreshToken(): string | null;
+  tryRestoreSession(): Promise<boolean>;
+  clearSession(): void;
+  fetchWithAuthentication(
+    input: RequestInfo | URL,
+    init?: RequestInit
+  ): Promise<Response>;
   checkForUpdates(): Promise<boolean>;
   getRegistrationOptions(
     registrationOptionsRequest: RegistrationOptionsRequest

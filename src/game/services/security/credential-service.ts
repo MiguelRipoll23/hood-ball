@@ -74,6 +74,11 @@ export class CredentialService {
     }
   }
 
+
+  public async tryRestoreSession(): Promise<boolean> {
+    return this.apiService.tryRestoreSession();
+  }
+
   public async createCredential(
     name: string,
     displayName: string
@@ -163,13 +168,15 @@ export class CredentialService {
     this.gameServer.setServerRegistration(new ServerRegistration(response));
 
     const {
-      authenticationToken,
+      accessToken,
+      refreshToken,
       userId,
       userDisplayName,
       serverSignaturePublicKey,
     } = response;
 
-    this.apiService.setAuthenticationToken(authenticationToken);
+    this.apiService.setAccessToken(accessToken);
+    this.apiService.setRefreshToken(refreshToken);
     await this.signatureService.init(serverSignaturePublicKey);
 
     this.gamePlayer.setId(userId);

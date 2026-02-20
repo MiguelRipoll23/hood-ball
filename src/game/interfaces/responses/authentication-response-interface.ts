@@ -1,5 +1,6 @@
 export interface AuthenticationResponse {
-  authenticationToken: string;
+  accessToken: string;
+  refreshToken: string;
   userId: string;
   userDisplayName: string;
   userPublicIp: string;
