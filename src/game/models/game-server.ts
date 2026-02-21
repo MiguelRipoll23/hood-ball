@@ -26,7 +26,7 @@ export class GameServer {
     return false;
   }
 
-  // persistence removed; no-op
+  
 
   getConfiguration(): ConfigurationType | null {
     return this.configuration;

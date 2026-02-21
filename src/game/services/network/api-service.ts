@@ -98,7 +98,7 @@ export class APIService {
     window.dispatchEvent(new CustomEvent("hoodball:session-cleared"));
   }
 
-  // Session restore removed — no tryRestoreSession method.
+  
 
   private async refreshAccessToken(): Promise<void> {
     if (this.refreshToken === null) {
@@ -160,15 +160,9 @@ export class APIService {
     init: RequestInit = {},
     retried = false
   ): Promise<Response> {
-    // If we don't have an access token but do have a refresh token, try
-    // refreshing it now. We no longer attempt to restore session from
-    // persisted storage on page load.
-    if (!this.accessToken) {
-      if (this.refreshToken) {
-        await this.refreshAccessToken();
-      }
-    }
-
+    // Ensure we have an access token; the 401 retry path will attempt
+    // refresh when needed. If no access token is present here, treat as
+    // unauthenticated.
     if (!this.accessToken) {
       throw new Error("Authentication required");
     }
