@@ -139,6 +139,10 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
   private drawText(ctx: CanvasRenderingContext2D): void {
     ctx.font = `${this.fontSize}px system-ui`;
     ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetX = 1;
+    ctx.shadowOffsetY = 1;
     let y = this.y + this.padding + this.lineHeight / 2;
     const baseX = this.x + this.padding;
 

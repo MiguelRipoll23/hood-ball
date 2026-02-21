@@ -124,16 +124,8 @@ export class LoginScene extends BaseGameScene {
         return;
       }
 
-      this.entities?.messageEntity.show("Restoring session...");
-      const restored = await this.controller.tryRestoreSession();
-
-      if (!restored) {
-        this.entities?.messageEntity.hide();
-        this.showDialog();
-        return;
-      }
-
-      this.downloadConfiguration();
+      this.entities?.messageEntity.hide();
+      this.showDialog();
     } catch (error) {
       console.error(error);
       this.showError("Failed to check for updates");
