@@ -241,6 +241,22 @@ export class WebSocketService implements WebSocketServiceContract {
     }
   }
 
+  @ServerCommandHandler(WebSocketType.Authentication)
+  public handleAuthentication(binaryReader: BinaryReader) {
+    const success = binaryReader.unsignedInt8();
+
+    if (success !== 1) {
+      console.warn("WebSocket authentication failed; closing connection");
+      this.disconnect();
+      return;
+    }
+
+    console.log("WebSocket authentication successful");
+
+    const localEvent = new LocalEvent(EventType.ServerConnected);
+    this.eventProcessorService.addLocalEvent(localEvent);
+  }
+
   @ServerCommandHandler(WebSocketType.Notification)
   public handleNotificationMessage(binaryReader: BinaryReader) {
     const channelId = binaryReader.unsignedInt8();
@@ -280,21 +296,6 @@ export class WebSocketService implements WebSocketServiceContract {
     const userId = binaryReader.fixedLengthString(32);
 
     this.processUserBan(userId);
-  }
-
-  @ServerCommandHandler(WebSocketType.Authentication)
-  public handleAuthentication(binaryReader: BinaryReader) {
-    const success = binaryReader.unsignedInt8();
-
-    if (success !== 1) {
-      console.warn("WebSocket authentication failed; closing connection");
-      this.disconnect();
-    }
-
-    console.log("WebSocket authentication successful");
-
-    const localEvent = new LocalEvent(EventType.ServerConnected);
-    this.eventProcessorService.addLocalEvent(localEvent);
   }
 
   private addEventListeners(webSocket: WebSocket): void {
