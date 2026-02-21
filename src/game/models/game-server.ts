@@ -13,17 +13,10 @@ export class GameServer {
 
   setServerRegistration(serverRegistration: ServerRegistration): void {
     this.serverRegistration = serverRegistration;
-    this.persistServerRegistration();
   }
 
   clearServerRegistration(): void {
     this.serverRegistration = null;
-
-    try {
-      // No persisted server registration is kept on disk.
-    } catch (error) {
-      console.warn("Failed to clear server registration", error);
-    }
   }
 
   restoreServerRegistration(_: string): boolean {
@@ -33,18 +26,7 @@ export class GameServer {
     return false;
   }
 
-  private persistServerRegistration(): void {
-    if (this.serverRegistration === null) {
-      return;
-    }
-
-    try {
-      // Do not persist server registration to localStorage anymore.
-      // This avoids restoring session state from disk after reload.
-    } catch (error) {
-      console.warn("Failed to persist server registration", error);
-    }
-  }
+  // persistence removed; no-op
 
   getConfiguration(): ConfigurationType | null {
     return this.configuration;

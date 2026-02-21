@@ -98,11 +98,7 @@ export class APIService {
     window.dispatchEvent(new CustomEvent("hoodball:session-cleared"));
   }
 
-  public async tryRestoreSession(): Promise<boolean> {
-    // tryRestoreSession logic removed — session restore from persisted state
-    // is no longer supported. Token refresh can be triggered on demand.
-    return false;
-  }
+  // Session restore removed — no tryRestoreSession method.
 
   private async refreshAccessToken(): Promise<void> {
     if (this.refreshToken === null) {
