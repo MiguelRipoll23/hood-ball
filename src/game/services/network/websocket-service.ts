@@ -27,10 +27,6 @@ export class WebSocketService implements WebSocketServiceContract {
   private baseURL: string;
   private webSocket: WebSocket | null = null;
 
-  private onlinePlayers = 0;
-
-  private dispatcherService: WebSocketDispatcherService;
-
   // Reconnection properties
   private isReconnecting = false;
   private reconnectAttempts = 0;
@@ -39,6 +35,10 @@ export class WebSocketService implements WebSocketServiceContract {
   private maxReconnectAttempts = 50; // Maximum number of reconnection attempts (0 = unlimited)
   private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private sessionClearedListenerAttached = false;
+
+  private dispatcherService: WebSocketDispatcherService;
+
+  private onlinePlayers = 0;
 
   private readonly sessionClearedHandler = (): void => {
     this.disconnect();
@@ -54,10 +54,14 @@ export class WebSocketService implements WebSocketServiceContract {
     private readonly apiService: APIService = inject(APIService),
     private readonly gameState: GameState = inject(GameState),
     private readonly eventProcessorService: EventProcessorServiceContract = inject(
-      EventProcessorService
+      EventProcessorService,
     ),
-    private readonly matchSessionService: MatchSessionService = inject(MatchSessionService),
-    private readonly matchActionsLogService: MatchActionsLogService = inject(MatchActionsLogService)
+    private readonly matchSessionService: MatchSessionService = inject(
+      MatchSessionService,
+    ),
+    private readonly matchActionsLogService: MatchActionsLogService = inject(
+      MatchActionsLogService,
+    ),
   ) {
     this.baseURL = APIUtils.getWSBaseURL();
     this.dispatcherService = new WebSocketDispatcherService();
@@ -99,7 +103,10 @@ export class WebSocketService implements WebSocketServiceContract {
       return;
     }
 
-    window.addEventListener("hoodball:session-cleared", this.sessionClearedHandler);
+    window.addEventListener(
+      "hoodball:session-cleared",
+      this.sessionClearedHandler,
+    );
     this.sessionClearedListenerAttached = true;
   }
 
@@ -108,7 +115,10 @@ export class WebSocketService implements WebSocketServiceContract {
       return;
     }
 
-    window.removeEventListener("hoodball:session-cleared", this.sessionClearedHandler);
+    window.removeEventListener(
+      "hoodball:session-cleared",
+      this.sessionClearedHandler,
+    );
     this.sessionClearedListenerAttached = false;
   }
 
@@ -140,11 +150,7 @@ export class WebSocketService implements WebSocketServiceContract {
     }
 
     try {
-      this.webSocket = new WebSocket(
-        this.baseURL +
-          WEBSOCKET_ENDPOINT +
-          `?access_token=${accessToken}`
-      );
+      this.webSocket = new WebSocket(this.baseURL + WEBSOCKET_ENDPOINT);
 
       this.webSocket.binaryType = "arraybuffer";
       this.addEventListeners(this.webSocket);
@@ -189,7 +195,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.reconnectAttempts > this.maxReconnectAttempts
     ) {
       console.log(
-        `Maximum reconnection attempts (${this.maxReconnectAttempts}) reached. Stopping reconnection.`
+        `Maximum reconnection attempts (${this.maxReconnectAttempts}) reached. Stopping reconnection.`,
       );
       this.stopReconnection();
       return;
@@ -198,11 +204,11 @@ export class WebSocketService implements WebSocketServiceContract {
     // Calculate delay with exponential backoff
     const delay = Math.min(
       this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1),
-      this.maxReconnectDelay
+      this.maxReconnectDelay,
     );
 
     console.log(
-      `Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`
+      `Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`,
     );
 
     this.reconnectTimeoutId = setTimeout(() => {
@@ -227,12 +233,28 @@ export class WebSocketService implements WebSocketServiceContract {
       if (this.isLoggingEnabled()) {
         console.debug(
           "%cSent message to server:\n" + BinaryWriter.preview(arrayBuffer),
-          "color: purple"
+          "color: purple",
         );
       }
     } catch (error) {
       console.error(`Failed to send message to server`, error);
     }
+  }
+
+  @ServerCommandHandler(WebSocketType.Authentication)
+  public handleAuthentication(binaryReader: BinaryReader) {
+    const success = binaryReader.unsignedInt8();
+
+    if (success !== 1) {
+      console.warn("WebSocket authentication failed; closing connection");
+      this.disconnect();
+      return;
+    }
+
+    console.log("WebSocket authentication successful");
+
+    const localEvent = new LocalEvent(EventType.ServerConnected);
+    this.eventProcessorService.addLocalEvent(localEvent);
   }
 
   @ServerCommandHandler(WebSocketType.Notification)
@@ -242,7 +264,7 @@ export class WebSocketService implements WebSocketServiceContract {
 
     const message = new TextDecoder("utf-8").decode(messageBytes);
     const localEvent = new LocalEvent<ServerNotificationPayload>(
-      EventType.ServerNotification
+      EventType.ServerNotification,
     );
 
     localEvent.setData({
@@ -260,7 +282,7 @@ export class WebSocketService implements WebSocketServiceContract {
     this.onlinePlayers = total;
 
     const localEvent = new LocalEvent<OnlinePlayersPayload>(
-      EventType.OnlinePlayers
+      EventType.OnlinePlayers,
     );
     localEvent.setData({
       total,
@@ -295,11 +317,27 @@ export class WebSocketService implements WebSocketServiceContract {
 
     // Stop any ongoing reconnection attempts
     this.stopReconnection();
-
     this.gameServer.setConnected(true);
-    this.eventProcessorService.addLocalEvent(
-      new LocalEvent(EventType.ServerConnected)
-    );
+
+    // Immediately authenticate by sending the JWT as the first message.
+    this.sendAccessTokenMessage();
+  }
+
+  private sendAccessTokenMessage() {
+    const accessToken = this.apiService.getAccessToken();
+
+    if (accessToken) {
+      const payload = BinaryWriter.build()
+        .unsignedInt8(WebSocketType.Authentication)
+        .variableLengthString(accessToken)
+        .toArrayBuffer();
+
+      this.sendMessage(payload);
+    } else {
+      console.warn(
+        "No access token available to authenticate WebSocket connection",
+      );
+    }
   }
 
   private handleCloseEvent(event: CloseEvent): void {
@@ -311,17 +349,17 @@ export class WebSocketService implements WebSocketServiceContract {
     // Check if the user has been banned
     if (event.code === 1000 && event.reason === "User has been banned") {
       console.log("User has been banned from the server");
-      
+
       // Stop any reconnection attempts
       this.stopReconnection();
-      
+
       // Clean up the WebSocket connection reference
       this.webSocket = null;
-      
+
       // Emit user banned event
       const localEvent = new LocalEvent(EventType.UserBannedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
-      
+
       return;
     }
 
@@ -332,7 +370,7 @@ export class WebSocketService implements WebSocketServiceContract {
       };
 
       const localEvent = new LocalEvent<ServerDisconnectedPayload>(
-        EventType.ServerDisconnected
+        EventType.ServerDisconnected,
       );
 
       localEvent.setData(payload);
@@ -345,7 +383,7 @@ export class WebSocketService implements WebSocketServiceContract {
         this.startReconnection();
       } else {
         console.log(
-          `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`
+          `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`,
         );
         this.scheduleReconnection();
       }
@@ -364,7 +402,7 @@ export class WebSocketService implements WebSocketServiceContract {
       };
 
       const localEvent = new LocalEvent<ServerDisconnectedPayload>(
-        EventType.ServerDisconnected
+        EventType.ServerDisconnected,
       );
 
       localEvent.setData(payload);
@@ -374,7 +412,7 @@ export class WebSocketService implements WebSocketServiceContract {
     } else if (this.isReconnecting) {
       // If we're in the middle of reconnecting and get an error, schedule next attempt
       console.log(
-        `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`
+        `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`,
       );
       this.scheduleReconnection();
     }
@@ -387,7 +425,7 @@ export class WebSocketService implements WebSocketServiceContract {
     if (this.isLoggingEnabled()) {
       console.debug(
         "%cReceived message from server:\n" + binaryReader.preview(),
-        "color: green;"
+        "color: green;",
       );
     }
 
@@ -398,7 +436,7 @@ export class WebSocketService implements WebSocketServiceContract {
     } catch (error) {
       console.error(
         `Error executing server command handler for ID ${commandId}}:`,
-        error
+        error,
       );
     }
   }
