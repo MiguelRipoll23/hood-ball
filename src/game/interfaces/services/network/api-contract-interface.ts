@@ -17,7 +17,6 @@ export interface APIServiceContract {
   setRefreshToken(refreshToken: string | null): void;
   getAccessToken(): string | null;
   getRefreshToken(): string | null;
-  tryRestoreSession(): Promise<boolean>;
   clearSession(): void;
   fetchWithAuthentication(
     input: RequestInfo | URL,

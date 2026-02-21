@@ -14,8 +14,10 @@ export class LoginController {
     return this.apiService.checkForUpdates();
   }
 
+  // tryRestoreSession removed — token refresh should be handled by APIService
+  // when needed. Keep method for compatibility but indicate it is no-op.
   public tryRestoreSession(): Promise<boolean> {
-    return this.apiService.tryRestoreSession();
+    return Promise.resolve(false);
   }
 
   public async downloadConfiguration(): Promise<ConfigurationType> {

@@ -75,9 +75,8 @@ export class CredentialService {
   }
 
 
-  public async tryRestoreSession(): Promise<boolean> {
-    return this.apiService.tryRestoreSession();
-  }
+  // Session restore from persisted storage is no longer supported.
+  // If the app needs to refresh a token it should call APIService directly.
 
   public async createCredential(
     name: string,

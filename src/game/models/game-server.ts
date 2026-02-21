@@ -1,10 +1,5 @@
 import type { ConfigurationType } from "../types/configuration-type.js";
-import {
-  type PersistedServerRegistration,
-  ServerRegistration,
-} from "./server-registration.js";
-
-const SERVER_REGISTRATION_STORAGE_KEY = "hoodBall.serverRegistration";
+import { ServerRegistration } from "./server-registration.js";
 
 export class GameServer {
   private serverRegistration: ServerRegistration | null = null;
@@ -25,45 +20,17 @@ export class GameServer {
     this.serverRegistration = null;
 
     try {
-      localStorage.removeItem(SERVER_REGISTRATION_STORAGE_KEY);
+      // No persisted server registration is kept on disk.
     } catch (error) {
       console.warn("Failed to clear server registration", error);
     }
   }
 
-  restoreServerRegistration(accessToken: string): boolean {
-    try {
-      const serialized = localStorage.getItem(SERVER_REGISTRATION_STORAGE_KEY);
-
-      if (serialized === null) {
-        return false;
-      }
-
-      const persisted = JSON.parse(serialized) as PersistedServerRegistration;
-
-      if (
-        typeof persisted.userId !== "string" ||
-        typeof persisted.userDisplayName !== "string" ||
-        typeof persisted.userPublicIp !== "string" ||
-        typeof persisted.userSymmetricKey !== "string" ||
-        typeof persisted.serverSignaturePublicKey !== "string" ||
-        Array.isArray(persisted.rtcIceServers) === false
-      ) {
-        console.warn("Invalid persisted server registration shape, clearing it");
-        localStorage.removeItem(SERVER_REGISTRATION_STORAGE_KEY);
-        return false;
-      }
-
-      this.serverRegistration = ServerRegistration.fromPersisted(
-        persisted,
-        accessToken
-      );
-
-      return true;
-    } catch (error) {
-      console.warn("Failed to restore server registration", error);
-      return false;
-    }
+  restoreServerRegistration(_: string): boolean {
+    // restoring server registration from localStorage is no longer supported
+    // to avoid rehydrating tokens after a page reload. Return false to
+    // indicate restore did not occur.
+    return false;
   }
 
   private persistServerRegistration(): void {
@@ -72,10 +39,8 @@ export class GameServer {
     }
 
     try {
-      localStorage.setItem(
-        SERVER_REGISTRATION_STORAGE_KEY,
-        JSON.stringify(this.serverRegistration.toPersisted())
-      );
+      // Do not persist server registration to localStorage anymore.
+      // This avoids restoring session state from disk after reload.
     } catch (error) {
       console.warn("Failed to persist server registration", error);
     }

@@ -37,8 +37,6 @@ interface RefreshResponse {
   refreshToken: string;
 }
 
-const REFRESH_TOKEN_STORAGE_KEY = "hoodBall.refreshToken";
-
 @injectable()
 export class APIService {
   private baseURL: string;
@@ -52,9 +50,8 @@ export class APIService {
       LoadingIndicatorService
     ),
     private readonly gameServer: GameServer = inject(GameServer)
-  ) {
+    ) {
     this.baseURL = APIUtils.getBaseURL();
-    this.refreshToken = this.readPersistedRefreshToken();
   }
 
   private async fetchWithLoading(
@@ -70,13 +67,6 @@ export class APIService {
     }
   }
 
-  private readPersistedRefreshToken(): string | null {
-    try {
-      return localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
-    } catch {
-      return null;
-    }
-  }
 
   public setAccessToken(accessToken: string): void {
     this.accessToken = accessToken;
@@ -94,16 +84,6 @@ export class APIService {
 
   public setRefreshToken(refreshToken: string | null): void {
     this.refreshToken = refreshToken;
-
-    try {
-      if (refreshToken === null) {
-        localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
-      } else {
-        localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
-      }
-    } catch (error) {
-      console.warn("Failed to persist refresh token", error);
-    }
   }
 
   public getRefreshToken(): string | null {
@@ -119,37 +99,9 @@ export class APIService {
   }
 
   public async tryRestoreSession(): Promise<boolean> {
-    if (this.accessToken !== null) {
-      return true;
-    }
-
-    if (this.refreshToken === null) {
-      return false;
-    }
-
-    try {
-      await this.refreshAccessToken();
-
-      if (!this.accessToken) {
-        return false;
-      }
-
-      const registration = this.gameServer.getServerRegistration();
-      if (registration === null) {
-        const restored = this.gameServer.restoreServerRegistration(this.accessToken);
-
-        if (!restored) {
-          this.clearSession();
-          throw new Error(
-            "Unable to restore server registration after refresh; full re-authentication required."
-          );
-        }
-      }
-
-      return true;
-    } catch {
-      return false;
-    }
+    // tryRestoreSession logic removed — session restore from persisted state
+    // is no longer supported. Token refresh can be triggered on demand.
+    return false;
   }
 
   private async refreshAccessToken(): Promise<void> {
@@ -212,8 +164,13 @@ export class APIService {
     init: RequestInit = {},
     retried = false
   ): Promise<Response> {
+    // If we don't have an access token but do have a refresh token, try
+    // refreshing it now. We no longer attempt to restore session from
+    // persisted storage on page load.
     if (!this.accessToken) {
-      await this.tryRestoreSession();
+      if (this.refreshToken) {
+        await this.refreshAccessToken();
+      }
     }
 
     if (!this.accessToken) {
