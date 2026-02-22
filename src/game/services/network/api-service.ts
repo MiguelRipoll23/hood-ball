@@ -168,7 +168,7 @@ export class APIService {
     }
 
     const headers = new Headers(init.headers);
-    headers.set("Authorization", this.accessToken);
+    headers.set("Authorization", `Bearer ${this.accessToken}`);
 
     const response = await this.fetchWithLoading(input, {
       ...init,
