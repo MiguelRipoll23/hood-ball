@@ -28,6 +28,7 @@ import type { VerifyAuthenticationRequest } from "../../interfaces/requests/veri
 import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response-interface.js";
 import { CryptoService } from "../security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
+import { decodeJWTPayload } from "../../utils/jwt-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { GameServer } from "../../models/game-server.js";
@@ -168,7 +169,7 @@ export class APIService {
     }
 
     const headers = new Headers(init.headers);
-    headers.set("Authorization", this.accessToken);
+    headers.set("Authorization", `Bearer ${this.accessToken}`);
 
     const response = await this.fetchWithLoading(input, {
       ...init,
@@ -194,17 +195,14 @@ export class APIService {
     }
 
     try {
-      const payload = this.accessToken.split(".")[1];
-      if (!payload) return false;
-      const decoded = JSON.parse(atob(payload));
-
+      const decoded = decodeJWTPayload(this.accessToken as string);
       if (Array.isArray(decoded.roles)) {
         return decoded.roles.includes(role);
       }
       return false;
     } catch (e) {
-      console.error("Failed to parse token roles", e);
-      return false;
+      console.error("Failed to decode or parse token roles", e);
+      throw e;
     }
   }
 
