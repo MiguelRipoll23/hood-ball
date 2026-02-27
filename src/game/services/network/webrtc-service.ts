@@ -85,7 +85,7 @@ export class WebRTCService implements WebRTCServiceContract {
     const offerBytes = new TextEncoder().encode(JSON.stringify(offer));
 
     const webSocketPayload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.Tunnel)
+      .unsignedInt8(WebSocketType.PlayerRelay)
       .bytes(tokenBytes, 32)
       .unsignedInt8(TunnelType.SessionDescription)
       .bytes(offerBytes)
@@ -104,7 +104,7 @@ export class WebRTCService implements WebRTCServiceContract {
     console.log("Removed WebRTC peer, updated peers count", this.peers.size);
   }
 
-  @ServerCommandHandler(WebSocketType.Tunnel)
+  @ServerCommandHandler(WebSocketType.PlayerRelay)
   public handleTunnelWebRTCData(binaryReader: BinaryReader): void {
     const originTokenBytes = binaryReader.bytes(32);
     const tunnelTypeId = binaryReader.unsignedInt8();
@@ -146,7 +146,7 @@ export class WebRTCService implements WebRTCServiceContract {
       JSON.stringify(iceCandidate)
     );
     const webSocketPayload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.Tunnel)
+      .unsignedInt8(WebSocketType.PlayerRelay)
       .bytes(tokenBytes, 32)
       .unsignedInt8(TunnelType.IceCandidate)
       .bytes(iceCandidateBytes)
@@ -299,7 +299,7 @@ export class WebRTCService implements WebRTCServiceContract {
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     const answerBytes = new TextEncoder().encode(JSON.stringify(answer));
     const webSocketPayload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.Tunnel)
+      .unsignedInt8(WebSocketType.PlayerRelay)
       .bytes(tokenBytes, 32)
       .unsignedInt8(TunnelType.SessionDescription)
       .bytes(answerBytes)

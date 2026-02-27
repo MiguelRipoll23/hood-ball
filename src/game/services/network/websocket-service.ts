@@ -291,7 +291,7 @@ export class WebSocketService implements WebSocketServiceContract {
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
-  @ServerCommandHandler(WebSocketType.UserBan)
+  @ServerCommandHandler(WebSocketType.PlayerKicked)
   public handleUserBan(binaryReader: BinaryReader) {
     const userId = binaryReader.fixedLengthString(32);
 
