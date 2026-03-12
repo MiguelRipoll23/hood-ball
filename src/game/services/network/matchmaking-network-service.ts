@@ -219,10 +219,10 @@ export class MatchmakingNetworkService
   }
 
   @PeerCommandHandler(WebRTCType.JoinResponse)
-  public handleJoinResponse(
+  public async handleJoinResponse(
     peer: WebRTCPeer,
     binaryReader: BinaryReader,
-  ): void {
+  ): Promise<void> {
     if (this.matchSessionService.getMatch() !== null) {
       this.handleAlreadyJoinedMatch(peer);
       return;
