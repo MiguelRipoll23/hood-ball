@@ -219,10 +219,10 @@ export class MatchmakingNetworkService
   }
 
   @PeerCommandHandler(WebRTCType.JoinResponse)
-  public handleJoinResponse(
+  public async handleJoinResponse(
     peer: WebRTCPeer,
     binaryReader: BinaryReader,
-  ): void {
+  ): Promise<void> {
     if (this.matchSessionService.getMatch() !== null) {
       this.handleAlreadyJoinedMatch(peer);
       return;
@@ -232,6 +232,22 @@ export class MatchmakingNetworkService
 
     const matchState = binaryReader.unsignedInt8();
     const matchTotalSlots = binaryReader.unsignedInt8();
+    const hostUserId = binaryReader.fixedLengthString(32);
+    const hostUserName = binaryReader.fixedLengthString(16);
+    const hostSignature = binaryReader.bytesAsArrayBuffer();
+
+    const verified = await this.verifyUserSignature(
+      peer.getToken(),
+      hostUserId,
+      hostUserName,
+      hostSignature,
+    );
+
+    if (!verified) {
+      console.warn("Invalid host signature from peer", peer.getToken());
+      peer.disconnect(true);
+      return;
+    }
 
     const match = new MatchSession(
       false,
@@ -520,13 +536,26 @@ export class MatchmakingNetworkService
   }
 
   private sendJoinResponse(peer: WebRTCPeer, match: MatchSession): void {
+    const hostSignature = this.webSocketService.getUserSignature();
+
+    if (hostSignature === null) {
+      console.warn("No host signature available, cannot send join response");
+      peer.disconnect(true);
+      return;
+    }
+
     const state = match.getState();
     const totalSlots = match.getTotalSlots();
+    const hostUserId = this.gamePlayer.getNetworkId();
+    const hostUserName = this.gamePlayer.getName();
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.JoinResponse)
       .unsignedInt8(state)
       .unsignedInt8(totalSlots)
+      .fixedLengthString(hostUserId, 32)
+      .fixedLengthString(hostUserName, 16)
+      .arrayBuffer(hostSignature)
       .toArrayBuffer();
 
     console.log("Sending join response to", peer.getName());

@@ -42,7 +42,15 @@ export class WebRTCDispatcherService {
       return;
     }
 
-    commandHandler(webrtcPeer, binaryReader);
+    const result = commandHandler(webrtcPeer, binaryReader);
+    if (result instanceof Promise) {
+      result.catch((error) =>
+        console.error(
+          `Unhandled error in async peer command handler for ${WebRTCType[commandId]}:`,
+          error
+        )
+      );
+    }
   }
 
   private bindCommandHandler(
