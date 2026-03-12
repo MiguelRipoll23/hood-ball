@@ -12,29 +12,25 @@ import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
 import { GAME_VERSION } from "../../constants/game-constants.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
-import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
-import { WebSocketType } from "../../enums/websocket-type.js";
 import { APIService } from "../network/api-service.js";
-import { WebSocketService } from "../network/websocket-service.js";
+import { WebRTCService } from "../network/webrtc-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
-import { PendingIdentitiesToken } from "./matchmaking-tokens.js";
 
 @injectable()
 export class MatchFinderService {
   constructor(
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
     private readonly matchSessionService: MatchSessionService = inject(
-      MatchSessionService
+      MatchSessionService,
     ),
     private readonly gameServer: GameServer = inject(GameServer),
     private readonly apiService = inject(APIService),
-    private readonly webSocketService = inject(WebSocketService),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly eventProcessorService = inject(EventProcessorService)
+    private readonly webrtcService = inject(WebRTCService),
+    private readonly eventProcessorService = inject(EventProcessorService),
   ) {}
 
   public async findMatches(): Promise<FindMatchesResponse> {
@@ -48,18 +44,17 @@ export class MatchFinderService {
   }
 
   public async createAndAdvertiseMatch(): Promise<void> {
-    this.pendingIdentities.clear();
     const totalSlots: number = getConfigurationKey<number>(
       MATCH_TOTAL_SLOTS,
       4,
-      this.gameServer
+      this.gameServer,
     );
 
     const match = new MatchSession(
       true,
       MatchStateType.Countdown,
       totalSlots,
-      MATCH_ATTRIBUTES
+      MATCH_ATTRIBUTES,
     );
 
     this.matchSessionService.setMatch(match);
@@ -84,7 +79,7 @@ export class MatchFinderService {
     }
 
     const players = match.getPlayers();
-    
+
     // Get all player IDs excluding the host and NPC players
     const usersList = players
       .filter((player) => !player.isHost() && !player.isNpc())
@@ -110,15 +105,7 @@ export class MatchFinderService {
   }
 
   private async joinMatch(match: MatchData): Promise<void> {
-    const { token: token } = match;
-    const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
-    this.pendingIdentities.set(token, true);
-
-    const payload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.PlayerIdentity)
-      .bytes(tokenBytes, 32)
-      .toArrayBuffer();
-
-    this.webSocketService.sendMessage(payload);
+    const { token } = match;
+    this.webrtcService.sendOffer(token);
   }
 }

@@ -7,40 +7,31 @@ export class GameServer {
 
   private connected: boolean = false;
 
-  getServerRegistration(): ServerRegistration | null {
+  public getServerRegistration(): ServerRegistration | null {
     return this.serverRegistration;
   }
 
-  setServerRegistration(serverRegistration: ServerRegistration): void {
+  public setServerRegistration(serverRegistration: ServerRegistration): void {
     this.serverRegistration = serverRegistration;
   }
 
-  clearServerRegistration(): void {
+  public clearServerRegistration(): void {
     this.serverRegistration = null;
   }
 
-  restoreServerRegistration(_: string): boolean {
-    // restoring server registration from localStorage is no longer supported
-    // to avoid rehydrating tokens after a page reload. Return false to
-    // indicate restore did not occur.
-    return false;
-  }
-
-  
-
-  getConfiguration(): ConfigurationType | null {
+  public getConfiguration(): ConfigurationType | null {
     return this.configuration;
   }
 
-  setConfiguration(configuration: ConfigurationType): void {
+  public setConfiguration(configuration: ConfigurationType): void {
     this.configuration = configuration;
   }
 
-  isConnected(): boolean {
+  public isConnected(): boolean {
     return this.connected;
   }
 
-  setConnected(connected: boolean): void {
+  public setConnected(connected: boolean): void {
     this.connected = connected;
   }
 }

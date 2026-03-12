@@ -12,12 +12,11 @@ import type { HostDisconnectedPayload } from "../../interfaces/events/host-disco
 
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
 import type { IntervalServiceContract } from "../../../engine/interfaces/services/gameplay/interval-service-interface.js";
-import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
-import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
+import { SignatureService } from "../security/signature-service.js";
 import { WebRTCService } from "./webrtc-service.js";
 import type { PeerConnectionListener } from "../../interfaces/peer-connection-listener-interface.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
@@ -26,10 +25,6 @@ import { TimerManagerService } from "../../../engine/services/gameplay/timer-man
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { injectable, inject } from "@needle-di/core";
-import {
-  PendingIdentitiesToken,
-  ReceivedIdentitiesToken,
-} from "../gameplay/matchmaking-tokens.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 
 @injectable()
@@ -43,26 +38,28 @@ export class MatchmakingNetworkService
   constructor(
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
     private readonly matchSessionService: MatchSessionService = inject(
-      MatchSessionService
+      MatchSessionService,
     ),
     private readonly timerManagerService: TimerManagerService = inject(
-      TimerManagerService
+      TimerManagerService,
     ),
     private readonly intervalManagerService: IntervalManagerService = inject(
-      IntervalManagerService
+      IntervalManagerService,
     ),
     private readonly webSocketService: WebSocketService = inject(
-      WebSocketService
+      WebSocketService,
     ),
     private readonly webrtcService: WebRTCService = inject(WebRTCService),
     private readonly eventProcessorService: EventProcessorService = inject(
-      EventProcessorService
+      EventProcessorService,
     ),
     private readonly spawnPointService: SpawnPointService = inject(
-      SpawnPointService
+      SpawnPointService,
     ),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken)
+
+    private readonly signatureService: SignatureService = inject(
+      SignatureService,
+    ),
   ) {
     this.webSocketService.registerCommandHandlers(this);
     this.webrtcService.registerCommandHandlers(this);
@@ -71,7 +68,7 @@ export class MatchmakingNetworkService
   public startFindMatchesTimer(resolve: () => void): void {
     this.findMatchesTimerService = this.timerManagerService.createTimer(
       10,
-      resolve
+      resolve,
     );
   }
 
@@ -82,20 +79,20 @@ export class MatchmakingNetworkService
   public startPingCheckInterval(): void {
     this.pingCheckInterval = this.intervalManagerService.createInterval(
       1,
-      this.sendPingToJoinedPlayers.bind(this)
+      this.sendPingToJoinedPlayers.bind(this),
     );
   }
 
   public startMatchAdvertiseInterval(): void {
     if (this.matchAdvertiseInterval !== null) {
       console.warn(
-        "Match advertise interval already exists, removing before creating new one"
+        "Match advertise interval already exists, removing before creating new one",
       );
       this.removeMatchAdvertiseInterval();
     }
     this.matchAdvertiseInterval = this.intervalManagerService.createInterval(
       60,
-      this.triggerMatchAdvertise.bind(this)
+      this.triggerMatchAdvertise.bind(this),
     );
   }
 
@@ -110,32 +107,6 @@ export class MatchmakingNetworkService
     if (this.matchAdvertiseInterval !== null) {
       this.intervalManagerService.removeInterval(this.matchAdvertiseInterval);
       this.matchAdvertiseInterval = null;
-    }
-  }
-
-  @ServerCommandHandler(WebSocketType.PlayerIdentity)
-  public handlePlayerIdentity(binaryReader: BinaryReader): void {
-    const tokenBytes = binaryReader.bytes(32);
-    const playerId = binaryReader.fixedLengthString(32);
-    const playerName = binaryReader.fixedLengthString(16);
-
-    const token = btoa(String.fromCharCode(...tokenBytes));
-
-    console.log(
-      `Received player identity (token: ${token}, playerId: ${playerId}, playerName: ${playerName})`
-    );
-
-    if (this.receivedIdentities.has(token)) {
-      console.warn("Received duplicate player identity for token", token);
-      return;
-    }
-
-    this.receivedIdentities.set(token, { playerId, playerName });
-
-    if (this.matchSessionService.getMatch()?.isHost()) {
-      this.handlePlayerIdentityAsHost(token, tokenBytes);
-    } else {
-      this.handlePlayerIdentityAsPlayer(token);
     }
   }
 
@@ -183,7 +154,7 @@ export class MatchmakingNetworkService
       console.log(`Host ${peer.getName()} disconnected gracefully`);
       this.matchSessionService.setMatch(null);
       const localEvent = new LocalEvent<HostDisconnectedPayload>(
-        EventType.HostDisconnected
+        EventType.HostDisconnected,
       );
       localEvent.setData({ graceful: true });
       this.eventProcessorService.addLocalEvent(localEvent);
@@ -191,7 +162,10 @@ export class MatchmakingNetworkService
   }
 
   @PeerCommandHandler(WebRTCType.JoinRequest)
-  public handleJoinRequest(peer: WebRTCPeer): void {
+  public async handleJoinRequest(
+    peer: WebRTCPeer,
+    binaryReader: BinaryReader,
+  ): Promise<void> {
     const match = this.matchSessionService.getMatch();
 
     if (match === null) {
@@ -205,23 +179,30 @@ export class MatchmakingNetworkService
     }
 
     const token = peer.getToken();
-    const identity = this.receivedIdentities.get(token) ?? null;
+    const userId = binaryReader.fixedLengthString(32);
+    const userName = binaryReader.fixedLengthString(16);
+    const userSignature = binaryReader.bytesAsArrayBuffer();
 
-    if (identity === null) {
-      this.handleUnknownIdentity(peer);
+    const verified = await this.verifyUserSignature(
+      token,
+      userId,
+      userName,
+      userSignature,
+    );
+
+    if (!verified) {
+      console.warn("Invalid user signature from peer", peer.getToken());
+      peer.disconnect(true);
       return;
     }
 
-    this.receivedIdentities.delete(token);
-
-    const { playerId, playerName } = identity;
-    console.log("Received join request from", playerName);
+    console.log("Received join request from", userName);
 
     // Remove NPC player if present (solo match transition to multiplayer)
     // This must happen BEFORE assigning a spawn point to the joining player
     this.removeNpcPlayerAndReleaseSpawnPoint(match);
 
-    const gamePlayer = new GamePlayer(playerId, playerName);
+    const gamePlayer = new GamePlayer(userId, userName);
     peer.setPlayer(gamePlayer);
 
     const spawnPointIndex =
@@ -240,7 +221,7 @@ export class MatchmakingNetworkService
   @PeerCommandHandler(WebRTCType.JoinResponse)
   public handleJoinResponse(
     peer: WebRTCPeer,
-    binaryReader: BinaryReader
+    binaryReader: BinaryReader,
   ): void {
     if (this.matchSessionService.getMatch() !== null) {
       this.handleAlreadyJoinedMatch(peer);
@@ -256,7 +237,7 @@ export class MatchmakingNetworkService
       false,
       matchState,
       matchTotalSlots,
-      MATCH_ATTRIBUTES
+      MATCH_ATTRIBUTES,
     );
 
     this.matchSessionService.setMatch(match);
@@ -265,7 +246,7 @@ export class MatchmakingNetworkService
   @PeerCommandHandler(WebRTCType.PlayerConnection)
   public handlePlayerConnection(
     peer: WebRTCPeer,
-    binaryReader: BinaryReader
+    binaryReader: BinaryReader,
   ): void {
     const isConnected = binaryReader.boolean();
     const isHost = binaryReader.boolean();
@@ -292,18 +273,12 @@ export class MatchmakingNetworkService
         playerName,
         isHost,
         playerScore,
-        playerSpawnIndex
+        playerSpawnIndex,
       );
     }
 
     if (isHost) {
-      if (this.isHostIdentityUnverified(peer, gamePlayer)) {
-        peer.disconnect(true);
-        return;
-      }
-
       peer.setPlayer(gamePlayer);
-      this.receivedIdentities.delete(peer.getToken());
     }
 
     this.matchSessionService.getMatch()?.addPlayer(gamePlayer);
@@ -324,7 +299,7 @@ export class MatchmakingNetworkService
     }
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected
+      EventType.PlayerConnected,
     );
 
     localEvent.setData({
@@ -361,7 +336,7 @@ export class MatchmakingNetworkService
 
     // Publish local event
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected
+      EventType.PlayerConnected,
     );
 
     localEvent.setData({
@@ -383,7 +358,7 @@ export class MatchmakingNetworkService
   public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gamePlayer.isHost()) {
       console.warn(
-        `Unexpected player ping information from player ${peer.getName()}`
+        `Unexpected player ping information from player ${peer.getName()}`,
       );
       return;
     }
@@ -406,30 +381,10 @@ export class MatchmakingNetworkService
     });
   }
 
-  private handlePlayerIdentityAsHost(
-    token: string,
-    tokenBytes: Uint8Array
-  ): void {
-    console.log("Sending player identity to player", token);
-    const webSocketPayload = BinaryWriter.build()
-      .unsignedInt8(WebSocketType.PlayerIdentity)
-      .bytes(tokenBytes, 32)
-      .toArrayBuffer();
-
-    this.webSocketService.sendMessage(webSocketPayload);
-  }
-
-  private handlePlayerIdentityAsPlayer(token: string): void {
-    console.log("Received player identity for token", token);
-    this.pendingIdentities.set(token, true);
-
-    this.webrtcService.sendOffer(token);
-  }
-
   private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
     console.warn(
       "Already joined a match, disconnecting peer...",
-      peer.getToken()
+      peer.getToken(),
     );
 
     peer.disconnect(true);
@@ -458,7 +413,7 @@ export class MatchmakingNetworkService
 
     // Publish local event
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected
+      EventType.PlayerDisconnected,
     );
 
     playerDisconnectedEvent.setData({ player });
@@ -490,7 +445,7 @@ export class MatchmakingNetworkService
     match.removePlayer(player);
 
     const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected
+      EventType.PlayerDisconnected,
     );
 
     localEvent.setData({ player });
@@ -503,18 +458,46 @@ export class MatchmakingNetworkService
     this.matchSessionService.setMatch(null);
 
     const localEvent = new LocalEvent<HostDisconnectedPayload>(
-      EventType.HostDisconnected
+      EventType.HostDisconnected,
     );
     localEvent.setData({ graceful: false });
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
   private sendJoinRequest(peer: WebRTCPeer): void {
+    const userId = this.gamePlayer.getNetworkId();
+    const userName = this.gamePlayer.getName();
+    const userSignature = this.webSocketService.getUserSignature();
+
+    if (userSignature === null) {
+      console.warn("No user signature available, cannot send join request");
+      return;
+    }
+
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.JoinRequest)
+      .fixedLengthString(userId, 32)
+      .fixedLengthString(userName, 16)
+      .arrayBuffer(userSignature)
       .toArrayBuffer();
 
     peer.sendReliableOrderedMessage(payload, true);
+  }
+
+  private async verifyUserSignature(
+    token: string,
+    userId: string,
+    userName: string,
+    signature: ArrayBuffer,
+  ): Promise<boolean> {
+    const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
+    const payload = BinaryWriter.build()
+      .bytes(tokenBytes, 32)
+      .fixedLengthString(userId, 32)
+      .fixedLengthString(userName, 16)
+      .toArrayBuffer();
+
+    return this.signatureService.verifyArrayBuffer(payload, signature);
   }
 
   private handleGameMatchNull(peer: WebRTCPeer): void {
@@ -525,16 +508,7 @@ export class MatchmakingNetworkService
   private handleUnavailableSlots(peer: WebRTCPeer): void {
     console.log(
       "Received join request but the match is full, disconnecting peer...",
-      peer.getToken()
-    );
-
-    peer.disconnect(true);
-  }
-
-  private handleUnknownIdentity(peer: WebRTCPeer): void {
-    console.warn(
-      "Received join request but no identity was found, disconnecting peer...",
-      peer.getToken()
+      peer.getToken(),
     );
 
     peer.disconnect(true);
@@ -586,7 +560,7 @@ export class MatchmakingNetworkService
     peer: WebRTCPeer,
     player: GamePlayer,
     isConnected: boolean,
-    skipQueue: boolean
+    skipQueue: boolean,
   ): void {
     const isHost = player.isHost();
     const playerId = player.getNetworkId();
@@ -605,43 +579,9 @@ export class MatchmakingNetworkService
       .toArrayBuffer();
 
     console.log(
-      `Sending player connection for ${player.getName()} with index ${spawnIndex}`
+      `Sending player connection for ${player.getName()} with index ${spawnIndex}`,
     );
     peer.sendReliableOrderedMessage(payload, skipQueue);
-  }
-
-  private isHostIdentityUnverified(
-    peer: WebRTCPeer,
-    gamePlayer: GamePlayer
-  ): boolean {
-    const identity = this.receivedIdentities.get(peer.getToken()) ?? null;
-
-    if (identity === null) {
-      console.warn("Host identity not found for token", peer.getToken());
-      return true;
-    }
-
-    if (identity.playerId !== gamePlayer.getNetworkId()) {
-      console.warn(
-        `Host player ID mismatch: expected ${
-          identity.playerId
-        }, got ${gamePlayer.getNetworkId()} for ${peer.getName()}`
-      );
-
-      return true;
-    }
-
-    if (identity.playerName !== gamePlayer.getName()) {
-      console.warn(
-        `Host player name mismatch: expected ${
-          identity.playerName
-        }, got ${gamePlayer.getName()} for ${peer.getName()}`
-      );
-
-      return true;
-    }
-
-    return false;
   }
 
   private sendSnapshotEnd(peer: WebRTCPeer): void {
@@ -736,7 +676,7 @@ export class MatchmakingNetworkService
       if (npcSpawnIndex !== -1) {
         this.spawnPointService.releaseSpawnPointIndex(npcSpawnIndex);
         console.log(
-          `NPC player removed from match, spawn point ${npcSpawnIndex} released before joining player assignment`
+          `NPC player removed from match, spawn point ${npcSpawnIndex} released before joining player assignment`,
         );
       }
     }
