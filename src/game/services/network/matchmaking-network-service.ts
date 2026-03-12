@@ -196,6 +196,13 @@ export class MatchmakingNetworkService
       return;
     }
 
+    // Re-check available slots after async signature verification — another
+    // peer may have joined while this one was awaiting signature validation.
+    if (match.getAvailableSlots() === 0) {
+      this.handleUnavailableSlots(peer);
+      return;
+    }
+
     console.log("Received join request from", userName);
 
     // Remove NPC player if present (solo match transition to multiplayer)
