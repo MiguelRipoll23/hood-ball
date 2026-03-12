@@ -14,7 +14,7 @@ export interface MatchmakingNetworkServiceContract {
     peer: WebRTCPeer,
     binaryReader: BinaryReader,
   ): Promise<void>;
-  handleJoinResponse(peer: WebRTCPeer, binaryReader: BinaryReader): void;
+  handleJoinResponse(peer: WebRTCPeer, binaryReader: BinaryReader): Promise<void>;
   handlePlayerConnection(peer: WebRTCPeer, binaryReader: BinaryReader): void;
   handleSnapshotEnd(peer: WebRTCPeer): void;
   handleSnapshotACK(peer: WebRTCPeer): void;
