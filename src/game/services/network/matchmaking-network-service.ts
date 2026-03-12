@@ -173,11 +173,6 @@ export class MatchmakingNetworkService
       return;
     }
 
-    if (match.getAvailableSlots() === 0) {
-      this.handleUnavailableSlots(peer);
-      return;
-    }
-
     const token = peer.getToken();
     const userId = binaryReader.fixedLengthString(32);
     const userName = binaryReader.fixedLengthString(16);
@@ -196,8 +191,6 @@ export class MatchmakingNetworkService
       return;
     }
 
-    // Re-check available slots after async signature verification — another
-    // peer may have joined while this one was awaiting signature validation.
     if (match.getAvailableSlots() === 0) {
       this.handleUnavailableSlots(peer);
       return;
