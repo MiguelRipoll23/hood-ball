@@ -10,10 +10,6 @@ import { GamePlayer } from "../../models/game-player.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
 import { DisconnectionMonitor } from "./disconnection-monitor.js";
-import {
-  PendingIdentitiesToken,
-  ReceivedIdentitiesToken,
-} from "./matchmaking-tokens.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { MatchSessionService } from "../session/match-session-service.js";
@@ -27,14 +23,12 @@ export class MatchLifecycleService {
     private readonly apiService = inject(APIService),
     private readonly webrtcService = inject(WebRTCService),
     private readonly networkService: MatchmakingNetworkServiceContract = inject(
-      MatchmakingNetworkService
+      MatchmakingNetworkService,
     ),
     private readonly eventProcessor = inject(EventProcessorService),
     private readonly eventConsumer = inject(EventConsumerService),
     private readonly disconnectionMonitor = inject(DisconnectionMonitor),
-    private readonly pendingIdentities = inject(PendingIdentitiesToken),
-    private readonly receivedIdentities = inject(ReceivedIdentitiesToken),
-    private readonly matchSessionService = inject(MatchSessionService)
+    private readonly matchSessionService = inject(MatchSessionService),
   ) {
     this.eventConsumer.subscribeToLocalEvent(
       EventType.PlayerDisconnected,
@@ -44,9 +38,9 @@ export class MatchLifecycleService {
         }
         const playerId = data.player.getId();
         this.disconnectionMonitor.markDisconnected(playerId, () =>
-          this.finalizeGameOver()
+          this.finalizeGameOver(),
         );
-      }
+      },
     );
   }
 
@@ -117,8 +111,6 @@ export class MatchLifecycleService {
 
     // Clear match immediately so network callbacks know we are leaving intentionally
     this.matchSessionService.setMatch(null);
-    this.pendingIdentities.clear();
-    this.receivedIdentities.clear();
 
     this.networkService.disconnect();
 
@@ -145,8 +137,6 @@ export class MatchLifecycleService {
       this.disconnectionMonitor.clear();
     }
     this.matchSessionService.setMatch(null);
-    this.pendingIdentities.clear();
-    this.receivedIdentities.clear();
     const localEvent = new LocalEvent(EventType.ReturnToMainMenu);
     this.eventProcessor.addLocalEvent(localEvent);
     console.log("Game over finalized, returning to main menu");

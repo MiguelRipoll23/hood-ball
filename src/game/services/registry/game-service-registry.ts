@@ -6,10 +6,6 @@ import { APIService } from "../network/api-service.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
 import { MatchFinderService } from "../gameplay/match-finder-service.js";
 import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
-import {
-  PendingIdentitiesToken,
-  ReceivedIdentitiesToken,
-} from "../gameplay/matchmaking-tokens.js";
 import { MatchLifecycleService } from "../gameplay/match-lifecycle-service.js";
 import { DisconnectionMonitor } from "../gameplay/disconnection-monitor.js";
 import { MatchmakingCoordinator } from "../gameplay/matchmaking-coordinator.js";
@@ -83,15 +79,6 @@ export class GameServiceRegistry {
       useClass: MatchActionsLogService,
     });
     container.bind({ provide: CredentialService, useClass: CredentialService });
-    container.bind({
-      provide: PendingIdentitiesToken,
-      useValue: new Map<string, boolean>(),
-    });
-    container.bind({
-      provide: ReceivedIdentitiesToken,
-      useValue: new Map<string, { playerId: string; playerName: string }>(),
-    });
-
     GameServiceRegistry.initializeServices();
   }
 
@@ -103,7 +90,7 @@ export class GameServiceRegistry {
       const entityOrchestratorService: EntityOrchestratorService =
         container.get(EntityOrchestratorService);
       const matchmakingCoordinator: MatchmakingCoordinator = container.get(
-        MatchmakingCoordinator
+        MatchmakingCoordinator,
       );
 
       if (

@@ -5,4 +5,5 @@ export interface WebSocketServiceContract {
   sendMessage(arrayBuffer: ArrayBuffer): void;
   registerCommandHandlers(instance: object): void;
   getOnlinePlayers(): number;
+  getUserSignature(): ArrayBuffer | null;
 }

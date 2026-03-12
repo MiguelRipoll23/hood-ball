@@ -8,10 +8,12 @@ export interface MatchmakingNetworkServiceContract {
   removePingCheckInterval(): void;
   startMatchAdvertiseInterval(): void;
   removeMatchAdvertiseInterval(): void;
-  handlePlayerIdentity(binaryReader: BinaryReader): void;
   onPeerConnected(peer: WebRTCPeer): void;
   onPeerDisconnected(peer: WebRTCPeer, graceful: boolean): void;
-  handleJoinRequest(peer: WebRTCPeer): void;
+  handleJoinRequest(
+    peer: WebRTCPeer,
+    binaryReader: BinaryReader,
+  ): Promise<void>;
   handleJoinResponse(peer: WebRTCPeer, binaryReader: BinaryReader): void;
   handlePlayerConnection(peer: WebRTCPeer, binaryReader: BinaryReader): void;
   handleSnapshotEnd(peer: WebRTCPeer): void;
@@ -19,4 +21,3 @@ export interface MatchmakingNetworkServiceContract {
   handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void;
   disconnect(): void;
 }
-

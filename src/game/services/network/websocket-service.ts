@@ -39,6 +39,7 @@ export class WebSocketService implements WebSocketServiceContract {
   private dispatcherService: WebSocketDispatcherService;
 
   private onlinePlayers = 0;
+  private userSignature: ArrayBuffer | null = null;
 
   private readonly sessionClearedHandler = (): void => {
     this.disconnect();
@@ -72,6 +73,10 @@ export class WebSocketService implements WebSocketServiceContract {
 
   public getOnlinePlayers(): number {
     return this.onlinePlayers;
+  }
+
+  public getUserSignature(): ArrayBuffer | null {
+    return this.userSignature;
   }
 
   public registerCommandHandlers(instance: object): void {
@@ -243,15 +248,10 @@ export class WebSocketService implements WebSocketServiceContract {
 
   @ServerCommandHandler(WebSocketType.Authentication)
   public handleAuthentication(binaryReader: BinaryReader) {
-    const success = binaryReader.unsignedInt8();
+    binaryReader.unsignedInt8(); // Skip status byte (always zero)
 
-    if (success !== 1) {
-      console.warn("WebSocket authentication failed; closing connection");
-      this.disconnect();
-      return;
-    }
-
-    console.log("WebSocket authentication successful");
+    const userSignature = binaryReader.bytesAsArrayBuffer();
+    this.userSignature = userSignature;
 
     const localEvent = new LocalEvent(EventType.ServerConnected);
     this.eventProcessorService.addLocalEvent(localEvent);
