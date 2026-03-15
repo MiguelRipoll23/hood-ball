@@ -24,19 +24,17 @@ When a new player joins, the matchmaking service dispatches `PlayerConnected` lo
 
 ## Remote event example — Authoritative game-state change
 
-When the host detects that a plane was destroyed, it applies the effect locally (crash animation, health = 0), serialises the attacker and victim IDs into a binary payload, and calls `sendEvent(RemoteEvent(PlaneExploded))`. All non-host peers receive this via WebRTC, their `subscribeToRemoteEvent` handler fires, and they play the explosion on their side. The host also calls `addLocalEvent(LocalEvent(PlaneExploded))` so its own `subscribeToLocalEvent` handler fires too — because `sendEvent` does not loop back.
+When the host detects that a plane was destroyed, it applies the effect **inline** (crash animation, health = 0, match log entry) and then calls `sendEvent(RemoteEvent(PlaneExploded))` to broadcast to all peers. Non-host players receive this, their `subscribeToRemoteEvent` fires, and they apply the same effects on their side.
 
-Non-host subscription is wired conditionally:
-
-- Host → `subscribeToLocalEvent(EventType.PlaneExploded, handler)`
-- Non-host → `subscribeToRemoteEvent(EventType.PlaneExploded, handler)`
+The host never needs `addLocalEvent` for game-logic events because it already executed the effect directly before sending.
 
 ---
 
 ## Rules
 
 - Non-host players never call `sendEvent` or dispatch game-logic local events. To report something to the host (e.g. a hit), they send a raw WebRTC message (e.g. `HitReport`). The host validates it and dispatches the events.
+- The host applies all game-logic effects **inline** (directly in the authoritative handler), then calls `sendEvent` to inform peers. No `addLocalEvent` needed for game events.
 - The host never subscribes to remote events — it is the source of them.
 - Local events are for lifecycle, connection, and UI: `PlayerConnected`, `PlayerDisconnected`, `ServerDisconnected`, `HostDisconnected`, `ReturnToMainMenu`, `SnowWeather`, etc.
-- Remote events are for authoritative game state that all clients must mirror: kills, respawns, scores, damage, etc.
+- Remote events are for authoritative game state that all non-host clients must mirror: kills, respawns, scores, damage, etc.
 
