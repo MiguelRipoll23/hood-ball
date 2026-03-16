@@ -3,6 +3,8 @@
 Accelerate and smash your way to victory in a car-based multiplayer soccer
 battle.
 
+Inspired by Rocket League.
+
 ## Features
 
 - Passkey for registration and login
