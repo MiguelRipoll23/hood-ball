@@ -31,21 +31,21 @@ export class ChatService {
 
   constructor(
     private readonly webSocketService: WebSocketServiceContract = inject(
-      WebSocketService
+      WebSocketService,
     ),
     private readonly webrtcService: WebRTCServiceContract = inject(
-      WebRTCService
+      WebRTCService,
     ),
     private readonly signatureService: SignatureService = inject(
-      SignatureService
+      SignatureService,
     ),
     private readonly eventProcessorService: EventProcessorService = inject(
-      EventProcessorService
+      EventProcessorService,
     ),
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
     private readonly matchActionsLogService: MatchActionsLogService = inject(
-      MatchActionsLogService
-    )
+      MatchActionsLogService,
+    ),
   ) {
     this.localPlayerId = this.gamePlayer.getNetworkId();
     this.webrtcService.registerCommandHandlers?.(this);
@@ -104,7 +104,7 @@ export class ChatService {
     const timestamp = binaryReader.unsignedInt32();
     const signature = binaryReader.bytesAsArrayBuffer();
 
-    // Send to other players
+    // Send to host if client or to all players if host
     const chatMessagePayload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.ChatMessage)
       .fixedLengthString(userId, 32)
@@ -130,7 +130,7 @@ export class ChatService {
   @PeerCommandHandler(WebRTCType.ChatMessage)
   public async handlePeerChatMessage(
     peer: WebRTCPeer,
-    binaryReader: BinaryReader
+    binaryReader: BinaryReader,
   ): Promise<void> {
     // Mark the current position
     binaryReader.mark();
@@ -144,7 +144,7 @@ export class ChatService {
     const payload = binaryReader.getMarkedBytes();
     const valid = await this.signatureService.verifyArrayBuffer(
       payload,
-      signature
+      signature,
     );
 
     if (valid === false) {
@@ -173,7 +173,7 @@ export class ChatService {
     this.matchActionsLogService.addAction(
       MatchAction.chatMessage(chatMessage.getUserId(), chatMessage.getText(), {
         timestamp: chatMessage.getTimestamp(),
-      })
+      }),
     );
 
     // Notify all listeners
@@ -185,7 +185,7 @@ export class ChatService {
   private handleCommand(
     text: string,
     senderId?: string,
-    timestamp?: number
+    timestamp?: number,
   ): boolean {
     if (!text.startsWith("/")) {
       return false;
@@ -210,7 +210,7 @@ export class ChatService {
   private logChatCommand(
     senderId: string | undefined,
     command: string,
-    timestamp?: number
+    timestamp?: number,
   ): void {
     const playerId = senderId ?? this.localPlayerId;
     const key = `${playerId}:${command}`;
@@ -226,7 +226,7 @@ export class ChatService {
 
     this.commandLogTimestamps.set(key, now);
     this.matchActionsLogService.addAction(
-      MatchAction.chatCommand(playerId, command, { timestamp: now })
+      MatchAction.chatCommand(playerId, command, { timestamp: now }),
     );
   }
 }
