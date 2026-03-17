@@ -236,6 +236,19 @@ export class MatchmakingNetworkService
     const hostUserName = binaryReader.fixedLengthString(16);
     const hostSignature = binaryReader.bytesAsArrayBuffer();
 
+    // Create the match session and set local player state BEFORE awaiting
+    // verification so that subsequent PlayerConnection and SnapshotEnd messages
+    // (which arrive while the async verification is pending) can be processed
+    // correctly.
+    const match = new MatchSession(
+      false,
+      matchState,
+      matchTotalSlots,
+      MATCH_ATTRIBUTES,
+    );
+
+    this.matchSessionService.setMatch(match);
+
     const verified = await this.verifyUserSignature(
       peer.getToken(),
       hostUserId,
@@ -245,18 +258,10 @@ export class MatchmakingNetworkService
 
     if (!verified) {
       console.warn("Invalid host signature from peer", peer.getToken());
+      this.matchSessionService.setMatch(null);
       peer.disconnect(true);
       return;
     }
-
-    const match = new MatchSession(
-      false,
-      matchState,
-      matchTotalSlots,
-      MATCH_ATTRIBUTES,
-    );
-
-    this.matchSessionService.setMatch(match);
   }
 
   @PeerCommandHandler(WebRTCType.PlayerConnection)
