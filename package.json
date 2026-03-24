@@ -12,7 +12,7 @@
   "author": "MiguelRipoll23",
   "license": "ISC",
   "devDependencies": {
-    "typescript": "~5.9.3",
+    "typescript": "~6.0.2",
     "vite": "^8.0.2"
   },
   "dependencies": {
