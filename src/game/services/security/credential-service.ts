@@ -147,9 +147,7 @@ export class CredentialService {
     rpId: string,
     credentialId: string
   ): Promise<void> {
-    // @ts-expect-error property is not defined in the type definition
     if (PublicKeyCredential.signalUnknownCredential) {
-      // @ts-expect-error property is not defined in the type definition
       await PublicKeyCredential.signalUnknownCredential({
         rpId,
         credentialId,

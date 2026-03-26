@@ -2,6 +2,8 @@ import { ImGui, ImVec2, type ImGuiWindowFlags } from "@mori2003/jsimgui";
 
 export class BaseWindow {
   private readonly DISPLAY_SIZE_MARGIN = 25;
+  private readonly WINDOW_CASCADE_OFFSET = 20;
+  private static nextWindowIndex = 0;
 
   protected title: string;
   protected size?: ImVec2;
@@ -52,19 +54,17 @@ export class BaseWindow {
     }
 
     if (!this.hasSetPosition) {
-      const displaySize = ImGui.GetIO().DisplaySize;
-      const winWidth = this.size?.x ?? 200;
-      const winHeight = this.size?.y ?? 200;
+      const windowIndex = BaseWindow.nextWindowIndex;
+      BaseWindow.nextWindowIndex += 1;
 
-      const maxX = displaySize.x - winWidth - this.DISPLAY_SIZE_MARGIN;
-      const maxY = displaySize.y - winHeight - this.DISPLAY_SIZE_MARGIN;
-      const minX = this.DISPLAY_SIZE_MARGIN;
-      const minY = this.DISPLAY_SIZE_MARGIN;
+      const offset = windowIndex * this.WINDOW_CASCADE_OFFSET;
+      const initialX = this.DISPLAY_SIZE_MARGIN + offset;
+      const initialY = this.DISPLAY_SIZE_MARGIN + offset;
 
-      const randX = minX + Math.random() * (maxX - minX);
-      const randY = minY + Math.random() * (maxY - minY);
-
-      ImGui.SetNextWindowPos(new ImVec2(randX, randY), ImGui.Cond.FirstUseEver);
+      ImGui.SetNextWindowPos(
+        new ImVec2(initialX, initialY),
+        ImGui.Cond.FirstUseEver
+      );
       this.hasSetPosition = true;
     }
 
