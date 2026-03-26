@@ -15,6 +15,7 @@ import type { UserScoresResponse } from "../../responses/user-scores-response-in
 export interface APIServiceContract {
   setAccessToken(accessToken: string): void;
   setRefreshToken(refreshToken: string | null): void;
+  setUserRoles(userRoles: string[] | null): void;
   getAccessToken(): string | null;
   getRefreshToken(): string | null;
   clearSession(): void;

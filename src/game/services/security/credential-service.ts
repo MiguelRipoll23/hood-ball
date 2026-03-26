@@ -169,11 +169,13 @@ export class CredentialService {
       refreshToken,
       userId,
       userDisplayName,
+      userRoles,
       serverSignaturePublicKey,
     } = response;
 
     this.apiService.setAccessToken(accessToken);
     this.apiService.setRefreshToken(refreshToken);
+    this.apiService.setUserRoles(userRoles ?? []);
     await this.signatureService.init(serverSignaturePublicKey);
 
     this.gamePlayer.setId(userId);

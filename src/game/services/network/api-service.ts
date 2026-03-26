@@ -28,7 +28,6 @@ import type { VerifyAuthenticationRequest } from "../../interfaces/requests/veri
 import type { RegistrationOptionsResponse } from "../../interfaces/responses/registration-options-response-interface.js";
 import { CryptoService } from "../security/crypto-service.js";
 import { APIUtils } from "../../utils/api-utils.js";
-import { decodeJWTPayload } from "../../utils/jwt-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { GameServer } from "../../models/game-server.js";
@@ -43,6 +42,7 @@ export class APIService {
   private baseURL: string;
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
+  private userRoles: string[] = [];
   private refreshPromise: Promise<void> | null = null;
 
   constructor(
@@ -87,6 +87,10 @@ export class APIService {
     this.refreshToken = refreshToken;
   }
 
+  public setUserRoles(userRoles: string[] | null): void {
+    this.userRoles = Array.isArray(userRoles) ? [...userRoles] : [];
+  }
+
   public getRefreshToken(): string | null {
     return this.refreshToken;
   }
@@ -94,6 +98,7 @@ export class APIService {
   public clearSession(): void {
     this.accessToken = null;
     this.setRefreshToken(null);
+    this.setUserRoles(null);
     this.gameServer.clearServerRegistration();
 
     window.dispatchEvent(new CustomEvent("hoodball:session-cleared"));
@@ -190,20 +195,11 @@ export class APIService {
   }
 
   public hasRole(role: string): boolean {
-    if (!this.accessToken) {
+    if (!this.accessToken || role.length === 0) {
       return false;
     }
 
-    try {
-      const decoded = decodeJWTPayload(this.accessToken as string);
-      if (Array.isArray(decoded.roles)) {
-        return decoded.roles.includes(role);
-      }
-      return false;
-    } catch (e) {
-      console.error("Failed to decode or parse token roles", e);
-      throw e;
-    }
+    return this.userRoles.includes(role);
   }
 
   public async checkForUpdates(): Promise<boolean> {
