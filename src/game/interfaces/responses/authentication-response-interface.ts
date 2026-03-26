@@ -3,6 +3,7 @@ export interface AuthenticationResponse {
   refreshToken: string;
   userId: string;
   userDisplayName: string;
+  userRoles?: string[];
   userPublicIp: string;
   userSymmetricKey: string;
   serverSignaturePublicKey: string;
