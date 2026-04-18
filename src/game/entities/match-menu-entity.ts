@@ -3,6 +3,8 @@ import { BackdropEntity } from "./common/backdrop-entity.js";
 import { CloseButtonEntity } from "./close-button-entity.js";
 import { SmallButtonEntity } from "./common/small-button-entity.js";
 import { PlayersListEntity } from "./players-list-entity.js";
+import { MatchWindowElement } from "./match-menu/elements/match-window-element.js";
+import { MatchTitleBarElement } from "./match-menu/elements/match-title-bar-element.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { PlayerModerationService } from "../services/network/player-moderation-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
@@ -13,10 +15,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT = 50;
   private readonly PADDING = 20;
 
-  private backdropEntity: BackdropEntity;
-  private closeButtonEntity: CloseButtonEntity;
-  private leaveMatchButton: SmallButtonEntity;
-  private playersListEntity: PlayersListEntity;
+  private readonly backdropEntity: BackdropEntity;
+  private readonly closeButtonEntity: CloseButtonEntity;
+  private readonly leaveMatchButton: SmallButtonEntity;
+  private readonly playersListEntity: PlayersListEntity;
+  private readonly windowElement: MatchWindowElement;
+  private readonly titleBarElement: MatchTitleBarElement;
 
   private windowX = 0;
   private windowY = 0;
@@ -32,17 +36,24 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     super(false);
     this.opacity = 0;
 
-    // Create subentities
     this.backdropEntity = new BackdropEntity(canvas);
     this.closeButtonEntity = new CloseButtonEntity(0, 0);
     this.leaveMatchButton = new SmallButtonEntity(
       "Leave match",
       140,
       40,
-      "#e74c3c", // Red background
-      "#7ed321" // Green hover color
+      "#e74c3c",
+      "#7ed321"
     );
     this.playersListEntity = new PlayersListEntity();
+    this.windowElement = new MatchWindowElement(0, 0, 0, this.WINDOW_HEIGHT);
+    this.titleBarElement = new MatchTitleBarElement(
+      0,
+      0,
+      0,
+      this.TITLE_BAR_HEIGHT,
+      this.PADDING
+    );
 
     this.calculateLayout();
   }
@@ -52,6 +63,8 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     this.closeButtonEntity.load();
     this.leaveMatchButton.load();
     this.playersListEntity.load();
+    this.windowElement.load();
+    this.titleBarElement.load();
     super.load();
   }
 
@@ -75,8 +88,11 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       this.gamePointer,
       (playerId: string, reason: string) =>
         this.handlePlayerReport(playerId, reason),
-      (playerId: string, reason: string, duration?: { value: number; unit: string }) =>
-        this.handlePlayerBan(playerId, reason, duration),
+      (
+        playerId: string,
+        reason: string,
+        duration?: { value: number; unit: string }
+      ) => this.handlePlayerBan(playerId, reason, duration),
       this.canvas
     );
   }
@@ -86,71 +102,70 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     this.windowX = (this.canvas.width - this.windowWidth) / 2;
     this.windowY = (this.canvas.height - this.WINDOW_HEIGHT) / 2;
 
-    // Position close button
+    this.windowElement.setLayout(this.windowX, this.windowY, this.windowWidth);
+    this.titleBarElement.setLayout(
+      this.windowX,
+      this.windowY,
+      this.windowWidth
+    );
+
     this.closeButtonEntity.setPosition(
       this.windowX + this.windowWidth - 45,
       this.windowY + 5
     );
-    // Position leave match button at bottom of window
     this.leaveMatchButton.setPosition(
-      this.windowX + this.windowWidth / 2 - 70, // Centered (half of button width)
+      this.windowX + this.windowWidth / 2 - 70,
       this.windowY + this.WINDOW_HEIGHT - 57
     );
   }
 
   private handlePlayerReport(playerId: string, reason: string): void {
-    // Report the player
     this.moderationService
       .reportUser(playerId, reason, false)
       .catch((error) => {
         console.error("Failed to report user:", error);
       });
 
-    // Close the menu after reporting
     this.onClose();
   }
 
-  private handlePlayerBan(playerId: string, reason: string, duration?: {value: number, unit: string}): void {
-    // Ban the player
+  private handlePlayerBan(
+    playerId: string,
+    reason: string,
+    duration?: { value: number; unit: string }
+  ): void {
     this.moderationService
       .banUser(playerId, reason, duration)
       .catch((error) => {
         console.error("Failed to ban user:", error);
       });
 
-    // Close the menu after banning
     this.onClose();
   }
 
   public override handlePointerEvent(gamePointer: GamePointerContract): void {
-    // Only handle pointer events if active and visible
     if (!this.active || this.opacity === 0) {
       return;
     }
 
-    // Check if report menu is open
     if (this.playersListEntity.isActionMenuOpen()) {
       this.playersListEntity.handlePointerEvent(gamePointer);
       return;
     }
 
-    // Forward pointer events to subentities
     this.closeButtonEntity.handlePointerEvent(gamePointer);
     this.leaveMatchButton.handlePointerEvent(gamePointer);
     this.playersListEntity.handlePointerEvent(gamePointer);
 
-    // Check if any subentity captured the event
     if (
       this.closeButtonEntity.isHovering() ||
       this.closeButtonEntity.isPressed() ||
       this.leaveMatchButton.isHovering() ||
       this.leaveMatchButton.isPressed()
     ) {
-      // Subentity handled it, we're done
       return;
     }
 
-    // No subentity handled it, let base class handle it (for backdrop click detection if needed)
     super.handlePointerEvent(gamePointer);
   }
 
@@ -161,19 +176,16 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       return;
     }
 
-    // Check if close button was pressed BEFORE updating subentities
     if (this.closeButtonEntity.isPressed()) {
       this.onClose();
     }
 
-    // Check if leave match button was pressed BEFORE updating subentities
     if (this.leaveMatchButton.isButtonPressed()) {
       console.log("Leave match requested");
       this.onLeaveMatch();
       this.onClose();
     }
 
-    // Update subentities (this resets their pressed state)
     this.backdropEntity.update(delta);
     this.closeButtonEntity.update(delta);
     this.leaveMatchButton.update(delta);
@@ -190,142 +202,14 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.save();
     context.globalAlpha = this.opacity;
 
-    // Render backdrop
     this.backdropEntity.render(context);
-
-    // Render window background
-    this.renderWindow(context);
-
-    // Render title bar
-    this.renderTitleBar(context);
-
-    // Render close button
+    this.windowElement.render(context);
+    this.titleBarElement.render(context);
     this.closeButtonEntity.render(context);
-
-    // Render leave match button
     this.leaveMatchButton.render(context);
-
-    // Render players list
     this.playersListEntity.render(context);
 
     context.restore();
     super.render(context);
-  }
-
-  private renderWindow(context: CanvasRenderingContext2D): void {
-    context.shadowColor = "rgba(0, 0, 0, 0.5)";
-    context.shadowBlur = 20;
-    context.shadowOffsetX = 0;
-    context.shadowOffsetY = 10;
-
-    context.fillStyle = "#ffffff";
-    this.drawRoundedRect(
-      context,
-      this.windowX,
-      this.windowY,
-      this.windowWidth,
-      this.WINDOW_HEIGHT,
-      12 // Increased border radius
-    );
-    context.fill();
-
-    // Reset shadow
-    context.shadowColor = "transparent";
-    context.shadowBlur = 0;
-    context.shadowOffsetX = 0;
-    context.shadowOffsetY = 0;
-  }
-
-  private renderTitleBar(context: CanvasRenderingContext2D): void {
-    const radius = 12;
-
-    context.save();
-    // Clip to rounded top corners
-    context.beginPath();
-    context.moveTo(this.windowX + radius, this.windowY);
-    context.lineTo(this.windowX + this.windowWidth - radius, this.windowY);
-    context.quadraticCurveTo(
-      this.windowX + this.windowWidth,
-      this.windowY,
-      this.windowX + this.windowWidth,
-      this.windowY + radius
-    );
-    context.lineTo(
-      this.windowX + this.windowWidth,
-      this.windowY + this.TITLE_BAR_HEIGHT
-    );
-    context.lineTo(this.windowX, this.windowY + this.TITLE_BAR_HEIGHT);
-    context.lineTo(this.windowX, this.windowY + radius);
-    context.quadraticCurveTo(
-      this.windowX,
-      this.windowY,
-      this.windowX + radius,
-      this.windowY
-    );
-    context.closePath();
-    context.clip();
-
-    // Gradient background
-    const gradient = context.createLinearGradient(
-      this.windowX,
-      this.windowY,
-      this.windowX,
-      this.windowY + this.TITLE_BAR_HEIGHT
-    );
-    gradient.addColorStop(0, "#4a90e2");
-    gradient.addColorStop(1, "#357abd");
-
-    context.fillStyle = gradient;
-    context.fillRect(
-      this.windowX,
-      this.windowY,
-      this.windowWidth,
-      this.TITLE_BAR_HEIGHT
-    );
-
-    context.restore();
-
-    // Title text with slight shadow for better readability
-    context.save();
-    context.fillStyle = "#ffffff";
-    context.shadowColor = "rgba(0, 0, 0, 0.3)";
-    context.shadowBlur = 2;
-    context.shadowOffsetX = 1;
-    context.shadowOffsetY = 1;
-    context.font = "bold 24px system-ui";
-    context.textAlign = "left";
-    context.textBaseline = "middle";
-    context.fillText(
-      "Match menu",
-      this.windowX + this.PADDING,
-      this.windowY + this.TITLE_BAR_HEIGHT / 2 + 1
-    );
-    context.restore();
-  }
-
-  private drawRoundedRect(
-    context: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    radius: number
-  ): void {
-    context.beginPath();
-    context.moveTo(x + radius, y);
-    context.lineTo(x + width - radius, y);
-    context.quadraticCurveTo(x + width, y, x + width, y + radius);
-    context.lineTo(x + width, y + height - radius);
-    context.quadraticCurveTo(
-      x + width,
-      y + height,
-      x + width - radius,
-      y + height
-    );
-    context.lineTo(x + radius, y + height);
-    context.quadraticCurveTo(x, y + height, x, y + height - radius);
-    context.lineTo(x, y + radius);
-    context.quadraticCurveTo(x, y, x + radius, y);
-    context.closePath();
   }
 }

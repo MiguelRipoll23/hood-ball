@@ -748,6 +748,12 @@ export class WorldScene extends BaseCollidingGameScene {
   private returnToLoginScene(): void {
     console.log("Returning to login scene due to user ban");
 
+    if (this.matchmakingService) {
+      this.matchmakingService.leaveMatch().catch((error) => {
+        console.error("Error leaving match during server kick:", error);
+      });
+    }
+
     SceneTransitionUtils.transitionToLoginScene({
       transitionService: this.sceneTransitionService,
       gameFrame: this.gameState.getGameFrame(),
