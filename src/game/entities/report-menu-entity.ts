@@ -248,9 +248,6 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
     context.save();
     context.globalAlpha = this.opacity;
 
-    // Render backdrop
-    this.renderBackdrop(context);
-
     // Render window
     this.renderWindow(context);
 
@@ -265,12 +262,6 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
 
     context.restore();
     super.render(context);
-  }
-
-  private renderBackdrop(context: CanvasRenderingContext2D): void {
-    // Simple dark backdrop
-    context.fillStyle = "rgba(0, 0, 0, 0.7)";
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -422,7 +413,7 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
 
   private renderButtons(context: CanvasRenderingContext2D): void {
     // Cancel button
-    const cancelColor = this.cancelButtonHovered ? "#95a5a6" : "#bdc3c7";
+    const cancelColor = this.cancelButtonHovered ? "#7ed321" : "#4a90e2";
     context.fillStyle = cancelColor;
     this.drawRoundedRect(
       context,

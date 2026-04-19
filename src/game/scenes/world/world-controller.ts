@@ -1,6 +1,7 @@
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
+import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
@@ -459,6 +460,13 @@ export class WorldController {
     });
 
     this.matchActionsLogService.addAction(action);
+
+    // If the local player is the banned player, navigate to login as a terminal state
+    if (playerId === this.gamePlayer.getNetworkId()) {
+      console.log("Local player has been banned from this match");
+      const localEvent = new LocalEvent(EventType.UserBannedByServer);
+      this.eventProcessorService.addLocalEvent(localEvent);
+    }
   }
 
   public handleCarDemolitions(

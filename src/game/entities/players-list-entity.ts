@@ -152,6 +152,15 @@ export class PlayersListEntity extends BaseGameEntity {
     super.update(delta);
   }
 
+  public closeActiveActionMenu(): void {
+    if (this.reportMenuEntity?.isOpen()) {
+      this.reportMenuEntity.close();
+    }
+    if (this.banMenuEntity?.isOpen()) {
+      this.banMenuEntity.close();
+    }
+  }
+
   private processActionMenu(
     menu: ActionMenuContract,
     delta: DOMHighResTimeStamp,
@@ -160,7 +169,7 @@ export class PlayersListEntity extends BaseGameEntity {
     menu.update(delta);
 
     if (onConfirm()) {
-      menu.close();
+      // Keep menu open — parent (MatchMenuEntity) will close it after confirmation resolves
       this.gamePointer?.clearPressed();
     } else if (menu.isCancelled()) {
       menu.close();

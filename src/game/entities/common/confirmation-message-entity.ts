@@ -2,12 +2,13 @@ import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-g
 import type { GamePointerContract } from "../../../engine/interfaces/input/game-pointer-interface.js";
 
 export class ConfirmationMessageEntity extends BaseTappableGameEntity {
-  private readonly BOX_WIDTH = 340;
-  private readonly BOX_HEIGHT = 140;
-  private readonly CORNER_RADIUS = 6;
-  private readonly BUTTON_WIDTH = 100;
-  private readonly BUTTON_HEIGHT = 36;
-  private readonly BUTTON_GAP = 15;
+  private readonly BOX_WIDTH = 400;
+  private readonly BOX_HEIGHT = 150;
+  private readonly CORNER_RADIUS = 8;
+  private readonly BUTTON_WIDTH = 110;
+  private readonly BUTTON_HEIGHT = 38;
+  private readonly BUTTON_GAP = 16;
+  private readonly H_PADDING = 28;
 
   private question = "";
   private isOpened = false;
@@ -73,9 +74,9 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     this.boxX = this.canvas.width / 2 - this.BOX_WIDTH / 2;
     this.boxY = this.canvas.height / 2 - this.BOX_HEIGHT / 2;
     this.textX = this.canvas.width / 2;
-    this.textY = this.boxY + 45;
+    this.textY = this.boxY + 48;
 
-    const buttonsY = this.boxY + this.BOX_HEIGHT - this.BUTTON_HEIGHT - 15;
+    const buttonsY = this.boxY + this.BOX_HEIGHT - this.BUTTON_HEIGHT - 18;
     const totalW = this.BUTTON_WIDTH * 2 + this.BUTTON_GAP;
     const startX = this.canvas.width / 2 - totalW / 2;
 
@@ -167,11 +168,13 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
   }
 
   private renderText(context: CanvasRenderingContext2D): void {
-    context.font = "16px Arial";
+    context.font = "bold 15px system-ui";
     context.fillStyle = "white";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(this.question, this.textX, this.textY);
+
+    const maxWidth = this.BOX_WIDTH - this.H_PADDING * 2;
+    context.fillText(this.question, this.textX, this.textY, maxWidth);
   }
 
   private renderButtons(context: CanvasRenderingContext2D): void {
@@ -179,14 +182,14 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
       context,
       this.confirmBtnX, this.confirmBtnY,
       "Yes",
-      this.confirmHovered ? "#27ae60" : "#2ecc71"
+      this.confirmHovered ? "#7ed321" : "#4a90e2"
     );
 
     this.renderButton(
       context,
       this.cancelBtnX, this.cancelBtnY,
       "No",
-      this.cancelHovered ? "#7f8c8d" : "#95a5a6"
+      this.cancelHovered ? "#7ed321" : "#4a90e2"
     );
   }
 
@@ -215,7 +218,7 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     context.fill();
 
     context.fillStyle = "white";
-    context.font = "bold 15px Arial";
+    context.font = "bold 15px system-ui";
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillText(label, x + w / 2, y + h / 2);

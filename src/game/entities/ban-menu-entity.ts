@@ -312,7 +312,6 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     context.save();
     context.globalAlpha = this.opacity;
 
-    this.renderBackdrop(context);
     this.renderWindow(context);
     this.renderTitleBar(context);
     this.renderBanOptions(context);
@@ -321,11 +320,6 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
 
     context.restore();
     super.render(context);
-  }
-
-  private renderBackdrop(context: CanvasRenderingContext2D): void {
-    context.fillStyle = "rgba(0, 0, 0, 0.7)";
-    context.fillRect(0, 0, context.canvas.width, context.canvas.height);
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -467,7 +461,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
 
   private renderButtons(context: CanvasRenderingContext2D): void {
     // Cancel
-    context.fillStyle = this.cancelButtonHovered ? "#95a5a6" : "#bdc3c7";
+    context.fillStyle = this.cancelButtonHovered ? "#7ed321" : "#4a90e2";
     this.drawRoundedRect(context, this.cancelButtonX, this.cancelButtonY, this.cancelButtonWidth, this.cancelButtonHeight, 5);
     context.fill();
     context.fillStyle = "#ffffff";

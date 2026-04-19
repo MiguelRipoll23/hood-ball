@@ -6,15 +6,18 @@ import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
+import { RemoteEvent } from "../../../engine/models/remote-event.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { HostDisconnectedPayload } from "../../interfaces/events/host-disconnected-payload-interface.js";
 
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
+import { WebSocketType } from "../../enums/websocket-type.js";
 import type { IntervalServiceContract } from "../../../engine/interfaces/services/gameplay/interval-service-interface.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
+import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { WebSocketService } from "./websocket-service.js";
 import { SignatureService } from "../security/signature-service.js";
 import { WebRTCService } from "./webrtc-service.js";
@@ -24,6 +27,8 @@ import { EventProcessorService } from "../../../engine/services/gameplay/event-p
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
+import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
+import { MatchAction } from "../../models/match-action.js";
 import { injectable, inject } from "@needle-di/core";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 
@@ -56,9 +61,11 @@ export class MatchmakingNetworkService
     private readonly spawnPointService: SpawnPointService = inject(
       SpawnPointService,
     ),
-
     private readonly signatureService: SignatureService = inject(
       SignatureService,
+    ),
+    private readonly matchActionsLogService: MatchActionsLogService = inject(
+      MatchActionsLogService,
     ),
   ) {
     this.webSocketService.registerCommandHandlers(this);
@@ -698,6 +705,47 @@ export class MatchmakingNetworkService
       .toArrayBuffer();
 
     peer.sendUnreliableUnorderedMessage(payload);
+  }
+
+  @ServerCommandHandler(WebSocketType.PlayerKicked)
+  public handlePlayerKicked(binaryReader: BinaryReader): void {
+    const userId = binaryReader.fixedLengthString(32);
+
+    const match = this.matchSessionService.getMatch();
+    if (match === null) {
+      console.debug("Received PlayerKicked but no active match");
+      return;
+    }
+    if (!match.isHost()) {
+      console.debug("Received PlayerKicked but not host, ignoring");
+      return;
+    }
+
+    const player = match.getPlayerByNetworkId(userId);
+    const playerName = player?.getName() ?? userId;
+
+    console.log(`Kicking banned player from match: ${playerName} (${userId})`);
+
+    const action = MatchAction.playerBanned(userId, { playerName });
+    this.matchActionsLogService.addAction(action);
+
+    // Disconnect the banned player from the P2P game immediately
+    const bannedPeer = this.webrtcService
+      .getPeers()
+      .find((p: WebRTCPeer) => p.getPlayer()?.getNetworkId() === userId);
+
+    if (bannedPeer) {
+      bannedPeer.disconnect(true);
+    }
+
+    // Broadcast to remaining peers so they log the ban in their match history
+    const payload = BinaryWriter.build()
+      .fixedLengthString(userId, 32)
+      .toArrayBuffer();
+
+    const banEvent = new RemoteEvent(EventType.PlayerBanned);
+    banEvent.setData(payload);
+    this.eventProcessorService.sendEvent(banEvent);
   }
 
   private removeNpcPlayerAndReleaseSpawnPoint(match: MatchSession): void {

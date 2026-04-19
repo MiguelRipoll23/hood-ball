@@ -226,11 +226,13 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
 
       if (this.confirmationEntity.isConfirmed()) {
         this.confirmationEntity.close();
+        this.playersListEntity.closeActiveActionMenu();
         this.pendingAction?.();
         this.pendingAction = null;
       } else if (this.confirmationEntity.isCancelled()) {
         this.confirmationEntity.close();
         this.pendingAction = null;
+        // Submenu stays open so user can pick a different reason
       }
 
       super.update(delta);
@@ -269,16 +271,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.save();
     context.globalAlpha = this.opacity;
 
-    // Skip the match-menu backdrop when a sub-menu (report/ban reason picker
-    // or confirmation dialog) is layering its own dark overlay on top.
-    const subMenuOpen =
-      this.playersListEntity.isActionMenuOpen() ||
-      this.confirmationEntity.isOpen();
-
-    if (!subMenuOpen) {
-      this.backdropEntity.render(context);
-    }
-
+    this.backdropEntity.render(context);
     this.windowElement.render(context);
     this.titleBarElement.render(context);
     this.closeButtonEntity.render(context);
