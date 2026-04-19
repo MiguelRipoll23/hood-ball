@@ -350,14 +350,23 @@ export class WebSocketService implements WebSocketServiceContract {
     if (event.code === 1000 && event.reason === "User has been banned") {
       console.log("User has been banned from the server");
 
-      // Stop any reconnection attempts
       this.stopReconnection();
-
-      // Clean up the WebSocket connection reference
       this.webSocket = null;
 
-      // Emit user banned event
       const localEvent = new LocalEvent(EventType.UserBannedByServer);
+      this.eventProcessorService.addLocalEvent(localEvent);
+
+      return;
+    }
+
+    // Check if the user has been kicked
+    if (event.code === 1000 && event.reason === "User has been kicked") {
+      console.log("User has been kicked from the server");
+
+      this.stopReconnection();
+      this.webSocket = null;
+
+      const localEvent = new LocalEvent(EventType.UserKickedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
 
       return;

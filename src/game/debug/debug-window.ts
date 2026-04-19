@@ -155,6 +155,12 @@ export class DebugWindow extends BaseWindow {
         debugSettings.areGizmosVisible(),
         debugSettings.setGizmosVisibility.bind(debugSettings)
       );
+
+      this.renderCheckbox(
+        "Show ball trajectory",
+        debugSettings.isBallTrajectoryVisible(),
+        debugSettings.setBallTrajectoryVisibility.bind(debugSettings)
+      );
     }
   }
 

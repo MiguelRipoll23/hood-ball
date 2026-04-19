@@ -162,6 +162,10 @@ export class BallEntity
 
     if (this.debugSettings?.isDebugging()) {
       this.renderDebugInformation(context);
+
+      if (this.debugSettings.isBallTrajectoryVisible()) {
+        this.renderTrajectory(context);
+      }
     }
 
     // Hitbox render (from superclass)
@@ -350,6 +354,51 @@ export class BallEntity
       this.vx *= scale;
       this.vy *= scale;
     }
+  }
+
+  public getTrajectoryPoints(steps = 60): { x: number; y: number }[] {
+    const points: { x: number; y: number }[] = [];
+    const effectiveFriction = this.FRICTION * this.weatherFrictionMultiplier;
+    let px = this.x;
+    let py = this.y;
+    let vx = this.vx;
+    let vy = this.vy;
+
+    for (let i = 0; i < steps; i++) {
+      vx *= 1 - effectiveFriction;
+      vy *= 1 - effectiveFriction;
+
+      if (Math.abs(vx) < this.MIN_VELOCITY) vx = 0;
+      if (Math.abs(vy) < this.MIN_VELOCITY) vy = 0;
+
+      if (vx === 0 && vy === 0) break;
+
+      px -= vx;
+      py -= vy;
+      points.push({ x: px, y: py });
+    }
+
+    return points;
+  }
+
+  private renderTrajectory(context: CanvasRenderingContext2D): void {
+    const points = this.getTrajectoryPoints();
+    if (points.length === 0) return;
+
+    context.save();
+    context.strokeStyle = "rgba(255, 165, 0, 0.7)";
+    context.lineWidth = 1.5;
+    context.setLineDash([4, 4]);
+    context.beginPath();
+    context.moveTo(this.x, this.y);
+
+    for (const point of points) {
+      context.lineTo(point.x, point.y);
+    }
+
+    context.stroke();
+    context.setLineDash([]);
+    context.restore();
   }
 
   private renderDebugInformation(context: CanvasRenderingContext2D): void {
