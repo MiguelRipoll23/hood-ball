@@ -316,10 +316,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchmakingError(error: Error) {
     console.error("Matchmaking error", error);
-    alert("Could not find or advertise match, returning to main scene menu...");
 
     this.matchSessionService.setMatch(null);
-    void this.returnToMainMenuScene();
+    void this.returnToMainMenuScene(
+      "Could not find or advertise match, returning to main menu..."
+    );
   }
 
   private addSyncableEntities(): void {
@@ -724,13 +725,17 @@ export class WorldScene extends BaseCollidingGameScene {
     this.subscribeToEvents();
   }
 
-  private async returnToMainMenuScene(): Promise<void> {
+  private async returnToMainMenuScene(errorMessage?: string): Promise<void> {
     const mainScene = new MainScene();
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
       false
     );
+
+    if (errorMessage) {
+      mainMenuScene.setPendingMessage(errorMessage);
+    }
 
     if (!this.gameServer.isConnected()) {
       try {

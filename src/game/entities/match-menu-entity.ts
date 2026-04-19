@@ -6,6 +6,7 @@ import { PlayersListEntity } from "./players-list-entity.js";
 import { MatchWindowElement } from "./match-menu/elements/match-window-element.js";
 import { MatchTitleBarElement } from "./match-menu/elements/match-title-bar-element.js";
 import { CloseableMessageEntity } from "./common/closeable-message-entity.js";
+import { ConfirmationMessageEntity } from "./common/confirmation-message-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { PlayerModerationService } from "../services/network/player-moderation-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
@@ -22,12 +23,16 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   private readonly playersListEntity: PlayersListEntity;
   private readonly windowElement: MatchWindowElement;
   private readonly titleBarElement: MatchTitleBarElement;
+  private readonly confirmationEntity: ConfirmationMessageEntity;
   private readonly messageEntity: CloseableMessageEntity;
 
   private windowX = 0;
   private windowY = 0;
   private windowWidth = 0;
 
+  // Stores the API call to execute if the user confirms
+  private pendingAction: (() => void) | null = null;
+  // True while waiting for the user to dismiss the result message
   private pendingClose = false;
 
   constructor(
@@ -58,6 +63,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       this.TITLE_BAR_HEIGHT,
       this.PADDING
     );
+    this.confirmationEntity = new ConfirmationMessageEntity(canvas);
     this.messageEntity = new CloseableMessageEntity(canvas);
 
     this.calculateLayout();
@@ -70,6 +76,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     this.playersListEntity.load();
     this.windowElement.load();
     this.titleBarElement.load();
+    this.confirmationEntity.load();
     this.messageEntity.load();
     super.load();
   }
@@ -127,21 +134,21 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   private handlePlayerReport(playerId: string, reason: string, playerName: string): void {
-    if (!window.confirm(`Are you sure you want to report ${playerName}?`)) {
-      return;
-    }
+    this.pendingAction = () => {
+      this.moderationService
+        .reportUser(playerId, reason, false)
+        .then(() => {
+          this.messageEntity.show("Report sent");
+          this.pendingClose = true;
+        })
+        .catch((error) => {
+          console.error("Failed to report user:", error);
+          this.messageEntity.show("Failed to report player");
+          this.pendingClose = true;
+        });
+    };
 
-    this.moderationService
-      .reportUser(playerId, reason, false)
-      .then(() => {
-        this.messageEntity.show("Report sent");
-        this.pendingClose = true;
-      })
-      .catch((error) => {
-        console.error("Failed to report user:", error);
-        this.messageEntity.show("Failed to report player");
-        this.pendingClose = true;
-      });
+    this.confirmationEntity.show(`Are you sure you want to report ${playerName}?`);
   }
 
   private handlePlayerBan(
@@ -150,21 +157,21 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     playerName: string,
     duration?: { value: number; unit: string }
   ): void {
-    if (!window.confirm(`Are you sure you want to ban ${playerName}?`)) {
-      return;
-    }
+    this.pendingAction = () => {
+      this.moderationService
+        .banUser(playerId, reason, duration)
+        .then(() => {
+          this.messageEntity.show("User banned");
+          this.pendingClose = true;
+        })
+        .catch((error) => {
+          console.error("Failed to ban user:", error);
+          this.messageEntity.show("Failed to ban player");
+          this.pendingClose = true;
+        });
+    };
 
-    this.moderationService
-      .banUser(playerId, reason, duration)
-      .then(() => {
-        this.messageEntity.show("User banned");
-        this.pendingClose = true;
-      })
-      .catch((error) => {
-        console.error("Failed to ban user:", error);
-        this.messageEntity.show("Failed to ban player");
-        this.pendingClose = true;
-      });
+    this.confirmationEntity.show(`Are you sure you want to ban ${playerName}?`);
   }
 
   public override handlePointerEvent(gamePointer: GamePointerContract): void {
@@ -174,6 +181,11 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
 
     if (this.pendingClose && this.messageEntity.isActive()) {
       this.messageEntity.handlePointerEvent(gamePointer);
+      return;
+    }
+
+    if (this.confirmationEntity.isOpen()) {
+      this.confirmationEntity.handlePointerEvent(gamePointer);
       return;
     }
 
@@ -205,6 +217,22 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
         this.pendingClose = false;
         this.onClose();
       }
+      super.update(delta);
+      return;
+    }
+
+    if (this.confirmationEntity.isOpen()) {
+      this.confirmationEntity.update(delta);
+
+      if (this.confirmationEntity.isConfirmed()) {
+        this.confirmationEntity.close();
+        this.pendingAction?.();
+        this.pendingAction = null;
+      } else if (this.confirmationEntity.isCancelled()) {
+        this.confirmationEntity.close();
+        this.pendingAction = null;
+      }
+
       super.update(delta);
       return;
     }
@@ -241,14 +269,25 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     context.save();
     context.globalAlpha = this.opacity;
 
-    if (!this.playersListEntity.isActionMenuOpen()) {
+    // Skip the match-menu backdrop when a sub-menu (report/ban reason picker
+    // or confirmation dialog) is layering its own dark overlay on top.
+    const subMenuOpen =
+      this.playersListEntity.isActionMenuOpen() ||
+      this.confirmationEntity.isOpen();
+
+    if (!subMenuOpen) {
       this.backdropEntity.render(context);
     }
+
     this.windowElement.render(context);
     this.titleBarElement.render(context);
     this.closeButtonEntity.render(context);
     this.leaveMatchButton.render(context);
     this.playersListEntity.render(context);
+
+    if (this.confirmationEntity.isOpen()) {
+      this.confirmationEntity.render(context);
+    }
 
     if (this.pendingClose) {
       this.messageEntity.render(context);
