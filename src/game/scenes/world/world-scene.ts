@@ -27,6 +27,7 @@ import { SceneTransitionService } from "../../../engine/services/gameplay/scene-
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
+import { ErrorScene } from "../error/error-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneTransitionUtils } from "../../utils/scene-transition-utils.js";
@@ -315,10 +316,11 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private handleMatchmakingError(error: Error) {
     console.error("Matchmaking error", error);
-    alert("Could not find or advertise match, returning to main scene menu...");
 
     this.matchSessionService.setMatch(null);
-    void this.returnToMainMenuScene();
+    void this.returnToMainMenuScene(
+      "Could not find or advertise match, returning to main menu..."
+    );
   }
 
   private addSyncableEntities(): void {
@@ -474,6 +476,11 @@ export class WorldScene extends BaseCollidingGameScene {
     this.subscribeToLocalEvent(
       EventType.UserBannedByServer,
       () => void this.returnToLoginScene()
+    );
+
+    this.subscribeToLocalEvent(
+      EventType.UserKickedByServer,
+      () => this.navigateToErrorScene("You have been kicked from the server")
     );
 
     this.subscribeToLocalEvent(EventType.SnowWeather, () => {
@@ -718,13 +725,17 @@ export class WorldScene extends BaseCollidingGameScene {
     this.subscribeToEvents();
   }
 
-  private async returnToMainMenuScene(): Promise<void> {
+  private async returnToMainMenuScene(errorMessage?: string): Promise<void> {
     const mainScene = new MainScene();
     const mainMenuScene = new MainMenuScene(
       this.gameState,
       container.get(EventConsumerService),
       false
     );
+
+    if (errorMessage) {
+      mainMenuScene.setPendingMessage(errorMessage);
+    }
 
     if (!this.gameServer.isConnected()) {
       try {
@@ -759,6 +770,30 @@ export class WorldScene extends BaseCollidingGameScene {
       gameFrame: this.gameState.getGameFrame(),
       errorMessage: "You have been banned from the server",
     });
+  }
+
+  private navigateToErrorScene(errorMessage: string): void {
+    console.log("Navigating to error scene:", errorMessage);
+
+    if (this.matchmakingService) {
+      this.matchmakingService.leaveMatch().catch((error) => {
+        console.error("Error leaving match during kick:", error);
+      });
+    }
+
+    this.dispose();
+
+    const mainScene = new MainScene();
+    const errorScene = new ErrorScene(errorMessage);
+    mainScene.activateScene(errorScene);
+    mainScene.load();
+
+    this.sceneTransitionService.fadeOutAndIn(
+      this.gameState.getGameFrame(),
+      mainScene,
+      1,
+      1
+    );
   }
 
   private activateSnowWeather(): void {

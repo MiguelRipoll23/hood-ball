@@ -15,8 +15,8 @@ export class PlayersListEntity extends BaseGameEntity {
   private containerX = 0;
   private containerY = 0;
   private gamePointer: GamePointerContract | null = null;
-  private onReport: ((playerId: string, reason: string) => void) | null = null;
-  private onBan: ((playerId: string, reason: string, duration?: {value: number, unit: string}) => void) | null = null;
+  private onReport: ((playerId: string, reason: string, playerName: string) => void) | null = null;
+  private onBan: ((playerId: string, reason: string, playerName: string, duration?: {value: number, unit: string}) => void) | null = null;
   private canvas: HTMLCanvasElement | null = null;
   private apiService: APIService;
 
@@ -32,8 +32,8 @@ export class PlayersListEntity extends BaseGameEntity {
     y: number,
     width: number,
     gamePointer: GamePointerContract,
-    onReport: (playerId: string, reason: string) => void,
-    onBan: (playerId: string, reason: string, duration?: {value: number, unit: string}) => void,
+    onReport: (playerId: string, reason: string, playerName: string) => void,
+    onBan: (playerId: string, reason: string, playerName: string, duration?: {value: number, unit: string}) => void,
     canvas: HTMLCanvasElement
   ): void {
     this.containerX = x;
@@ -108,7 +108,7 @@ export class PlayersListEntity extends BaseGameEntity {
           const selectedReason = this.reportMenuEntity!.getConfirmedReason();
           const reportedPlayer = this.reportMenuEntity!.getReportedPlayer();
           if (selectedReason && reportedPlayer && this.onReport) {
-            this.onReport(reportedPlayer.getId(), selectedReason);
+            this.onReport(reportedPlayer.getId(), selectedReason, reportedPlayer.getName());
             return true;
           }
           return false;
@@ -126,7 +126,7 @@ export class PlayersListEntity extends BaseGameEntity {
           const confirmedData = this.banMenuEntity!.getConfirmedData();
           const bannedPlayer = this.banMenuEntity!.getBannedPlayer();
           if (confirmedData && bannedPlayer && this.onBan) {
-            this.onBan(bannedPlayer.getId(), confirmedData.reason, confirmedData.duration);
+            this.onBan(bannedPlayer.getId(), confirmedData.reason, bannedPlayer.getName(), confirmedData.duration);
             return true;
           }
           return false;

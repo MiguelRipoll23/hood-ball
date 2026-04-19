@@ -19,4 +19,5 @@ export enum EventType {
   SnowWeather,
   PlayerBanned,
   UserBannedByServer,
+  UserKickedByServer,
 }
