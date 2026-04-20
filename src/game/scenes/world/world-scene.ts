@@ -30,7 +30,6 @@ import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { ErrorScene } from "../error/error-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
-import { SceneTransitionUtils } from "../../utils/scene-transition-utils.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";

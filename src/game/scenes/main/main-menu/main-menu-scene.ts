@@ -21,7 +21,6 @@ import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
 import { gameContext } from "../../../context/game-context.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
-import { SceneTransitionUtils } from "../../../utils/scene-transition-utils.js";
 import { ErrorScene } from "../../error/error-scene.js";
 import { MainScene } from "../main-scene.js";
 
@@ -307,18 +306,6 @@ export class MainMenuScene extends BaseGameScene {
     this.sceneManagerService
       ?.getTransitionService()
       .crossfade(this.sceneManagerService, settingsScene, 0.2);
-  }
-
-  private transitionToLoginScene(): void {
-    if (!this.sceneManagerService) {
-      console.error("Cannot transition to login scene: sceneManagerService is null");
-      return;
-    }
-
-    SceneTransitionUtils.transitionToLoginScene({
-      sceneManager: this.sceneManagerService,
-      errorMessage: "You have been banned from the server"
-    });
   }
 
   private updateMenuButtonsConnectionState(): void {
