@@ -475,7 +475,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.subscribeToLocalEvent(
       EventType.UserBannedByServer,
-      () => void this.returnToLoginScene()
+      () => this.navigateToErrorScene("You have been banned from the server")
     );
 
     this.subscribeToLocalEvent(
@@ -754,22 +754,6 @@ export class WorldScene extends BaseCollidingGameScene {
       1,
       1
     );
-  }
-
-  private returnToLoginScene(): void {
-    console.log("Returning to login scene due to user ban");
-
-    if (this.matchmakingService) {
-      this.matchmakingService.leaveMatch().catch((error) => {
-        console.error("Error leaving match during server kick:", error);
-      });
-    }
-
-    SceneTransitionUtils.transitionToLoginScene({
-      transitionService: this.sceneTransitionService,
-      gameFrame: this.gameState.getGameFrame(),
-      errorMessage: "You have been banned from the server",
-    });
   }
 
   private navigateToErrorScene(errorMessage: string): void {
