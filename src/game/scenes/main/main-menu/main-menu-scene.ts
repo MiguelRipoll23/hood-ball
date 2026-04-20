@@ -378,8 +378,18 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private handleUserBannedByServerEvent(): void {
-    console.log("User banned by server, transitioning to login scene");
-    this.transitionToLoginScene();
+    console.log("User banned by server, navigating to error scene");
+
+    const mainScene = new MainScene();
+    const errorScene = new ErrorScene("You have been banned from the server");
+    mainScene.activateScene(errorScene);
+    mainScene.load();
+
+    if (this.sceneManagerService) {
+      this.sceneManagerService
+        .getTransitionService()
+        .fadeOutAndIn(this.sceneManagerService, mainScene, 1, 1);
+    }
   }
 
   private handleUserKickedByServerEvent(): void {

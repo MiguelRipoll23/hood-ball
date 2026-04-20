@@ -37,7 +37,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
   
   // Duration state
   private durationValue: number = 1;
-  private durationUnitIndex: number = 1; // Default to Hours
+  private durationUnitIndex: number = 0; // Default to Minutes
   private isPermanent: boolean = false;
   
   // Confirmed result
@@ -128,7 +128,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     
     // Reset duration defaults
     this.durationValue = 1;
-    this.durationUnitIndex = 1; // Hours
+    this.durationUnitIndex = 0; // Minutes
     this.isPermanent = false;
 
     this.calculateLayout();

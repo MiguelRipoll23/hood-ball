@@ -2,13 +2,14 @@ import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-g
 import type { GamePointerContract } from "../../../engine/interfaces/input/game-pointer-interface.js";
 
 export class ConfirmationMessageEntity extends BaseTappableGameEntity {
-  private readonly BOX_WIDTH = 400;
-  private readonly BOX_HEIGHT = 150;
+  private readonly BOX_WIDTH = 300;
+  private readonly BOX_HEIGHT = 160;
   private readonly CORNER_RADIUS = 8;
-  private readonly BUTTON_WIDTH = 110;
-  private readonly BUTTON_HEIGHT = 38;
-  private readonly BUTTON_GAP = 16;
-  private readonly H_PADDING = 28;
+  private readonly BUTTON_WIDTH = 90;
+  private readonly BUTTON_HEIGHT = 36;
+  private readonly BUTTON_GAP = 12;
+  private readonly H_PADDING = 20;
+  private readonly LINE_HEIGHT = 24;
 
   private question = "";
   private isOpened = false;
@@ -74,9 +75,9 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     this.boxX = this.canvas.width / 2 - this.BOX_WIDTH / 2;
     this.boxY = this.canvas.height / 2 - this.BOX_HEIGHT / 2;
     this.textX = this.canvas.width / 2;
-    this.textY = this.boxY + 48;
+    this.textY = this.boxY + 40;
 
-    const buttonsY = this.boxY + this.BOX_HEIGHT - this.BUTTON_HEIGHT - 18;
+    const buttonsY = this.boxY + this.BOX_HEIGHT - this.BUTTON_HEIGHT - 14;
     const totalW = this.BUTTON_WIDTH * 2 + this.BUTTON_GAP;
     const startX = this.canvas.width / 2 - totalW / 2;
 
@@ -168,13 +169,45 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
   }
 
   private renderText(context: CanvasRenderingContext2D): void {
-    context.font = "bold 15px system-ui";
+    context.font = "14px system-ui";
     context.fillStyle = "white";
     context.textAlign = "center";
     context.textBaseline = "middle";
 
     const maxWidth = this.BOX_WIDTH - this.H_PADDING * 2;
-    context.fillText(this.question, this.textX, this.textY, maxWidth);
+    const lines = this.wrapText(context, this.question, maxWidth);
+
+    const totalHeight = lines.length * this.LINE_HEIGHT;
+    let startY = this.textY - (totalHeight / 2) + (this.LINE_HEIGHT / 2);
+
+    for (const line of lines) {
+      context.fillText(line, this.textX, startY, maxWidth);
+      startY += this.LINE_HEIGHT;
+    }
+  }
+
+  private wrapText(context: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let currentLine = "";
+
+    for (const word of words) {
+      const testLine = currentLine ? currentLine + " " + word : word;
+      const metrics = context.measureText(testLine);
+
+      if (metrics.width > maxWidth && currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        currentLine = testLine;
+      }
+    }
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    return lines;
   }
 
   private renderButtons(context: CanvasRenderingContext2D): void {
@@ -182,14 +215,14 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
       context,
       this.confirmBtnX, this.confirmBtnY,
       "Yes",
-      this.confirmHovered ? "#7ed321" : "#4a90e2"
+      this.confirmHovered ? "#22C55E" : "#3B82F6"
     );
 
     this.renderButton(
       context,
       this.cancelBtnX, this.cancelBtnY,
       "No",
-      this.cancelHovered ? "#7ed321" : "#4a90e2"
+      this.cancelHovered ? "#22C55E" : "#3B82F6"
     );
   }
 
