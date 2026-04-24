@@ -226,7 +226,6 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
 
       if (this.confirmationEntity.isConfirmed()) {
         this.confirmationEntity.close();
-        this.playersListEntity.closeActiveActionMenu();
         this.pendingAction?.();
         this.pendingAction = null;
       } else if (this.confirmationEntity.isCancelled()) {
