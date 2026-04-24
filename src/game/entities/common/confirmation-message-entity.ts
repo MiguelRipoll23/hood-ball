@@ -3,7 +3,7 @@ import type { GamePointerContract } from "../../../engine/interfaces/input/game-
 
 export class ConfirmationMessageEntity extends BaseTappableGameEntity {
   private readonly BOX_WIDTH = 300;
-  private readonly BOX_HEIGHT = 160;
+  private readonly BOX_HEIGHT = 130;
   private readonly CORNER_RADIUS = 8;
   private readonly BUTTON_WIDTH = 90;
   private readonly BUTTON_HEIGHT = 36;
@@ -75,9 +75,9 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     this.boxX = this.canvas.width / 2 - this.BOX_WIDTH / 2;
     this.boxY = this.canvas.height / 2 - this.BOX_HEIGHT / 2;
     this.textX = this.canvas.width / 2;
-    this.textY = this.boxY + 40;
+    this.textY = this.boxY + 32;
 
-    const buttonsY = this.boxY + this.BOX_HEIGHT - this.BUTTON_HEIGHT - 14;
+    const buttonsY = this.boxY + this.BOX_HEIGHT - this.BUTTON_HEIGHT - 10;
     const totalW = this.BUTTON_WIDTH * 2 + this.BUTTON_GAP;
     const startX = this.canvas.width / 2 - totalW / 2;
 
@@ -215,14 +215,14 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
       context,
       this.confirmBtnX, this.confirmBtnY,
       "Yes",
-      this.confirmHovered ? "#22C55E" : "#3B82F6"
+      this.confirmHovered ? "#2563EB" : "#3B82F6"
     );
 
     this.renderButton(
       context,
       this.cancelBtnX, this.cancelBtnY,
       "No",
-      this.cancelHovered ? "#22C55E" : "#3B82F6"
+      this.cancelHovered ? "#7C3AED" : "#8B5CF6"
     );
   }
 
