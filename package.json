@@ -16,7 +16,7 @@
     "vite": "^8.1.0"
   },
   "dependencies": {
-    "@mori2003/jsimgui": "^0.13.0",
+    "@mori2003/jsimgui": "^0.14.0",
     "@needle-di/core": "^1.1.2",
     "@vercel/analytics": "^2.0.1"
   }
