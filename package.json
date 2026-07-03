@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "node ./scripts/patch-jsimgui.cjs"
   },
   "author": "MiguelRipoll23",
   "license": "ISC",
