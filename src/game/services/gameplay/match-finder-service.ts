@@ -111,6 +111,6 @@ export class MatchFinderService {
 
   private async joinMatch(match: MatchData): Promise<void> {
     const { token } = match;
-    this.webrtcService.sendOffer(token);
+    await this.webrtcService.sendOffer(token);
   }
 }
