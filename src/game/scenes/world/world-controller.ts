@@ -25,31 +25,59 @@ import { gameContext } from "../../context/game-context.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { NpcService } from "../../services/gameplay/npc-service.js";
+import type { WorldControllerDependencies } from "./world-controller-dependencies.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
   private countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
   private readonly gamePlayer: GamePlayer;
   private readonly matchSessionService: MatchSessionService;
+  private readonly spawnPointService: SpawnPointService;
+  private readonly timerManagerService: TimerManagerService;
+  private readonly eventProcessorService: EventProcessorService;
+  private readonly matchmakingService: MatchmakingServiceContract;
+  private readonly scoreboardEntity: ScoreboardEntity;
+  private readonly ballEntity: BallEntity;
+  private readonly localCarEntity: LocalCarEntity;
+  private readonly alertEntity: AlertEntity;
+  private readonly matchActionsLogService: MatchActionsLogService;
+  private readonly boostPadsEntities: BoostPadEntity[];
+  private readonly spawnPointEntities: SpawnPointEntity[];
+  private readonly getEntitiesByOwner: (
+    player: GamePlayer
+  ) => BaseMultiplayerGameEntity[];
+  private readonly npcService: NpcService;
   private isSoloMatchWithNpc = false;
 
-  constructor(
-    private readonly spawnPointService: SpawnPointService,
-    private readonly timerManagerService: TimerManagerService,
-    private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: MatchmakingServiceContract,
-    private readonly scoreboardEntity: ScoreboardEntity,
-    private readonly ballEntity: BallEntity,
-    private readonly localCarEntity: LocalCarEntity,
-    private readonly alertEntity: AlertEntity,
-    private readonly matchActionsLogService: MatchActionsLogService,
-    private readonly boostPadsEntities: BoostPadEntity[],
-    private readonly spawnPointEntities: SpawnPointEntity[],
-    private readonly getEntitiesByOwner: (
-      player: GamePlayer
-    ) => BaseMultiplayerGameEntity[],
-    private readonly npcService: NpcService
-  ) {
+  constructor(deps: WorldControllerDependencies) {
+    const {
+      spawnPointService,
+      timerManagerService,
+      eventProcessorService,
+      matchmakingService,
+      scoreboardEntity,
+      ballEntity,
+      localCarEntity,
+      alertEntity,
+      matchActionsLogService,
+      boostPadsEntities,
+      spawnPointEntities,
+      getEntitiesByOwner,
+      npcService,
+    } = deps;
+    this.spawnPointService = spawnPointService;
+    this.timerManagerService = timerManagerService;
+    this.eventProcessorService = eventProcessorService;
+    this.matchmakingService = matchmakingService;
+    this.scoreboardEntity = scoreboardEntity;
+    this.ballEntity = ballEntity;
+    this.localCarEntity = localCarEntity;
+    this.alertEntity = alertEntity;
+    this.matchActionsLogService = matchActionsLogService;
+    this.boostPadsEntities = boostPadsEntities;
+    this.spawnPointEntities = spawnPointEntities;
+    this.getEntitiesByOwner = getEntitiesByOwner;
+    this.npcService = npcService;
     this.gamePlayer = gameContext.get(GamePlayer);
     this.matchSessionService = gameContext.get(MatchSessionService);
     this.assignInitialSpawnPoint();

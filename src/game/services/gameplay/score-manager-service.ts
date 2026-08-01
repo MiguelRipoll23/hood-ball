@@ -20,29 +20,55 @@ import { TimerManagerService } from "../../../engine/services/gameplay/timer-man
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MatchActionsLogService } from "./match-actions-log-service.js";
+import type { ScoreManagerServiceDependencies } from "./score-manager-service-dependencies.js";
 
 export class ScoreManagerService {
   private readonly gamePlayer: GamePlayer;
   private readonly matchSessionService: MatchSessionService;
+  private readonly ballEntity: BallEntity;
+  private readonly goalEntity: GoalEntity;
+  private readonly scoreboardUI: ScoreboardUI;
+  private readonly alertEntity: AlertEntity;
+  private readonly matchActionsLogService: MatchActionsLogService;
+  private readonly timerManagerService: TimerManagerService;
+  private readonly eventProcessorService: EventProcessorService;
+  private readonly matchmakingService: MatchmakingServiceContract;
+  private readonly goalTimeEndCallback: () => void;
+  private readonly gameOverEndCallback: () => void;
+  private readonly explosionCallback: (
+    x: number,
+    y: number,
+    team: TeamType
+  ) => void;
+  private readonly gameOverEffectCallback: (won: boolean) => void;
 
-  constructor(
-    private readonly ballEntity: BallEntity,
-    private readonly goalEntity: GoalEntity,
-    private readonly scoreboardUI: ScoreboardUI,
-    private readonly alertEntity: AlertEntity,
-    private readonly matchActionsLogService: MatchActionsLogService,
-    private readonly timerManagerService: TimerManagerService,
-    private readonly eventProcessorService: EventProcessorService,
-    private readonly matchmakingService: MatchmakingServiceContract,
-    private readonly goalTimeEndCallback: () => void,
-    private readonly gameOverEndCallback: () => void,
-    private readonly explosionCallback: (
-      x: number,
-      y: number,
-      team: TeamType
-    ) => void,
-    private readonly gameOverEffectCallback: (won: boolean) => void
-  ) {
+  constructor(deps: ScoreManagerServiceDependencies) {
+    const {
+      ballEntity,
+      goalEntity,
+      scoreboardUI,
+      alertEntity,
+      matchActionsLogService,
+      timerManagerService,
+      eventProcessorService,
+      matchmakingService,
+      goalTimeEndCallback,
+      gameOverEndCallback,
+      explosionCallback,
+      gameOverEffectCallback,
+    } = deps;
+    this.ballEntity = ballEntity;
+    this.goalEntity = goalEntity;
+    this.scoreboardUI = scoreboardUI;
+    this.alertEntity = alertEntity;
+    this.matchActionsLogService = matchActionsLogService;
+    this.timerManagerService = timerManagerService;
+    this.eventProcessorService = eventProcessorService;
+    this.matchmakingService = matchmakingService;
+    this.goalTimeEndCallback = goalTimeEndCallback;
+    this.gameOverEndCallback = gameOverEndCallback;
+    this.explosionCallback = explosionCallback;
+    this.gameOverEffectCallback = gameOverEffectCallback;
     this.gamePlayer = gameContext.get(GamePlayer);
     this.matchSessionService = gameContext.get(MatchSessionService);
   }

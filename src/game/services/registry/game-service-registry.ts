@@ -28,6 +28,8 @@ import { API_SERVICE_TOKEN } from "../../interfaces/services/network/api-contrac
 import { MATCHMAKING_SERVICE_TOKEN } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MATCHMAKING_NETWORK_SERVICE_TOKEN } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import { MATCHMAKING_CONTROLLER_TOKEN } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
+import { WORLD_SCENE_FACTORY_TOKEN } from "../../../engine/interfaces/services/gameplay/world-scene-factory-contract.js";
+import { WorldSceneFactory } from "../../scenes/world/world-scene-factory.js";
 import { WEB_RTC_SERVICE_TOKEN } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 
 export class GameServiceRegistry {
@@ -108,6 +110,14 @@ export class GameServiceRegistry {
     container.bind({
       provide: MATCHMAKING_CONTROLLER_TOKEN,
       useExisting: MatchmakingControllerService,
+    });
+    container.bind({
+      provide: WorldSceneFactory,
+      useClass: WorldSceneFactory,
+    });
+    container.bind({
+      provide: WORLD_SCENE_FACTORY_TOKEN,
+      useExisting: WorldSceneFactory,
     });
     GameServiceRegistry.initializeServices();
   }

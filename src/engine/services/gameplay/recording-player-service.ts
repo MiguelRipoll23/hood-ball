@@ -11,11 +11,10 @@ import { EntityRegistry } from "../entity-registry.js";
 import { GameState } from "../../models/game-state.js";
 import { SceneType } from "../../enums/scene-type.js";
 import { LayerType } from "../../enums/layer-type.js";
-import { container } from "../di-container.js";
-import { EventConsumerService } from "./event-consumer-service.js";
-import { SceneTransitionService } from "./scene-transition-service.js";
-import { TimerManagerService } from "./timer-manager-service.js";
-import { EventProcessorService } from "./event-processor-service.js";
+import {
+  WORLD_SCENE_FACTORY_TOKEN,
+  type WorldSceneFactoryContract,
+} from "../../interfaces/services/gameplay/world-scene-factory-contract.js";
 
 export enum PlaybackState {
   Stopped = "stopped",
@@ -49,7 +48,12 @@ export class RecordingPlayerService {
   private nextTransformIndex = 0;
   private nextStateIndex = 0;
 
-  constructor(private readonly gameState: GameState = inject(GameState)) {
+  constructor(
+    private readonly gameState: GameState = inject(GameState),
+    private readonly worldSceneFactory: WorldSceneFactoryContract = inject(
+      WORLD_SCENE_FACTORY_TOKEN
+    )
+  ) {
     console.log("RecordingPlayerService initialized");
   }
 
@@ -299,27 +303,8 @@ export class RecordingPlayerService {
 
     // Load the actual WorldScene for replay
     if (sceneId === SceneType.World) {
-      // Dynamically import WorldScene to avoid circular dependencies
-      const { WorldScene } = await import(
-        "../../../game/scenes/world/world-scene.js"
-      );
-
-      // Create WorldScene with all its dependencies in REPLAY MODE
-      this.replayScene = new WorldScene(
-        this.gameState,
-        container.get(EventConsumerService),
-        container.get(SceneTransitionService),
-        container.get(TimerManagerService),
-        // For replay, we pass null for services not needed in replay mode
-        null, // matchmakingService - not needed for replay
-        null, // matchmakingController - not needed for replay
-        null, // entityOrchestrator - not needed for replay
-        container.get(EventProcessorService),
-        null, // spawnPointService - not needed for replay
-        null, // chatService - not needed for replay
-        null, // matchActionsLogService - not needed for replay
-        true // REPLAY MODE - don't create entities
-      );
+      // Create WorldScene through the factory in REPLAY MODE
+      this.replayScene = this.worldSceneFactory.create({ replayMode: true });
 
       // Load the scene - it will skip entity creation due to replay mode
       this.replayScene.load();
