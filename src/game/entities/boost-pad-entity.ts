@@ -5,7 +5,7 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../engine/models/remote-event.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
 import { EventType } from "../../engine/enums/event-type.js";
-import { container } from "../../engine/services/di-container.js";
+import { gameContext } from "../context/game-context.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {
@@ -136,13 +136,13 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
   }
 
   private sendConsumeEvent(playerId: string): void {
-    const matchSessionService = container.get(MatchSessionService);
+    const matchSessionService = gameContext.get(MatchSessionService);
 
     if (!matchSessionService.getMatch()?.isHost()) {
       return;
     }
 
-    const eventProcessor = container.get(EventProcessorService);
+    const eventProcessor = gameContext.get(EventProcessorService);
     const payload = BinaryWriter.build()
       .unsignedInt8(this.index)
       .fixedLengthString(playerId, 32)

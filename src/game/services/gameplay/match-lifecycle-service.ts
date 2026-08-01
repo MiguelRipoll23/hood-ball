@@ -1,14 +1,14 @@
 import { inject, injectable } from "@needle-di/core";
-import { APIService } from "../network/api-service.js";
-import { WebRTCService } from "../network/webrtc-service.js";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
+import { API_SERVICE_TOKEN, type APIServiceContract } from "../../interfaces/services/network/api-contract-interface.js";
+import { WEB_RTC_SERVICE_TOKEN, type WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
+import { EVENT_CONSUMER_SERVICE_TOKEN, type EventConsumerServiceContract } from "../../../engine/interfaces/services/gameplay/event-consumer-service-interface.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request-interface.js";
 import { GamePlayer } from "../../models/game-player.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
-import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
+import { MATCHMAKING_NETWORK_SERVICE_TOKEN } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import { DisconnectionMonitor } from "./disconnection-monitor.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
@@ -20,13 +20,21 @@ export class MatchLifecycleService {
   private gameOverInProgress = false;
 
   constructor(
-    private readonly apiService = inject(APIService),
-    private readonly webrtcService = inject(WebRTCService),
-    private readonly networkService: MatchmakingNetworkServiceContract = inject(
-      MatchmakingNetworkService,
+    private readonly apiService: APIServiceContract = inject(
+      API_SERVICE_TOKEN,
     ),
-    private readonly eventProcessor = inject(EventProcessorService),
-    private readonly eventConsumer = inject(EventConsumerService),
+    private readonly webrtcService: WebRTCServiceContract = inject(
+      WEB_RTC_SERVICE_TOKEN,
+    ),
+    private readonly networkService: MatchmakingNetworkServiceContract = inject(
+      MATCHMAKING_NETWORK_SERVICE_TOKEN,
+    ),
+    private readonly eventProcessor: EventProcessorServiceContract = inject(
+      EVENT_PROCESSOR_SERVICE_TOKEN,
+    ),
+    private readonly eventConsumer: EventConsumerServiceContract = inject(
+      EVENT_CONSUMER_SERVICE_TOKEN,
+    ),
     private readonly disconnectionMonitor = inject(DisconnectionMonitor),
     private readonly matchSessionService = inject(MatchSessionService),
   ) {

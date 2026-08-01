@@ -2,7 +2,7 @@ import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import { AnimationType } from "../../engine/enums/animation-type.js";
 import { AnimationLogService } from "../../engine/services/gameplay/animation-log-service.js";
-import { container } from "../../engine/services/di-container.js";
+import { gameContext } from "../context/game-context.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -16,7 +16,7 @@ export class AnimationInspectorWindow extends BaseWindow {
   constructor() {
     // Slightly increased window height for better readability
     super("Animation inspector", new ImVec2(350, 260));
-    this.animationLogService = container.get(AnimationLogService);
+    this.animationLogService = gameContext.get(AnimationLogService);
   }
 
   protected override renderContent(): void {

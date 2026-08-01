@@ -12,8 +12,8 @@ import { EventType } from "../../../../engine/enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
 import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload-interface.js";
-import { container } from "../../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
+import type { EventConsumerServiceContract } from "../../../../engine/interfaces/services/gameplay/event-consumer-service-interface.js";
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
@@ -42,13 +42,13 @@ export class MainMenuScene extends BaseGameScene {
 
   constructor(
     gameState: GameState,
-    eventConsumerService: EventConsumerService,
+    eventConsumerService: EventConsumerServiceContract,
     private showNews: boolean
   ) {
     super(gameState, eventConsumerService);
     this.gameServer = gameContext.get(GameServer);
     this.showNews = showNews;
-    const apiService = container.get(APIService);
+    const apiService = gameContext.get(APIService);
     this.controller = new MainMenuController(apiService);
     this.subscribeToEvents();
   }
@@ -76,7 +76,7 @@ export class MainMenuScene extends BaseGameScene {
     this.onlinePlayersEntity = onlinePlayersEntity;
     this.toastEntity = toastEntity;
 
-    const total = container.get(WebSocketService).getOnlinePlayers();
+    const total = gameContext.get(WebSocketService).getOnlinePlayers();
     this.onlinePlayersEntity.setOnlinePlayers(total);
 
     this.uiEntities.push(
@@ -271,7 +271,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const loadingScene = new LoadingScene(
       this.gameState,
-      container.get(EventConsumerService)
+      gameContext.get(EventConsumerService)
     );
     loadingScene.load();
 
@@ -285,7 +285,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const scoreboardScene = new ScoreboardScene(
       this.gameState,
-      container.get(EventConsumerService)
+      gameContext.get(EventConsumerService)
     );
     scoreboardScene.load();
 
@@ -299,7 +299,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const settingsScene = new SettingsScene(
       this.gameState,
-      container.get(EventConsumerService)
+      gameContext.get(EventConsumerService)
     );
     settingsScene.load();
 

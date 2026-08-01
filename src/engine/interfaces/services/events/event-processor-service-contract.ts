@@ -1,3 +1,4 @@
+import { InjectionToken } from "@needle-di/core";
 import type { EventQueueServiceContract } from "./event-queue-service-contract.js";
 import type { LocalEvent } from "../../../models/local-event.js";
 import type { RemoteEvent } from "../../../models/remote-event.js";
@@ -13,3 +14,8 @@ export interface EventProcessorServiceContract {
   handleEventData(webrtcPeer: WebRTCPeer, binaryReader: BinaryReader): void;
   sendEvent(event: RemoteEvent): void;
 }
+
+export const EVENT_PROCESSOR_SERVICE_TOKEN =
+  new InjectionToken<EventProcessorServiceContract>(
+    "EventProcessorServiceContract"
+  );

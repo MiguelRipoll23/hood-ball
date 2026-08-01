@@ -28,7 +28,6 @@ import { TimerManagerService } from "../../../engine/services/gameplay/timer-man
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { ErrorScene } from "../error/error-scene.js";
-import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
@@ -596,7 +595,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private setupMatchMenu(boostMeterEntity: BoostMeterEntity): void {
     // Create PlayerModerationService instance
-    const playerModerationService = container.get(PlayerModerationService);
+    const playerModerationService = gameContext.get(PlayerModerationService);
 
     // Create match menu entity
     this.matchMenuEntity = new MatchMenuEntity(
@@ -728,7 +727,7 @@ export class WorldScene extends BaseCollidingGameScene {
     const mainScene = new MainScene();
     const mainMenuScene = new MainMenuScene(
       this.gameState,
-      container.get(EventConsumerService),
+      gameContext.get(EventConsumerService),
       false
     );
 
@@ -738,7 +737,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
     if (!this.gameServer.isConnected()) {
       try {
-        container.get(WebSocketService).connectToServer();
+        gameContext.get(WebSocketService).connectToServer();
       } catch (error) {
         console.error("Failed to reconnect to server", error);
       }

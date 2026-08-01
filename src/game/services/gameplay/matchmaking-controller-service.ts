@@ -1,8 +1,8 @@
 import { inject, injectable } from "@needle-di/core";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
-import { MatchmakingService } from "./matchmaking-service.js";
+import { MATCHMAKING_SERVICE_TOKEN } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import type { MatchmakingControllerContract } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
 
@@ -12,10 +12,10 @@ export class MatchmakingControllerService
 {
   constructor(
     private readonly matchmakingService: MatchmakingServiceContract = inject(
-      MatchmakingService
+      MATCHMAKING_SERVICE_TOKEN
     ),
-    private readonly eventProcessor: EventProcessorService = inject(
-      EventProcessorService
+    private readonly eventProcessor: EventProcessorServiceContract = inject(
+      EVENT_PROCESSOR_SERVICE_TOKEN
     )
   ) {}
 

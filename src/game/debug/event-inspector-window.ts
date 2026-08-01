@@ -6,7 +6,7 @@ import { RemoteEvent } from "../../engine/models/remote-event.js";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
-import { container } from "../../engine/services/di-container.js";
+import { gameContext } from "../context/game-context.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -18,7 +18,7 @@ export class EventInspectorWindow extends BaseWindow {
 
   constructor() {
     super("Event inspector", new ImVec2(195, 230));
-    this.eventProcessorService = container.get(EventProcessorService);
+    this.eventProcessorService = gameContext.get(EventProcessorService);
     console.log(`${this.constructor.name} created`);
   }
 

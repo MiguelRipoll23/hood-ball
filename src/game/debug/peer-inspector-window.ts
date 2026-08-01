@@ -1,7 +1,7 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import { WebRTCService } from "../services/network/webrtc-service.js";
-import { container } from "../../engine/services/di-container.js";
+import { gameContext } from "../context/game-context.js";
 import { injectable } from "@needle-di/core";
 import { getPingTextColor } from "../utils/ping-utils.js";
 
@@ -14,7 +14,7 @@ export class PeerInspectorWindow extends BaseWindow {
 
   constructor() {
     super("Peer inspector", new ImVec2(500, 300));
-    this.webrtcService = container.get(WebRTCService);
+    this.webrtcService = gameContext.get(WebRTCService);
     console.log(`${this.constructor.name} created`);
   }
 

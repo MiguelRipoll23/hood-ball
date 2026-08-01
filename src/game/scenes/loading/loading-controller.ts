@@ -1,7 +1,7 @@
 import type { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { WorldScene } from "../world/world-scene.js";
-import { container } from "../../../engine/services/di-container.js";
+import { gameContext } from "../../context/game-context.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
@@ -18,16 +18,16 @@ export class LoadingController {
   public createWorldScene(): WorldScene {
     const worldScene = new WorldScene(
       this.gameState,
-      container.get(EventConsumerService),
-      container.get(SceneTransitionService),
-      container.get(TimerManagerService),
-      container.get(MatchmakingService),
-      container.get(MatchmakingControllerService),
-      container.get(EntityOrchestratorService),
-      container.get(EventProcessorService),
-      container.get(SpawnPointService),
-      container.get(ChatService),
-      container.get(MatchActionsLogService)
+      gameContext.get(EventConsumerService),
+      gameContext.get(SceneTransitionService),
+      gameContext.get(TimerManagerService),
+      gameContext.get(MatchmakingService),
+      gameContext.get(MatchmakingControllerService),
+      gameContext.get(EntityOrchestratorService),
+      gameContext.get(EventProcessorService),
+      gameContext.get(SpawnPointService),
+      gameContext.get(ChatService),
+      gameContext.get(MatchActionsLogService)
     );
     worldScene.load();
     return worldScene;

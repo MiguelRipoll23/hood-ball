@@ -4,7 +4,7 @@ import type { GamePlayer } from "../models/game-player.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { ReportMenuEntity } from "./report-menu-entity.js";
 import { BanMenuEntity } from "./ban-menu-entity.js";
-import { container } from "../../engine/services/di-container.js";
+import { gameContext } from "../context/game-context.js";
 import { APIService } from "../services/network/api-service.js";
 import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
 
@@ -22,7 +22,7 @@ export class PlayersListEntity extends BaseGameEntity {
 
   constructor() {
     super();
-    this.apiService = container.get(APIService);
+    this.apiService = gameContext.get(APIService);
   }
 
   public setPlayers(

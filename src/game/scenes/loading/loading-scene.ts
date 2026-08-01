@@ -1,7 +1,7 @@
 import type { GameState } from "../../../engine/models/game-state.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
 import { injectable } from "@needle-di/core";
-import { container } from "../../../engine/services/di-container.js";
+import { gameContext } from "../../context/game-context.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { WorldScene } from "../world/world-scene.js";
@@ -20,7 +20,7 @@ export class LoadingScene extends BaseGameScene {
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    sceneTransitionService: SceneTransitionService = container.get(
+    sceneTransitionService: SceneTransitionService = gameContext.get(
       SceneTransitionService
     )
   ) {

@@ -5,7 +5,7 @@ import {
   PlaybackState,
 } from "../../engine/services/gameplay/recording-player-service.js";
 import { RecorderService } from "../../engine/services/gameplay/recorder-service.js";
-import { container } from "../../engine/services/di-container.js";
+import { gameContext } from "../context/game-context.js";
 import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.js";
 import { GameState } from "../../engine/models/game-state.js";
 
@@ -20,9 +20,9 @@ export class RecordingInspectorWindow extends BaseWindow {
 
   constructor() {
     super("Recording inspector", new ImVec2(380, 360));
-    this.playerService = container.get(RecordingPlayerService);
-    this.recorderService = container.get(RecorderService);
-    this.gameState = container.get(GameState);
+    this.playerService = gameContext.get(RecordingPlayerService);
+    this.recorderService = gameContext.get(RecorderService);
+    this.gameState = gameContext.get(GameState);
     console.log(`${this.constructor.name} created`);
     this.createFileInput();
   }

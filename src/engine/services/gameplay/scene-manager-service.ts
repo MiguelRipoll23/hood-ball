@@ -1,7 +1,6 @@
 import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js";
-import { SceneTransitionService } from "./scene-transition-service.js";
+import { SCENE_TRANSITION_SERVICE_TOKEN, type SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
 import type { SceneManagerServiceContract } from "../../interfaces/services/scene/scene-manager-service-contract.js";
-import type { SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
 import { injectable, inject } from "@needle-di/core";
 
 @injectable()
@@ -12,7 +11,7 @@ export class SceneManagerService implements SceneManagerServiceContract {
 
   constructor(
     private readonly transitionService: SceneTransitionServiceContract = inject(
-      SceneTransitionService
+      SCENE_TRANSITION_SERVICE_TOKEN
     )
   ) {}
 

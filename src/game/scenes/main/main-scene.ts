@@ -4,15 +4,15 @@ import type { GameScene } from "../../../engine/interfaces/scenes/game-scene-int
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
-import { container } from "../../../engine/services/di-container.js";
+import { gameContext } from "../../context/game-context.js";
 
 export class MainScene extends BaseGameScene {
   private scene: GameScene | null = null;
 
   constructor() {
-    const gameState = container.get(GameState);
-    const eventConsumerService = container.get(EventConsumerService);
-    const sceneManagerService = container.get(SceneManagerService);
+    const gameState = gameContext.get(GameState);
+    const eventConsumerService = gameContext.get(EventConsumerService);
+    const sceneManagerService = gameContext.get(SceneManagerService);
     super(gameState, eventConsumerService);
     this.setSceneManagerService(sceneManagerService);
     // Pointer events should be cleared only after nested scenes have processed

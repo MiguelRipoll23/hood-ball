@@ -9,7 +9,8 @@ import { WebRTCDispatcherService } from "./webrtc-dispatcher-service.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { WebSocketService } from "./websocket-service.js";
+import { WEB_SOCKET_SERVICE_TOKEN, type WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
+import { WebRTCPeerManagerService } from "./webrtc-peer-manager-service.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { GamePlayer } from "../../models/game-player.js";
 import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
@@ -18,13 +19,10 @@ import { injectable, inject } from "@needle-di/core";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
-import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
 
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {
-  private peers: Map<string, WebRTCPeer> = new Map();
-
   // Network stats
   private downloadKilobytesPerSecond: number = 0;
   private uploadKilobytesPerSecond: number = 0;
@@ -43,10 +41,13 @@ export class WebRTCService implements WebRTCServiceContract {
     ),
     private readonly gameState: GameState = inject(GameState),
     private readonly webSocketService: WebSocketServiceContract = inject(
-      WebSocketService
+      WEB_SOCKET_SERVICE_TOKEN
     ),
     private readonly intervalManagerService: IntervalManagerService = inject(
       IntervalManagerService
+    ),
+    private readonly peerManagerService: WebRTCPeerManagerService = inject(
+      WebRTCPeerManagerService
     )
   ) {
     this.dispatcherService = new WebRTCDispatcherService();
@@ -95,13 +96,11 @@ export class WebRTCService implements WebRTCServiceContract {
   }
 
   public getPeers(): WebRTCPeer[] {
-    return Array.from(this.peers.values());
+    return this.peerManagerService.getPeers();
   }
 
   public removePeer(token: string): void {
-    this.peers.delete(token);
-
-    console.log("Removed WebRTC peer, updated peers count", this.peers.size);
+    this.peerManagerService.removePeer(token);
   }
 
   @ServerCommandHandler(WebSocketType.PlayerRelay)
@@ -200,7 +199,7 @@ export class WebRTCService implements WebRTCServiceContract {
   public resetNetworkStats(): void {
     this.downloadKilobytesPerSecond = this.getDownloadBytes() / 1024;
     this.uploadKilobytesPerSecond = this.getUploadBytes() / 1024;
-    this.getPeers().forEach((peer) => peer.resetNetworkStats());
+    this.peerManagerService.resetPeerNetworkStats();
   }
 
   public renderDebugInformation(context: CanvasRenderingContext2D): void {
@@ -246,9 +245,7 @@ export class WebRTCService implements WebRTCServiceContract {
       this.timerManagerService,
       this.gameState
     );
-    this.peers.set(token, peer);
-
-    console.log("Added WebRTC peer, updated peers count", this.peers.size);
+    this.peerManagerService.registerPeer(token, peer);
 
     return peer;
   }
@@ -325,21 +322,15 @@ export class WebRTCService implements WebRTCServiceContract {
   }
 
   private getPeer(token: string): WebRTCPeer | null {
-    return this.peers.get(token) ?? null;
+    return this.peerManagerService.getPeer(token);
   }
 
   private getDownloadBytes(): number {
-    return this.getPeers().reduce(
-      (total, peer) => total + peer.getDownloadBytes(),
-      0
-    );
+    return this.peerManagerService.getDownloadBytes();
   }
 
   private getUploadBytes(): number {
-    return this.getPeers().reduce(
-      (total, peer) => total + peer.getUploadBytes(),
-      0
-    );
+    return this.peerManagerService.getUploadBytes();
   }
 
   private updatePingMedianMilliseconds(): void {

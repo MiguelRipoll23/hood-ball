@@ -2,7 +2,7 @@ import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneType } from "../../../engine/enums/scene-type.js";
-import { container } from "../../../engine/services/di-container.js";
+import { gameContext } from "../../context/game-context.js";
 
 export class ErrorScene extends BaseGameScene {
   private readonly MESSAGE_WIDTH = 340;
@@ -16,8 +16,8 @@ export class ErrorScene extends BaseGameScene {
   private messageTextY = 0;
 
   constructor(errorMessage: string) {
-    const gameState = container.get(GameState);
-    const eventConsumerService = container.get(EventConsumerService);
+    const gameState = gameContext.get(GameState);
+    const eventConsumerService = gameContext.get(EventConsumerService);
     super(gameState, eventConsumerService);
     this.errorMessage = errorMessage;
   }

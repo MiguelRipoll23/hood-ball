@@ -12,12 +12,12 @@ import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import { MATCH_TOTAL_SLOTS } from "../../constants/configuration-constants.js";
 import { GAME_VERSION } from "../../constants/game-constants.js";
 import { getConfigurationKey } from "../../utils/configuration-utils.js";
-import { APIService } from "../network/api-service.js";
-import { WebRTCService } from "../network/webrtc-service.js";
+import { API_SERVICE_TOKEN, type APIServiceContract } from "../../interfaces/services/network/api-contract-interface.js";
+import { WEB_RTC_SERVICE_TOKEN, type WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { injectable, inject } from "@needle-di/core";
 
 @injectable()
@@ -28,9 +28,14 @@ export class MatchFinderService {
       MatchSessionService,
     ),
     private readonly gameServer: GameServer = inject(GameServer),
-    private readonly apiService = inject(APIService),
-    private readonly webrtcService = inject(WebRTCService),
-    private readonly eventProcessorService = inject(EventProcessorService),
+    private readonly apiService: APIServiceContract = inject(
+      API_SERVICE_TOKEN,
+    ),
+    private readonly webrtcService: WebRTCServiceContract = inject(
+      WEB_RTC_SERVICE_TOKEN,
+    ),
+    private readonly eventProcessorService: EventProcessorServiceContract =
+      inject(EVENT_PROCESSOR_SERVICE_TOKEN),
   ) {}
 
   public async findMatches(): Promise<FindMatchesResponse> {

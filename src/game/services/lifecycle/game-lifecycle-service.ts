@@ -1,6 +1,6 @@
 import { injectable, inject } from "@needle-di/core";
-import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
-import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
+import { EVENT_CONSUMER_SERVICE_TOKEN, type EventConsumerServiceContract } from "../../../engine/interfaces/services/gameplay/event-consumer-service-interface.js";
+import { SCENE_TRANSITION_SERVICE_TOKEN, type SceneTransitionServiceContract } from "../../../engine/interfaces/services/scene/scene-transition-service-contract.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { MainScene } from "../../scenes/main/main-scene.js";
@@ -14,11 +14,11 @@ import { GamePlayer } from "../../models/game-player.js";
 @injectable()
 export class GameLifecycleService {
   constructor(
-    private eventConsumerService: EventConsumerService = inject(
-      EventConsumerService
+    private eventConsumerService: EventConsumerServiceContract = inject(
+      EVENT_CONSUMER_SERVICE_TOKEN
     ),
-    private sceneTransitionService: SceneTransitionService = inject(
-      SceneTransitionService
+    private sceneTransitionService: SceneTransitionServiceContract = inject(
+      SCENE_TRANSITION_SERVICE_TOKEN
     ),
     private gameState: GameState = inject(GameState),
     private matchSessionService: MatchSessionService = inject(
