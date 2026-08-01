@@ -42,7 +42,8 @@ export class LoadingScene extends BaseGameScene {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
-    this.worldScene = this.worldSceneFactory.create() as WorldScene;
+    this.worldScene = this.worldSceneFactory.create();
+    this.worldScene.load();
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

@@ -1,5 +1,4 @@
 import { injectable } from "@needle-di/core";
-import type { GameScene } from "../../../engine/interfaces/scenes/game-scene-interface.js";
 import type {
   WorldSceneFactoryContract,
   WorldSceneFactoryOptions,
@@ -21,7 +20,7 @@ import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 
 @injectable()
 export class WorldSceneFactory implements WorldSceneFactoryContract {
-  public create(options: WorldSceneFactoryOptions = {}): GameScene {
+  public create(options: WorldSceneFactoryOptions = {}): WorldScene {
     const replayMode = options.replayMode ?? false;
     const deps: WorldSceneDependencies = {
       gameState: gameContext.get(GameState),
