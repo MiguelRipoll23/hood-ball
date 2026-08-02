@@ -9,6 +9,7 @@ import { CloseableMessageEntity } from "./common/closeable-message-entity.js";
 import { ConfirmationMessageEntity } from "./common/confirmation-message-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { PlayerModerationService } from "../services/network/player-moderation-service.js";
+import type { APIService } from "../services/network/api-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 
 export class MatchMenuEntity extends BaseTappableGameEntity {
@@ -38,6 +39,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly moderationService: PlayerModerationService,
+    private readonly apiService: APIService,
     private readonly gamePointer: GamePointerContract,
     private readonly onClose: () => void,
     private readonly onLeaveMatch: () => void
@@ -54,7 +56,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
       "#e74c3c",
       "#7ed321"
     );
-    this.playersListEntity = new PlayersListEntity();
+    this.playersListEntity = new PlayersListEntity(this.apiService);
     this.windowElement = new MatchWindowElement(0, 0, 0, this.WINDOW_HEIGHT);
     this.titleBarElement = new MatchTitleBarElement(
       0,

@@ -4,7 +4,7 @@ import { TitleEntity } from "../../entities/common/title-entity.js";
 import { SettingEntity } from "../../entities/setting-entity.js";
 import { DebugService } from "../../../engine/services/debug/debug-service.js";
 import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { DebugWindow } from "../../debug/debug-window.js";
 
@@ -134,7 +134,7 @@ export class SettingsScene extends BaseGameScene {
     this.gameState.getDebugSettings().setMenuEnabled(state);
 
     // Initialize debug service if not already initialized
-    const debugService = gameContext.get(DebugService);
+    const debugService = container.get(DebugService);
 
     if (state === true) {
       if (debugService.isInitialized() === false) {

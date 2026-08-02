@@ -21,7 +21,7 @@ import type { CarDemolishedPayload } from "../../interfaces/events/car-demolishe
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { NpcService } from "../../services/gameplay/npc-service.js";
@@ -78,8 +78,8 @@ export class WorldController {
     this.spawnPointEntities = spawnPointEntities;
     this.getEntitiesByOwner = getEntitiesByOwner;
     this.npcService = npcService;
-    this.gamePlayer = gameContext.get(GamePlayer);
-    this.matchSessionService = gameContext.get(MatchSessionService);
+    this.gamePlayer = container.get(GamePlayer);
+    this.matchSessionService = container.get(MatchSessionService);
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
 

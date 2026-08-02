@@ -6,7 +6,7 @@ import { RemoteEvent } from "../../../engine/models/remote-event.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
 import { MatchSessionService } from "../session/match-session-service.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
@@ -69,8 +69,8 @@ export class ScoreManagerService {
     this.gameOverEndCallback = gameOverEndCallback;
     this.explosionCallback = explosionCallback;
     this.gameOverEffectCallback = gameOverEffectCallback;
-    this.gamePlayer = gameContext.get(GamePlayer);
-    this.matchSessionService = gameContext.get(MatchSessionService);
+    this.gamePlayer = container.get(GamePlayer);
+    this.matchSessionService = container.get(MatchSessionService);
   }
 
   public updateScoreboard(): void {

@@ -3,6 +3,7 @@ import { GamePointer } from "./game-pointer.js";
 import { DebugSettings } from "./debug-settings.js";
 import { GameKeyboard } from "./game-keyboard.js";
 import { GameGamepad } from "./game-gamepad.js";
+import { CameraService } from "../services/gameplay/camera-service.js";
 
 export class GameState {
   private debugSettings: DebugSettings;
@@ -12,6 +13,7 @@ export class GameState {
   private gamePointer: GamePointer;
   private gameKeyboard: GameKeyboard;
   private gameGamepad: GameGamepad;
+  private readonly cameraService: CameraService;
 
   constructor(private readonly canvas: HTMLCanvasElement, debugging: boolean) {
     this.debugSettings = new DebugSettings(debugging);
@@ -19,6 +21,7 @@ export class GameState {
     this.gamePointer = new GamePointer(this.canvas);
     this.gameKeyboard = new GameKeyboard();
     this.gameGamepad = new GameGamepad(this.gameFrame);
+    this.cameraService = new CameraService();
   }
 
   public isDebugging(): boolean {
@@ -47,5 +50,9 @@ export class GameState {
 
   public getGameGamepad(): GameGamepad {
     return this.gameGamepad;
+  }
+
+  public getCameraService(): CameraService {
+    return this.cameraService;
   }
 }

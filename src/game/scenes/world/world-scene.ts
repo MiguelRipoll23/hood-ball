@@ -44,8 +44,9 @@ import { SpawnPointService } from "../../services/gameplay/spawn-point-service.j
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
 import { PlayerModerationService } from "../../services/network/player-moderation-service.js";
+import { APIService } from "../../services/network/api-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
@@ -98,9 +99,9 @@ export class WorldScene extends BaseCollidingGameScene {
     super(deps.gameState, deps.eventConsumerService);
     // Set isReplayMode from parent BaseCollidingGameScene
     this.isReplayMode = deps.replayMode ?? false;
-    this.gamePlayer = gameContext.get(GamePlayer);
-    this.gameServer = gameContext.get(GameServer);
-    this.matchSessionService = gameContext.get(MatchSessionService);
+    this.gamePlayer = container.get(GamePlayer);
+    this.gameServer = container.get(GameServer);
+    this.matchSessionService = container.get(MatchSessionService);
     this.gamePlayer.reset();
     this.sceneTransitionService = deps.sceneTransitionService;
     this.timerManagerService = deps.timerManagerService;
@@ -585,12 +586,14 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private setupMatchMenu(boostMeterEntity: BoostMeterEntity): void {
     // Create PlayerModerationService instance
-    const playerModerationService = gameContext.get(PlayerModerationService);
+    const playerModerationService = container.get(PlayerModerationService);
+    const apiService = container.get(APIService);
 
     // Create match menu entity
     this.matchMenuEntity = new MatchMenuEntity(
       this.canvas,
       playerModerationService,
+      apiService,
       this.gameState.getGamePointer(),
       () => this.hideMatchMenu(),
       async () => {
@@ -662,7 +665,11 @@ export class WorldScene extends BaseCollidingGameScene {
     if (this.matchLogEntity) {
       return;
     }
-    this.matchLogEntity = new MatchLogEntity(this.canvas);
+    this.matchLogEntity = new MatchLogEntity(
+      this.canvas,
+      this.matchSessionService,
+      this.gamePlayer
+    );
     this.uiEntities.push(this.matchLogEntity);
     // Only subscribe to match actions if service is available (not null in replay mode)
     if (this.matchActionsLogService) {
@@ -717,7 +724,7 @@ export class WorldScene extends BaseCollidingGameScene {
     const mainScene = new MainScene();
     const mainMenuScene = new MainMenuScene(
       this.gameState,
-      gameContext.get(EventConsumerService),
+      container.get(EventConsumerService),
       false
     );
 
@@ -727,7 +734,7 @@ export class WorldScene extends BaseCollidingGameScene {
 
     if (!this.gameServer.isConnected()) {
       try {
-        gameContext.get(WebSocketService).connectToServer();
+        container.get(WebSocketService).connectToServer();
       } catch (error) {
         console.error("Failed to reconnect to server", error);
       }

@@ -19,7 +19,7 @@ import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
 import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
-import { gameContext } from "../../../context/game-context.js";
+import { container } from "../../../../engine/services/di-container.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { ErrorScene } from "../../error/error-scene.js";
 import { MainScene } from "../main-scene.js";
@@ -46,9 +46,9 @@ export class MainMenuScene extends BaseGameScene {
     private showNews: boolean
   ) {
     super(gameState, eventConsumerService);
-    this.gameServer = gameContext.get(GameServer);
+    this.gameServer = container.get(GameServer);
     this.showNews = showNews;
-    const apiService = gameContext.get(APIService);
+    const apiService = container.get(APIService);
     this.controller = new MainMenuController(apiService);
     this.subscribeToEvents();
   }
@@ -76,7 +76,7 @@ export class MainMenuScene extends BaseGameScene {
     this.onlinePlayersEntity = onlinePlayersEntity;
     this.toastEntity = toastEntity;
 
-    const total = gameContext.get(WebSocketService).getOnlinePlayers();
+    const total = container.get(WebSocketService).getOnlinePlayers();
     this.onlinePlayersEntity.setOnlinePlayers(total);
 
     this.uiEntities.push(
@@ -271,7 +271,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const loadingScene = new LoadingScene(
       this.gameState,
-      gameContext.get(EventConsumerService)
+      container.get(EventConsumerService)
     );
     loadingScene.load();
 
@@ -285,7 +285,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const scoreboardScene = new ScoreboardScene(
       this.gameState,
-      gameContext.get(EventConsumerService)
+      container.get(EventConsumerService)
     );
     scoreboardScene.load();
 
@@ -299,7 +299,7 @@ export class MainMenuScene extends BaseGameScene {
 
     const settingsScene = new SettingsScene(
       this.gameState,
-      gameContext.get(EventConsumerService)
+      container.get(EventConsumerService)
     );
     settingsScene.load();
 

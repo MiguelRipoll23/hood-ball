@@ -3,7 +3,10 @@ import { container } from "./di-container.ts";
 import { EventProcessorService } from "./gameplay/event-processor-service.ts";
 import { EventConsumerService } from "./gameplay/event-consumer-service.ts";
 import { CameraService } from "./gameplay/camera-service.ts";
-import { AnimationLogService } from "./gameplay/animation-log-service.ts";
+import {
+  AnimationLogService,
+  animationLogService,
+} from "./gameplay/animation-log-service.ts";
 import { RecorderService } from "./gameplay/recorder-service.ts";
 import { RecordingPlayerService } from "./gameplay/recording-player-service.ts";
 import { SceneTransitionService } from "./gameplay/scene-transition-service.ts";
@@ -35,9 +38,12 @@ export class ServiceRegistry {
     });
     container.bind({
       provide: AnimationLogService,
-      useClass: AnimationLogService,
+      useValue: animationLogService,
     });
-    container.bind({ provide: CameraService, useClass: CameraService });
+    container.bind({
+      provide: CameraService,
+      useValue: gameState.getCameraService(),
+    });
     container.bind({ provide: RecorderService, useClass: RecorderService });
     container.bind({
       provide: RecordingPlayerService,

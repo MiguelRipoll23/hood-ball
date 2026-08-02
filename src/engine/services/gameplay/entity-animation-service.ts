@@ -1,13 +1,9 @@
 import { AnimationType } from "../../enums/animation-type.js";
 import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.js";
-import { AnimationLogService } from "./animation-log-service.js";
-import { container } from "../di-container.js";
+import { animationLogService } from "./animation-log-service.js";
 
 export class EntityAnimationService {
   private readonly entity: AnimatableEntity;
-
-  private readonly animationLogService: AnimationLogService =
-    container.get(AnimationLogService);
 
   private completed: boolean = false;
 
@@ -32,7 +28,7 @@ export class EntityAnimationService {
     this.durationMilliseconds = durationSeconds * 1000;
     this.animationType = animationType;
 
-    this.animationLogService.register(this, entity, animationType);
+    animationLogService.register(this, entity, animationType);
 
     console.log(
       `${this.constructor.name} [${AnimationType[animationType]}] created for ${entity.constructor.name}`
@@ -75,7 +71,7 @@ export class EntityAnimationService {
 
     this.completed = progress >= 1;
 
-    this.animationLogService.update(this, progress, this.completed);
+    animationLogService.update(this, progress, this.completed);
   }
 
   public getProgress(): number {

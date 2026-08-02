@@ -1,8 +1,7 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import { AnimationType } from "../../engine/enums/animation-type.js";
-import { AnimationLogService } from "../../engine/services/gameplay/animation-log-service.js";
-import { gameContext } from "../context/game-context.js";
+import { animationLogService } from "../../engine/services/gameplay/animation-log-service.js";
 import { injectable } from "@needle-di/core";
 
 @injectable()
@@ -10,17 +9,15 @@ export class AnimationInspectorWindow extends BaseWindow {
   private static readonly COLOR_FINISHED = 0xff00ff00;
   // Use ABGR format for consistency with other debug colors
   private static readonly COLOR_IN_PROGRESS = 0xff00a5ff; // orange
-  private readonly animationLogService: AnimationLogService;
   private previousEntryCount = 0;
 
   constructor() {
     // Slightly increased window height for better readability
     super("Animation inspector", new ImVec2(350, 260));
-    this.animationLogService = gameContext.get(AnimationLogService);
   }
 
   protected override renderContent(): void {
-    const entries = this.animationLogService.getEntries();
+    const entries = animationLogService.getEntries();
     const newEntryAdded = entries.length > this.previousEntryCount;
 
     const tableFlags =
@@ -62,7 +59,7 @@ export class AnimationInspectorWindow extends BaseWindow {
     }
 
     if (ImGui.Button("Clear")) {
-      this.animationLogService.clear();
+      animationLogService.clear();
       this.previousEntryCount = 0;
     }
   }

@@ -8,7 +8,7 @@ import { EventConsumerService } from "../../../engine/services/gameplay/event-co
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 import { MatchmakingService } from "../../services/gameplay/matchmaking-service.js";
 import { MatchmakingControllerService } from "../../services/gameplay/matchmaking-controller-service.js";
 import { EntityOrchestratorService } from "../../services/gameplay/entity-orchestrator-service.js";
@@ -23,25 +23,25 @@ export class WorldSceneFactory implements WorldSceneFactoryContract {
   public create(options: WorldSceneFactoryOptions = {}): WorldScene {
     const replayMode = options.replayMode ?? false;
     const deps: WorldSceneDependencies = {
-      gameState: gameContext.get(GameState),
-      eventConsumerService: gameContext.get(EventConsumerService),
-      sceneTransitionService: gameContext.get(SceneTransitionService),
-      timerManagerService: gameContext.get(TimerManagerService),
+      gameState: container.get(GameState),
+      eventConsumerService: container.get(EventConsumerService),
+      sceneTransitionService: container.get(SceneTransitionService),
+      timerManagerService: container.get(TimerManagerService),
       matchmakingService: replayMode
         ? null
-        : gameContext.get(MatchmakingService),
+        : container.get(MatchmakingService),
       matchmakingController: replayMode
         ? null
-        : gameContext.get(MatchmakingControllerService),
+        : container.get(MatchmakingControllerService),
       entityOrchestrator: replayMode
         ? null
-        : gameContext.get(EntityOrchestratorService),
-      eventProcessorService: gameContext.get(EventProcessorService),
-      spawnPointService: replayMode ? null : gameContext.get(SpawnPointService),
-      chatService: replayMode ? null : gameContext.get(ChatService),
+        : container.get(EntityOrchestratorService),
+      eventProcessorService: container.get(EventProcessorService),
+      spawnPointService: replayMode ? null : container.get(SpawnPointService),
+      chatService: replayMode ? null : container.get(ChatService),
       matchActionsLogService: replayMode
         ? null
-        : gameContext.get(MatchActionsLogService),
+        : container.get(MatchActionsLogService),
       replayMode,
     };
     return new WorldScene(deps);

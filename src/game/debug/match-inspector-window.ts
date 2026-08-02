@@ -3,7 +3,7 @@ import { BaseWindow } from "../../engine/debug/base-window.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import type { GamePlayer } from "../models/game-player.js";
 import { getPingTextColor } from "../utils/ping-utils.js";
-import { gameContext } from "../context/game-context.js";
+import { container } from "../../engine/services/di-container.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 
 export class MatchInspectorWindow extends BaseWindow {
@@ -15,7 +15,7 @@ export class MatchInspectorWindow extends BaseWindow {
   }
 
   protected override renderContent(): void {
-    const match = gameContext.get(MatchSessionService).getMatch();
+    const match = container.get(MatchSessionService).getMatch();
 
     if (match === null) {
       ImGui.Text("No active match.");

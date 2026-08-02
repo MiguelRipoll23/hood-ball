@@ -3,7 +3,7 @@ import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import { APIService } from "../../../services/network/api-service.js";
 import { injectable } from "@needle-di/core";
-import { gameContext } from "../../../context/game-context.js";
+import { container } from "../../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
 import { ScoreboardEntityFactory } from "./scoreboard-entity-factory.js";
 import type { ScoreboardEntities } from "./scoreboard-entity-factory.js";
@@ -17,7 +17,7 @@ export class ScoreboardScene extends BaseGameScene {
   constructor(
     gameState: GameState,
     eventConsumerService: EventConsumerService,
-    apiService: APIService = gameContext.get(APIService)
+    apiService: APIService = container.get(APIService)
   ) {
     super(gameState, eventConsumerService);
     this.controller = new ScoreboardController(apiService);

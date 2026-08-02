@@ -10,7 +10,7 @@ import { EventConsumerService } from "../../../../engine/services/gameplay/event
 import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginEntities } from "./login-entity-factory.js";
 import { GameServer } from "../../../models/game-server.js";
-import { gameContext } from "../../../context/game-context.js";
+import { container } from "../../../../engine/services/di-container.js";
 import { LoginController } from "./login-controller.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
 
@@ -26,19 +26,19 @@ export class LoginScene extends BaseGameScene {
   private pendingErrorMessage: string | null = null;
 
   constructor() {
-    const gameState = gameContext.get(GameState);
-    const eventConsumerService = gameContext.get(EventConsumerService);
+    const gameState = container.get(GameState);
+    const eventConsumerService = container.get(EventConsumerService);
     super(gameState, eventConsumerService);
-    this.gameServer = gameContext.get(GameServer);
-    const apiService = gameContext.get(APIService);
-    const cryptoService = gameContext.get(CryptoService);
-    const webSocketService = gameContext.get(WebSocketService);
+    this.gameServer = container.get(GameServer);
+    const apiService = container.get(APIService);
+    const cryptoService = container.get(CryptoService);
+    const webSocketService = container.get(WebSocketService);
     this.controller = new LoginController(
       apiService,
       cryptoService,
       webSocketService
     );
-    this.credentialService = gameContext.get(CredentialService);
+    this.credentialService = container.get(CredentialService);
     this.dialogElement = document.querySelector(
       "#player-id-dialog"
     ) as HTMLDialogElement | null;
@@ -243,7 +243,7 @@ export class LoginScene extends BaseGameScene {
   private transitionToMainMenuScene(): void {
     const mainMenuScene = new MainMenuScene(
       this.gameState,
-      gameContext.get(EventConsumerService),
+      container.get(EventConsumerService),
       true
     );
     mainMenuScene.load();

@@ -7,7 +7,6 @@ import type { SceneManagerServiceContract } from "../interfaces/services/scene/s
 import type { EventConsumerServiceContract } from "../interfaces/services/gameplay/event-consumer-service-interface.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
-import { container } from "../services/di-container.js";
 import { EventType } from "../enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
 import { SceneType } from "../enums/scene-type.js";
@@ -39,7 +38,7 @@ export class BaseGameScene implements GameScene {
     this.canvas = gameState.getCanvas();
     this.gamePointer = gameState.getGamePointer();
     this.eventConsumerService = eventConsumerService;
-    this.cameraService = container.get(CameraService);
+    this.cameraService = gameState.getCameraService();
   }
 
   public getTypeId(): SceneType {
