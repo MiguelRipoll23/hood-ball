@@ -2,7 +2,6 @@ import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-enti
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";
 import { MatchActionType } from "../enums/match-action-type.js";
-import { gameContext } from "../context/game-context.js";
 import { GamePlayer } from "../models/game-player.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 
@@ -25,7 +24,11 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
   private isFadingIn = false;
   private isFadingOut = false;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    private readonly matchSessionService: MatchSessionService,
+    private readonly gamePlayer: GamePlayer
+  ) {
     super();
     this.opacity = 0;
   }
@@ -266,16 +269,15 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
       return "Unknown";
     }
 
-    const match = gameContext.get(MatchSessionService).getMatch();
+    const match = this.matchSessionService.getMatch();
     const player = match?.getPlayerByNetworkId(playerId) ?? null;
 
     if (player) {
       return player.getName();
     }
 
-    const localPlayer = gameContext.get(GamePlayer);
-    if (playerId === localPlayer.getNetworkId()) {
-      return localPlayer.getName();
+    if (playerId === this.gamePlayer.getNetworkId()) {
+      return this.gamePlayer.getName();
     }
 
     return playerId;
@@ -291,15 +293,14 @@ export class MatchLogEntity extends BaseAnimatedGameEntity {
       return null;
     }
 
-    const localPlayer = gameContext.get(GamePlayer);
-    if (playerId === localPlayer.getNetworkId()) {
+    if (playerId === this.gamePlayer.getNetworkId()) {
       return TeamType.Blue;
     }
 
-    const match = gameContext.get(MatchSessionService).getMatch();
+    const match = this.matchSessionService.getMatch();
     const player = match?.getPlayerByNetworkId(playerId) ?? null;
 
-    if (player === localPlayer) {
+    if (player === this.gamePlayer) {
       return TeamType.Blue;
     }
 

@@ -1,3 +1,4 @@
+import { InjectionToken } from "@needle-di/core";
 import type { BinaryReader } from "../../../../engine/utils/binary-reader-utils.js";
 import type { WebRTCPeer } from "../../../../engine/interfaces/network/webrtc-peer-interface.js";
 
@@ -21,3 +22,8 @@ export interface MatchmakingNetworkServiceContract {
   handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void;
   disconnect(): void;
 }
+
+export const MATCHMAKING_NETWORK_SERVICE_TOKEN =
+  new InjectionToken<MatchmakingNetworkServiceContract>(
+    "MatchmakingNetworkServiceContract"
+  );

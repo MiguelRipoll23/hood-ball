@@ -13,7 +13,6 @@ import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
 import { NpcCarEntity } from "../../entities/npc-car-entity.js";
 import { BaseCollidingGameScene } from "../../../engine/scenes/base-colliding-game-scene.js";
-import { GameState } from "../../../engine/models/game-state.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { SceneType } from "../../../engine/enums/scene-type.js";
@@ -28,7 +27,6 @@ import { TimerManagerService } from "../../../engine/services/gameplay/timer-man
 import { MainScene } from "../main/main-scene.js";
 import { MainMenuScene } from "../main/main-menu/main-menu-scene.js";
 import { ErrorScene } from "../error/error-scene.js";
-import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
@@ -46,12 +44,14 @@ import { SpawnPointService } from "../../services/gameplay/spawn-point-service.j
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { ChatService } from "../../services/network/chat-service.js";
 import { PlayerModerationService } from "../../services/network/player-moderation-service.js";
+import { APIService } from "../../services/network/api-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { NpcService } from "../../services/gameplay/npc-service.js";
+import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 
 export class WorldScene extends BaseCollidingGameScene {
   private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
@@ -95,36 +95,23 @@ export class WorldScene extends BaseCollidingGameScene {
   private activeWeatherEntity: SnowEntity | null = null;
   private weatherFrictionMultiplier = 1.0;
 
-  constructor(
-    protected gameState: GameState,
-    eventConsumerService: EventConsumerService,
-    sceneTransitionService: SceneTransitionService,
-    timerManagerService: TimerManagerService,
-    matchmakingService: MatchmakingServiceContract | null,
-    matchmakingController: MatchmakingControllerContract | null,
-    entityOrchestrator: EntityOrchestratorService | null,
-    eventProcessorService: EventProcessorService,
-    spawnPointService: SpawnPointService | null,
-    chatService: ChatService | null,
-    matchActionsLogService: MatchActionsLogService | null,
-    replayMode = false
-  ) {
-    super(gameState, eventConsumerService);
+  constructor(deps: WorldSceneDependencies) {
+    super(deps.gameState, deps.eventConsumerService);
     // Set isReplayMode from parent BaseCollidingGameScene
-    this.isReplayMode = replayMode;
-    this.gamePlayer = gameContext.get(GamePlayer);
-    this.gameServer = gameContext.get(GameServer);
-    this.matchSessionService = gameContext.get(MatchSessionService);
+    this.isReplayMode = deps.replayMode ?? false;
+    this.gamePlayer = container.get(GamePlayer);
+    this.gameServer = container.get(GameServer);
+    this.matchSessionService = container.get(MatchSessionService);
     this.gamePlayer.reset();
-    this.sceneTransitionService = sceneTransitionService;
-    this.timerManagerService = timerManagerService;
-    this.matchmakingService = matchmakingService;
-    this.matchmakingController = matchmakingController;
-    this.entityOrchestrator = entityOrchestrator;
-    this.eventProcessorService = eventProcessorService;
-    this.spawnPointService = spawnPointService;
-    this.chatService = chatService;
-    this.matchActionsLogService = matchActionsLogService;
+    this.sceneTransitionService = deps.sceneTransitionService;
+    this.timerManagerService = deps.timerManagerService;
+    this.matchmakingService = deps.matchmakingService;
+    this.matchmakingController = deps.matchmakingController;
+    this.entityOrchestrator = deps.entityOrchestrator;
+    this.eventProcessorService = deps.eventProcessorService;
+    this.spawnPointService = deps.spawnPointService;
+    this.chatService = deps.chatService;
+    this.matchActionsLogService = deps.matchActionsLogService;
 
     // Fix for hovering acting as press:
     // Ensure pointer events are cleared automatically after update
@@ -203,44 +190,47 @@ export class WorldScene extends BaseCollidingGameScene {
       return;
     }
 
-    this.worldController = new WorldController(
-      this.spawnPointService,
-      this.timerManagerService,
-      this.eventProcessorService,
-      this.matchmakingService,
-      this.scoreboardEntity,
-      this.ballEntity,
-      this.localCarEntity,
-      this.alertEntity,
-      this.matchActionsLogService,
-      this.boostPadsEntities,
-      this.spawnPointEntities,
-      this.getEntitiesByOwner.bind(this),
-      this.npcService!
-    );
+    this.worldController = new WorldController({
+      spawnPointService: this.spawnPointService,
+      timerManagerService: this.timerManagerService,
+      eventProcessorService: this.eventProcessorService,
+      matchmakingService: this.matchmakingService,
+      scoreboardEntity: this.scoreboardEntity,
+      ballEntity: this.ballEntity,
+      localCarEntity: this.localCarEntity,
+      alertEntity: this.alertEntity,
+      matchActionsLogService: this.matchActionsLogService,
+      boostPadsEntities: this.boostPadsEntities,
+      spawnPointEntities: this.spawnPointEntities,
+      getEntitiesByOwner: this.getEntitiesByOwner.bind(this),
+      npcService: this.npcService!,
+    });
 
     // Skip ScoreManagerService in replay mode if required services are null
     if (!this.matchActionsLogService || !this.matchmakingService) {
       return;
     }
 
-    this.scoreManagerService = new ScoreManagerService(
-      this.ballEntity,
-      this.goalEntity,
-      this.scoreboardEntity,
-      this.alertEntity,
-      this.matchActionsLogService,
-      this.timerManagerService,
-      this.eventProcessorService,
-      this.matchmakingService,
-      this.worldController.handleGoalTimeEnd.bind(this.worldController),
-      () => {
+    this.scoreManagerService = new ScoreManagerService({
+      ballEntity: this.ballEntity,
+      goalEntity: this.goalEntity,
+      scoreboardUI: this.scoreboardEntity,
+      alertEntity: this.alertEntity,
+      matchActionsLogService: this.matchActionsLogService,
+      timerManagerService: this.timerManagerService,
+      eventProcessorService: this.eventProcessorService,
+      matchmakingService: this.matchmakingService,
+      goalTimeEndCallback: this.worldController.handleGoalTimeEnd.bind(
+        this.worldController
+      ),
+      gameOverEndCallback: () => {
         this.worldController?.handleGameOverEnd();
       },
-      (x: number, y: number, team: TeamType) =>
+      explosionCallback: (x: number, y: number, team: TeamType) =>
         this.triggerGoalExplosion(x, y, team),
-      (won: boolean) => this.handleGameOverEffect(won)
-    );
+      gameOverEffectCallback: (won: boolean) =>
+        this.handleGameOverEffect(won),
+    });
 
     super.load();
   }
@@ -597,11 +587,13 @@ export class WorldScene extends BaseCollidingGameScene {
   private setupMatchMenu(boostMeterEntity: BoostMeterEntity): void {
     // Create PlayerModerationService instance
     const playerModerationService = container.get(PlayerModerationService);
+    const apiService = container.get(APIService);
 
     // Create match menu entity
     this.matchMenuEntity = new MatchMenuEntity(
       this.canvas,
       playerModerationService,
+      apiService,
       this.gameState.getGamePointer(),
       () => this.hideMatchMenu(),
       async () => {
@@ -673,7 +665,11 @@ export class WorldScene extends BaseCollidingGameScene {
     if (this.matchLogEntity) {
       return;
     }
-    this.matchLogEntity = new MatchLogEntity(this.canvas);
+    this.matchLogEntity = new MatchLogEntity(
+      this.canvas,
+      this.matchSessionService,
+      this.gamePlayer
+    );
     this.uiEntities.push(this.matchLogEntity);
     // Only subscribe to match actions if service is available (not null in replay mode)
     if (this.matchActionsLogService) {

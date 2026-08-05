@@ -4,7 +4,6 @@ import type { GamePlayer } from "../models/game-player.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { ReportMenuEntity } from "./report-menu-entity.js";
 import { BanMenuEntity } from "./ban-menu-entity.js";
-import { container } from "../../engine/services/di-container.js";
 import { APIService } from "../services/network/api-service.js";
 import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
 
@@ -18,11 +17,11 @@ export class PlayersListEntity extends BaseGameEntity {
   private onReport: ((playerId: string, reason: string, playerName: string) => void) | null = null;
   private onBan: ((playerId: string, reason: string, playerName: string, duration?: {value: number, unit: string}) => void) | null = null;
   private canvas: HTMLCanvasElement | null = null;
-  private apiService: APIService;
+  private readonly apiService: APIService;
 
-  constructor() {
+  constructor(apiService: APIService) {
     super();
-    this.apiService = container.get(APIService);
+    this.apiService = apiService;
   }
 
   public setPlayers(

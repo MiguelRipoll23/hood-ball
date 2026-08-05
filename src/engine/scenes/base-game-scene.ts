@@ -4,16 +4,15 @@ import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js
 import type { GameEntity } from "../models/game-entity.js";
 import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
 import type { SceneManagerServiceContract } from "../interfaces/services/scene/scene-manager-service-contract.js";
-import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
+import type { EventConsumerServiceContract } from "../interfaces/services/gameplay/event-consumer-service-interface.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
-import { container } from "../services/di-container.js";
 import { EventType } from "../enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
 import { SceneType } from "../enums/scene-type.js";
 
 export class BaseGameScene implements GameScene {
-  protected eventConsumerService: EventConsumerService;
+  protected eventConsumerService: EventConsumerServiceContract;
 
   private localEventSubscriptions: EventSubscription[] = [];
   private remoteEventSubscriptions: EventSubscription[] = [];
@@ -33,13 +32,13 @@ export class BaseGameScene implements GameScene {
 
   constructor(
     protected gameState: GameState,
-    eventConsumerService: EventConsumerService
+    eventConsumerService: EventConsumerServiceContract
   ) {
     console.log(`${this.constructor.name} created`);
     this.canvas = gameState.getCanvas();
     this.gamePointer = gameState.getGamePointer();
     this.eventConsumerService = eventConsumerService;
-    this.cameraService = container.get(CameraService);
+    this.cameraService = gameState.getCameraService();
   }
 
   public getTypeId(): SceneType {

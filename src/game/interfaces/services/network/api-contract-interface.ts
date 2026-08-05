@@ -1,3 +1,4 @@
+import { InjectionToken } from "@needle-di/core";
 import type { AdvertiseMatchRequest } from "../../requests/advertise-match-request-interface.js";
 import type { FindMatchesRequest } from "../../requests/find-matches-request-interface.js";
 import type { SaveUserScoresRequest } from "../../requests/save-score-request-interface.js";
@@ -46,3 +47,6 @@ export interface APIServiceContract {
   saveScore(saveScoreRequest: SaveUserScoresRequest[]): Promise<void>;
   getRanking(cursor?: string): Promise<UserScoresResponse>;
 }
+
+export const API_SERVICE_TOKEN =
+  new InjectionToken<APIServiceContract>("APIServiceContract");

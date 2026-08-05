@@ -3,8 +3,8 @@ import type { EventQueueServiceContract } from "../../interfaces/services/events
 import type { EventSubscription } from "../../types/event-subscription.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { RemoteEvent } from "../../models/remote-event.js";
-import { EventProcessorService } from "./event-processor-service.js";
 import { injectable, inject } from "@needle-di/core";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../interfaces/services/events/event-processor-service-contract.js";
 
 @injectable()
 export class EventConsumerService {
@@ -15,7 +15,9 @@ export class EventConsumerService {
   private remoteSubscriptions: EventSubscription[] = [];
 
   constructor(
-    eventProcessorService: EventProcessorService = inject(EventProcessorService)
+    eventProcessorService: EventProcessorServiceContract = inject(
+      EVENT_PROCESSOR_SERVICE_TOKEN
+    )
   ) {
     this.localQueue = eventProcessorService.getLocalQueue();
     this.remoteQueue = eventProcessorService.getRemoteQueue();

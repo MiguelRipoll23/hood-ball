@@ -1,3 +1,5 @@
+import { InjectionToken } from "@needle-di/core";
+
 export interface WebSocketServiceContract {
   connectToServer(): void;
   disconnect(): void;
@@ -7,3 +9,6 @@ export interface WebSocketServiceContract {
   getOnlinePlayers(): number;
   getUserSignature(): ArrayBuffer | null;
 }
+
+export const WEB_SOCKET_SERVICE_TOKEN =
+  new InjectionToken<WebSocketServiceContract>("WebSocketServiceContract");

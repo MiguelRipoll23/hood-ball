@@ -1,23 +1,21 @@
-import { WebSocketService } from "./websocket-service.js";
+import { WEB_SOCKET_SERVICE_TOKEN, type WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
 import { injectable, inject } from "@needle-di/core";
-import { WebRTCService } from "./webrtc-service.js";
+import { WEB_RTC_SERVICE_TOKEN, type WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
 import { ChatMessage } from "../../models/chat-message.js";
 import { MatchAction } from "../../models/match-action.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
-import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
-import type { WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 
 @injectable()
 export class ChatService {
@@ -26,31 +24,25 @@ export class ChatService {
 
   private readonly messages: ChatMessage[] = [];
   private readonly listeners: ((messages: ChatMessage[]) => void)[] = [];
-  private readonly localPlayerId: string;
   private readonly commandLogTimestamps = new Map<string, number>();
 
   constructor(
     private readonly webSocketService: WebSocketServiceContract = inject(
-      WebSocketService,
+      WEB_SOCKET_SERVICE_TOKEN,
     ),
     private readonly webrtcService: WebRTCServiceContract = inject(
-      WebRTCService,
+      WEB_RTC_SERVICE_TOKEN,
     ),
     private readonly signatureService: SignatureService = inject(
       SignatureService,
     ),
-    private readonly eventProcessorService: EventProcessorService = inject(
-      EventProcessorService,
-    ),
+    private readonly eventProcessorService: EventProcessorServiceContract =
+      inject(EVENT_PROCESSOR_SERVICE_TOKEN),
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
     private readonly matchActionsLogService: MatchActionsLogService = inject(
       MatchActionsLogService,
     ),
-  ) {
-    this.localPlayerId = this.gamePlayer.getNetworkId();
-    this.webrtcService.registerCommandHandlers?.(this);
-    this.webSocketService.registerCommandHandlers(this);
-  }
+  ) {}
 
   public getMessages(): ChatMessage[] {
     return this.messages;
@@ -182,6 +174,10 @@ export class ChatService {
     });
   }
 
+  private getLocalPlayerId(): string {
+    return this.gamePlayer.getNetworkId();
+  }
+
   private handleCommand(
     text: string,
     senderId?: string,
@@ -195,7 +191,7 @@ export class ChatService {
 
     switch (command) {
       case "snow":
-        if (!senderId || senderId !== this.localPlayerId) {
+        if (!senderId || senderId !== this.getLocalPlayerId()) {
           console.log("Snow weather command received");
           const event = new LocalEvent<void>(EventType.SnowWeather);
           this.eventProcessorService.addLocalEvent(event);
@@ -212,7 +208,7 @@ export class ChatService {
     command: string,
     timestamp?: number,
   ): void {
-    const playerId = senderId ?? this.localPlayerId;
+    const playerId = senderId ?? this.getLocalPlayerId();
     const key = `${playerId}:${command}`;
     const now = timestamp ?? Date.now();
     const lastLoggedAt = this.commandLogTimestamps.get(key);

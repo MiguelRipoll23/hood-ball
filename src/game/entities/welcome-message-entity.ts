@@ -1,13 +1,15 @@
 import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import { GamePlayer } from "../models/game-player.js";
-import { gameContext } from "../context/game-context.js";
 
 export class WelcomeMessageEntity extends BaseMoveableGameEntity {
-  private gamePlayer: GamePlayer;
+  private readonly gamePlayer: GamePlayer;
 
-  constructor(private readonly canvas: HTMLCanvasElement) {
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    gamePlayer: GamePlayer
+  ) {
     super();
-    this.gamePlayer = gameContext.get(GamePlayer);
+    this.gamePlayer = gamePlayer;
   }
 
   public override render(context: CanvasRenderingContext2D): void {

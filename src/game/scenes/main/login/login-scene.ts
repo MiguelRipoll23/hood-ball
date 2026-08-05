@@ -6,12 +6,11 @@ import { APIService } from "../../../services/network/api-service.js";
 import { GameState } from "../../../../engine/models/game-state.js";
 import { EventType } from "../../../../engine/enums/event-type.js";
 import { CredentialService } from "../../../services/security/credential-service.js";
-import { container } from "../../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
 import { LoginEntityFactory } from "./login-entity-factory.js";
 import type { LoginEntities } from "./login-entity-factory.js";
 import { GameServer } from "../../../models/game-server.js";
-import { gameContext } from "../../../context/game-context.js";
+import { container } from "../../../../engine/services/di-container.js";
 import { LoginController } from "./login-controller.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
 
@@ -30,7 +29,7 @@ export class LoginScene extends BaseGameScene {
     const gameState = container.get(GameState);
     const eventConsumerService = container.get(EventConsumerService);
     super(gameState, eventConsumerService);
-    this.gameServer = gameContext.get(GameServer);
+    this.gameServer = container.get(GameServer);
     const apiService = container.get(APIService);
     const cryptoService = container.get(CryptoService);
     const webSocketService = container.get(WebSocketService);

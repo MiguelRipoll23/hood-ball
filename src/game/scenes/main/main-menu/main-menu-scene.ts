@@ -12,14 +12,14 @@ import { EventType } from "../../../../engine/enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
 import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload-interface.js";
-import { container } from "../../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
+import type { EventConsumerServiceContract } from "../../../../engine/interfaces/services/gameplay/event-consumer-service-interface.js";
 import { MainMenuEntityFactory } from "./main-menu-entity-factory.js";
 import type { MainMenuEntities } from "./main-menu-entity-factory.js";
 import { MainMenuController } from "./main-menu-controller.js";
 import { GameServer } from "../../../models/game-server.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
-import { gameContext } from "../../../context/game-context.js";
+import { container } from "../../../../engine/services/di-container.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { ErrorScene } from "../../error/error-scene.js";
 import { MainScene } from "../main-scene.js";
@@ -42,11 +42,11 @@ export class MainMenuScene extends BaseGameScene {
 
   constructor(
     gameState: GameState,
-    eventConsumerService: EventConsumerService,
+    eventConsumerService: EventConsumerServiceContract,
     private showNews: boolean
   ) {
     super(gameState, eventConsumerService);
-    this.gameServer = gameContext.get(GameServer);
+    this.gameServer = container.get(GameServer);
     this.showNews = showNews;
     const apiService = container.get(APIService);
     this.controller = new MainMenuController(apiService);

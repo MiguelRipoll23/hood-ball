@@ -3,7 +3,10 @@ import { container } from "./di-container.ts";
 import { EventProcessorService } from "./gameplay/event-processor-service.ts";
 import { EventConsumerService } from "./gameplay/event-consumer-service.ts";
 import { CameraService } from "./gameplay/camera-service.ts";
-import { AnimationLogService } from "./gameplay/animation-log-service.ts";
+import {
+  AnimationLogService,
+  animationLogService,
+} from "./gameplay/animation-log-service.ts";
 import { RecorderService } from "./gameplay/recorder-service.ts";
 import { RecordingPlayerService } from "./gameplay/recording-player-service.ts";
 import { SceneTransitionService } from "./gameplay/scene-transition-service.ts";
@@ -11,6 +14,11 @@ import { SceneManagerService } from "./gameplay/scene-manager-service.ts";
 import { TimerManagerService } from "./gameplay/timer-manager-service.ts";
 import { IntervalManagerService } from "./gameplay/interval-manager-service.ts";
 import { DebugService } from "./debug/debug-service.ts";
+import { TIMER_MANAGER_SERVICE_TOKEN } from "../interfaces/services/gameplay/timer-manager-service-interface.ts";
+import { INTERVAL_MANAGER_SERVICE_TOKEN } from "../interfaces/services/gameplay/interval-manager-service-interface.ts";
+import { EVENT_PROCESSOR_SERVICE_TOKEN } from "../interfaces/services/events/event-processor-service-contract.ts";
+import { EVENT_CONSUMER_SERVICE_TOKEN } from "../interfaces/services/gameplay/event-consumer-service-interface.ts";
+import { SCENE_TRANSITION_SERVICE_TOKEN } from "../interfaces/services/scene/scene-transition-service-contract.ts";
 
 export class ServiceRegistry {
   public static async register(
@@ -30,9 +38,12 @@ export class ServiceRegistry {
     });
     container.bind({
       provide: AnimationLogService,
-      useClass: AnimationLogService,
+      useValue: animationLogService,
     });
-    container.bind({ provide: CameraService, useClass: CameraService });
+    container.bind({
+      provide: CameraService,
+      useValue: gameState.getCameraService(),
+    });
     container.bind({ provide: RecorderService, useClass: RecorderService });
     container.bind({
       provide: RecordingPlayerService,
@@ -55,6 +66,28 @@ export class ServiceRegistry {
       useClass: IntervalManagerService,
     });
     container.bind({ provide: DebugService, useClass: DebugService });
+
+    // Contract tokens resolve to the same singleton instances
+    container.bind({
+      provide: TIMER_MANAGER_SERVICE_TOKEN,
+      useExisting: TimerManagerService,
+    });
+    container.bind({
+      provide: INTERVAL_MANAGER_SERVICE_TOKEN,
+      useExisting: IntervalManagerService,
+    });
+    container.bind({
+      provide: EVENT_PROCESSOR_SERVICE_TOKEN,
+      useExisting: EventProcessorService,
+    });
+    container.bind({
+      provide: EVENT_CONSUMER_SERVICE_TOKEN,
+      useExisting: EventConsumerService,
+    });
+    container.bind({
+      provide: SCENE_TRANSITION_SERVICE_TOKEN,
+      useExisting: SceneTransitionService,
+    });
 
     if (debugging) {
       const debugService = container.get(DebugService);

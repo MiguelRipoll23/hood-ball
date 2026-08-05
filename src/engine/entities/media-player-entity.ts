@@ -3,7 +3,6 @@ import {
   RecordingPlayerService,
   PlaybackState,
 } from "../services/gameplay/recording-player-service.js";
-import { container } from "../services/di-container.js";
 
 /**
  * MediaPlayerEntity - Full-screen media player for recording playback
@@ -12,11 +11,14 @@ import { container } from "../services/di-container.js";
  * When active, it renders the recording with playback controls overlay.
  */
 export class MediaPlayerEntity extends BaseGameEntity {
-  private playerService: RecordingPlayerService;
+  private readonly playerService: RecordingPlayerService;
 
-  constructor(_canvas: HTMLCanvasElement) {
+  constructor(
+    _canvas: HTMLCanvasElement,
+    playerService: RecordingPlayerService
+  ) {
     super();
-    this.playerService = container.get(RecordingPlayerService);
+    this.playerService = playerService;
   }
 
   public override load(): void {

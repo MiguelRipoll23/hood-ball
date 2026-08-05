@@ -53,3 +53,5 @@ export class AnimationLogService {
     this.map.clear();
   }
 }
+
+export const animationLogService = new AnimationLogService();

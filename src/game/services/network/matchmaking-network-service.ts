@@ -18,12 +18,12 @@ import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { PeerCommandHandler } from "../../../engine/decorators/peer-command-handler-decorator.js";
 import { ServerCommandHandler } from "../../decorators/server-command-handler.js";
-import { WebSocketService } from "./websocket-service.js";
+import { WEB_SOCKET_SERVICE_TOKEN, type WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
 import { SignatureService } from "../security/signature-service.js";
-import { WebRTCService } from "./webrtc-service.js";
+import { WEB_RTC_SERVICE_TOKEN, type WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 import type { PeerConnectionListener } from "../../interfaces/peer-connection-listener-interface.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
@@ -51,13 +51,14 @@ export class MatchmakingNetworkService
     private readonly intervalManagerService: IntervalManagerService = inject(
       IntervalManagerService,
     ),
-    private readonly webSocketService: WebSocketService = inject(
-      WebSocketService,
+    private readonly webSocketService: WebSocketServiceContract = inject(
+      WEB_SOCKET_SERVICE_TOKEN,
     ),
-    private readonly webrtcService: WebRTCService = inject(WebRTCService),
-    private readonly eventProcessorService: EventProcessorService = inject(
-      EventProcessorService,
+    private readonly webrtcService: WebRTCServiceContract = inject(
+      WEB_RTC_SERVICE_TOKEN,
     ),
+    private readonly eventProcessorService: EventProcessorServiceContract =
+      inject(EVENT_PROCESSOR_SERVICE_TOKEN),
     private readonly spawnPointService: SpawnPointService = inject(
       SpawnPointService,
     ),
@@ -67,10 +68,7 @@ export class MatchmakingNetworkService
     private readonly matchActionsLogService: MatchActionsLogService = inject(
       MatchActionsLogService,
     ),
-  ) {
-    this.webSocketService.registerCommandHandlers(this);
-    this.webrtcService.registerCommandHandlers(this);
-  }
+  ) {}
 
   public startFindMatchesTimer(resolve: () => void): void {
     this.findMatchesTimerService = this.timerManagerService.createTimer(

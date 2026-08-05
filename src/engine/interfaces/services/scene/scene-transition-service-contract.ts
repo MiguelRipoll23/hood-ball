@@ -1,3 +1,4 @@
+import { InjectionToken } from "@needle-di/core";
 import type { SceneManager } from "../../scenes/scene-manager-interface.js";
 import type { GameScene } from "../../scenes/game-scene-interface.js";
 
@@ -16,3 +17,8 @@ export interface SceneTransitionServiceContract {
     seconds: number
   ): void;
 }
+
+export const SCENE_TRANSITION_SERVICE_TOKEN =
+  new InjectionToken<SceneTransitionServiceContract>(
+    "SceneTransitionServiceContract"
+  );

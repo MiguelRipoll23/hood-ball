@@ -6,7 +6,7 @@ import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import type { GameState } from "../../engine/models/game-state.js";
-import { gameContext } from "../context/game-context.js";
+import { container } from "../../engine/services/di-container.js";
 import { GamePlayer } from "../models/game-player.js";
 
 export class SceneInspectorWindow extends BaseWindow {
@@ -169,7 +169,7 @@ export class SceneInspectorWindow extends BaseWindow {
       );
 
       remoteCarEntity.setDebugSettings(this.gameState.getDebugSettings());
-      remoteCarEntity.setOwner(gameContext.get(GamePlayer));
+      remoteCarEntity.setOwner(container.get(GamePlayer));
 
       remoteCarEntity.setVY(5);
 

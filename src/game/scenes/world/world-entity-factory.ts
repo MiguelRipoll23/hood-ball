@@ -13,9 +13,11 @@ import { SCOREBOARD_SECONDS_DURATION } from "../../constants/configuration-const
 import type { GameState } from "../../../engine/models/game-state.js";
 import type { GameEntity } from "../../../engine/models/game-entity.js";
 import { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
-import { gameContext } from "../../context/game-context.js";
+import { container } from "../../../engine/services/di-container.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
+import { MatchSessionService } from "../../services/session/match-session-service.js";
+import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
 
 export interface WorldEntities {
   scoreboardEntity: ScoreboardEntity;
@@ -103,7 +105,7 @@ export class WorldEntityFactory {
     const duration = getConfigurationKey<number>(
       SCOREBOARD_SECONDS_DURATION,
       WorldEntityFactory.DEFAULT_SCOREBOARD_DURATION,
-      gameContext.get(GameServer)
+      container.get(GameServer)
     );
     const scoreboard = new ScoreboardEntity(this.canvas);
     scoreboard.setTimerDuration(duration);
@@ -134,7 +136,7 @@ export class WorldEntityFactory {
       gamepad
     );
 
-    car.setOwner(gameContext.get(GamePlayer));
+    car.setOwner(container.get(GamePlayer));
 
     const boostMeter = new BoostMeterEntity(this.canvas);
     car.setBoostMeterEntity(boostMeter);
@@ -145,12 +147,14 @@ export class WorldEntityFactory {
   private createBoostPadEntities(): BoostPadEntity[] {
     const offset = WorldEntityFactory.BOOST_PAD_OFFSET;
     const { width, height } = this.canvas;
+    const matchSessionService = container.get(MatchSessionService);
+    const eventProcessorService = container.get(EventProcessorService);
 
     return [
-      new BoostPadEntity(offset, offset, 0),
-      new BoostPadEntity(width - offset, offset, 1),
-      new BoostPadEntity(offset, height - offset, 2),
-      new BoostPadEntity(width - offset, height - offset, 3),
+      new BoostPadEntity(offset, offset, 0, matchSessionService, eventProcessorService),
+      new BoostPadEntity(width - offset, offset, 1, matchSessionService, eventProcessorService),
+      new BoostPadEntity(offset, height - offset, 2, matchSessionService, eventProcessorService),
+      new BoostPadEntity(width - offset, height - offset, 3, matchSessionService, eventProcessorService),
     ];
   }
 

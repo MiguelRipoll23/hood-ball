@@ -367,7 +367,7 @@ export class RecordingInspectorWindow extends BaseWindow {
     }
 
     const canvas = this.gameState.getCanvas();
-    this.mediaPlayerEntity = new MediaPlayerEntity(canvas);
+    this.mediaPlayerEntity = new MediaPlayerEntity(canvas, this.playerService);
     this.mediaPlayerEntity.load();
 
     // Set in game frame so it renders last in game loop

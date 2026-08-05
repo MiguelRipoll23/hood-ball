@@ -5,6 +5,8 @@ import { CloseableMessageEntity } from "../../../entities/common/closeable-messa
 import { OnlinePlayersEntity } from "../../../entities/online-players-entity.js";
 import { WelcomeMessageEntity } from "../../../entities/welcome-message-entity.js";
 import { ToastEntity } from "../../../entities/common/toast-entity.js";
+import { container } from "../../../../engine/services/di-container.js";
+import { GamePlayer } from "../../../models/game-player.js";
 
 export interface MainMenuEntities {
   titleEntity: TitleEntity;
@@ -47,7 +49,10 @@ export class MainMenuEntityFactory {
       this.canvas
     );
     const closeableMessageEntity = new CloseableMessageEntity(this.canvas);
-    const welcomeMessageEntity = new WelcomeMessageEntity(this.canvas);
+    const welcomeMessageEntity = new WelcomeMessageEntity(
+      this.canvas,
+      container.get(GamePlayer)
+    );
     const onlinePlayersEntity = new OnlinePlayersEntity(this.canvas);
     const toastEntity = new ToastEntity(this.canvas);
 

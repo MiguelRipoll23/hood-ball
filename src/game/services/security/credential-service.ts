@@ -10,8 +10,8 @@ import { ServerError } from "../../models/server-error.js";
 import { ServerRegistration } from "../../models/server-registration.js";
 import { Base64Utils } from "../../../engine/utils/base64-utils.js";
 import { WebAuthnUtils } from "../../utils/webauthn-utils.js";
-import { APIService } from "../network/api-service.js";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
+import { API_SERVICE_TOKEN, type APIServiceContract } from "../../interfaces/services/network/api-contract-interface.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { injectable, inject } from "@needle-di/core";
 import { SignatureService } from "./signature-service.js";
 import { GamePlayer } from "../../models/game-player.js";
@@ -22,9 +22,10 @@ export class CredentialService {
   constructor(
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
     private readonly gameServer: GameServer = inject(GameServer),
-    private readonly apiService = inject(APIService),
+    private readonly apiService: APIServiceContract = inject(API_SERVICE_TOKEN),
     private readonly signatureService = inject(SignatureService),
-    private readonly eventProcessorService = inject(EventProcessorService)
+    private readonly eventProcessorService: EventProcessorServiceContract =
+      inject(EVENT_PROCESSOR_SERVICE_TOKEN)
   ) {}
 
   public async getCredential(): Promise<void> {

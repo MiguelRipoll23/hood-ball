@@ -7,14 +7,14 @@ import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { WorldScene } from "../world/world-scene.js";
 import { LoadingEntityFactory } from "./loading-entity-factory.js";
 import type { LoadingEntities } from "./loading-entity-factory.js";
-import { LoadingController } from "./loading-controller.js";
+import { WorldSceneFactory } from "../world/world-scene-factory.js";
 
 @injectable()
 export class LoadingScene extends BaseGameScene {
   private sceneTransitionService: SceneTransitionService;
   private entities: LoadingEntities | null = null;
   private worldScene: WorldScene | null = null;
-  private controller: LoadingController;
+  private readonly worldSceneFactory: WorldSceneFactory;
   private transitionStarted: boolean = false;
 
   constructor(
@@ -26,7 +26,7 @@ export class LoadingScene extends BaseGameScene {
   ) {
     super(gameState, eventConsumerService);
     this.sceneTransitionService = sceneTransitionService;
-    this.controller = new LoadingController(gameState);
+    this.worldSceneFactory = container.get(WorldSceneFactory);
   }
 
   public override load(): void {
@@ -42,7 +42,8 @@ export class LoadingScene extends BaseGameScene {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
-    this.worldScene = this.controller.createWorldScene();
+    this.worldScene = this.worldSceneFactory.create();
+    this.worldScene.load();
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {

@@ -1,10 +1,9 @@
 import { inject, injectable } from "@needle-di/core";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { DebugUtils } from "../../../engine/utils/debug-utils.js";
-import { WebSocketService } from "../network/websocket-service.js";
-import { WebRTCService } from "../network/webrtc-service.js";
+import { WEB_RTC_SERVICE_TOKEN, type WebRTCServiceContract } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 import { MatchFinderService } from "./match-finder-service.js";
-import { MatchmakingNetworkService } from "../network/matchmaking-network-service.js";
+import { MATCHMAKING_NETWORK_SERVICE_TOKEN } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MatchLifecycleService } from "./match-lifecycle-service.js";
@@ -13,25 +12,19 @@ import { MatchSessionService } from "../session/match-session-service.js";
 @injectable()
 export class MatchmakingService implements MatchmakingServiceContract {
   constructor(
-    private readonly webSocketService = inject(WebSocketService),
-    private readonly webrtcService = inject(WebRTCService),
+    private readonly webrtcService: WebRTCServiceContract = inject(
+      WEB_RTC_SERVICE_TOKEN,
+    ),
     private readonly matchFinderService = inject(MatchFinderService),
     private readonly networkService: MatchmakingNetworkServiceContract = inject(
-      MatchmakingNetworkService
+      MATCHMAKING_NETWORK_SERVICE_TOKEN
     ),
     private readonly lifecycleService = inject(MatchLifecycleService),
     private readonly matchSessionService = inject(MatchSessionService)
-  ) {
-    this.registerCommandHandlers();
-  }
+  ) {}
 
   public getNetworkService(): MatchmakingNetworkServiceContract {
     return this.networkService;
-  }
-
-  private registerCommandHandlers(): void {
-    this.webSocketService.registerCommandHandlers(this.networkService);
-    this.webrtcService.registerCommandHandlers(this.networkService);
   }
 
   public async findOrAdvertiseMatch(): Promise<void> {

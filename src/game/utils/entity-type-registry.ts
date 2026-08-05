@@ -15,6 +15,10 @@ import { HelpEntity } from "../entities/help-entity.js";
 import { MatchLogEntity } from "../entities/match-log-entity.js";
 import { BoostMeterEntity } from "../entities/boost-meter-entity.js";
 import { WorldBackgroundEntity } from "../entities/backgrounds/world-background-entity.js";
+import { container } from "../../engine/services/di-container.js";
+import { MatchSessionService } from "../services/session/match-session-service.js";
+import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
+import { GamePlayer } from "../models/game-player.js";
 
 /**
  * Register all game entity types for recording/playback
@@ -68,7 +72,14 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
   // Boost pads need index, but for replay we can use 0 as placeholder
   EntityRegistry.register(
     EntityRegistryType.BoostPad,
-    () => new BoostPadEntity(0, 0, 0),
+    () =>
+      new BoostPadEntity(
+        0,
+        0,
+        0,
+        container.get(MatchSessionService),
+        container.get(EventProcessorService)
+      ),
     BoostPadEntity
   );
 
@@ -95,7 +106,12 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
   );
   EntityRegistry.register(
     EntityRegistryType.MatchLog,
-    () => new MatchLogEntity(canvas),
+    () =>
+      new MatchLogEntity(
+        canvas,
+        container.get(MatchSessionService),
+        container.get(GamePlayer)
+      ),
     MatchLogEntity
   );
   EntityRegistry.register(

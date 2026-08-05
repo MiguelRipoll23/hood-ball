@@ -1,3 +1,4 @@
+import { InjectionToken } from "@needle-di/core";
 import type { IntervalServiceContract } from "./interval-service-interface.js";
 
 export interface IntervalManagerServiceContract {
@@ -11,3 +12,8 @@ export interface IntervalManagerServiceContract {
   clear(): void;
   count(): number;
 }
+
+export const INTERVAL_MANAGER_SERVICE_TOKEN =
+  new InjectionToken<IntervalManagerServiceContract>(
+    "IntervalManagerServiceContract"
+  );

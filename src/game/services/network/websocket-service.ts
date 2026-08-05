@@ -1,6 +1,5 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
-import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import type { EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
+import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { EventType } from "../../../engine/enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
@@ -53,7 +52,7 @@ export class WebSocketService implements WebSocketServiceContract {
     private readonly apiService: APIService = inject(APIService),
     private readonly gameState: GameState = inject(GameState),
     private readonly eventProcessorService: EventProcessorServiceContract = inject(
-      EventProcessorService,
+      EVENT_PROCESSOR_SERVICE_TOKEN,
     ),
   ) {
     this.baseURL = APIUtils.getWSBaseURL();
