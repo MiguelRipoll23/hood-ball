@@ -1,7 +1,6 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import { container } from "../../engine/services/di-container.js";
-import { AntiCheatMonitorService } from "../services/security/anti-cheat-monitor-service.js";
 import { AntiCheatReportingService } from "../services/security/anti-cheat-reporting-service.js";
 import { AntiCheatService } from "../services/security/anti-cheat-service.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
@@ -20,9 +19,19 @@ const GREEN = 0x00ff00ff;
 const YELLOW = 0xffff00ff;
 const RED = 0xff0000ff;
 
+const RULES_TABLE_ROWS = 6;
+const VIOLATIONS_TABLE_ROWS = 8;
+
 export class AntiCheatInspectorWindow extends BaseWindow {
+  private readonly antiCheat: AntiCheatService;
+  private readonly reporting: AntiCheatReportingService;
+  private readonly matchSessionService: MatchSessionService;
+
   constructor() {
     super("Anti-cheat inspector", new ImVec2(480, 350));
+    this.antiCheat = container.get(AntiCheatService);
+    this.reporting = container.get(AntiCheatReportingService);
+    this.matchSessionService = container.get(MatchSessionService);
     EngineLogger.info(
       "AntiCheatInspectorWindow",
       "AntiCheatInspectorWindow created",
@@ -30,28 +39,21 @@ export class AntiCheatInspectorWindow extends BaseWindow {
   }
 
   protected override renderContent(): void {
-    const monitor = container.get(AntiCheatMonitorService);
-    const reporting = container.get(AntiCheatReportingService);
-    const match = container.get(MatchSessionService).getMatch();
-    const antiCheat = container.get(AntiCheatService);
+    const match = this.matchSessionService.getMatch();
 
     // ── State ──
-    if (monitor.isMonitoring()) {
-      ImGui.PushStyleColor(ImGui.Col.Text, GREEN);
-      ImGui.Text("State: active");
-      ImGui.PopStyleColor();
-    } else {
-      ImGui.PushStyleColor(ImGui.Col.Text, RED);
-      ImGui.Text("State: inactive");
-      ImGui.PopStyleColor();
-    }
+    const monitoring = this.antiCheat.isMonitoring();
+    ImGui.Text("State: ");
+    ImGui.SameLine(0, 0);
+    ImGui.PushStyleColor(ImGui.Col.Text, monitoring ? GREEN : RED);
+    ImGui.Text(monitoring ? "active" : "inactive");
+    ImGui.PopStyleColor();
 
-    ImGui.SameLine();
-    if (ImGui.Button(monitor.isMonitoring() ? "Stop" : "Start")) {
-      if (monitor.isMonitoring()) {
-        antiCheat.stopMonitoring();
+    if (ImGui.Button(monitoring ? "Stop" : "Start")) {
+      if (monitoring) {
+        this.antiCheat.stopMonitoring();
       } else {
-        antiCheat.startMonitoring();
+        this.antiCheat.startMonitoring();
       }
     }
 
@@ -59,7 +61,7 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     if (
       ImGui.CollapsingHeader("Rules", ImGui.TreeNodeFlags.DefaultOpen)
     ) {
-      const rules = monitor.getRules();
+      const rules = this.antiCheat.getRules();
       if (rules.length === 0) {
         ImGui.Text("No rules loaded.");
       } else {
@@ -74,7 +76,7 @@ export class AntiCheatInspectorWindow extends BaseWindow {
         ImGui.TreeNodeFlags.DefaultOpen,
       )
     ) {
-      const violations = reporting.getReportedViolations();
+      const violations = this.reporting.getReportedViolations();
       if (violations.length === 0) {
         ImGui.Text("No violations reported yet.");
       } else {
@@ -91,7 +93,8 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.SizingStretchProp;
 
-    if (!ImGui.BeginTable("AntiCheatRules", 3, flags)) return;
+    const outerSize = new ImVec2(0, RULES_TABLE_ROWS * 20 + ImGui.GetTextLineHeightWithSpacing());
+    if (!ImGui.BeginTable("AntiCheatRules", 3, flags, outerSize)) return;
 
     ImGui.TableSetupColumn("ID", ImGui.TableColumnFlags.WidthFixed, 30);
     ImGui.TableSetupColumn("Type", ImGui.TableColumnFlags.WidthStretch);
@@ -134,7 +137,8 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.SizingStretchProp;
 
-    if (!ImGui.BeginTable("AntiCheatViolations", 5, flags)) return;
+    const outerSize = new ImVec2(0, VIOLATIONS_TABLE_ROWS * 20 + ImGui.GetTextLineHeightWithSpacing());
+    if (!ImGui.BeginTable("AntiCheatViolations", 5, flags, outerSize)) return;
 
     ImGui.TableSetupColumn("Rule", ImGui.TableColumnFlags.WidthFixed, 40);
     ImGui.TableSetupColumn("Player", ImGui.TableColumnFlags.WidthStretch);

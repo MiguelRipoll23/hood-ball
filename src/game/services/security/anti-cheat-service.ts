@@ -67,6 +67,10 @@ export class AntiCheatService {
   // Lifecycle
   // -------------------------------------------------------------------
 
+  public isMonitoring(): boolean {
+    return this.monitor.isMonitoring();
+  }
+
   public startMonitoring(): void {
     this.monitor.start();
   }
