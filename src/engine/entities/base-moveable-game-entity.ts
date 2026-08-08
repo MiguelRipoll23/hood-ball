@@ -118,6 +118,11 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
     this.transform.skipInterpolation = true;
   }
 
+  /** Returns true if the entity was intentionally teleported this frame. */
+  public wasSkipInterpolationSet(): boolean {
+    return this.transform.skipInterpolation;
+  }
+
   public teleport(x: number, y: number, angle?: number): void {
     this.transform.teleport(x, y, angle);
   }
@@ -198,7 +203,7 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
 
   private static readonly HEXAGON_SIDES = 6;
   private static readonly HEXAGON_RADIUS = 25;
-  private static readonly HEXAGON_COLOR = "rgba(255, 105, 180, 0.45)";
+  private static readonly HEXAGON_COLOR = "rgba(255, 20, 147, 0.85)";
 
   public override render(context: CanvasRenderingContext2D): void {
     super.render(context);
@@ -255,5 +260,9 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
     });
 
     super.update(deltaTimeStamp);
+
+    // Clear teleport flag at end of frame — the anti-cheat check runs
+    // before entity updates and has already consumed this flag.
+    this.transform.skipInterpolation = false;
   }
 }

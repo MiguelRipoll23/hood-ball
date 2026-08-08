@@ -79,8 +79,19 @@ export class ChatService {
       return;
     }
 
-    // Execute local command effects immediately
-    this.handleCommand(trimmed, undefined, Date.now());
+    const isCommand = this.handleCommand(trimmed, undefined, Date.now());
+
+    // For non-command messages, add locally immediately so the sender
+    // (including the host) sees their own message without waiting for server echo
+    if (!isCommand) {
+      const timestamp = Math.floor(Date.now() / 1000);
+      const chatMessage = new ChatMessage(
+        this.getLocalPlayerId(),
+        trimmed,
+        timestamp,
+      );
+      this.addMessage(chatMessage);
+    }
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebSocketType.ChatMessage)
@@ -115,9 +126,12 @@ export class ChatService {
       return;
     }
 
-    // Add message to UI
-    const chatMessage = new ChatMessage(userId, text, timestamp);
-    this.addMessage(chatMessage);
+    // Messages from the local player are already added in sendMessage;
+    // only add messages from other players.
+    if (userId !== this.getLocalPlayerId()) {
+      const chatMessage = new ChatMessage(userId, text, timestamp);
+      this.addMessage(chatMessage);
+    }
   }
 
   @PeerCommandHandler(WebRTCType.ChatMessage)

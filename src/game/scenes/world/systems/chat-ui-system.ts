@@ -3,13 +3,11 @@ import { MatchMenuButtonEntity } from "../../../entities/match-menu-button-entit
 import { MatchMenuEntity } from "../../../entities/match-menu-entity.js";
 import { BoostMeterEntity } from "../../../entities/boost-meter-entity.js";
 import { HelpEntity } from "../../../entities/help-entity.js";
-import { MatchAction } from "../../../models/match-action.js";
 import type { GamePlayer } from "../../../models/game-player.js";
 import type { MatchSessionService } from "../../../services/session/match-session-service.js";
 import { ChatService } from "../../../services/network/chat-service.js";
 import { PlayerModerationService } from "../../../services/network/player-moderation-service.js";
 import { APIService } from "../../../services/network/api-service.js";
-import type { MatchActionsLogService } from "../../../services/gameplay/match-actions-log-service.js";
 import type { GamePointerContract } from "../../../../engine/interfaces/input/game-pointer-interface.js";
 import type { GameKeyboardContract } from "../../../../engine/interfaces/input/game-keyboard-interface.js";
 import type { GameEntity } from "../../../../engine/models/game-entity.js";
@@ -34,7 +32,6 @@ export class ChatUISystem {
     boostMeterEntity: BoostMeterEntity,
     helpEntity: HelpEntity,
     chatService: ChatService,
-    matchActionsLogService: MatchActionsLogService,
     gamePointer: GamePointerContract,
     gameKeyboard: GameKeyboardContract,
     playerModerationService: PlayerModerationService,
@@ -53,21 +50,6 @@ export class ChatUISystem {
     }
 
     chatInputElement.removeAttribute("hidden");
-
-    // Load recent chat messages into the match log
-    if (chatService && matchActionsLogService) {
-      const initialMsgs = chatService.getMessages();
-      if (initialMsgs.length > 0) {
-        const recentMessages = initialMsgs.slice(-5);
-        for (const message of recentMessages) {
-          matchActionsLogService.addAction(
-            MatchAction.chatMessage(message.getUserId(), message.getText(), {
-              timestamp: message.getTimestamp(),
-            }),
-          );
-        }
-      }
-    }
 
     this.chatButtonEntity = new ChatButtonEntity(
       boostMeterEntity,

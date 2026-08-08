@@ -90,6 +90,12 @@ export class AntiCheatMonitorService {
         this.movementSamples.set(entity.id, samples);
       }
 
+      // Clear movement history for intentional teleports (e.g. spawn points)
+      // so the large position delta is not flagged as a speed violation.
+      if (entity.skipInterpolation) {
+        samples.length = 0;
+      }
+
       samples.push({ x: entity.x, y: entity.y, timestamp: now });
 
       const violations = evaluateMovementRules(

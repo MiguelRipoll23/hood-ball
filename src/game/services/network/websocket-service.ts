@@ -333,8 +333,8 @@ export class WebSocketService implements WebSocketServiceContract {
     const wasConnected = this.gameServer.isConnected();
     this.gameServer.setConnected(false);
 
-    // Check if the user has been banned
-    if (event.code === 1000 && event.reason === "User has been banned") {
+    // Check if the user has been banned (1008 = Policy Violation)
+    if (event.code === 1008 && event.reason === "User has been banned") {
       EngineLogger.info("WebsocketService", "User has been banned from the server");
 
       this.isTerminalDisconnect = true;
@@ -347,19 +347,7 @@ export class WebSocketService implements WebSocketServiceContract {
       return;
     }
 
-    // Check if the user has been kicked
-    if (event.code === 1000 && event.reason === "User has been kicked") {
-      EngineLogger.info("WebsocketService", "User has been kicked from the server");
 
-      this.isTerminalDisconnect = true;
-      this.stopReconnection();
-      this.webSocket = null;
-
-      const localEvent = new LocalEvent(GameEventType.UserKickedByServer);
-      this.eventProcessorService.addLocalEvent(localEvent);
-
-      return;
-    }
 
     // Only emit disconnected event if we were actually connected
     if (wasConnected) {

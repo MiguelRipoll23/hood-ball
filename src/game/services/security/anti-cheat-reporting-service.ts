@@ -3,19 +3,30 @@ import { PlayerModerationService } from "../network/player-moderation-service.js
 import { GamePlayer } from "../../models/game-player.js";
 import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
+/** A reported violation with metadata for inspector display. */
+export interface ReportedViolation {
+  ruleId: number;
+  userId: string;
+  reason: string;
+  /** Unix timestamp (ms) when the violation was first reported. */
+  timestamp: number;
+}
+
 @injectable()
 export class AntiCheatReportingService {
-  /** Keys of already-reported violations. Format: `${ruleId}:${userId}` */
-  private readonly reported = new Set<string>();
+  /** Full history of reported violations. */
+  private readonly violations: ReportedViolation[] = [];
 
-  /** Returns a snapshot of all reported violation keys. */
-  public getReportedViolations(): readonly string[] {
-    return [...this.reported];
+  /** Returns a snapshot of all reported violations. */
+  public getReportedViolations(): readonly ReportedViolation[] {
+    return this.violations;
   }
 
   /** Returns whether a specific violation has been reported. */
   public isReported(ruleId: number, userId: string): boolean {
-    return this.reported.has(`${ruleId}:${userId}`);
+    return this.violations.some(
+      (v) => v.ruleId === ruleId && v.userId === userId,
+    );
   }
 
   constructor(
@@ -31,22 +42,35 @@ export class AntiCheatReportingService {
     targetUserId?: string,
   ): void {
     const userId = targetUserId ?? this.gamePlayer.getNetworkId();
-    const key = `${ruleId}:${userId}`;
 
-    if (this.reported.has(key)) return;
-    this.reported.add(key);
+    if (this.isReported(ruleId, userId)) return;
+
+    const violation: ReportedViolation = {
+      ruleId,
+      userId,
+      reason,
+      timestamp: Date.now(),
+    };
+    this.violations.push(violation);
 
     const fullReason = `Rule #${ruleId}: ${reason}`;
     this.send(userId, fullReason);
 
-    EngineLogger.warn("AntiCheatReportingService", `[AntiCheat] Rule ${ruleId} violated by ${userId}: ${reason}`);
+    EngineLogger.warn(
+      "AntiCheatReportingService",
+      `[AntiCheat] Rule ${ruleId} violated by ${userId}: ${reason}`,
+    );
   }
 
   private send(userId: string, reason: string): void {
     this.playerModerationService
       .reportUser(userId, `[AntiCheat] ${reason}`, true)
       .catch((error: unknown) => {
-        EngineLogger.error("AntiCheatReportingService", "[AntiCheat] Failed to send report:", error);
+        EngineLogger.error(
+          "AntiCheatReportingService",
+          "[AntiCheat] Failed to send report:",
+          error,
+        );
       });
   }
 }

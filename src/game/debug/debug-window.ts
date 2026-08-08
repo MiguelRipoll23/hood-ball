@@ -172,7 +172,7 @@ export class DebugWindow extends BaseWindow {
   }
 
   private renderNetworkSettings(): void {
-    if (ImGui.CollapsingHeader("Network")) {
+    if (ImGui.CollapsingHeader("Network", ImGui.TreeNodeFlags.DefaultOpen)) {
       const debugSettings = this.gameState.getDebugSettings();
 
       this.renderCheckbox(
