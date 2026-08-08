@@ -9,7 +9,8 @@ import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despa
 import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 import { LayerType } from "../../enums/layer-type.js";
-import { SceneType } from "../../enums/scene-type.js";
+import type { SceneType } from "../../enums/scene-type.js";
+import { SceneTypeUnknown } from "../../enums/scene-type.js";
 
 // Maximum recording duration in minutes
 const MAX_RECORDING_DURATION_MINUTES = 15;
@@ -56,7 +57,7 @@ export class RecorderService {
   private frameCount = 0;
   private autoRecording = false;
   private entityIdCache = new WeakMap<GameEntity, string>();
-  private recordedSceneId: SceneType = SceneType.Unknown;
+  private recordedSceneId: SceneType = SceneTypeUnknown;
 
   // Delta recording data structures
   private initialSnapshot: EntitySnapshot[] = [];
@@ -169,7 +170,7 @@ export class RecorderService {
     this.frameCount = 0;
     this.startTime = Date.now();
     this.autoRecording = auto;
-    this.recordedSceneId = SceneType.Unknown;
+    this.recordedSceneId = SceneTypeUnknown;
 
     // Reset delta recording structures
     this.initialSnapshot = [];
@@ -230,7 +231,7 @@ export class RecorderService {
       if (this.frameCount === 0) {
         this.recordedSceneId = currentScene.getTypeId();
 
-        if (this.recordedSceneId === SceneType.Unknown) {
+        if (this.recordedSceneId === SceneTypeUnknown) {
           return; // Do not record if scene type is unknown
         }
       }
@@ -700,7 +701,7 @@ export class RecorderService {
   public clearRecording(): void {
     this.frameCount = 0;
     this.endTime = 0;
-    this.recordedSceneId = SceneType.Unknown;
+    this.recordedSceneId = SceneTypeUnknown;
     this.entityIdCache = new WeakMap<GameEntity, string>();
 
     // Clear delta recording structures

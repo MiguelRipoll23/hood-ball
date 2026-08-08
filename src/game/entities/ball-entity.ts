@@ -2,7 +2,7 @@ import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
 import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.js";
 import { CarEntity } from "./car-entity.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
-import { EntityType } from "../../engine/enums/entity-type.js";
+import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { EntityUtils } from "../../engine/utils/entity-utils.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
@@ -44,8 +44,8 @@ export class BallEntity
     this.setSyncableValues();
   }
 
-  public static override getTypeId(): EntityType {
-    return EntityType.Ball;
+  public static override getTypeId(): EntityRegistryType {
+    return EntityRegistryType.Ball;
   }
 
   public static override deserialize(
@@ -252,7 +252,7 @@ export class BallEntity
   private setSyncableValues() {
     this.syncable = true;
     this.setId("00000000000000000000000000000000");
-    this.setTypeId(EntityType.Ball);
+    this.setTypeId(EntityRegistryType.Ball);
     this.setSyncableByHost(true);
   }
 

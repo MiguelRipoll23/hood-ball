@@ -1,5 +1,6 @@
 import type { GameEvent } from "../../interfaces/models/game-event-interface.js";
 import type { EventQueueServiceContract } from "../../interfaces/services/events/event-queue-service-contract.js";
+import { EngineLogger } from "../engine-logger.js";
 
 export class EventQueueService<T extends GameEvent>
   implements EventQueueServiceContract<T>
@@ -41,6 +42,6 @@ export class EventQueueService<T extends GameEvent>
 
   private removeConsumedEvents() {
     this.events = this.events.filter((event) => !event.isConsumed());
-    console.log(`Cleaned up consumed events. Remaining: ${this.events.length}`);
+    EngineLogger.debug("EventQueue", `Cleaned up consumed events. Remaining: ${this.events.length}`);
   }
 }

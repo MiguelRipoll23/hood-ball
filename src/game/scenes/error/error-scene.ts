@@ -1,7 +1,8 @@
 import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
-import { SceneType } from "../../../engine/enums/scene-type.js";
+import type { SceneType } from "../../../engine/enums/scene-type.js";
+import { GameSceneType } from "../../enums/scene-type.js";
 import { container } from "../../../engine/services/di-container.js";
 
 export class ErrorScene extends BaseGameScene {
@@ -23,7 +24,7 @@ export class ErrorScene extends BaseGameScene {
   }
 
   public override getTypeId(): SceneType {
-    return SceneType.Error;
+    return GameSceneType.Error;
   }
 
   public override load(): void {

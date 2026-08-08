@@ -2,7 +2,7 @@ import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
@@ -280,7 +280,7 @@ export class WorldController {
       .unsignedInt8(this.countdownCurrentNumber)
       .toArrayBuffer();
 
-    const countdownEvent = new RemoteEvent(EventType.Countdown);
+    const countdownEvent = new RemoteEvent(GameEventType.Countdown);
     countdownEvent.setData(arrayBuffer);
 
     this.eventProcessorService.sendEvent(countdownEvent);
@@ -492,7 +492,7 @@ export class WorldController {
     // If the local player is the banned player, navigate to login as a terminal state
     if (playerId === this.gamePlayer.getNetworkId()) {
       console.log("Local player has been banned from this match");
-      const localEvent = new LocalEvent(EventType.UserBannedByServer);
+      const localEvent = new LocalEvent(GameEventType.UserBannedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
     }
   }
@@ -552,7 +552,7 @@ export class WorldController {
               .fixedLengthString(victimPlayer.getNetworkId(), 32)
               .toArrayBuffer();
 
-            const event = new RemoteEvent(EventType.CarDemolished);
+            const event = new RemoteEvent(GameEventType.CarDemolished);
             event.setData(payload);
 
             this.eventProcessorService.sendEvent(event);

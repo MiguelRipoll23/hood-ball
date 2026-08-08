@@ -4,7 +4,7 @@ import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../engine/models/remote-event.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
-import { EventType } from "../../engine/enums/event-type.js";
+import { GameEventType } from "../enums/event-type.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {
@@ -146,7 +146,7 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
       .fixedLengthString(playerId, 32)
       .toArrayBuffer();
 
-    const event = new RemoteEvent(EventType.BoostPadConsumed);
+    const event = new RemoteEvent(GameEventType.BoostPadConsumed);
     event.setData(payload);
     this.eventProcessorService.sendEvent(event);
   }

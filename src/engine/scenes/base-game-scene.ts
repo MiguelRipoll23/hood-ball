@@ -7,9 +7,12 @@ import type { SceneManagerServiceContract } from "../interfaces/services/scene/s
 import type { EventConsumerServiceContract } from "../interfaces/services/gameplay/event-consumer-service-interface.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
-import { EventType } from "../enums/event-type.js";
+import type { EventType } from "../enums/event-type.js";
+import { EventTypeNames } from "../enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
-import { SceneType } from "../enums/scene-type.js";
+import type { SceneType } from "../enums/scene-type.js";
+import { SceneTypeUnknown } from "../enums/scene-type.js";
+import { EngineLogger } from "../services/engine-logger.js";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerServiceContract;
@@ -42,7 +45,7 @@ export class BaseGameScene implements GameScene {
   }
 
   public getTypeId(): SceneType {
-    return SceneType.Unknown;
+    return SceneTypeUnknown;
   }
 
   public isActive(): boolean {
@@ -214,9 +217,7 @@ export class BaseGameScene implements GameScene {
     );
     this.localEventSubscriptions.push(sub);
 
-    console.log(
-      `${this.constructor.name} subscribed to local event ${EventType[eventType]}`
-    );
+    EngineLogger.info("Scene", `${this.constructor.name} subscribed to local event ${EventTypeNames[eventType] ?? eventType}`);
   }
 
   protected subscribeToRemoteEvent<T>(
@@ -229,9 +230,7 @@ export class BaseGameScene implements GameScene {
     );
     this.remoteEventSubscriptions.push(sub);
 
-    console.log(
-      `${this.constructor.name} subscribed to remote event ${EventType[eventType]}`
-    );
+    EngineLogger.info("Scene", `${this.constructor.name} subscribed to remote event ${EventTypeNames[eventType] ?? eventType}`);
   }
 
   protected deleteEntityIfRemoved(

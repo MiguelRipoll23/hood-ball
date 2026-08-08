@@ -1,4 +1,4 @@
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import type { AuthenticationOptionsRequest } from "../../interfaces/requests/authentication-options-interface.js";
 import type { RegistrationOptionsRequest } from "../../interfaces/requests/registration-options-request-interface.js";
 import type { VerifyAuthenticationRequest } from "../../interfaces/requests/verify-authentication-request-interface.js";
@@ -182,7 +182,7 @@ export class CredentialService {
     this.gamePlayer.setId(userId);
     this.gamePlayer.setName(userDisplayName);
 
-    const localEvent = new LocalEvent(EventType.ServerAuthenticated);
+    const localEvent = new LocalEvent(GameEventType.ServerAuthenticated);
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 }

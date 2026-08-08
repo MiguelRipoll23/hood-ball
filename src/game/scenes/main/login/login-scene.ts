@@ -4,7 +4,7 @@ import { CryptoService } from "../../../services/security/crypto-service.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { APIService } from "../../../services/network/api-service.js";
 import { GameState } from "../../../../engine/models/game-state.js";
-import { EventType } from "../../../../engine/enums/event-type.js";
+import { GameEventType } from "../../../enums/event-type.js";
 import { CredentialService } from "../../../services/security/credential-service.js";
 import { EventConsumerService } from "../../../../engine/services/gameplay/event-consumer-service.js";
 import { LoginEntityFactory } from "./login-entity-factory.js";
@@ -86,12 +86,12 @@ export class LoginScene extends BaseGameScene {
 
   private subscribeToLocalEvents(): void {
     this.subscribeToLocalEvent(
-      EventType.ServerAuthenticated,
+      GameEventType.ServerAuthenticated,
       this.downloadConfiguration.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.ServerConnected,
+      GameEventType.ServerConnected,
       this.handleServerConnectedEvent.bind(this)
     );
   }

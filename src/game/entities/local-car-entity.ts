@@ -1,5 +1,5 @@
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
-import { EntityType } from "../../engine/enums/entity-type.js";
+import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
 import type { GameKeyboardContract } from "../../engine/interfaces/input/game-keyboard-interface.js";
@@ -99,7 +99,7 @@ export class LocalCarEntity extends CarEntity {
   private setSyncableValues(): void {
     this.syncable = true;
     this.setId(crypto.randomUUID().replaceAll("-", ""));
-    this.setTypeId(EntityType.RemoteCar);
+    this.setTypeId(EntityRegistryType.RemoteCar);
   }
 
   private handleTouchControls(deltaTimeStamp: DOMHighResTimeStamp): void {

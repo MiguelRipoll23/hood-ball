@@ -12,6 +12,8 @@ import {
   getEntityTypeMapper,
 } from "./utils/entity-type-registry.js";
 import { RecorderService } from "../engine/services/gameplay/recorder-service.js";
+import { registerEventTypeNames } from "./enums/event-type.js";
+import { GAME_VERSION } from "./constants/game-constants.js";
 
 class Game {
   constructor(private canvas: HTMLCanvasElement) {}
@@ -24,6 +26,9 @@ class Game {
 
   private async initializeServices(): Promise<void> {
     const debug = globalThis.location.search.includes("debug");
+    // Register game event type names for engine-level logging
+    registerEventTypeNames();
+
     await ServiceRegistry.register(this.canvas, debug);
     GameServiceRegistry.register();
 
@@ -33,6 +38,10 @@ class Game {
     // Inject entity type mapper into recorder service
     const recorderService = container.get(RecorderService);
     recorderService.setEntityTypeMapper(getEntityTypeMapper());
+
+    // Set game version for debug overlay
+    const gameLoopService = container.get(GameLoopService);
+    gameLoopService.setDebugVersionProvider(() => GAME_VERSION);
   }
 
   private initializeLifecycle(): void {

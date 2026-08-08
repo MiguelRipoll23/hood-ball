@@ -1,5 +1,5 @@
 import { MatchStateType } from "../../enums/match-state-type.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import { TeamType } from "../../enums/team-type.js";
 
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
@@ -247,7 +247,7 @@ export class ScoreManagerService {
       .unsignedInt8(playerScore)
       .toArrayBuffer();
 
-    const goalEvent = new RemoteEvent(EventType.GoalScored);
+    const goalEvent = new RemoteEvent(GameEventType.GoalScored);
     goalEvent.setData(payload);
 
     this.eventProcessorService.sendEvent(goalEvent);
@@ -320,7 +320,7 @@ export class ScoreManagerService {
       .fixedLengthString(playerId, 32)
       .toArrayBuffer();
 
-    const gameOverStartEvent = new RemoteEvent(EventType.GameOver);
+    const gameOverStartEvent = new RemoteEvent(GameEventType.GameOver);
     gameOverStartEvent.setData(payload);
 
     this.eventProcessorService.sendEvent(gameOverStartEvent);
