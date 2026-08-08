@@ -9,12 +9,12 @@ import type { EntityStateDelta } from "../../interfaces/recording/entity-state-d
 import type { GameEntity } from "../../models/game-entity.js";
 import { EntityRegistry } from "../entity-registry.js";
 import { GameState } from "../../models/game-state.js";
-import { SceneType } from "../../enums/scene-type.js";
 import { LayerType } from "../../enums/layer-type.js";
 import {
   WORLD_SCENE_FACTORY_TOKEN,
   type WorldSceneFactoryContract,
 } from "../../interfaces/services/gameplay/world-scene-factory-contract.js";
+import { EngineLogger } from "../engine-logger.js";
 
 export enum PlaybackState {
   Stopped = "stopped",
@@ -54,7 +54,7 @@ export class RecordingPlayerService {
       WORLD_SCENE_FACTORY_TOKEN
     )
   ) {
-    console.log("RecordingPlayerService initialized");
+    EngineLogger.info("RecordingPlayer", "RecordingPlayerService initialized");
   }
 
   public async loadRecording(file: File): Promise<void> {
@@ -287,7 +287,7 @@ export class RecordingPlayerService {
 
     // If already loaded, don't reload
     if (this.replayScene) {
-      console.log("Replay scene already loaded, skipping reload");
+      EngineLogger.info("RecordingPlayer", "Replay scene already loaded, skipping reload");
       return;
     }
 
@@ -301,17 +301,11 @@ export class RecordingPlayerService {
       this.gameState.getGameFrame().setCurrentScene(null);
     }
 
-    // Load the actual WorldScene for replay
-    if (sceneId === SceneType.World) {
-      // Create WorldScene through the factory in REPLAY MODE
-      this.replayScene = this.worldSceneFactory.create({ replayMode: true });
+    // Create WorldScene through the factory in REPLAY MODE
+    this.replayScene = this.worldSceneFactory.create({ replayMode: true });
 
-      // Load the scene - it will skip entity creation due to replay mode
-      this.replayScene.load();
-    } else {
-      console.warn(`Scene type ${sceneId} not yet supported for replay`);
-      return;
-    }
+    // Load the scene - it will skip entity creation due to replay mode
+    this.replayScene.load();
 
     // Set as current scene
     this.gameState.getGameFrame().setCurrentScene(this.replayScene);

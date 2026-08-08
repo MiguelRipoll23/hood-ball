@@ -14,8 +14,9 @@ import { MatchAction } from "../../models/match-action.js";
 import { NpcCarEntity } from "../../entities/npc-car-entity.js";
 import { BaseCollidingGameScene } from "../../../engine/scenes/base-colliding-game-scene.js";
 import { EntityStateType } from "../../../engine/enums/entity-state-type.js";
-import { EventType } from "../../../engine/enums/event-type.js";
-import { SceneType } from "../../../engine/enums/scene-type.js";
+import { GameEventType } from "../../enums/event-type.js";
+import type { SceneType } from "../../../engine/enums/scene-type.js";
+import { GameSceneType } from "../../enums/scene-type.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { MatchmakingControllerContract } from "../../interfaces/services/gameplay/matchmaking-controller-contract-interface.js";
@@ -236,7 +237,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   public override getTypeId(): SceneType {
-    return SceneType.World;
+    return GameSceneType.World;
   }
 
   public override onTransitionEnd(): void {
@@ -438,66 +439,66 @@ export class WorldScene extends BaseCollidingGameScene {
 
   private subscribeToLocalEvents(): void {
     this.subscribeToLocalEvent(
-      EventType.MatchAdvertised,
+      GameEventType.MatchAdvertised,
       this.handleMatchAdvertised.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.MatchmakingStarted,
+      GameEventType.MatchmakingStarted,
       this.handleMatchmakingStarted.bind(this)
     );
 
     this.subscribeToLocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
+      GameEventType.PlayerConnected,
       this.handlePlayerConnection.bind(this)
     );
 
     this.subscribeToLocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
+      GameEventType.PlayerDisconnected,
       this.handlePlayerDisconnection.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.ReturnToMainMenu,
+      GameEventType.ReturnToMainMenu,
       () => void this.returnToMainMenuScene()
     );
 
     this.subscribeToLocalEvent(
-      EventType.UserBannedByServer,
+      GameEventType.UserBannedByServer,
       () => this.navigateToErrorScene("You have been banned from the server")
     );
 
     this.subscribeToLocalEvent(
-      EventType.UserKickedByServer,
+      GameEventType.UserKickedByServer,
       () => this.navigateToErrorScene("You have been kicked from the server")
     );
 
-    this.subscribeToLocalEvent(EventType.SnowWeather, () => {
+    this.subscribeToLocalEvent(GameEventType.SnowWeather, () => {
       this.activateSnowWeather();
     });
   }
 
   private subscribeToRemoteEvents(): void {
     this.subscribeToRemoteEvent(
-      EventType.Countdown,
+      GameEventType.Countdown,
       (data: ArrayBuffer | null) =>
         this.worldController?.handleRemoteCountdown(data)
     );
 
     this.subscribeToRemoteEvent(
-      EventType.GoalScored,
+      GameEventType.GoalScored,
       (data: ArrayBuffer | null) =>
         this.scoreManagerService?.handleRemoteGoal(data)
     );
 
     this.subscribeToRemoteEvent(
-      EventType.GameOver,
+      GameEventType.GameOver,
       (data: ArrayBuffer | null) =>
         this.scoreManagerService?.handleRemoteGameOverStartEvent(data)
     );
 
     this.subscribeToRemoteEvent(
-      EventType.BoostPadConsumed,
+      GameEventType.BoostPadConsumed,
       (data: ArrayBuffer | null) =>
         this.worldController?.handleRemoteBoostPadConsumed(
           data,
@@ -506,7 +507,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.subscribeToRemoteEvent(
-      EventType.CarDemolished,
+      GameEventType.CarDemolished,
       (data: ArrayBuffer | null) =>
         this.worldController?.handleRemoteCarDemolished(
           data,
@@ -516,7 +517,7 @@ export class WorldScene extends BaseCollidingGameScene {
     );
 
     this.subscribeToRemoteEvent(
-      EventType.PlayerBanned,
+      GameEventType.PlayerBanned,
       (data: ArrayBuffer | null) =>
         this.worldController?.handleRemotePlayerBanned(data)
     );

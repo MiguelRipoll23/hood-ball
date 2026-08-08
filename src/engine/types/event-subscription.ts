@@ -1,4 +1,4 @@
-import { EventType } from "../enums/event-type.js";
+import type { EventType } from "../enums/event-type.js";
 
 export type EventSubscription<T = unknown> = {
   eventType: EventType;

@@ -1,10 +1,12 @@
-import { EventType } from "../../enums/event-type.js";
+import type { EventType } from "../../enums/event-type.js";
+import { EventTypeNames } from "../../enums/event-type.js";
 import type { EventQueueServiceContract } from "../../interfaces/services/events/event-queue-service-contract.js";
 import type { EventSubscription } from "../../types/event-subscription.js";
 import { LocalEvent } from "../../models/local-event.js";
 import { RemoteEvent } from "../../models/remote-event.js";
 import { injectable, inject } from "@needle-di/core";
 import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../interfaces/services/events/event-processor-service-contract.js";
+import { EngineLogger } from "../engine-logger.js";
 
 @injectable()
 export class EventConsumerService {
@@ -32,7 +34,7 @@ export class EventConsumerService {
     this.localSubscriptions.push(subscription);
 
     if (log) {
-      console.log(`Subscribed to local event ${EventType[eventType]}`);
+      EngineLogger.info("EventConsumer", `Subscribed to local event ${EventTypeNames[eventType] ?? eventType}`);
     }
 
     return subscription;
@@ -54,7 +56,7 @@ export class EventConsumerService {
     this.remoteSubscriptions.push(subscription);
 
     if (log) {
-      console.log(`Subscribed to remote event ${EventType[eventType]}`);
+      EngineLogger.info("EventConsumer", `Subscribed to remote event ${EventTypeNames[eventType] ?? eventType}`);
     }
 
     return subscription;

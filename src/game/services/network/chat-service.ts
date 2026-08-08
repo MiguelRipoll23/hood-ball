@@ -13,7 +13,7 @@ import { SignatureService } from "../security/signature-service.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
 
@@ -193,7 +193,7 @@ export class ChatService {
       case "snow":
         if (!senderId || senderId !== this.getLocalPlayerId()) {
           console.log("Snow weather command received");
-          const event = new LocalEvent<void>(EventType.SnowWeather);
+          const event = new LocalEvent<void>(GameEventType.SnowWeather);
           this.eventProcessorService.addLocalEvent(event);
         }
         this.logChatCommand(senderId, command, timestamp);

@@ -1,4 +1,5 @@
 import type { GameEntity } from "../models/game-entity.js";
+import { EngineLogger } from "./engine-logger.js";
 
 /**
  * Entity Registry Service
@@ -27,7 +28,8 @@ export class EntityRegistry {
     ctor?: Function
   ): void {
     if (this.registry.has(typeId)) {
-      console.warn(
+      EngineLogger.warn(
+        "EntityRegistry",
         `Entity type "${typeId}" is already registered, overwriting`
       );
     }
@@ -48,7 +50,8 @@ export class EntityRegistry {
   public static create(typeId: number): GameEntity | null {
     const factory = this.registry.get(typeId);
     if (!factory) {
-      console.warn(
+      EngineLogger.warn(
+        "EntityRegistry",
         `Entity type "${typeId}" is not registered in the entity registry`
       );
       return null;
@@ -57,7 +60,7 @@ export class EntityRegistry {
     try {
       return factory();
     } catch (error) {
-      console.error(`Failed to create entity of type "${typeId}":`, error);
+      EngineLogger.error("EntityRegistry", `Failed to create entity of type "${typeId}"`, error);
       return null;
     }
   }

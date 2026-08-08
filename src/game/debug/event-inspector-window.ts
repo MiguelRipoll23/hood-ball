@@ -1,5 +1,5 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
-import { EventType } from "../../engine/enums/event-type.js";
+import { EventTypeNames } from "../../engine/enums/event-type.js";
 import type { GameEvent } from "../../engine/interfaces/models/game-event-interface.js";
 import { LocalEvent } from "../../engine/models/local-event.js";
 import { RemoteEvent } from "../../engine/models/remote-event.js";
@@ -73,7 +73,7 @@ export class EventInspectorWindow extends BaseWindow {
 
         const isConsumed = event.isConsumed();
         const color = isConsumed ? 0xffffffff : 0xff00a5ff;
-        const label = `${EventType[event.getType()]}##${tableId}-${i}`;
+        const label = `${EventTypeNames[event.getType()] ?? event.getType()}##${tableId}-${i}`;
         const selected = this.selectedEvent === event;
 
         ImGui.PushStyleColor(ImGui.Col.Text, color);

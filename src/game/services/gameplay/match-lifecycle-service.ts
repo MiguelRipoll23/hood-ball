@@ -4,7 +4,7 @@ import { WEB_RTC_SERVICE_TOKEN, type WebRTCServiceContract } from "../../../engi
 import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { EVENT_CONSUMER_SERVICE_TOKEN, type EventConsumerServiceContract } from "../../../engine/interfaces/services/gameplay/event-consumer-service-interface.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import type { SaveUserScoresRequest } from "../../interfaces/requests/save-score-request-interface.js";
 import { GamePlayer } from "../../models/game-player.js";
 import type { MatchmakingNetworkServiceContract } from "../../interfaces/services/matchmaking/matchmaking-network-service-contract-interface.js";
@@ -39,7 +39,7 @@ export class MatchLifecycleService {
     private readonly matchSessionService = inject(MatchSessionService),
   ) {
     this.eventConsumer.subscribeToLocalEvent(
-      EventType.PlayerDisconnected,
+      GameEventType.PlayerDisconnected,
       (data: PlayerDisconnectedPayload) => {
         if (!this.gameOverInProgress || !data?.player) {
           return;
@@ -145,7 +145,7 @@ export class MatchLifecycleService {
       this.disconnectionMonitor.clear();
     }
     this.matchSessionService.setMatch(null);
-    const localEvent = new LocalEvent(EventType.ReturnToMainMenu);
+    const localEvent = new LocalEvent(GameEventType.ReturnToMainMenu);
     this.eventProcessor.addLocalEvent(localEvent);
     console.log("Game over finalized, returning to main menu");
   }

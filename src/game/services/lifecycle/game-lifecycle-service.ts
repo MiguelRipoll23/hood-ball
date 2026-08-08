@@ -2,7 +2,7 @@ import { injectable, inject } from "@needle-di/core";
 import { EVENT_CONSUMER_SERVICE_TOKEN, type EventConsumerServiceContract } from "../../../engine/interfaces/services/gameplay/event-consumer-service-interface.js";
 import { SCENE_TRANSITION_SERVICE_TOKEN, type SceneTransitionServiceContract } from "../../../engine/interfaces/services/scene/scene-transition-service-contract.js";
 import { GameState } from "../../../engine/models/game-state.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import { MainScene } from "../../scenes/main/main-scene.js";
 import { MainMenuScene } from "../../scenes/main/main-menu/main-menu-scene.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
@@ -33,19 +33,19 @@ export class GameLifecycleService {
 
   private subscribeToLocalEvents(): void {
     this.eventConsumerService.subscribeToLocalEvent(
-      EventType.ServerDisconnected,
+      GameEventType.ServerDisconnected,
       this.handleServerDisconnectedEvent.bind(this),
       true
     );
 
     this.eventConsumerService.subscribeToLocalEvent(
-      EventType.HostDisconnected,
+      GameEventType.HostDisconnected,
       this.handleHostDisconnectedEvent.bind(this),
       true
     );
 
     this.eventConsumerService.subscribeToLocalEvent(
-      EventType.ServerNotification,
+      GameEventType.ServerNotification,
       this.handleServerNotificationEvent.bind(this),
       true
     );

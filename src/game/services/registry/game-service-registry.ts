@@ -21,8 +21,6 @@ import { MatchSessionService } from "../session/match-session-service.js";
 import { GameLifecycleService } from "../lifecycle/game-lifecycle-service.js";
 import { CryptoService } from "../security/crypto-service.js";
 import { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import { GameConfig } from "../../../engine/models/game-config.js";
-import { GAME_VERSION } from "../../constants/game-constants.js";
 import { WEB_SOCKET_SERVICE_TOKEN } from "../../interfaces/services/network/websocket-service-interface.js";
 import { API_SERVICE_TOKEN } from "../../interfaces/services/network/api-contract-interface.js";
 import { MATCHMAKING_SERVICE_TOKEN } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
@@ -31,13 +29,10 @@ import { MATCHMAKING_CONTROLLER_TOKEN } from "../../interfaces/services/gameplay
 import { WORLD_SCENE_FACTORY_TOKEN } from "../../../engine/interfaces/services/gameplay/world-scene-factory-contract.js";
 import { WorldSceneFactory } from "../../scenes/world/world-scene-factory.js";
 import { WEB_RTC_SERVICE_TOKEN } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
+import { WebRTCEventDispatcher } from "../network/webrtc-event-dispatcher.js";
 
 export class GameServiceRegistry {
   public static register(): void {
-    container.bind({
-      provide: GameConfig,
-      useValue: { version: GAME_VERSION },
-    });
     container.bind(GamePlayer);
     container.bind(GameServer);
     container.bind(MatchSessionService);
@@ -144,9 +139,13 @@ export class GameServiceRegistry {
       webrtcService.registerCommandHandlers(chatService);
 
       // Break runtime dependency cycles via late initialization
-      eventProcessorService.initialize(webrtcService);
+      eventProcessorService.setWebRTCService(webrtcService);
       entityOrchestratorService.initialize(webrtcService);
       webrtcService.initialize(matchmakingNetworkService);
+
+      // Register WebRTC event dispatcher (decouples engine from WebRTC protocol)
+      const eventDispatcher = new WebRTCEventDispatcher(eventProcessorService);
+      eventDispatcher.register(webrtcService);
     } catch (error) {
       console.error("Error initializing services", error);
     }

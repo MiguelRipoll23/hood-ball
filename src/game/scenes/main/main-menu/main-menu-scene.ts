@@ -8,7 +8,7 @@ import { BaseGameScene } from "../../../../engine/scenes/base-game-scene.js";
 import { LoadingScene } from "../../loading/loading-scene.js";
 import { ScoreboardScene } from "../scoreboard/scoreboard-scene.js";
 import { SettingsScene } from "../settings-scene.js";
-import { EventType } from "../../../../engine/enums/event-type.js";
+import { GameEventType } from "../../../enums/event-type.js";
 import type { GameState } from "../../../../engine/models/game-state.js";
 import type { OnlinePlayersPayload } from "../../../interfaces/events/online-players-payload-interface.js";
 import type { ServerDisconnectedPayload } from "../../../interfaces/events/server-disconnected-payload-interface.js";
@@ -123,31 +123,31 @@ export class MainMenuScene extends BaseGameScene {
 
   private subscribeToLocalEvents(): void {
     this.subscribeToLocalEvent(
-      EventType.DebugChanged,
+      GameEventType.DebugChanged,
       this.updateDebugStateForEntities.bind(this)
     );
     this.subscribeToLocalEvent(
-      EventType.OnlinePlayers,
+      GameEventType.OnlinePlayers,
       this.handleOnlinePlayersEvent.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.ServerDisconnected,
+      GameEventType.ServerDisconnected,
       this.handleServerDisconnectedEvent.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.ServerConnected,
+      GameEventType.ServerConnected,
       this.handleServerConnectedEvent.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.UserBannedByServer,
+      GameEventType.UserBannedByServer,
       this.handleUserBannedByServerEvent.bind(this)
     );
 
     this.subscribeToLocalEvent(
-      EventType.UserKickedByServer,
+      GameEventType.UserKickedByServer,
       this.handleUserKickedByServerEvent.bind(this)
     );
   }

@@ -4,7 +4,7 @@ import { GamePlayer } from "../../models/game-player.js";
 import { MatchStateType } from "../../enums/match-state-type.js";
 import { MATCH_ATTRIBUTES } from "../../constants/matchmaking-constants.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
 import type { PlayerConnectedPayload } from "../../interfaces/events/player-connected-payload-interface.js";
@@ -159,7 +159,7 @@ export class MatchmakingNetworkService
       console.log(`Host ${peer.getName()} disconnected gracefully`);
       this.matchSessionService.setMatch(null);
       const localEvent = new LocalEvent<HostDisconnectedPayload>(
-        EventType.HostDisconnected,
+        GameEventType.HostDisconnected,
       );
       localEvent.setData({ graceful: true });
       this.eventProcessorService.addLocalEvent(localEvent);
@@ -325,7 +325,7 @@ export class MatchmakingNetworkService
     }
 
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
+      GameEventType.PlayerConnected,
     );
 
     localEvent.setData({
@@ -362,7 +362,7 @@ export class MatchmakingNetworkService
 
     // Publish local event
     const localEvent = new LocalEvent<PlayerConnectedPayload>(
-      EventType.PlayerConnected,
+      GameEventType.PlayerConnected,
     );
 
     localEvent.setData({
@@ -439,7 +439,7 @@ export class MatchmakingNetworkService
 
     // Publish local event
     const playerDisconnectedEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
+      GameEventType.PlayerDisconnected,
     );
 
     playerDisconnectedEvent.setData({ player });
@@ -471,7 +471,7 @@ export class MatchmakingNetworkService
     match.removePlayer(player);
 
     const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
-      EventType.PlayerDisconnected,
+      GameEventType.PlayerDisconnected,
     );
 
     localEvent.setData({ player });
@@ -484,7 +484,7 @@ export class MatchmakingNetworkService
     this.matchSessionService.setMatch(null);
 
     const localEvent = new LocalEvent<HostDisconnectedPayload>(
-      EventType.HostDisconnected,
+      GameEventType.HostDisconnected,
     );
     localEvent.setData({ graceful: false });
     this.eventProcessorService.addLocalEvent(localEvent);
@@ -741,7 +741,7 @@ export class MatchmakingNetworkService
       .fixedLengthString(userId, 32)
       .toArrayBuffer();
 
-    const banEvent = new RemoteEvent(EventType.PlayerBanned);
+    const banEvent = new RemoteEvent(GameEventType.PlayerBanned);
     banEvent.setData(payload);
     this.eventProcessorService.sendEvent(banEvent);
   }

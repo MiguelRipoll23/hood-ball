@@ -1,7 +1,7 @@
 import { WEBSOCKET_ENDPOINT } from "../../constants/api-constants.js";
 import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { LocalEvent } from "../../../engine/models/local-event.js";
-import { EventType } from "../../../engine/enums/event-type.js";
+import { GameEventType } from "../../enums/event-type.js";
 import type { ServerDisconnectedPayload } from "../../interfaces/events/server-disconnected-payload-interface.js";
 import type { ServerNotificationPayload } from "../../interfaces/events/server-notification-payload-interface.js";
 import type { OnlinePlayersPayload } from "../../interfaces/events/online-players-payload-interface.js";
@@ -245,7 +245,7 @@ export class WebSocketService implements WebSocketServiceContract {
     const userSignature = binaryReader.bytesAsArrayBuffer();
     this.userSignature = userSignature;
 
-    const localEvent = new LocalEvent(EventType.ServerConnected);
+    const localEvent = new LocalEvent(GameEventType.ServerConnected);
     this.eventProcessorService.addLocalEvent(localEvent);
   }
 
@@ -256,7 +256,7 @@ export class WebSocketService implements WebSocketServiceContract {
 
     const message = new TextDecoder("utf-8").decode(messageBytes);
     const localEvent = new LocalEvent<ServerNotificationPayload>(
-      EventType.ServerNotification,
+      GameEventType.ServerNotification,
     );
 
     localEvent.setData({
@@ -274,7 +274,7 @@ export class WebSocketService implements WebSocketServiceContract {
     this.onlinePlayers = total;
 
     const localEvent = new LocalEvent<OnlinePlayersPayload>(
-      EventType.OnlinePlayers,
+      GameEventType.OnlinePlayers,
     );
     localEvent.setData({
       total,
@@ -340,7 +340,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.stopReconnection();
       this.webSocket = null;
 
-      const localEvent = new LocalEvent(EventType.UserBannedByServer);
+      const localEvent = new LocalEvent(GameEventType.UserBannedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
 
       return;
@@ -354,7 +354,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.stopReconnection();
       this.webSocket = null;
 
-      const localEvent = new LocalEvent(EventType.UserKickedByServer);
+      const localEvent = new LocalEvent(GameEventType.UserKickedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
 
       return;
@@ -367,7 +367,7 @@ export class WebSocketService implements WebSocketServiceContract {
       };
 
       const localEvent = new LocalEvent<ServerDisconnectedPayload>(
-        EventType.ServerDisconnected,
+        GameEventType.ServerDisconnected,
       );
 
       localEvent.setData(payload);
@@ -403,7 +403,7 @@ export class WebSocketService implements WebSocketServiceContract {
       };
 
       const localEvent = new LocalEvent<ServerDisconnectedPayload>(
-        EventType.ServerDisconnected,
+        GameEventType.ServerDisconnected,
       );
 
       localEvent.setData(payload);
