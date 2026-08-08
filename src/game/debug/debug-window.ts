@@ -176,7 +176,7 @@ export class DebugWindow extends BaseWindow {
       const debugSettings = this.gameState.getDebugSettings();
 
       this.renderCheckbox(
-        "Show syncable entities",
+        "Show syncable",
         debugSettings.showSyncableEntitiesOverlay(),
         debugSettings.setShowSyncableEntities.bind(debugSettings)
       );

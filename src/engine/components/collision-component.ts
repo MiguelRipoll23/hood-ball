@@ -19,7 +19,8 @@ type CollisionExclusionCtor = new (...args: never[]) => CollidingEntity;
  * mode is enabled and hitbox visibility is on.
  */
 export class CollisionComponent implements Component {
-  public readonly componentType = "CollisionComponent";
+  static readonly componentType = "CollisionComponent";
+  public readonly componentType = CollisionComponent.componentType;
   public hitboxEntities: HitboxEntity[] = [];
   public collidingEntities: CollidingEntity[] = [];
   public avoidingCollision = false;

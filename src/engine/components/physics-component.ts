@@ -11,7 +11,8 @@ import { TransformComponent } from "./transform-component.js";
  * debug mode is enabled and gizmos are visible.
  */
 export class PhysicsComponent implements Component {
-  public readonly componentType = "PhysicsComponent";
+  static readonly componentType = "PhysicsComponent";
+  public readonly componentType = PhysicsComponent.componentType;
   public vx = 0;
   public vy = 0;
   public mass = 0;

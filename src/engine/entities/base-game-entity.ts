@@ -31,9 +31,12 @@ export class BaseGameEntity implements GameEntity {
    * Attach a component to this entity. If a component of the same type
    * already exists, it is replaced. The component's {@code entity} reference
    * is set to this entity.
+   *
+   * Uses the component's explicit {@code componentType} string as the map key
+   * so that lookups are immune to class-name mangling during minification.
    */
   public addComponent<T extends Component>(component: T): T {
-    const key = component.constructor.name;
+    const key = component.componentType;
     this.components.set(key, component);
     component.entity = this;
     component.init?.();
@@ -41,12 +44,18 @@ export class BaseGameEntity implements GameEntity {
   }
 
   /**
-   * Retrieve a component by its constructor. Returns null if not found.
+   * Retrieve a component by its constructor. Uses the static
+   * {@code componentType} property when available, falling back to
+   * {@code constructor.name} so the lookup stays consistent with
+   * {@link addComponent}.
    */
   public getComponent<T extends Component>(
     ctor: new (...args: never[]) => T,
   ): T | null {
-    return (this.components.get(ctor.name) as T) ?? null;
+    const key =
+      (ctor as unknown as { componentType?: string }).componentType ??
+      ctor.name;
+    return (this.components.get(key) as T) ?? null;
   }
 
   /**
