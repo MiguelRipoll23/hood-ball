@@ -3,7 +3,7 @@ import type {
   WorldSceneFactoryContract,
   WorldSceneFactoryOptions,
 } from "../../../engine/interfaces/services/gameplay/world-scene-factory-contract.js";
-import type { GameScene } from "../../../engine/interfaces/scenes/game-scene-interface.js";
+import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
@@ -25,7 +25,7 @@ import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 
 @injectable()
 export class WorldSceneFactory implements WorldSceneFactoryContract {
-  public create(options: WorldSceneFactoryOptions = {}): GameScene {
+  public create(options: WorldSceneFactoryOptions = {}): BaseGameScene {
     const replayMode = options.replayMode ?? false;
 
     if (replayMode) {

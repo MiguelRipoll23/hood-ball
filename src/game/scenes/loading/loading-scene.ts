@@ -4,7 +4,6 @@ import { injectable } from "@needle-di/core";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
-import { WorldScene } from "../world/world-scene.js";
 import { LoadingEntityFactory } from "./loading-entity-factory.js";
 import type { LoadingEntities } from "./loading-entity-factory.js";
 import { WorldSceneFactory } from "../world/world-scene-factory.js";
@@ -13,7 +12,7 @@ import { WorldSceneFactory } from "../world/world-scene-factory.js";
 export class LoadingScene extends BaseGameScene {
   private sceneTransitionService: SceneTransitionService;
   private entities: LoadingEntities | null = null;
-  private worldScene: WorldScene | null = null;
+  private worldScene: BaseGameScene | null = null;
   private readonly worldSceneFactory: WorldSceneFactory;
   private transitionStarted: boolean = false;
 
