@@ -259,23 +259,24 @@ export class BallEntity
     this.setSyncableByHost(true);
   }
 
-  // Draw the ball with two overlapping circles instead of a radial gradient.
-  // This avoids allocating a CanvasGradient every frame while keeping the same look.
+  // Draw the ball with a radial gradient for a 3D soccer-ball look.
   private drawBallWithGradient(context: CanvasRenderingContext2D): void {
-    // Outer circle (light gray)
+    const gradient = context.createRadialGradient(
+      this.x - this.radius * 0.3,
+      this.y - this.radius * 0.3,
+      this.radius * 0.1,
+      this.x,
+      this.y,
+      this.radius
+    );
+    gradient.addColorStop(0, "white");
+    gradient.addColorStop(1, "rgba(200, 200, 200, 1)");
+
     context.beginPath();
-    context.fillStyle = "rgba(200, 200, 200, 1)";
+    context.fillStyle = gradient;
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
-
-    // Inner circle (white highlight) — slightly offset for a 3D effect
-    const innerRadius = this.radius * 0.55;
-    const innerX = this.x - this.radius * 0.15;
-    const innerY = this.y - this.radius * 0.15;
-    context.beginPath();
-    context.fillStyle = "rgba(255, 255, 255, 1)";
-    context.arc(innerX, innerY, innerRadius, 0, Math.PI * 2);
-    context.fill();
+    context.closePath();
   }
 
   // Function to apply the glow effect when the ball is inactive
