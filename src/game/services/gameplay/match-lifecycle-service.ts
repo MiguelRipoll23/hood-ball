@@ -13,6 +13,7 @@ import { DisconnectionMonitor } from "./disconnection-monitor.js";
 import type { PlayerDisconnectedPayload } from "../../interfaces/events/player-disconnected-payload-interface.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { MatchSessionService } from "../session/match-session-service.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class MatchLifecycleService {
@@ -55,7 +56,7 @@ export class MatchLifecycleService {
   public async savePlayerScore(): Promise<void> {
     const players = this.matchSessionService.getMatch()?.getPlayers();
     if (!players || players.length === 0) {
-      console.warn("No players in the match to save score");
+      EngineLogger.warn("MatchLifecycleService", "No players in the match to save score");
       return;
     }
     const savePlayerScoresRequest: SaveUserScoresRequest[] = [];
@@ -90,10 +91,10 @@ export class MatchLifecycleService {
       this.networkService.removeMatchAdvertiseInterval();
       await this.apiService
         .removeMatch()
-        .catch((error: unknown) => console.error(error));
+        .catch((error: unknown) => EngineLogger.error("MatchLifecycleService", "Failed to save score:", error));
 
       this.disconnectionMonitor.track(playerIds, () => {
-        console.warn("Game over timeout reached, forcing finalization");
+        EngineLogger.warn("MatchLifecycleService", "Game over timeout reached, forcing finalization");
         this.finalizeGameOver();
       });
 
@@ -128,15 +129,15 @@ export class MatchLifecycleService {
       // Remove match from the backend in the background so we don't block the UI
       this.apiService
         .removeMatch()
-        .catch((error: unknown) => console.error(error));
+        .catch((error: unknown) => EngineLogger.error("MatchLifecycleService", "Failed to save score:", error));
     }
 
-    console.log("Left match");
+    EngineLogger.info("MatchLifecycleService", "Left match");
   }
 
   private finalizeGameOver(): void {
     if (this.gameOverFinalized) {
-      console.log("Game over already finalized, skipping");
+      EngineLogger.info("MatchLifecycleService", "Game over already finalized, skipping");
       return;
     }
     this.gameOverFinalized = true;
@@ -147,6 +148,6 @@ export class MatchLifecycleService {
     this.matchSessionService.setMatch(null);
     const localEvent = new LocalEvent(GameEventType.ReturnToMainMenu);
     this.eventProcessor.addLocalEvent(localEvent);
-    console.log("Game over finalized, returning to main menu");
+    EngineLogger.info("MatchLifecycleService", "Game over finalized, returning to main menu");
   }
 }

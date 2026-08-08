@@ -31,6 +31,7 @@ import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js
 import { MatchAction } from "../../models/match-action.js";
 import { injectable, inject } from "@needle-di/core";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class MatchmakingNetworkService
@@ -90,7 +91,7 @@ export class MatchmakingNetworkService
 
   public startMatchAdvertiseInterval(): void {
     if (this.matchAdvertiseInterval !== null) {
-      console.warn(
+      EngineLogger.warn("MatchmakingNetworkService", 
         "Match advertise interval already exists, removing before creating new one",
       );
       this.removeMatchAdvertiseInterval();
@@ -117,25 +118,25 @@ export class MatchmakingNetworkService
 
   public onPeerConnected(peer: WebRTCPeer): void {
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.log("Peer connected", peer);
+      EngineLogger.info("MatchmakingNetworkService", "Peer connected", peer);
       return;
     }
 
-    console.log("Connected to host", peer);
+    EngineLogger.info("MatchmakingNetworkService", "Connected to host", peer);
 
     this.sendJoinRequest(peer);
   }
 
   public onPeerDisconnected(peer: WebRTCPeer, graceful: boolean): void {
     if (peer.hasJoined() === false) {
-      console.warn("Ignoring disconnection from non-joined peer", peer);
+      EngineLogger.warn("MatchmakingNetworkService", "Ignoring disconnection from non-joined peer", peer);
       return;
     }
 
     const playerId = peer.getPlayer()?.getNetworkId() ?? null;
 
     if (playerId === null) {
-      console.warn("Unknown peer disconnected", peer);
+      EngineLogger.warn("MatchmakingNetworkService", "Unknown peer disconnected", peer);
       return;
     }
 
@@ -156,7 +157,7 @@ export class MatchmakingNetworkService
       this.handleHostDisconnected(peer);
     } else {
       // Graceful disconnect from host
-      console.log(`Host ${peer.getName()} disconnected gracefully`);
+      EngineLogger.info("MatchmakingNetworkService", `Host ${peer.getName()} disconnected gracefully`);
       this.matchSessionService.setMatch(null);
       const localEvent = new LocalEvent<HostDisconnectedPayload>(
         GameEventType.HostDisconnected,
@@ -191,7 +192,7 @@ export class MatchmakingNetworkService
     );
 
     if (!verified) {
-      console.warn("Invalid user signature from peer", peer.getToken());
+      EngineLogger.warn("MatchmakingNetworkService", "Invalid user signature from peer", peer.getToken());
       peer.disconnect(true);
       return;
     }
@@ -201,7 +202,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    console.log("Received join request from", userName);
+    EngineLogger.info("MatchmakingNetworkService", "Received join request from", userName);
 
     // Remove NPC player if present (solo match transition to multiplayer)
     // This must happen BEFORE assigning a spawn point to the joining player
@@ -213,7 +214,7 @@ export class MatchmakingNetworkService
     const spawnPointIndex =
       this.spawnPointService.getAndConsumeSpawnPointIndex();
     if (spawnPointIndex === -1) {
-      console.warn("No spawn points available for joining player");
+      EngineLogger.warn("MatchmakingNetworkService", "No spawn points available for joining player");
     } else {
       gamePlayer.setSpawnPointIndex(spawnPointIndex);
     }
@@ -233,7 +234,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    console.log("Received join response from", peer.getToken());
+    EngineLogger.info("MatchmakingNetworkService", "Received join response from", peer.getToken());
 
     const matchState = binaryReader.unsignedInt8();
     const matchTotalSlots = binaryReader.unsignedInt8();
@@ -262,7 +263,7 @@ export class MatchmakingNetworkService
     );
 
     if (!verified) {
-      console.warn("Invalid host signature from peer", peer.getToken());
+      EngineLogger.warn("MatchmakingNetworkService", "Invalid host signature from peer", peer.getToken());
       this.matchSessionService.setMatch(null);
       peer.disconnect(true);
       return;
@@ -312,7 +313,7 @@ export class MatchmakingNetworkService
 
   @PeerCommandHandler(WebRTCType.SnapshotEnd)
   public handleSnapshotEnd(peer: WebRTCPeer): void {
-    console.log("Received snapshot from", peer.getName());
+    EngineLogger.info("MatchmakingNetworkService", "Received snapshot from", peer.getName());
 
     this.stopFindMatchesTimer();
     peer.setJoined(true);
@@ -340,7 +341,7 @@ export class MatchmakingNetworkService
 
   @PeerCommandHandler(WebRTCType.SnapshotACK)
   public handleSnapshotACK(peer: WebRTCPeer): void {
-    console.log("Received snapshot ACK from", peer.getName());
+    EngineLogger.info("MatchmakingNetworkService", "Received snapshot ACK from", peer.getName());
 
     peer.setJoined(true);
 
@@ -356,7 +357,7 @@ export class MatchmakingNetworkService
       .getPeers()
       .filter((matchPeer: WebRTCPeer) => matchPeer !== peer)
       .forEach((p: WebRTCPeer) => {
-        console.log("Sending player connection to", p.getName());
+        EngineLogger.info("MatchmakingNetworkService", "Sending player connection to", p.getName());
         this.sendPlayerConnection(p, player, true, false);
       });
 
@@ -383,7 +384,7 @@ export class MatchmakingNetworkService
   @PeerCommandHandler(WebRTCType.PlayerPing)
   public handlePlayerPing(peer: WebRTCPeer, binaryReader: BinaryReader): void {
     if (this.gamePlayer.isHost()) {
-      console.warn(
+      EngineLogger.warn("MatchmakingNetworkService", 
         `Unexpected player ping information from player ${peer.getName()}`,
       );
       return;
@@ -402,13 +403,13 @@ export class MatchmakingNetworkService
     const peers = this.webrtcService.getPeers();
 
     peers.forEach((peer: WebRTCPeer) => {
-      console.log(`Disconnecting peer ${peer.getName()}`);
+      EngineLogger.info("MatchmakingNetworkService", `Disconnecting peer ${peer.getName()}`);
       peer.disconnectGracefully();
     });
   }
 
   private handleAlreadyJoinedMatch(peer: WebRTCPeer): void {
-    console.warn(
+    EngineLogger.warn("MatchmakingNetworkService", 
       "Already joined a match, disconnecting peer...",
       peer.getToken(),
     );
@@ -424,7 +425,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    console.log(`Player ${player.getName()} disconnected`);
+    EngineLogger.info("MatchmakingNetworkService", `Player ${player.getName()} disconnected`);
     const match = this.matchSessionService.getMatch();
     match?.removePlayer(player);
     this.spawnPointService.releaseSpawnPointIndex(player.getSpawnPointIndex());
@@ -456,18 +457,18 @@ export class MatchmakingNetworkService
     const match = this.matchSessionService.getMatch();
 
     if (match === null) {
-      console.warn("Game match is null");
+      EngineLogger.warn("MatchmakingNetworkService", "Game match is null");
       return;
     }
 
     const player = match.getPlayerByNetworkId(playerId);
 
     if (player === null) {
-      console.warn("Player not found", playerId);
+      EngineLogger.warn("MatchmakingNetworkService", "Player not found", playerId);
       return;
     }
 
-    console.log(`Player ${player.getName()} disconnected`);
+    EngineLogger.info("MatchmakingNetworkService", `Player ${player.getName()} disconnected`);
     match.removePlayer(player);
 
     const localEvent = new LocalEvent<PlayerDisconnectedPayload>(
@@ -480,7 +481,7 @@ export class MatchmakingNetworkService
   }
 
   private handleHostDisconnected(peer: WebRTCPeer): void {
-    console.log(`Host ${peer.getName()} disconnected`);
+    EngineLogger.info("MatchmakingNetworkService", `Host ${peer.getName()} disconnected`);
     this.matchSessionService.setMatch(null);
 
     const localEvent = new LocalEvent<HostDisconnectedPayload>(
@@ -496,7 +497,7 @@ export class MatchmakingNetworkService
     const userSignature = this.webSocketService.getUserSignature();
 
     if (userSignature === null) {
-      console.warn("No user signature available, cannot send join request");
+      EngineLogger.warn("MatchmakingNetworkService", "No user signature available, cannot send join request");
       return;
     }
 
@@ -527,12 +528,12 @@ export class MatchmakingNetworkService
   }
 
   private handleGameMatchNull(peer: WebRTCPeer): void {
-    console.warn("Game match is null, disconnecting peer...", peer.getToken());
+    EngineLogger.warn("MatchmakingNetworkService", "Game match is null, disconnecting peer...", peer.getToken());
     peer.disconnect(true);
   }
 
   private handleUnavailableSlots(peer: WebRTCPeer): void {
-    console.log(
+    EngineLogger.info("MatchmakingNetworkService", 
       "Received join request but the match is full, disconnecting peer...",
       peer.getToken(),
     );
@@ -541,7 +542,7 @@ export class MatchmakingNetworkService
   }
 
   private handleRemotePlayerNull(peer: WebRTCPeer): void {
-    console.warn("Remote player is null for peer", peer.getToken());
+    EngineLogger.warn("MatchmakingNetworkService", "Remote player is null for peer", peer.getToken());
     peer.disconnect(true);
   }
 
@@ -549,7 +550,7 @@ export class MatchmakingNetworkService
     const hostSignature = this.webSocketService.getUserSignature();
 
     if (hostSignature === null) {
-      console.warn("No host signature available, cannot send join response");
+      EngineLogger.warn("MatchmakingNetworkService", "No host signature available, cannot send join response");
       peer.disconnect(true);
       return;
     }
@@ -568,7 +569,7 @@ export class MatchmakingNetworkService
       .arrayBuffer(hostSignature)
       .toArrayBuffer();
 
-    console.log("Sending join response to", peer.getName());
+    EngineLogger.info("MatchmakingNetworkService", "Sending join response to", peer.getName());
     peer.sendReliableOrderedMessage(payload, true);
 
     this.sendPlayerList(peer);
@@ -583,7 +584,7 @@ export class MatchmakingNetworkService
       return;
     }
 
-    console.log("Sending player list to", peer.getName());
+    EngineLogger.info("MatchmakingNetworkService", "Sending player list to", peer.getName());
 
     const players = match.getPlayers();
 
@@ -617,14 +618,14 @@ export class MatchmakingNetworkService
       .unsignedInt8(playerScore)
       .toArrayBuffer();
 
-    console.log(
+    EngineLogger.info("MatchmakingNetworkService", 
       `Sending player connection for ${player.getName()} with index ${spawnIndex}`,
     );
     peer.sendReliableOrderedMessage(payload, skipQueue);
   }
 
   private sendSnapshotEnd(peer: WebRTCPeer): void {
-    console.log("Sending snapshot end to", peer.getName());
+    EngineLogger.info("MatchmakingNetworkService", "Sending snapshot end to", peer.getName());
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.SnapshotEnd)
@@ -634,7 +635,7 @@ export class MatchmakingNetworkService
   }
 
   private sendSnapshotACK(peer: WebRTCPeer): void {
-    console.log("Sending snapshot ACK to", peer.getName());
+    EngineLogger.info("MatchmakingNetworkService", "Sending snapshot ACK to", peer.getName());
 
     const payload = BinaryWriter.build()
       .unsignedInt8(WebRTCType.SnapshotACK)
@@ -673,7 +674,7 @@ export class MatchmakingNetworkService
       .filter((peer: WebRTCPeer) => peer.hasJoined())
       .forEach((p: WebRTCPeer) => {
         if (p.getPlayer() === null) {
-          console.warn("Peer has no player associated", p);
+          EngineLogger.warn("MatchmakingNetworkService", "Peer has no player associated", p);
           return;
         }
 
@@ -711,18 +712,18 @@ export class MatchmakingNetworkService
 
     const match = this.matchSessionService.getMatch();
     if (match === null) {
-      console.debug("Received PlayerKicked but no active match");
+      EngineLogger.debug("MatchmakingNetworkService", "Received PlayerKicked but no active match");
       return;
     }
     if (!match.isHost()) {
-      console.debug("Received PlayerKicked but not host, ignoring");
+      EngineLogger.debug("MatchmakingNetworkService", "Received PlayerKicked but not host, ignoring");
       return;
     }
 
     const player = match.getPlayerByNetworkId(userId);
     const playerName = player?.getName() ?? userId;
 
-    console.log(`Kicking banned player from match: ${playerName} (${userId})`);
+    EngineLogger.info("MatchmakingNetworkService", `Kicking banned player from match: ${playerName} (${userId})`);
 
     const action = MatchAction.playerBanned(userId, { playerName });
     this.matchActionsLogService.addAction(action);
@@ -755,7 +756,7 @@ export class MatchmakingNetworkService
 
       if (npcSpawnIndex !== -1) {
         this.spawnPointService.releaseSpawnPointIndex(npcSpawnIndex);
-        console.log(
+        EngineLogger.info("MatchmakingNetworkService", 
           `NPC player removed from match, spawn point ${npcSpawnIndex} released before joining player assignment`,
         );
       }

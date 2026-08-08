@@ -11,6 +11,7 @@ import type { GamePlayer } from "../models/game-player.js";
 import type { PlayerModerationService } from "../services/network/player-moderation-service.js";
 import type { APIService } from "../services/network/api-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class MatchMenuEntity extends BaseTappableGameEntity {
   private readonly WINDOW_WIDTH_RATIO = 0.85;
@@ -144,7 +145,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
           this.pendingClose = true;
         })
         .catch((error) => {
-          console.error("Failed to report user:", error);
+          EngineLogger.error("MatchMenuEntity", "Failed to report user:", error);
           this.messageEntity.show("Failed to report player");
           this.pendingClose = true;
         });
@@ -167,7 +168,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
           this.pendingClose = true;
         })
         .catch((error) => {
-          console.error("Failed to ban user:", error);
+          EngineLogger.error("MatchMenuEntity", "Failed to ban user:", error);
           this.messageEntity.show("Failed to ban player");
           this.pendingClose = true;
         });
@@ -251,7 +252,7 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     }
 
     if (this.leaveMatchButton.isButtonPressed()) {
-      console.log("Leave match requested");
+      EngineLogger.info("MatchMenuEntity", "Leave match requested");
       this.onLeaveMatch();
       this.onClose();
     }

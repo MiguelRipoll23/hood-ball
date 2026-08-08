@@ -1,5 +1,6 @@
 import { injectable } from "@needle-di/core";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class WebRTCPeerManagerService {
@@ -7,7 +8,7 @@ export class WebRTCPeerManagerService {
 
   public registerPeer(token: string, peer: WebRTCPeer): void {
     this.peers.set(token, peer);
-    console.log("Added WebRTC peer, updated peers count", this.peers.size);
+    EngineLogger.info("WebrtcPeerManagerService", "Added WebRTC peer, updated peers count", this.peers.size);
   }
 
   public getPeer(token: string): WebRTCPeer | null {
@@ -24,7 +25,7 @@ export class WebRTCPeerManagerService {
 
   public removePeer(token: string): void {
     this.peers.delete(token);
-    console.log("Removed WebRTC peer, updated peers count", this.peers.size);
+    EngineLogger.info("WebrtcPeerManagerService", "Removed WebRTC peer, updated peers count", this.peers.size);
   }
 
   public getDownloadBytes(): number {

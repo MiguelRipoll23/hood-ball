@@ -9,6 +9,9 @@ import type { EntityOrchestratorService } from "../../services/gameplay/entity-o
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import type { ChatService } from "../../services/network/chat-service.js";
 import type { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
+import type { GamePlayer } from "../../models/game-player.js";
+import type { GameServer } from "../../models/game-server.js";
+import type { MatchSessionService } from "../../services/session/match-session-service.js";
 
 export interface WorldSceneDependencies {
   gameState: GameState;
@@ -22,5 +25,8 @@ export interface WorldSceneDependencies {
   spawnPointService: SpawnPointService | null;
   chatService: ChatService | null;
   matchActionsLogService: MatchActionsLogService | null;
+  gamePlayer: GamePlayer;
+  gameServer: GameServer;
+  matchSessionService: MatchSessionService;
   replayMode?: boolean;
 }

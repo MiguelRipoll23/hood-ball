@@ -1,7 +1,9 @@
 import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.js";
-import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
+import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
+import { InteractionComponent } from "../components/interaction-component.js";
+import { EngineLogger } from "../services/engine-logger.js";
 
-export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
+export class BaseTappableGameEntity extends BaseMoveableGameEntity {
   protected width = 0;
   protected height = 0;
 
@@ -10,18 +12,24 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
   protected hovering = false;
   protected pressed = false;
 
+  /** Backing InteractionComponent – use getComponent(InteractionComponent) for new code. */
+  protected readonly interaction: InteractionComponent;
+
   constructor(protected stealFocus = false) {
     super();
+    this.interaction = this.addComponent(new InteractionComponent());
+    this.interaction.stealFocus = stealFocus;
   }
 
   public setActive(active: boolean): void {
     if (active) {
-      console.log(this.constructor.name + " activated");
+      EngineLogger.info("Tappable", this.constructor.name + " activated");
     } else {
-      console.log(this.constructor.name + " deactivated");
+      EngineLogger.info("Tappable", this.constructor.name + " deactivated");
     }
 
     this.active = active;
+    this.interaction.active = active;
   }
 
   public isActive(): boolean {
@@ -46,11 +54,13 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
 
         if (pressing || mouse) {
           this.hovering = true;
+          this.interaction.hovering = true;
         }
 
         if (touch.pressed) {
-          console.log(this.constructor.name + " pressed");
+          EngineLogger.info("Tappable", this.constructor.name + " pressed");
           this.pressed = true;
+          this.interaction.pressed = true;
         }
 
         if (this.hovering || this.pressed) {
@@ -63,6 +73,7 @@ export class BaseTappableGameEntity extends BaseAnimatedGameEntity {
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.hovering = false;
     this.pressed = false;
+    this.interaction.resetFrame();
     super.update(deltaTimeStamp);
   }
 

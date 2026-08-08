@@ -16,6 +16,7 @@ import { ServerCommandHandler } from "../../decorators/server-command-handler.js
 import { injectable, inject } from "@needle-di/core";
 import { GameState } from "../../../engine/models/game-state.js";
 import type { WebSocketServiceContract } from "../../interfaces/services/network/websocket-service-interface.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class WebSocketService implements WebSocketServiceContract {
@@ -123,7 +124,7 @@ export class WebSocketService implements WebSocketServiceContract {
     const serverRegistration = this.gameServer.getServerRegistration();
 
     if (serverRegistration === null) {
-      console.error("Game registration not found, cannot connect to server");
+      EngineLogger.error("WebsocketService", "Game registration not found, cannot connect to server");
       if (this.isReconnecting) {
         this.scheduleReconnection();
       }
@@ -133,7 +134,7 @@ export class WebSocketService implements WebSocketServiceContract {
     const accessToken = this.apiService.getAccessToken();
 
     if (!accessToken) {
-      console.error("Access token not found, cannot connect websocket");
+      EngineLogger.error("WebsocketService", "Access token not found, cannot connect websocket");
       if (this.isReconnecting) {
         this.scheduleReconnection();
       }
@@ -152,7 +153,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.webSocket.binaryType = "arraybuffer";
       this.addEventListeners(this.webSocket);
     } catch (error) {
-      console.error("Failed to create WebSocket connection", error);
+      EngineLogger.error("WebsocketService", "Failed to create WebSocket connection", error);
       if (this.isReconnecting) {
         this.scheduleReconnection();
       }
@@ -191,7 +192,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.maxReconnectAttempts > 0 &&
       this.reconnectAttempts > this.maxReconnectAttempts
     ) {
-      console.log(
+      EngineLogger.info("WebsocketService", 
         `Maximum reconnection attempts (${this.maxReconnectAttempts}) reached. Stopping reconnection.`,
       );
       this.stopReconnection();
@@ -204,13 +205,13 @@ export class WebSocketService implements WebSocketServiceContract {
       this.maxReconnectDelay,
     );
 
-    console.log(
+    EngineLogger.info("WebsocketService", 
       `Scheduling reconnection attempt ${this.reconnectAttempts} in ${delay}ms`,
     );
 
     this.reconnectTimeoutId = setTimeout(() => {
       if (this.isReconnecting) {
-        console.log(`Reconnection attempt ${this.reconnectAttempts}`);
+        EngineLogger.info("WebsocketService", `Reconnection attempt ${this.reconnectAttempts}`);
         this.attemptConnection();
       }
     }, delay);
@@ -228,13 +229,13 @@ export class WebSocketService implements WebSocketServiceContract {
       this.webSocket.send(arrayBuffer);
 
       if (this.isLoggingEnabled()) {
-        console.debug(
+        EngineLogger.debug("WebsocketService", 
           "%cSent message to server:\n" + BinaryWriter.preview(arrayBuffer),
           "color: purple",
         );
       }
     } catch (error) {
-      console.error(`Failed to send message to server`, error);
+      EngineLogger.error("WebsocketService", `Failed to send message to server`, error);
     }
   }
 
@@ -299,7 +300,7 @@ export class WebSocketService implements WebSocketServiceContract {
   }
 
   private handleOpenEvent(): void {
-    console.log("Connected to server");
+    EngineLogger.info("WebsocketService", "Connected to server");
 
     // Stop any ongoing reconnection attempts
     this.stopReconnection();
@@ -320,21 +321,21 @@ export class WebSocketService implements WebSocketServiceContract {
 
       this.sendMessage(payload);
     } else {
-      console.warn(
+      EngineLogger.warn("WebsocketService", 
         "No access token available to authenticate WebSocket connection",
       );
     }
   }
 
   private handleCloseEvent(event: CloseEvent): void {
-    console.log("Connection closed", event);
+    EngineLogger.info("WebsocketService", "Connection closed", event);
 
     const wasConnected = this.gameServer.isConnected();
     this.gameServer.setConnected(false);
 
     // Check if the user has been banned
     if (event.code === 1000 && event.reason === "User has been banned") {
-      console.log("User has been banned from the server");
+      EngineLogger.info("WebsocketService", "User has been banned from the server");
 
       this.isTerminalDisconnect = true;
       this.stopReconnection();
@@ -348,7 +349,7 @@ export class WebSocketService implements WebSocketServiceContract {
 
     // Check if the user has been kicked
     if (event.code === 1000 && event.reason === "User has been kicked") {
-      console.log("User has been kicked from the server");
+      EngineLogger.info("WebsocketService", "User has been kicked from the server");
 
       this.isTerminalDisconnect = true;
       this.stopReconnection();
@@ -379,7 +380,7 @@ export class WebSocketService implements WebSocketServiceContract {
       if (!this.isReconnecting) {
         this.startReconnection();
       } else {
-        console.log(
+        EngineLogger.info("WebsocketService", 
           `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`,
         );
         this.scheduleReconnection();
@@ -388,7 +389,7 @@ export class WebSocketService implements WebSocketServiceContract {
   }
 
   private handleErrorEvent(event: Event): void {
-    console.error("WebSocket error", event);
+    EngineLogger.error("WebsocketService", "WebSocket error", event);
 
     if (this.isTerminalDisconnect) {
       return;
@@ -412,7 +413,7 @@ export class WebSocketService implements WebSocketServiceContract {
       this.startReconnection();
     } else if (this.isReconnecting) {
       // If we're in the middle of reconnecting and get an error, schedule next attempt
-      console.log(
+      EngineLogger.info("WebsocketService", 
         `Reconnection attempt ${this.reconnectAttempts} failed, scheduling next attempt`,
       );
       this.scheduleReconnection();
@@ -424,7 +425,7 @@ export class WebSocketService implements WebSocketServiceContract {
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
 
     if (this.isLoggingEnabled()) {
-      console.debug(
+      EngineLogger.debug("WebsocketService", 
         "%cReceived message from server:\n" + binaryReader.preview(),
         "color: green;",
       );
@@ -435,7 +436,7 @@ export class WebSocketService implements WebSocketServiceContract {
     try {
       this.dispatcherService.dispatchCommand(commandId, binaryReader);
     } catch (error) {
-      console.error(
+      EngineLogger.error("WebsocketService", 
         `Error executing server command handler for ID ${commandId}}:`,
         error,
       );

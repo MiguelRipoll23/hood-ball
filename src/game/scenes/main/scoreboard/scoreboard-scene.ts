@@ -8,6 +8,7 @@ import { EventConsumerService } from "../../../../engine/services/gameplay/event
 import { ScoreboardEntityFactory } from "./scoreboard-entity-factory.js";
 import type { ScoreboardEntities } from "./scoreboard-entity-factory.js";
 import { ScoreboardController } from "./scoreboard-controller.js";
+import { EngineLogger } from "../../../../engine/services/engine-logger.js";
 
 @injectable()
 export class ScoreboardScene extends BaseGameScene {
@@ -57,7 +58,7 @@ export class ScoreboardScene extends BaseGameScene {
         this.entities?.rankingTableEntity.fadeIn(0.2);
       })
       .catch((error) => {
-        console.error("Failed to fetch ranking", error);
+        EngineLogger.error("ScoreboardScene", "Failed to fetch ranking", error);
         this.entities?.closeableMessageEntity.show("Failed to fetch ranking");
       });
   }

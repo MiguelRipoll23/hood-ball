@@ -1,9 +1,10 @@
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
-export class BoostMeterEntity extends BaseAnimatedGameEntity {
+export class BoostMeterEntity extends BaseMoveableGameEntity {
   private readonly RADIUS = 32;
   private boostLevel = 1; // target level 0..1
   private displayLevel = 1; // rendered level 0..1
@@ -103,7 +104,7 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
     // Guard against empty or invalid buffers
     // Minimum size: 4 (float32) + 1 (boolean) = 5 bytes
     if (!arrayBuffer || arrayBuffer.byteLength < 5) {
-      console.warn(
+      EngineLogger.warn("BoostMeterEntity", 
         `BoostMeterEntity: applyReplayState received invalid buffer size: ${
           arrayBuffer ? arrayBuffer.byteLength : 0
         }`
@@ -121,7 +122,7 @@ export class BoostMeterEntity extends BaseAnimatedGameEntity {
       this.boostAttemptWhileEmpty = newBoostAttempt;
       this.displayLevel = newBoostLevel; // Sync display immediately during replay
     } catch (error) {
-      console.error(
+      EngineLogger.error("BoostMeterEntity", 
         "BoostMeterEntity: Error applying replay state, buffer length:",
         arrayBuffer.byteLength,
         error

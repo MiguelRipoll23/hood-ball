@@ -1,7 +1,7 @@
 import { TimerService } from "../../../engine/services/gameplay/timer-service.js";
-import { BaseAnimatedGameEntity } from "../../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
 
-export class ToastEntity extends BaseAnimatedGameEntity {
+export class ToastEntity extends BaseMoveableGameEntity {
   protected width: number = 0;
   protected height: number = 0;
 

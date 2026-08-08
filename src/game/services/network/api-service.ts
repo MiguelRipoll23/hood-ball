@@ -31,6 +31,7 @@ import { APIUtils } from "../../utils/api-utils.js";
 import { LoadingIndicatorService } from "../ui/loading-indicator-service.js";
 import { injectable, inject } from "@needle-di/core";
 import { GameServer } from "../../models/game-server.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 interface RefreshResponse {
   accessToken: string;
@@ -140,13 +141,13 @@ export class APIService {
 
       if (typeof accessToken !== "string" || accessToken.length === 0) {
         this.clearSession();
-        console.error("Refresh response missing valid accessToken");
+        EngineLogger.error("ApiService", "Refresh response missing valid accessToken");
         throw new Error("Session expired. Please sign in again.");
       }
 
       if (typeof refreshToken !== "string" || refreshToken.length === 0) {
         this.clearSession();
-        console.error("Refresh response missing valid refreshToken");
+        EngineLogger.error("ApiService", "Refresh response missing valid refreshToken");
         throw new Error("Session expired. Please sign in again.");
       }
 
@@ -210,7 +211,7 @@ export class APIService {
     }
 
     const versionResponse: VersionResponse = await response.json();
-    console.log("Version response", versionResponse);
+    EngineLogger.info("ApiService", "Version response", versionResponse);
 
     return false;
   }

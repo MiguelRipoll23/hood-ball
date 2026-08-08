@@ -2,6 +2,8 @@ import { EntityStateType } from "../enums/entity-state-type.js";
 import type { GameEntity } from "../models/game-entity.js";
 import type { DebugSettings } from "../models/debug-settings.js";
 import { EntityRegistry } from "../services/entity-registry.js";
+import { EngineLogger } from "../services/engine-logger.js";
+import type { Component } from "../components/component.js";
 
 export class BaseGameEntity implements GameEntity {
   protected loaded: boolean = false;
@@ -12,13 +14,56 @@ export class BaseGameEntity implements GameEntity {
 
   protected debugSettings: DebugSettings | null = null;
 
+  /** Component map for the ECS-lite system. Keyed by constructor name. */
+  private readonly components = new Map<string, Component>();
+
   constructor() {
     // Generate unique ID using counter and constructor name
     this.entityId = `${
       this.constructor.name
     }_${EntityRegistry.getNextEntityId()}`;
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("Entity", `${this.constructor.name} created`);
   }
+
+  // ── Component System ──────────────────────────────────────────
+
+  /**
+   * Attach a component to this entity. If a component of the same type
+   * already exists, it is replaced.
+   */
+  public addComponent<T extends Component>(component: T): T {
+    const key = component.constructor.name;
+    this.components.set(key, component);
+    component.init?.();
+    return component;
+  }
+
+  /**
+   * Retrieve a component by its constructor. Returns null if not found.
+   */
+  public getComponent<T extends Component>(
+    ctor: new (...args: never[]) => T,
+  ): T | null {
+    return (this.components.get(ctor.name) as T) ?? null;
+  }
+
+  /**
+   * Check if a component of the given type exists on this entity.
+   */
+  public hasComponent<T extends Component>(
+    ctor: new (...args: never[]) => T,
+  ): boolean {
+    return this.components.has(ctor.name);
+  }
+
+  /**
+   * Iterate over all attached components.
+   */
+  public forEachComponent(fn: (component: Component) => void): void {
+    this.components.forEach(fn);
+  }
+
+  // ── Lifecycle ──────────────────────────────────────────────────
 
   /**
    * Returns the unique identifier for this entity.
@@ -37,7 +82,7 @@ export class BaseGameEntity implements GameEntity {
   }
 
   public load() {
-    console.log(`${this.constructor.name} loaded`);
+    EngineLogger.info("Entity", `${this.constructor.name} loaded`);
     this.loaded = true;
   }
 
@@ -53,7 +98,7 @@ export class BaseGameEntity implements GameEntity {
     this.state = state;
 
     if (this.state === EntityStateType.Inactive) {
-      console.log(`${this.constructor.name} set to inactive`);
+      EngineLogger.info("Entity", `${this.constructor.name} set to inactive`);
     }
   }
 
@@ -65,7 +110,7 @@ export class BaseGameEntity implements GameEntity {
     this.removed = removed;
 
     if (this.removed) {
-      console.log(`${this.constructor.name} to be removed from scene`);
+      EngineLogger.info("Entity", `${this.constructor.name} to be removed from scene`);
     }
   }
 

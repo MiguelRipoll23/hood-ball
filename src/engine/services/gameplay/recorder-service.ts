@@ -8,6 +8,7 @@ import type { EntitySpawnEvent } from "../../interfaces/recording/entity-spawn-e
 import type { EntityDespawnEvent } from "../../interfaces/recording/entity-despawn-event-interface.js";
 import type { EntityTransformDelta } from "../../interfaces/recording/entity-transform-delta-interface.js";
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
+import { EngineLogger } from "../engine-logger.js";
 import { LayerType } from "../../enums/layer-type.js";
 import type { SceneType } from "../../enums/scene-type.js";
 import { SceneTypeUnknown } from "../../enums/scene-type.js";
@@ -83,7 +84,7 @@ export class RecorderService {
   private trackedEntities = new Set<string>();
 
   constructor() {
-    console.log("RecorderService initialized");
+    EngineLogger.info("Recorder", "RecorderService initialized");
   }
 
   /**
@@ -115,7 +116,8 @@ export class RecorderService {
    */
   private getEntityTypeId(entity: GameEntity): number | null {
     if (!this.entityTypeMapper) {
-      console.warn(
+      EngineLogger.warn(
+        "Recorder",
         "No entity type mapper set. Call setEntityTypeMapper() before recording."
       );
       return null;
@@ -161,7 +163,7 @@ export class RecorderService {
 
   public startRecording(auto = false): void {
     if (this.recording) {
-      console.warn("Recording is already in progress");
+      EngineLogger.warn("Recorder", "Recording is already in progress");
       return;
     }
 

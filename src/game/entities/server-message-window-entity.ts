@@ -1,4 +1,5 @@
 import { CloseableWindowEntity } from "./common/closeable-window-entity.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class ServerMessageWindowEntity extends CloseableWindowEntity {
   private index: number = 0;
@@ -27,7 +28,7 @@ export class ServerMessageWindowEntity extends CloseableWindowEntity {
     this.next = false;
 
     const pages = `${index + 1}/${length}`;
-    console.log(`Opening server message (${pages})`);
+    EngineLogger.info("ServerMessageWindowEntity", `Opening server message (${pages})`);
 
     super.open(`SERVER MESSAGE (${pages})`, title, content, timestamp);
   }

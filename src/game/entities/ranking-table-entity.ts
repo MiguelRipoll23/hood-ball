@@ -1,7 +1,7 @@
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import type { UserScore } from "../interfaces/responses/user-scores-response-interface.js";
 
-export class RankingTableEntity extends BaseAnimatedGameEntity {
+export class RankingTableEntity extends BaseMoveableGameEntity {
   private ranking: UserScore[] = [];
 
   public setRanking(ranking: UserScore[]): void {

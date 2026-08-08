@@ -57,8 +57,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
 
     this.inputElement.style.display = "block";
     // Trigger reflow to ensure the transition runs
-    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-    this.inputElement.offsetWidth;
+    void this.inputElement.offsetWidth;
     this.inputElement.classList.add("show");
     this.inputElement.value = "";
     this.inputElement.focus();

@@ -33,6 +33,7 @@ import { WORLD_SCENE_FACTORY_TOKEN } from "../../../engine/interfaces/services/g
 import { WorldSceneFactory } from "../../scenes/world/world-scene-factory.js";
 import { WEB_RTC_SERVICE_TOKEN } from "../../../engine/interfaces/services/network/webrtc-service-contract.js";
 import { WebRTCEventDispatcher } from "../network/webrtc-event-dispatcher.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class GameServiceRegistry {
   public static register(): void {
@@ -165,7 +166,7 @@ export class GameServiceRegistry {
       const eventDispatcher = new WebRTCEventDispatcher(eventProcessorService);
       eventDispatcher.register(webrtcService);
     } catch (error) {
-      console.error("Error initializing services", error);
+      EngineLogger.error("GameServiceRegistry", "Error initializing services", error);
     }
   }
 }

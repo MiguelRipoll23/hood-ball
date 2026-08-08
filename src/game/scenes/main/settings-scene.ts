@@ -7,6 +7,7 @@ import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { container } from "../../../engine/services/di-container.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { DebugWindow } from "../../debug/debug-window.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class SettingsScene extends BaseGameScene {
   private titleEntity: TitleEntity | null = null;
@@ -113,7 +114,7 @@ export class SettingsScene extends BaseGameScene {
         return this.handleDebugToolsSettingPress(settingEntity);
 
       default:
-        console.log("Unknown setting pressed");
+        EngineLogger.info("SettingsScene", "Unknown setting pressed");
         break;
     }
   }

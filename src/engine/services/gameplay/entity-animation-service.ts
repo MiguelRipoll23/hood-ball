@@ -1,6 +1,7 @@
 import { AnimationType } from "../../enums/animation-type.js";
 import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.js";
 import { animationLogService } from "./animation-log-service.js";
+import { EngineLogger } from "../engine-logger.js";
 
 export class EntityAnimationService {
   private readonly entity: AnimatableEntity;
@@ -30,7 +31,8 @@ export class EntityAnimationService {
 
     animationLogService.register(this, entity, animationType);
 
-    console.log(
+    EngineLogger.info(
+      "EntityAnimation",
       `${this.constructor.name} [${AnimationType[animationType]}] created for ${entity.constructor.name}`
     );
   }

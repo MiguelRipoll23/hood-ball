@@ -8,14 +8,14 @@ export class LoadingBackgroundEntity extends BaseGameEntity {
   }
 
   // Update the gradient offset to animate the background
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.gradientOffset += deltaTimeStamp * 0.01; // Adjust speed as needed
     if (this.gradientOffset > this.canvas.width) {
       this.gradientOffset = 0; // Loop the gradient
     }
   }
 
-  public render(context: CanvasRenderingContext2D) {
+  public override render(context: CanvasRenderingContext2D) {
     this.drawMovingGradientSky(context);
   }
 

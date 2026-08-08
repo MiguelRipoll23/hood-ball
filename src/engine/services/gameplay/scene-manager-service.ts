@@ -2,6 +2,7 @@ import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js"
 import { SCENE_TRANSITION_SERVICE_TOKEN, type SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
 import type { SceneManagerServiceContract } from "../../interfaces/services/scene/scene-manager-service-contract.js";
 import { injectable, inject } from "@needle-di/core";
+import { EngineLogger } from "../engine-logger.js";
 
 @injectable()
 export class SceneManagerService implements SceneManagerServiceContract {
@@ -85,6 +86,6 @@ export class SceneManagerService implements SceneManagerServiceContract {
       this.stack.push(nextScene);
     }
 
-    console.log("Scenes stack", this.stack);
+    EngineLogger.info("SceneManager", "Scenes stack", this.stack);
   }
 }

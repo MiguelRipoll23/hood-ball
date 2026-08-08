@@ -10,6 +10,7 @@ import { TimerManagerService } from "../../../engine/services/gameplay/timer-man
 import { injectable, inject } from "@needle-di/core";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class WebRTCPeerService implements WebRTCPeer {
@@ -47,6 +48,8 @@ export class WebRTCPeerService implements WebRTCPeer {
     channelKey: string;
     arrayBuffer: ArrayBuffer;
   }> = [];
+
+  private readonly dataChannelValues: RTCDataChannel[] = [];
 
   constructor(
     private token: string,
@@ -147,7 +150,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   public async connect(answer: RTCSessionDescriptionInit): Promise<void> {
-    console.info("Connecting to peer...", answer);
+    EngineLogger.info("WebrtcPeerService", "Connecting to peer...", answer);
 
     await this.peerConnection.setRemoteDescription(
       new RTCSessionDescription(answer)
@@ -235,6 +238,8 @@ export class WebRTCPeerService implements WebRTCPeer {
         { ordered: false, maxRetransmits: 0 }
       ),
     };
+    this.dataChannelValues.length = 0;
+    this.dataChannelValues.push(...Object.values(this.dataChannels));
   }
 
   private addEventListeners(): void {
@@ -249,7 +254,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleConnectionStateChange(): void {
-    console.info("Peer connection state:", this.peerConnection.connectionState);
+    EngineLogger.info("WebrtcPeerService", "Peer connection state:", this.peerConnection.connectionState);
 
     switch (this.peerConnection.connectionState) {
       case "connected":
@@ -264,12 +269,12 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleConnection(): void {
-    console.info("Peer connection established");
+    EngineLogger.info("WebrtcPeerService", "Peer connection established");
     this.connected = true;
   }
 
   private handleDisconnection(): void {
-    console.info("Peer connection closed");
+    EngineLogger.info("WebrtcPeerService", "Peer connection closed");
     this.webrtcDelegate.removePeer(this.token);
 
     const shouldNotify = this.connected || this.gracefulDisconnecting;
@@ -290,21 +295,21 @@ export class WebRTCPeerService implements WebRTCPeer {
     };
 
     this.peerConnection.oniceconnectionstatechange = () => {
-      console.info(
+      EngineLogger.info("WebrtcPeerService",
         "ICE connection state:",
         this.peerConnection.iceConnectionState
       );
     };
 
     this.peerConnection.onicegatheringstatechange = () => {
-      console.info(
+      EngineLogger.info("WebrtcPeerService",
         "ICE gathering state:",
         this.peerConnection.iceGatheringState
       );
     };
 
     this.peerConnection.onicecandidateerror = (event) => {
-      console.error("ICE candidate error", event);
+      EngineLogger.error("WebrtcPeerService", "ICE candidate error", event);
     };
   }
 
@@ -314,11 +319,13 @@ export class WebRTCPeerService implements WebRTCPeer {
       this.peerConnection.ondatachannel = (event) => {
         const channel = event.channel;
         this.dataChannels[channel.label] = channel;
+        this.dataChannelValues.length = 0;
+        this.dataChannelValues.push(...Object.values(this.dataChannels));
         this.setupDataChannelListeners(channel);
       };
     } else {
       // For the non-host, set up listeners for already created channels
-      Object.values(this.dataChannels).forEach((channel) => {
+      this.dataChannelValues.forEach((channel) => {
         this.setupDataChannelListeners(channel);
       });
     }
@@ -335,7 +342,7 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private handleDataChannelOpen(label: string): void {
-    console.info(`Data channel ${label} opened`);
+    EngineLogger.info("WebrtcPeerService", `Data channel ${label} opened`);
 
     if (this.host === false && this.areAllDataChannelsOpen()) {
       this.connectionListener.onPeerConnected(this);
@@ -343,13 +350,13 @@ export class WebRTCPeerService implements WebRTCPeer {
   }
 
   private areAllDataChannelsOpen(): boolean {
-    return Object.values(this.dataChannels).every(
+    return this.dataChannelValues.every(
       (channel) => channel.readyState === "open"
     );
   }
 
   private handleDataChannelError(label: string, error: Event): void {
-    console.error(`Data channel ${label} error`, error);
+    EngineLogger.error("WebrtcPeerService", `Data channel ${label} error`, error);
   }
 
   private queueOrProcessIceCandidate(iceCandidate: RTCIceCandidateInit): void {
@@ -357,7 +364,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       this.processIceCandidate(iceCandidate, true);
     } else {
       this.iceCandidatesQueue.push(iceCandidate);
-      console.info("Queued ICE candidate", iceCandidate);
+      EngineLogger.info("WebrtcPeerService", "Queued ICE candidate", iceCandidate);
     }
 
     this.webrtcDelegate.sendIceCandidate(this.token, iceCandidate);
@@ -371,9 +378,9 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     try {
       await this.peerConnection.addIceCandidate(iceCandidate);
-      console.info(`Added ${type} ICE candidate`, iceCandidate);
+      EngineLogger.info("WebrtcPeerService", `Added ${type} ICE candidate`, iceCandidate);
     } catch (error) {
-      console.error(`Error adding ${type} ICE candidate`, error);
+      EngineLogger.error("WebrtcPeerService", `Error adding ${type} ICE candidate`, error);
     }
   }
 
@@ -407,7 +414,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     try {
       channel.send(arrayBuffer);
     } catch (error) {
-      console.error(`Error sending ${channelKey} message to peer`, error);
+      EngineLogger.error("WebrtcPeerService", `Error sending ${channelKey} message to peer`, error);
       return;
     }
 
@@ -442,7 +449,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     channelKey: string
   ): channel is RTCDataChannel {
     if (!channel) {
-      console.warn(`Data channel not found for key: ${channelKey}`);
+      EngineLogger.warn("WebrtcPeerService", `Data channel not found for key: ${channelKey}`);
       return false;
     }
 
@@ -476,7 +483,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer
   ): void {
     if (this.isLoggingEnabled()) {
-      console.debug(
+      EngineLogger.debug("WebrtcPeerService", 
         `%cQueued ${channelKey} message for peer ${this.getName()}:\n` +
           BinaryWriter.preview(arrayBuffer),
         "color: orange;"
@@ -489,7 +496,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer
   ): void {
     if (this.isLoggingEnabled()) {
-      console.debug(
+      EngineLogger.debug("WebrtcPeerService", 
         `%cSent ${channelKey} message to peer ${this.getName()}:\n` +
           BinaryWriter.preview(arrayBuffer),
         "color: purple;"
@@ -529,7 +536,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     try {
       this.webrtcDelegate.dispatchCommand(commandId, this, binaryReader);
     } catch (error) {
-      console.error(
+      EngineLogger.error("WebrtcPeerService", 
         `Error executing command handler for ID ${commandId} from peer ${this.getName()}:`,
         error
       );
@@ -541,7 +548,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     arrayBuffer: ArrayBuffer
   ): void {
     if (this.isLoggingEnabled()) {
-      console.debug(
+      EngineLogger.debug("WebrtcPeerService", 
         `%cReceived ${channelLabel} message from peer ${this.getName()}:\n` +
           BinaryWriter.preview(arrayBuffer),
         "color: green;"
@@ -564,7 +571,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       : this.incomingUnreliableSequenceHistory;
 
     if (history.includes(sequenceNumber)) {
-      console.warn(`Replay ${channelLabel} message: ${sequenceNumber}`);
+      EngineLogger.warn("WebrtcPeerService", `Replay ${channelLabel} message: ${sequenceNumber}`);
       return true;
     }
 
@@ -581,7 +588,7 @@ export class WebRTCPeerService implements WebRTCPeer {
 
     if (sequenceNumber === currentSequence) {
       // Duplicate
-      console.warn(`Duplicate ${channelLabel} message: ${sequenceNumber}`);
+      EngineLogger.warn("WebrtcPeerService", `Duplicate ${channelLabel} message: ${sequenceNumber}`);
       return true;
     }
 
@@ -600,7 +607,7 @@ export class WebRTCPeerService implements WebRTCPeer {
     }
 
     // Old or too far in the future
-    console.warn(
+    EngineLogger.warn("WebrtcPeerService", 
       `Out-of-order ${channelLabel} message: ${sequenceNumber} (current: ${currentSequence})`
     );
     return true;
@@ -627,7 +634,7 @@ export class WebRTCPeerService implements WebRTCPeer {
       .toArrayBuffer();
 
     this.sendReliableOrderedMessage(arrayBuffer);
-    console.log("Disconnect message sent");
+    EngineLogger.info("WebrtcPeerService", "Disconnect message sent");
   }
 
   private isLoggingEnabled(): boolean {

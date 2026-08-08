@@ -1,4 +1,5 @@
 import { GamepadButton } from "../enums/gamepad-button.js";
+import { EngineLogger } from "../services/engine-logger.js";
 import { GameFrame } from "./game-frame.js";
 import type { GameGamepadContract } from "../interfaces/input/game-gamepad-interface.js";
 
@@ -47,12 +48,12 @@ export class GameGamepad implements GameGamepadContract {
 
   private handleConnected(event: GamepadEvent): void {
     this.gamepadIndex = event.gamepad.index;
-    console.log(`Gamepad connected at index ${this.gamepadIndex}`);
+    EngineLogger.info("Gamepad", `Gamepad connected at index ${this.gamepadIndex}`);
     this.gameFrame.getDebugEntity()?.show("Gamepad connected", 1);
   }
 
   private handleDisconnected(event: GamepadEvent): void {
-    console.log(`Gamepad disconnected from index ${event.gamepad.index}`);
+    EngineLogger.info("Gamepad", `Gamepad disconnected from index ${event.gamepad.index}`);
 
     if (this.gamepadIndex === event.gamepad.index) {
       this.gamepadIndex = null;

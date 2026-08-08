@@ -1,4 +1,5 @@
 import type { WebRTCType } from "../enums/webrtc-type.js";
+import { EngineLogger } from "../services/engine-logger.js";
 import type { PeerCommandHandlerMetadata } from "../interfaces/network/peer-command-handler-metadata-interface.js";
 
 const commandHandlers: PeerCommandHandlerMetadata[] = [];
@@ -16,7 +17,8 @@ export function PeerCommandHandler(commandId: WebRTCType) {
 
     // Prevent duplicate registrations
     if (hasPeerCommandHandler(target, propertyKey, commandId)) {
-      console.warn(
+      EngineLogger.warn(
+        "PeerHandler",
         `Duplicate @PeerCommandHandler registration for ${propertyKey} with command ${commandId}`
       );
       return;

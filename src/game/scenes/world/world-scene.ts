@@ -1,14 +1,10 @@
 import { LocalCarEntity } from "../../entities/local-car-entity.js";
 import { GoalEntity } from "../../entities/goal-entity.js";
 import { BallEntity } from "../../entities/ball-entity.js";
-import { CarEntity } from "../../entities/car-entity.js";
 import { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import { AlertEntity } from "../../entities/alert-entity.js";
 import { ToastEntity } from "../../entities/common/toast-entity.js";
 import { HelpEntity } from "../../entities/help-entity.js";
-import { ChatButtonEntity } from "../../entities/chat-button-entity.js";
-import { MatchMenuButtonEntity } from "../../entities/match-menu-button-entity.js";
-import { MatchMenuEntity } from "../../entities/match-menu-entity.js";
 import { MatchLogEntity } from "../../entities/match-log-entity.js";
 import { MatchAction } from "../../models/match-action.js";
 import { NpcCarEntity } from "../../entities/npc-car-entity.js";
@@ -33,11 +29,9 @@ import { WorldEntityFactory } from "./world-entity-factory.js";
 import { WorldController } from "./world-controller.js";
 import { RemoteCarEntity } from "../../entities/remote-car-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
-import { BoostMeterEntity } from "../../entities/boost-meter-entity.js";
 import { TeamType } from "../../enums/team-type.js";
 import { GoalExplosionEntity } from "../../entities/goal-explosion-entity.js";
 import { ConfettiEntity } from "../../entities/confetti-entity.js";
-import { SnowEntity } from "../../entities/snow-entity.js";
 import { CarExplosionEntity } from "../../entities/car-explosion-entity.js";
 import { WebSocketService } from "../../services/network/websocket-service.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
@@ -55,10 +49,12 @@ import { NpcService } from "../../services/gameplay/npc-service.js";
 import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
 import { AntiCheatService } from "../../services/security/anti-cheat-service.js";
 import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
+import { WeatherSystem } from "./systems/weather-system.js";
+import { ChatUISystem } from "./systems/chat-ui-system.js";
+import type { ChatButtonEntity } from "../../entities/chat-button-entity.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class WorldScene extends BaseCollidingGameScene {
-  private static readonly SNOW_FRICTION_MULTIPLIER = 0.3; // 70% less friction for icy conditions
-
   private readonly sceneTransitionService: SceneTransitionService;
   private readonly spawnPointService: SpawnPointService | null;
   private readonly timerManagerService: TimerManagerService;
@@ -82,8 +78,6 @@ export class WorldScene extends BaseCollidingGameScene {
   private toastEntity: ToastEntity | null = null;
   private helpEntity: HelpEntity | null = null;
   private chatButtonEntity: ChatButtonEntity | null = null;
-  private matchMenuButtonEntity: MatchMenuButtonEntity | null = null;
-  private matchMenuEntity: MatchMenuEntity | null = null;
   private matchLogEntity: MatchLogEntity | null = null;
   private npcCarEntity: NpcCarEntity | null = null;
 
@@ -94,18 +88,21 @@ export class WorldScene extends BaseCollidingGameScene {
   private npcService: NpcService | null = null;
   private helpShown = false;
 
-  // Weather state
-  private activeWeatherEntity: SnowEntity | null = null;
-  private weatherFrictionMultiplier = 1.0;
+  /** Extracted weather system: snow effect + icy physics. */
+  private readonly weatherSystem = new WeatherSystem();
+
+  /** Extracted chat UI system: chat button, match menu, chat message handling. */
+  private readonly chatUISystem = new ChatUISystem();
+
   private readonly antiCheatService: AntiCheatService | null = null;
 
   constructor(deps: WorldSceneDependencies) {
     super(deps.gameState, deps.eventConsumerService);
     // Set isReplayMode from parent BaseCollidingGameScene
     this.isReplayMode = deps.replayMode ?? false;
-    this.gamePlayer = container.get(GamePlayer);
-    this.gameServer = container.get(GameServer);
-    this.matchSessionService = container.get(MatchSessionService);
+    this.gamePlayer = deps.gamePlayer;
+    this.gameServer = deps.gameServer;
+    this.matchSessionService = deps.matchSessionService;
     this.gamePlayer.reset();
     this.sceneTransitionService = deps.sceneTransitionService;
     this.timerManagerService = deps.timerManagerService;
@@ -140,7 +137,7 @@ export class WorldScene extends BaseCollidingGameScene {
   public override load(): void {
     // In replay mode, don't create any entities - they'll be spawned from recording
     if (this.isReplayMode) {
-      console.log(
+      EngineLogger.info("WorldScene", 
         "WorldScene loading in replay mode - skipping entity creation"
       );
       const factory = new WorldEntityFactory(this.gameState, this.canvas);
@@ -169,6 +166,8 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointEntities = entities.spawnPointEntities;
 
     this.setupMatchLog();
+
+    // Delegate chat UI + match menu setup to the extracted ChatUISystem
     this.setupChatUI();
 
     // Set total spawn points created to service (skip in replay mode)
@@ -215,6 +214,8 @@ export class WorldScene extends BaseCollidingGameScene {
       spawnPointEntities: this.spawnPointEntities,
       getEntitiesByOwner: this.getEntitiesByOwner.bind(this),
       npcService: this.npcService!,
+      gamePlayer: this.gamePlayer,
+      matchSessionService: this.matchSessionService,
     });
 
     // Skip ScoreManagerService in replay mode if required services are null
@@ -241,6 +242,8 @@ export class WorldScene extends BaseCollidingGameScene {
         this.triggerGoalExplosion(x, y, team),
       gameOverEffectCallback: (won: boolean) =>
         this.handleGameOverEffect(won),
+      gamePlayer: this.gamePlayer,
+      matchSessionService: this.matchSessionService,
     });
 
     super.load();
@@ -278,18 +281,8 @@ export class WorldScene extends BaseCollidingGameScene {
       return;
     }
 
-    // Check if weather effect has ended and reset physics
-    if (this.activeWeatherEntity && this.activeWeatherEntity.isRemoved()) {
-      this.weatherFrictionMultiplier = 1.0;
-      this.applyWeatherPhysics();
-      this.activeWeatherEntity = null;
-      console.log("Weather effect ended - physics restored to normal");
-    }
-
-    // Apply weather physics each frame to ensure newly spawned entities get the correct friction
-    if (this.weatherFrictionMultiplier !== 1.0) {
-      this.applyWeatherPhysics();
-    }
+    // Delegate weather physics to WeatherSystem
+    this.weatherSystem.update(this.worldEntities);
 
     this.worldController?.handleCarDemolitions(
       this.worldEntities,
@@ -321,7 +314,7 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private handleMatchmakingError(error: Error) {
-    console.error("Matchmaking error", error);
+    EngineLogger.error("WorldScene", "Matchmaking error", error);
 
     this.matchSessionService.setMatch(null);
     void this.returnToMainMenuScene(
@@ -386,12 +379,13 @@ export class WorldScene extends BaseCollidingGameScene {
         if (realPlayersCount === 2) {
           // Resume the timer that was stopped when player left
           this.scoreboardEntity?.startTimer();
-          console.log("Player joined - match resumed, timer restarted");
+          EngineLogger.info("WorldScene", "Player joined - match resumed, timer restarted");
         }
       }
     }
 
-    this.refreshMatchMenuPlayers();
+    // Delegate to ChatUISystem for match menu refresh
+    this.chatUISystem.refreshPlayers(this.matchSessionService, this.gamePlayer);
 
     if (this.matchActionsLogService) {
       this.matchActionsLogService.addAction(
@@ -411,7 +405,8 @@ export class WorldScene extends BaseCollidingGameScene {
 
     this.toastEntity?.show(`<em>${player.getName()}</em> left`, 2);
 
-    this.refreshMatchMenuPlayers();
+    // Delegate to ChatUISystem for match menu refresh
+    this.chatUISystem.refreshPlayers(this.matchSessionService, this.gamePlayer);
 
     // Count only real players (excluding NPCs)
     const allPlayers = this.matchSessionService.getMatch()?.getPlayers() ?? [];
@@ -422,7 +417,7 @@ export class WorldScene extends BaseCollidingGameScene {
       this.toastEntity?.show("Waiting for players...");
       // Stop/pause the timer to freeze countdown
       this.scoreboardEntity?.stopTimer();
-      console.log("Player left - match frozen, timer stopped");
+      EngineLogger.info("WorldScene", "Player left - match frozen, timer stopped");
     }
 
     this.scoreManagerService?.updateScoreboard();
@@ -433,18 +428,6 @@ export class WorldScene extends BaseCollidingGameScene {
           playerName: player.getName(),
         })
       );
-    }
-  }
-
-  private refreshMatchMenuPlayers(): void {
-    if (this.matchMenuEntity) {
-      const match = this.matchSessionService.getMatch();
-      if (match) {
-        this.matchMenuEntity.setPlayers(
-          match.getPlayers(),
-          this.gamePlayer.getNetworkId()
-        );
-      }
     }
   }
 
@@ -489,8 +472,9 @@ export class WorldScene extends BaseCollidingGameScene {
       () => this.navigateToErrorScene("You have been kicked from the server")
     );
 
+    // Delegate snow weather to WeatherSystem
     this.subscribeToLocalEvent(GameEventType.SnowWeather, () => {
-      this.activateSnowWeather();
+      this.weatherSystem.activateSnow(this.canvas, this);
     });
   }
 
@@ -540,21 +524,9 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private setupChatUI(): void {
-    const chatInputElement = document.querySelector(
-      "#chat-input"
-    ) as HTMLInputElement | null;
-
-    if (!chatInputElement) {
-      console.error("Chat input element not found");
-      return;
-    }
-
-    // Make chat input visible now that the game has started
-    chatInputElement.removeAttribute("hidden");
-
     const boostMeterEntity = this.localCarEntity?.getBoostMeterEntity();
     if (!boostMeterEntity) {
-      console.error("Boost meter entity not found");
+      EngineLogger.error("WorldScene", "Boost meter entity not found");
       return;
     }
 
@@ -563,119 +535,30 @@ export class WorldScene extends BaseCollidingGameScene {
     }
 
     // Skip chat setup in replay mode
-    if (this.chatService && this.matchActionsLogService) {
-      const initialMsgs = this.chatService.getMessages();
-      if (initialMsgs.length > 0) {
-        const recentMessages = initialMsgs.slice(-5);
-        recentMessages.forEach((message) => {
-          this.matchActionsLogService!.addAction(
-            MatchAction.chatMessage(message.getUserId(), message.getText(), {
-              timestamp: message.getTimestamp(),
-            })
-          );
-        });
-      }
-    }
-
-    // Skip chat button in replay mode if chatService is null
-    if (!this.chatService) {
+    if (!this.chatService || !this.matchActionsLogService || !this.helpEntity) {
       return;
     }
 
-    this.chatButtonEntity = new ChatButtonEntity(
+    // Delegate chat UI + match menu setup to ChatUISystem
+    this.chatButtonEntity = this.chatUISystem.setup(
+      this.canvas,
       boostMeterEntity,
-      chatInputElement,
+      this.helpEntity,
       this.chatService,
+      this.matchActionsLogService,
       this.gameState.getGamePointer(),
       this.gameState.getGameKeyboard(),
-      this.helpEntity as HelpEntity
+      container.get(PlayerModerationService),
+      container.get(APIService),
+      this.matchmakingService,
+      this.uiEntities,
+      () => this.returnToMainMenuScene(),
     );
-    this.uiEntities.push(this.chatButtonEntity);
 
     // Connect chat button to local car to disable controls during chat
-    if (this.localCarEntity) {
+    if (this.localCarEntity && this.chatButtonEntity) {
       this.localCarEntity.setChatButtonEntity(this.chatButtonEntity);
     }
-
-    // Setup match menu button and menu
-    this.setupMatchMenu(boostMeterEntity);
-  }
-
-  private setupMatchMenu(boostMeterEntity: BoostMeterEntity): void {
-    // Create PlayerModerationService instance
-    const playerModerationService = container.get(PlayerModerationService);
-    const apiService = container.get(APIService);
-
-    // Create match menu entity
-    this.matchMenuEntity = new MatchMenuEntity(
-      this.canvas,
-      playerModerationService,
-      apiService,
-      this.gameState.getGamePointer(),
-      () => this.hideMatchMenu(),
-      async () => {
-        try {
-          if (this.matchmakingService) {
-            await this.matchmakingService.leaveMatch();
-          }
-        } catch (error) {
-          console.error("Error leaving match:", error);
-        } finally {
-          await this.returnToMainMenuScene();
-        }
-      }
-    );
-    this.matchMenuEntity.setOpacity(0);
-    this.uiEntities.push(this.matchMenuEntity);
-
-    // Create match menu button
-    this.matchMenuButtonEntity = new MatchMenuButtonEntity(
-      boostMeterEntity,
-      this.helpEntity as HelpEntity
-    );
-    this.matchMenuButtonEntity.setOnToggleMenu(() => this.toggleMatchMenu());
-    this.uiEntities.push(this.matchMenuButtonEntity);
-  }
-
-  private toggleMatchMenu(): void {
-    if (!this.matchMenuEntity || !this.matchMenuButtonEntity) {
-      return;
-    }
-
-    const isVisible = this.matchMenuEntity.getOpacity() > 0;
-    if (isVisible) {
-      this.hideMatchMenu();
-    } else {
-      this.showMatchMenu();
-    }
-  }
-
-  private showMatchMenu(): void {
-    if (!this.matchMenuEntity || !this.matchMenuButtonEntity) {
-      return;
-    }
-
-    // Get current players from match session
-    const match = this.matchSessionService.getMatch();
-    if (match) {
-      const players = match.getPlayers();
-      const localPlayerId = this.gamePlayer.getNetworkId();
-      this.matchMenuEntity.setPlayers(players, localPlayerId);
-    }
-
-    this.matchMenuEntity.show();
-    this.matchMenuButtonEntity.setMenuVisible(true);
-    this.matchMenuButtonEntity.setActive(false);
-  }
-
-  private hideMatchMenu(): void {
-    if (!this.matchMenuEntity || !this.matchMenuButtonEntity) {
-      return;
-    }
-
-    this.matchMenuEntity.close();
-    this.matchMenuButtonEntity.setMenuVisible(false);
-    this.matchMenuButtonEntity.setActive(true);
   }
 
   private setupMatchLog(): void {
@@ -688,7 +571,6 @@ export class WorldScene extends BaseCollidingGameScene {
       this.gamePlayer
     );
     this.uiEntities.push(this.matchLogEntity);
-    // Only subscribe to match actions if service is available (not null in replay mode)
     if (this.matchActionsLogService) {
       this.matchActionsLogUnsubscribe = this.matchActionsLogService.onChange(
         (actions) => this.matchLogEntity?.show(actions)
@@ -699,14 +581,12 @@ export class WorldScene extends BaseCollidingGameScene {
   private triggerGoalExplosion(x: number, y: number, team: TeamType): void {
     const explosion = new GoalExplosionEntity(this.canvas, x, y, team);
     this.addEntityToSceneLayer(explosion);
-    // Make the shake last a bit longer for added impact
     this.cameraService.shake(3, 8);
   }
 
   private triggerCarExplosion(x: number, y: number): void {
     const explosion = new CarExplosionEntity(x, y);
     this.addEntityToSceneLayer(explosion);
-    // Slightly longer shake for demolition impact
     this.cameraService.shake(1.5, 5);
   }
 
@@ -721,11 +601,9 @@ export class WorldScene extends BaseCollidingGameScene {
     const driveControls = this.isMobile()
       ? "your first finger"
       : "the WASD or arrow keys";
-
     const boostControls = this.isMobile()
       ? "your second finger"
       : "shift or space keys";
-
     return `Drive with ${driveControls}.\nBoost using ${boostControls}.`;
   }
 
@@ -744,22 +622,18 @@ export class WorldScene extends BaseCollidingGameScene {
       container.get(EventConsumerService),
       false
     );
-
     if (errorMessage) {
       mainMenuScene.setPendingMessage(errorMessage);
     }
-
     if (!this.gameServer.isConnected()) {
       try {
         container.get(WebSocketService).connectToServer();
       } catch (error) {
-        console.error("Failed to reconnect to server", error);
+        EngineLogger.error("WorldScene", "Failed to reconnect to server", error);
       }
     }
-
     mainScene.activateScene(mainMenuScene);
     mainScene.load();
-
     this.sceneTransitionService.fadeOutAndIn(
       this.gameState.getGameFrame(),
       mainScene,
@@ -769,21 +643,17 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   private navigateToErrorScene(errorMessage: string): void {
-    console.log("Navigating to error scene:", errorMessage);
-
+    EngineLogger.info("WorldScene", "Navigating to error scene:", errorMessage);
     if (this.matchmakingService) {
       this.matchmakingService.leaveMatch().catch((error) => {
-        console.error("Error leaving match during kick:", error);
+        EngineLogger.error("WorldScene", "Error leaving match during kick:", error);
       });
     }
-
     this.dispose();
-
     const mainScene = new MainScene();
     const errorScene = new ErrorScene(errorMessage);
     mainScene.activateScene(errorScene);
     mainScene.load();
-
     this.sceneTransitionService.fadeOutAndIn(
       this.gameState.getGameFrame(),
       mainScene,
@@ -792,38 +662,6 @@ export class WorldScene extends BaseCollidingGameScene {
     );
   }
 
-  private activateSnowWeather(): void {
-    // Remove any existing weather effect
-    if (this.activeWeatherEntity) {
-      this.activeWeatherEntity.setRemoved(true);
-    }
-
-    // Create snow effect
-    const snowEntity = new SnowEntity(this.canvas);
-    this.addEntityToSceneLayer(snowEntity);
-    this.activeWeatherEntity = snowEntity;
-
-    // Set icy physics - very slippery
-    this.weatherFrictionMultiplier = WorldScene.SNOW_FRICTION_MULTIPLIER;
-    this.applyWeatherPhysics();
-
-    console.log("Snow weather activated - icy conditions!");
-  }
-
-  private applyWeatherPhysics(): void {
-    // Apply reduced friction to all cars and the ball
-    this.worldEntities.forEach((entity) => {
-      if (entity instanceof CarEntity || entity instanceof BallEntity) {
-        entity.setWeatherFrictionMultiplier(this.weatherFrictionMultiplier);
-      }
-    });
-  }
-
-  /**
-   * Yield every world entity that has a position and an owner so the
-   * anti-cheat system can evaluate movement rules against it.
-   * Uses {@link BaseMoveableGameEntity} — any entity with x/y/owner.
-   */
   private *getAntiCheatTrackedEntities(): Generator<{
     id: string;
     x: number;
@@ -850,27 +688,13 @@ export class WorldScene extends BaseCollidingGameScene {
   }
 
   public override dispose(): void {
-    // Stop anti-cheat monitoring
     this.antiCheatService?.stopMonitoring();
-
-    // Hide chat input when leaving the game scene
-    const chatInputElement = document.querySelector(
-      "#chat-input"
-    ) as HTMLInputElement | null;
-
-    if (chatInputElement) {
-      chatInputElement.setAttribute("hidden", "");
-    }
-
+    this.chatUISystem.dispose();
     this.matchActionsLogUnsubscribe?.();
     this.matchActionsLogUnsubscribe = null;
-
-    // Only call clear() if matchActionsLogService is available (not null in replay mode)
     if (this.matchActionsLogService) {
       this.matchActionsLogService.clear();
     }
-
-    // Remove NPC car if present
     if (this.npcService) {
       this.npcService.removeNpcCar((entity) => {
         const index = this.worldEntities.indexOf(entity);
@@ -879,7 +703,7 @@ export class WorldScene extends BaseCollidingGameScene {
         }
       });
     }
-
     super.dispose();
   }
 }
+

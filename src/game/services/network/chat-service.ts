@@ -16,6 +16,7 @@ import { LocalEvent } from "../../../engine/models/local-event.js";
 import { GameEventType } from "../../enums/event-type.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchActionsLogService } from "../gameplay/match-actions-log-service.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class ChatService {
@@ -74,7 +75,7 @@ export class ChatService {
     const trimmed = text.trim();
 
     if (trimmed.length === 0) {
-      console.warn("Chat message empty");
+      EngineLogger.warn("ChatService", "Chat message empty");
       return;
     }
 
@@ -140,7 +141,7 @@ export class ChatService {
     );
 
     if (valid === false) {
-      console.warn("Invalid chat message signature from peer", peer.getName());
+      EngineLogger.warn("ChatService", "Invalid chat message signature from peer", peer.getName());
       return;
     }
 
@@ -192,7 +193,7 @@ export class ChatService {
     switch (command) {
       case "snow":
         if (!senderId || senderId !== this.getLocalPlayerId()) {
-          console.log("Snow weather command received");
+          EngineLogger.info("ChatService", "Snow weather command received");
           const event = new LocalEvent<void>(GameEventType.SnowWeather);
           this.eventProcessorService.addLocalEvent(event);
         }

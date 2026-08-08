@@ -1,3 +1,5 @@
+import { EngineLogger } from "../services/engine-logger.js";
+
 /**
  * Formats a timestamp (in milliseconds) into a "Month Day, Year" date string.
  * @param timestamp The timestamp in milliseconds since epoch
@@ -15,7 +17,7 @@ export function formatDate(timestamp: number): string {
 
     return date.toLocaleDateString("en-US", options);
   } catch (error) {
-    console.error("Error formatting date:", error);
+    EngineLogger.error("Time", "Error formatting date:", error);
     return "Unknown date";
   }
 }

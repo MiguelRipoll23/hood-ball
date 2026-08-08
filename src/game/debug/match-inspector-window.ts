@@ -5,13 +5,14 @@ import type { GamePlayer } from "../models/game-player.js";
 import { getPingTextColor } from "../utils/ping-utils.js";
 import { container } from "../../engine/services/di-container.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class MatchInspectorWindow extends BaseWindow {
   private static readonly HOST_COLOR = 0xffffff00;
 
   constructor() {
     super("Match inspector", new ImVec2(450, 300));
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("MatchInspectorWindow", `${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {

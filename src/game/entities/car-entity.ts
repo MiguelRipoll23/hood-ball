@@ -1,5 +1,5 @@
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.js";
+import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
 import { GamePlayer } from "../models/game-player.js";
 import {
   BLUE_TEAM_TRANSPARENCY_COLOR,
@@ -16,7 +16,7 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { BoostPadEntity } from "./boost-pad-entity.js";
 
-export class CarEntity extends BaseDynamicCollidingGameEntity {
+export class CarEntity extends BaseCollidingGameEntity {
   protected topSpeed: number = 0.3;
   protected acceleration: number = 0.002;
   protected readonly HANDLING: number = 0.007;
@@ -84,10 +84,10 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   constructor(x: number, y: number, angle: number, private remote = false) {
     super();
     this.remote = remote;
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
-    this.mass = this.MASS;
+    this.transform.x = x;
+    this.transform.y = y;
+    this.transform.angle = angle;
+    this.physics.mass = this.MASS;
     this.setBounciness(0.5);
 
     if (remote) {
@@ -101,7 +101,7 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
   }
 
   public override reset(): void {
-    this.angle = 1.5708;
+    this.transform.angle = 1.5708;
     this.speed = 0;
     this.boost = this.MAX_BOOST;
     this.boosting = false;
@@ -193,14 +193,14 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
 
     const newDemolished = binaryReader.boolean();
 
-    this.x = newX;
-    this.y = newY;
-    this.angle = newAngle;
+    this.transform.x = newX;
+    this.transform.y = newY;
+    this.transform.angle = newAngle;
     this.speed = newSpeed;
     this.boosting = newBoosting;
     this.boost = newBoost;
     this.demolished = newDemolished;
-    this.opacity = newDemolished ? 0 : 1;
+    this.setOpacity(newDemolished ? 0 : 1);
 
     this.updateHitbox();
   }
@@ -210,8 +210,8 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       this.respawnTimer -= deltaTimeStamp;
       if (this.respawnTimer <= 0) {
         this.demolished = false;
-        this.rigidBody = true;
-        this.opacity = 1;
+        this.physics.rigidBody = true;
+        this.setOpacity(1);
         // Use teleport instead of setting position directly
         this.teleport(this.respawnX, this.respawnY, SPAWN_ANGLE);
       }
@@ -331,11 +331,11 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
     this.respawnX = respawnX;
     this.respawnY = respawnY;
     this.speed = 0;
-    this.vx = 0;
-    this.vy = 0;
+    this.physics.vx = 0;
+    this.physics.vy = 0;
     this.boosting = false;
     this.opacity = 0;
-    this.rigidBody = false;
+    this.physics.rigidBody = false;
   }
 
   public isDemolished(): boolean {
@@ -450,12 +450,12 @@ export class CarEntity extends BaseDynamicCollidingGameEntity {
       // Let the collision resolution handle the velocity
     } else {
       // Scale velocity by deltaTime to make movement frame-rate independent
-      this.vx = Math.cos(this.angle) * this.speed * deltaTimeStamp;
-      this.vy = Math.sin(this.angle) * this.speed * deltaTimeStamp;
+      this.physics.vx = Math.cos(this.angle) * this.speed * deltaTimeStamp;
+      this.physics.vy = Math.sin(this.angle) * this.speed * deltaTimeStamp;
     }
 
-    this.x -= this.vx;
-    this.y -= this.vy;
+    this.x -= this.physics.vx;
+    this.y -= this.physics.vy;
   }
 
   private renderHostIndicator(context: CanvasRenderingContext2D): void {

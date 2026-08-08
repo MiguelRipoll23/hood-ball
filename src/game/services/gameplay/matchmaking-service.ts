@@ -8,6 +8,7 @@ import type { MatchmakingNetworkServiceContract } from "../../interfaces/service
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MatchLifecycleService } from "./match-lifecycle-service.js";
 import { MatchSessionService } from "../session/match-session-service.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class MatchmakingService implements MatchmakingServiceContract {
@@ -32,7 +33,7 @@ export class MatchmakingService implements MatchmakingServiceContract {
     const matches = findMatchesResponse.results;
 
     if (matches.length === 0) {
-      console.log("No matches found");
+      EngineLogger.info("MatchmakingService", "No matches found");
       this.setupAdvertiseCallback();
       await this.matchFinderService.createAndAdvertiseMatch();
       this.networkService.startPingCheckInterval();
@@ -57,7 +58,7 @@ export class MatchmakingService implements MatchmakingServiceContract {
       const match = this.matchSessionService.getMatch();
       if (match !== null && match.getState() !== MatchStateType.GameOver) {
         this.matchFinderService.advertiseMatch().catch((error: unknown) => {
-          console.error("Failed to advertise match:", error);
+          EngineLogger.error("MatchmakingService", "Failed to advertise match:", error);
         });
       }
     });

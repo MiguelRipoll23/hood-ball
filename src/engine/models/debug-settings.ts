@@ -1,3 +1,5 @@
+import { EngineLogger } from "../services/engine-logger.js";
+
 export class DebugSettings {
   private debugging: boolean;
 
@@ -12,6 +14,7 @@ export class DebugSettings {
 
   constructor(debugging: boolean) {
     this.debugging = debugging;
+    EngineLogger.setEnabled(debugging);
   }
 
   public isDebugging(): boolean {
@@ -22,12 +25,14 @@ export class DebugSettings {
     this.debugging = value;
 
     if (this.debugging) {
-      console.info(
+      EngineLogger.info(
+        "DebugSettings",
         "%cDebug mode on",
         "color: #b6ff35; font-size: 20px; font-weight: bold"
       );
     } else {
-      console.info(
+      EngineLogger.info(
+        "DebugSettings",
         "%cDebug mode off",
         "color: #ff5733; font-size: 20px; font-weight: bold"
       );
@@ -40,7 +45,7 @@ export class DebugSettings {
 
   public setWebSocketLogging(value: boolean): void {
     this.logWebSocketMessages = value;
-    console.log(`WebSocket logging set to: ${value}`);
+    EngineLogger.info("DebugSettings", `WebSocket logging set to: ${value}`);
   }
 
   public isWebRTCLoggingEnabled(): boolean {
@@ -49,7 +54,7 @@ export class DebugSettings {
 
   public setWebRTCLogging(value: boolean): void {
     this.logWebRTCMessages = value;
-    console.log(`WebRTC logging set to: ${value}`);
+    EngineLogger.info("DebugSettings", `WebRTC logging set to: ${value}`);
   }
 
   public areTappableAreasVisible(): boolean {
@@ -58,7 +63,7 @@ export class DebugSettings {
 
   public setTappableAreasVisibility(value: boolean): void {
     this.tappableAreasVisible = value;
-    console.log(`Tappable areas visibility set to: ${value}`);
+    EngineLogger.info("DebugSettings", `Tappable areas visibility set to: ${value}`);
   }
 
   public areHitboxesVisible(): boolean {
@@ -67,7 +72,7 @@ export class DebugSettings {
 
   public setHitboxesVisibility(value: boolean): void {
     this.hitboxVisible = value;
-    console.log(`Hitboxes visibility set to: ${value}`);
+    EngineLogger.info("DebugSettings", `Hitboxes visibility set to: ${value}`);
   }
 
   public areGizmosVisible(): boolean {
@@ -76,7 +81,7 @@ export class DebugSettings {
 
   public setGizmosVisibility(value: boolean): void {
     this.gizmosVisible = value;
-    console.log(`Gizmos visibility set to: ${value}`);
+    EngineLogger.info("DebugSettings", `Gizmos visibility set to: ${value}`);
   }
 
   public isMenuEnabled(): boolean {
@@ -85,7 +90,7 @@ export class DebugSettings {
 
   public setMenuEnabled(value: boolean): void {
     this.menuEnabled = value;
-    console.log(`Menu enabled set to: ${value}`);
+    EngineLogger.info("DebugSettings", `Menu enabled set to: ${value}`);
   }
 
   public isBallTrajectoryVisible(): boolean {
@@ -94,6 +99,6 @@ export class DebugSettings {
 
   public setBallTrajectoryVisibility(value: boolean): void {
     this.ballTrajectoryVisible = value;
-    console.log(`Ball trajectory visibility set to: ${value}`);
+    EngineLogger.info("DebugSettings", `Ball trajectory visibility set to: ${value}`);
   }
 }

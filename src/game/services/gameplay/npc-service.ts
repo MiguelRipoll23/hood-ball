@@ -6,6 +6,7 @@ import { TimerManagerService } from "../../../engine/services/gameplay/timer-man
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import type { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import type { TimerServiceContract } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class NpcService {
   private npcCarEntity: NpcCarEntity | null = null;
@@ -28,7 +29,7 @@ export class NpcService {
     const spawnPointIndex =
       this.spawnPointService.getAndConsumeSpawnPointIndex();
     if (spawnPointIndex === -1) {
-      console.warn("No spawn points available for NPC");
+      EngineLogger.warn("NpcService", "No spawn points available for NPC");
       return null;
     }
 
@@ -36,7 +37,7 @@ export class NpcService {
       (sp) => sp.getIndex() === spawnPointIndex
     );
     if (!spawnPoint) {
-      console.warn(`Spawn point ${spawnPointIndex} not found`);
+      EngineLogger.warn("NpcService", `Spawn point ${spawnPointIndex} not found`);
       this.spawnPointService.releaseSpawnPointIndex(spawnPointIndex);
       return null;
     }
@@ -60,14 +61,14 @@ export class NpcService {
       const match = this.matchSessionService.getMatch();
       if (match) {
         match.addPlayer(npcPlayer);
-        console.log("NPC player added to match");
+        EngineLogger.info("NpcService", "NPC player added to match");
       }
     }
 
     // Add entity to scene via callback
     onEntityAdded(this.npcCarEntity);
 
-    console.log(`NPC car added at spawn point ${spawnPointIndex}`);
+    EngineLogger.info("NpcService", `NPC car added at spawn point ${spawnPointIndex}`);
     return this.npcCarEntity;
   }
 
@@ -89,7 +90,7 @@ export class NpcService {
     onEntityRemoved?.(this.npcCarEntity);
 
     this.npcCarEntity = null;
-    console.log("NPC car entity removed");
+    EngineLogger.info("NpcService", "NPC car entity removed");
   }
 
   public activateNpcCarAfterDelay(boostPadsEntities: BoostPadEntity[]): void {
@@ -111,7 +112,7 @@ export class NpcService {
       }
     );
 
-    console.log("NPC car will activate after 3 seconds");
+    EngineLogger.info("NpcService", "NPC car will activate after 3 seconds");
   }
 
   public activateNpcCar(boostPadsEntities: BoostPadEntity[]): void {
@@ -129,7 +130,7 @@ export class NpcService {
 
     // Activate NPC AI
     this.npcCarEntity.setActive(true);
-    console.log("NPC car activated");
+    EngineLogger.info("NpcService", "NPC car activated");
   }
 
   public deactivateNpcCar(): void {
@@ -168,7 +169,7 @@ export class NpcService {
       this.npcCarEntity.teleport(spawnX, spawnY, Math.PI / 2);
       // Reset NPC boost level
       this.npcCarEntity.refillBoost();
-      console.log(`NPC moved to spawn point ${spawnIndex} and boost refilled`);
+      EngineLogger.info("NpcService", `NPC moved to spawn point ${spawnIndex} and boost refilled`);
     }
   }
 

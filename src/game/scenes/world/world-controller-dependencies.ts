@@ -12,6 +12,7 @@ import type { GamePlayer } from "../../models/game-player.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import type { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import type { NpcService } from "../../services/gameplay/npc-service.js";
+import type { MatchSessionService } from "../../services/session/match-session-service.js";
 
 export interface WorldControllerDependencies {
   spawnPointService: SpawnPointService;
@@ -27,4 +28,6 @@ export interface WorldControllerDependencies {
   spawnPointEntities: SpawnPointEntity[];
   getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[];
   npcService: NpcService;
+  gamePlayer: GamePlayer;
+  matchSessionService: MatchSessionService;
 }

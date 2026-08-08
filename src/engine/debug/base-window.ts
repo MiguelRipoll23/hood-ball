@@ -1,4 +1,5 @@
 import { ImGui, ImVec2, type ImGuiWindowFlags } from "@mori2003/jsimgui";
+import { EngineLogger } from "../services/engine-logger.js";
 
 export class BaseWindow {
   private readonly DISPLAY_SIZE_MARGIN = 25;
@@ -19,7 +20,7 @@ export class BaseWindow {
     closeable = true,
     flags?: ImGuiWindowFlags
   ) {
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("DebugWindow", `${this.constructor.name} created`);
     this.title = title;
     this.closeable = closeable;
     this.size = size;

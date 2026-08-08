@@ -91,7 +91,7 @@ export class RecordingPlayerService {
 
       this.playbackState = PlaybackState.Stopped;
     } catch (error) {
-      console.error("Failed to load recording:", error);
+      EngineLogger.error("RecordingPlayer", "Failed to load recording:", error);
       throw error;
     }
   }
@@ -260,12 +260,12 @@ export class RecordingPlayerService {
 
   public async play(): Promise<void> {
     if (!this.recordingData) {
-      console.warn("No recording loaded");
+      EngineLogger.warn("RecordingPlayer", "No recording loaded");
       return;
     }
 
     if (this.playbackState === PlaybackState.Playing) {
-      console.warn("Already playing");
+      EngineLogger.warn("RecordingPlayer", "Already playing");
       return;
     }
 
@@ -346,7 +346,8 @@ export class RecordingPlayerService {
   private spawnEntityFromSnapshot(snapshot: EntitySnapshot): void {
     // Check if entity is already spawned
     if (this.spawnedEntities.has(snapshot.id)) {
-      console.warn(
+      EngineLogger.warn(
+        "RecordingPlayer",
         `Entity ${snapshot.id} already spawned, skipping duplicate spawn`
       );
       return;
@@ -355,7 +356,8 @@ export class RecordingPlayerService {
     // Try to spawn entity via registry
     const entity = EntityRegistry.create(snapshot.type);
     if (!entity) {
-      console.warn(
+      EngineLogger.warn(
+        "RecordingPlayer",
         `Cannot spawn entity of type "${snapshot.type}" - not registered`
       );
       return;
@@ -380,7 +382,8 @@ export class RecordingPlayerService {
         if (uiEntities && Array.isArray(uiEntities)) {
           uiEntities.push(entity);
         } else {
-          console.warn(
+          EngineLogger.warn(
+            "RecordingPlayer",
             `Scene doesn't have uiEntities array, falling back to world layer`
           );
           currentScene.addEntityToSceneLayer(entity);
@@ -408,7 +411,8 @@ export class RecordingPlayerService {
       snapshot.serializedData &&
       snapshot.serializedData.byteLength === 0
     ) {
-      console.warn(
+      EngineLogger.warn(
+        "RecordingPlayer",
         `Entity ${snapshot.id} (${snapshot.type}) has empty serializedData`
       );
     }
@@ -458,7 +462,7 @@ export class RecordingPlayerService {
 
   public pause(): void {
     if (this.playbackState !== PlaybackState.Playing) {
-      console.warn("Not currently playing");
+      EngineLogger.warn("RecordingPlayer", "Not currently playing");
       return;
     }
 
@@ -494,7 +498,7 @@ export class RecordingPlayerService {
 
   public seekToTime(timeMs: number): void {
     if (!this.recordingData) {
-      console.warn("No recording loaded");
+      EngineLogger.warn("RecordingPlayer", "No recording loaded");
       return;
     }
 
@@ -595,7 +599,8 @@ export class RecordingPlayerService {
       if (entity) {
         // Check for empty or invalid serialized data before applying
         if (!delta.serializedData || delta.serializedData.byteLength === 0) {
-          console.warn(
+          EngineLogger.warn(
+            "RecordingPlayer",
             `State delta for entity ${delta.id} has empty serializedData at timestamp ${delta.timestamp}`
           );
         } else {
@@ -603,7 +608,8 @@ export class RecordingPlayerService {
           entity.applyReplayState(delta.serializedData);
         }
       } else {
-        console.warn(
+        EngineLogger.warn(
+          "RecordingPlayer",
           `State delta for unknown entity ${delta.id} at timestamp ${delta.timestamp}`
         );
       }
@@ -614,7 +620,7 @@ export class RecordingPlayerService {
 
   public setPlaybackSpeed(speed: number): void {
     if (speed <= 0) {
-      console.warn("Playback speed must be positive");
+      EngineLogger.warn("RecordingPlayer", "Playback speed must be positive");
       return;
     }
 
@@ -627,12 +633,12 @@ export class RecordingPlayerService {
 
   public stepForward(): void {
     // Not implemented for delta format - would need frame concept
-    console.warn("Step forward not supported in delta recording format");
+    EngineLogger.warn("RecordingPlayer", "Step forward not supported in delta recording format");
   }
 
   public stepBackward(): void {
     // Not implemented for delta format - would need frame concept
-    console.warn("Step backward not supported in delta recording format");
+    EngineLogger.warn("RecordingPlayer", "Step backward not supported in delta recording format");
   }
 
   public update(deltaTimeMs: number): void {
@@ -667,7 +673,7 @@ export class RecordingPlayerService {
 
   public seekToFrame(frameIndex: number): void {
     if (!this.recordingData) {
-      console.warn("No recording loaded");
+      EngineLogger.warn("RecordingPlayer", "No recording loaded");
       return;
     }
 
@@ -717,6 +723,6 @@ export class RecordingPlayerService {
     this.stop();
     this.recordingData = null;
     this.currentEntityStates.clear();
-    console.log("Recording unloaded");
+    EngineLogger.info("RecordingPlayer", "Recording unloaded");
   }
 }

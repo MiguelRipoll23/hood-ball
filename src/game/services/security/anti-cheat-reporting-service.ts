@@ -1,6 +1,7 @@
 import { injectable, inject } from "@needle-di/core";
 import { PlayerModerationService } from "../network/player-moderation-service.js";
 import { GamePlayer } from "../../models/game-player.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class AntiCheatReportingService {
@@ -28,14 +29,14 @@ export class AntiCheatReportingService {
     const fullReason = `Rule #${ruleId}: ${reason}`;
     this.send(userId, fullReason);
 
-    console.warn(`[AntiCheat] Rule ${ruleId} violated by ${userId}: ${reason}`);
+    EngineLogger.warn("AntiCheatReportingService", `[AntiCheat] Rule ${ruleId} violated by ${userId}: ${reason}`);
   }
 
   private send(userId: string, reason: string): void {
     this.playerModerationService
       .reportUser(userId, `[AntiCheat] ${reason}`, true)
       .catch((error: unknown) => {
-        console.error("[AntiCheat] Failed to send report:", error);
+        EngineLogger.error("AntiCheatReportingService", "[AntiCheat] Failed to send report:", error);
       });
   }
 }

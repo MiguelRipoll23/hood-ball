@@ -1,5 +1,4 @@
-import { BaseStaticCollidingGameEntity } from "../entities/base-static-colliding-game-entity.js";
-import { BaseDynamicCollidingGameEntity } from "../entities/base-dynamic-colliding-game-entity.js";
+import { BaseCollidingGameEntity } from "../entities/base-colliding-game-entity.js";
 import { HitboxEntity } from "../entities/hitbox-entity.js";
 import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
 import type { GameState } from "../models/game-state.js";
@@ -31,7 +30,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   public detectCollisions(): void {
-    const collidingEntities: BaseStaticCollidingGameEntity[] =
+    const collidingEntities: BaseCollidingGameEntity[] =
       this.worldEntities.filter(this.isCollidingEntity);
 
     collidingEntities.forEach((collidingEntity) => {
@@ -45,7 +44,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
           return;
         }
 
-        this.detectStaticAndDynamicCollisions(
+        this.detectCollisionsBetween(
           collidingEntity,
           otherCollidingEntity
         );
@@ -59,22 +58,13 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
   private isCollidingEntity(
     gameEntity: GameEntity
-  ): gameEntity is
-    | BaseStaticCollidingGameEntity
-    | BaseDynamicCollidingGameEntity {
-    return (
-      gameEntity instanceof BaseStaticCollidingGameEntity ||
-      gameEntity instanceof BaseDynamicCollidingGameEntity
-    );
+  ): gameEntity is BaseCollidingGameEntity {
+    return gameEntity instanceof BaseCollidingGameEntity;
   }
 
-  private detectStaticAndDynamicCollisions(
-    collidingEntity:
-      | BaseStaticCollidingGameEntity
-      | BaseDynamicCollidingGameEntity,
-    otherCollidingEntity:
-      | BaseStaticCollidingGameEntity
-      | BaseDynamicCollidingGameEntity
+  private detectCollisionsBetween(
+    collidingEntity: BaseCollidingGameEntity,
+    otherCollidingEntity: BaseCollidingGameEntity
   ): void {
     const hitboxes = collidingEntity.getHitboxEntities();
     const otherHitboxes = otherCollidingEntity.getHitboxEntities();
@@ -96,12 +86,10 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     }
 
     const areDynamicEntitiesColliding =
-      collidingEntity instanceof BaseDynamicCollidingGameEntity &&
-      otherCollidingEntity instanceof BaseDynamicCollidingGameEntity;
+      collidingEntity.isDynamic() && otherCollidingEntity.isDynamic();
 
     const isDynamicEntityCollidingWithStatic =
-      collidingEntity instanceof BaseDynamicCollidingGameEntity &&
-      otherCollidingEntity instanceof BaseStaticCollidingGameEntity;
+      collidingEntity.isDynamic() && !otherCollidingEntity.isDynamic();
 
     if (areDynamicEntitiesColliding) {
       this.simulateCollisionBetweenDynamicEntities(
@@ -142,7 +130,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   private calculatePenetrationCorrection(
-    dynamicEntity: BaseDynamicCollidingGameEntity
+    dynamicEntity: BaseCollidingGameEntity
   ): { x: number; y: number } {
     const dynamicHitboxes = dynamicEntity.getHitboxEntities();
     let maxPenetrationX = 0;
@@ -220,7 +208,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   private simulateCollisionBetweenDynamicAndStaticEntities(
-    dynamicCollidingEntity: BaseDynamicCollidingGameEntity
+    dynamicCollidingEntity: BaseCollidingGameEntity
   ) {
     // Calculate penetration depth and correction
     const correction = this.calculatePenetrationCorrection(
@@ -259,8 +247,8 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   private simulateCollisionBetweenDynamicEntities(
-    dynamicCollidingEntity: BaseDynamicCollidingGameEntity,
-    otherDynamicCollidingEntity: BaseDynamicCollidingGameEntity
+    dynamicCollidingEntity: BaseCollidingGameEntity,
+    otherDynamicCollidingEntity: BaseCollidingGameEntity
   ) {
     // Calculate collision vector
     const vCollision = {

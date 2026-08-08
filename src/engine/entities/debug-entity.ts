@@ -1,7 +1,7 @@
 import { TimerService } from "../services/gameplay/timer-service.js";
-import { BaseAnimatedGameEntity } from "./base-animated-entity.js";
+import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
 
-export class DebugEntity extends BaseAnimatedGameEntity {
+export class DebugEntity extends BaseMoveableGameEntity {
   private text: string = "Unknown";
   private timer: TimerService | null = null;
 

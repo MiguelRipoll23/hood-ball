@@ -21,11 +21,11 @@ import type { CarDemolishedPayload } from "../../interfaces/events/car-demolishe
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
-import { container } from "../../../engine/services/di-container.js";
-import { GamePlayer } from "../../models/game-player.js";
-import { MatchSessionService } from "../../services/session/match-session-service.js";
-import { NpcService } from "../../services/gameplay/npc-service.js";
+import type { GamePlayer } from "../../models/game-player.js";
+import type { MatchSessionService } from "../../services/session/match-session-service.js";
+import type { NpcService } from "../../services/gameplay/npc-service.js";
 import type { WorldControllerDependencies } from "./world-controller-dependencies.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class WorldController {
   private readonly COUNTDOWN_START_NUMBER = 4;
@@ -64,6 +64,8 @@ export class WorldController {
       spawnPointEntities,
       getEntitiesByOwner,
       npcService,
+      gamePlayer,
+      matchSessionService,
     } = deps;
     this.spawnPointService = spawnPointService;
     this.timerManagerService = timerManagerService;
@@ -78,8 +80,8 @@ export class WorldController {
     this.spawnPointEntities = spawnPointEntities;
     this.getEntitiesByOwner = getEntitiesByOwner;
     this.npcService = npcService;
-    this.gamePlayer = container.get(GamePlayer);
-    this.matchSessionService = container.get(MatchSessionService);
+    this.gamePlayer = gamePlayer;
+    this.matchSessionService = matchSessionService;
     this.assignInitialSpawnPoint();
     this.moveCarToSpawnPoint();
 
@@ -118,7 +120,7 @@ export class WorldController {
       this.spawnPointEntities,
       onEntityAdded
     );
-    console.log("Solo match with NPC started");
+    EngineLogger.info("WorldController", "Solo match with NPC started");
   }
 
   public showCountdown(): void {
@@ -151,7 +153,7 @@ export class WorldController {
       // Reset countdown to start fresh for real match
       this.countdownCurrentNumber = this.COUNTDOWN_START_NUMBER;
 
-      console.log(
+      EngineLogger.info("WorldController", 
         "Transitioning from solo to multiplayer - NPC entity removed, scores reset, countdown restarted"
       );
     }
@@ -184,12 +186,12 @@ export class WorldController {
 
   public handleRemoteCountdown(arrayBuffer: ArrayBuffer | null): void {
     if (arrayBuffer === null) {
-      console.warn("Array buffer is null");
+      EngineLogger.warn("WorldController", "Array buffer is null");
       return;
     }
 
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.warn("Host should not receive countdown event");
+      EngineLogger.warn("WorldController", "Host should not receive countdown event");
       return;
     }
 
@@ -235,7 +237,7 @@ export class WorldController {
   }
 
   public handleGameOverEnd(): void {
-    console.log("Game over end");
+    EngineLogger.info("WorldController", "Game over end");
     this.matchmakingService.handleGameOver();
   }
 
@@ -254,7 +256,7 @@ export class WorldController {
   }
 
   private handleCountdownEnd(): void {
-    console.log("Countdown end");
+    EngineLogger.info("WorldController", "Countdown end");
     this.matchSessionService.startMatch();
 
     this.alertEntity.hide();
@@ -267,9 +269,9 @@ export class WorldController {
     // In solo matches, timer stays frozen at initial duration
     if (!this.isSoloMatchWithNpc) {
       this.scoreboardEntity.startTimer();
-      console.log("Real match - timer started");
+      EngineLogger.info("WorldController", "Real match - timer started");
     } else {
-      console.log("Solo match - timer remains frozen");
+      EngineLogger.info("WorldController", "Solo match - timer remains frozen");
       // Activate NPC AI after 3-second delay
       this.npcService.activateNpcCarAfterDelay(this.boostPadsEntities);
     }
@@ -292,7 +294,7 @@ export class WorldController {
 
     const gamePlayer = this.gamePlayer;
     if (spawnPointIndex === -1) {
-      console.warn("No spawn points available for local player");
+      EngineLogger.warn("WorldController", "No spawn points available for local player");
       return;
     }
 
@@ -306,11 +308,11 @@ export class WorldController {
     const spawnPointIndex = gamePlayer.getSpawnPointIndex();
 
     if (spawnPointIndex === -1) {
-      console.warn("Local player does not have a spawn point index");
+      EngineLogger.warn("WorldController", "Local player does not have a spawn point index");
       return;
     }
 
-    console.log(
+    EngineLogger.info("WorldController", 
       "Moving local car to spawn point index",
       gamePlayer,
       spawnPointIndex
@@ -344,7 +346,7 @@ export class WorldController {
             entity.teleport(spawn.x, spawn.y, SPAWN_ANGLE);
           } else {
             // Fallback: at least set skip interpolation
-            console.warn(
+            EngineLogger.warn("WorldController", 
               `No spawn point found for player ${player.getName()}, skipping teleport`
             );
             entity.setSkipInterpolation();
@@ -360,12 +362,12 @@ export class WorldController {
     triggerCarExplosion: (x: number, y: number) => void
   ): void {
     if (data === null) {
-      console.warn("Array buffer is null");
+      EngineLogger.warn("WorldController", "Array buffer is null");
       return;
     }
 
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.warn("Host should not receive car demolished event");
+      EngineLogger.warn("WorldController", "Host should not receive car demolished event");
       return;
     }
 
@@ -385,7 +387,7 @@ export class WorldController {
         ?.getPlayerByNetworkId(payload.victimId) ?? null;
 
     if (!victim) {
-      console.warn(`Cannot find victim with id ${payload.victimId}`);
+      EngineLogger.warn("WorldController", `Cannot find victim with id ${payload.victimId}`);
       return;
     }
 
@@ -394,7 +396,7 @@ export class WorldController {
     );
 
     if (!victimCar) {
-      console.warn(`Cannot find car for victim ${payload.victimId}`);
+      EngineLogger.warn("WorldController", `Cannot find car for victim ${payload.victimId}`);
       return;
     }
 
@@ -427,12 +429,12 @@ export class WorldController {
     getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[]
   ): void {
     if (data === null) {
-      console.warn("Array buffer is null");
+      EngineLogger.warn("WorldController", "Array buffer is null");
       return;
     }
 
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.warn("Host should not receive boost pad event");
+      EngineLogger.warn("WorldController", "Host should not receive boost pad event");
       return;
     }
 
@@ -441,7 +443,7 @@ export class WorldController {
     const playerId = binaryReader.fixedLengthString(32);
 
     if (index < 0 || index >= this.boostPadsEntities.length) {
-      console.warn(`Invalid boost pad index: ${index}`);
+      EngineLogger.warn("WorldController", `Invalid boost pad index: ${index}`);
       return;
     }
 
@@ -458,18 +460,18 @@ export class WorldController {
         }
       });
     } else {
-      console.warn(`Cannot find player with id ${playerId}`);
+      EngineLogger.warn("WorldController", `Cannot find player with id ${playerId}`);
     }
   }
 
   public handleRemotePlayerBanned(data: ArrayBuffer | null): void {
     if (data === null) {
-      console.warn("Array buffer is null");
+      EngineLogger.warn("WorldController", "Array buffer is null");
       return;
     }
 
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.warn("Host should not receive player banned event");
+      EngineLogger.warn("WorldController", "Host should not receive player banned event");
       return;
     }
 
@@ -481,7 +483,7 @@ export class WorldController {
       null;
     const playerName = player?.getName() ?? playerId;
 
-    console.log(`Player banned: ${playerName} (${playerId})`);
+    EngineLogger.info("WorldController", `Player banned: ${playerName} (${playerId})`);
 
     const action = MatchAction.playerBanned(playerId, {
       playerName,
@@ -491,7 +493,7 @@ export class WorldController {
 
     // If the local player is the banned player, navigate to login as a terminal state
     if (playerId === this.gamePlayer.getNetworkId()) {
-      console.log("Local player has been banned from this match");
+      EngineLogger.info("WorldController", "Local player has been banned from this match");
       const localEvent = new LocalEvent(GameEventType.UserBannedByServer);
       this.eventProcessorService.addLocalEvent(localEvent);
     }

@@ -3,13 +3,14 @@ import {
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
 import { TimerService } from "../../engine/services/gameplay/timer-service.js";
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class AlertEntity
-  extends BaseAnimatedGameEntity
+  extends BaseMoveableGameEntity
   implements MultiplayerGameEntity
 {
   private textLines: string[] = ["Unknown", "message"];
@@ -144,7 +145,7 @@ export class AlertEntity
       this.scale = reader.float32();
       this.fontSize = reader.unsignedInt8();
     } catch (err) {
-      console.error("AlertEntity: failed to apply replay state", err);
+      EngineLogger.error("AlertEntity", "AlertEntity: failed to apply replay state", err);
     }
   }
 
