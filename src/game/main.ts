@@ -12,9 +12,7 @@ import {
   getEntityTypeMapper,
 } from "./utils/entity-type-registry.js";
 import { RecorderService } from "../engine/services/gameplay/recorder-service.js";
-import { RecordingPlayerService } from "../engine/services/gameplay/recording-player-service.js";
 import { registerEventTypeNames } from "./enums/event-type.js";
-import { GameSceneFactory } from "./services/gameplay/game-scene-factory.js";
 import { GAME_VERSION } from "./constants/game-constants.js";
 
 class Game {
@@ -40,10 +38,6 @@ class Game {
     // Inject entity type mapper into recorder service
     const recorderService = container.get(RecorderService);
     recorderService.setEntityTypeMapper(getEntityTypeMapper());
-
-    // Inject scene factory into recording player service
-    const recordingPlayerService = container.get(RecordingPlayerService);
-    recordingPlayerService.setSceneFactory(new GameSceneFactory());
 
     // Set game version for debug overlay
     const gameLoopService = container.get(GameLoopService);

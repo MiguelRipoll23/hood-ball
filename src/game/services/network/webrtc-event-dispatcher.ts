@@ -28,9 +28,11 @@ export class WebRTCEventDispatcher {
 
   @PeerCommandHandler(WebRTCType.EventData)
   public handleEventData(webrtcPeer: WebRTCPeer, binaryReader: BinaryReader): void {
-    // Security: only accept events from the host
-    if (webrtcPeer.getPlayer()?.isHost() === false) {
-      EngineLogger.warn("WebRTCEventDispatcher", "Received event from non-host player, dropping");
+    // Security: only accept events from verified hosts.
+    // Use !== true so that undefined players (getPlayer() returns null/undefined)
+    // are also rejected rather than silently falling through.
+    if (webrtcPeer.getPlayer()?.isHost() !== true) {
+      EngineLogger.warn("WebRTCEventDispatcher", "Received event from non-host or unknown player, dropping");
       return;
     }
 

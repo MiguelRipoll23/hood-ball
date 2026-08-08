@@ -291,21 +291,24 @@ export class RecordingPlayerService {
       return;
     }
 
-    const sceneId = this.recordingData.metadata.sceneId;
+    // Create the replay scene before mutating GameFrame state.
+    // This ensures GameFrame is never left with a dangling null scene on failure.
+    const scene = this.worldSceneFactory.create({ replayMode: true });
+    if (!scene) {
+      EngineLogger.warn("RecordingPlayer", "WorldSceneFactory returned null, aborting playback");
+      this.playbackState = PlaybackState.Stopped;
+      return;
+    }
+
+    this.replayScene = scene;
+    this.replayScene.load();
 
     // Store current scene to restore later (DON'T dispose it - we want to restore it)
     this.previousScene = this.gameState.getGameFrame().getCurrentScene();
 
     if (this.previousScene) {
-      // Just clear it from GameFrame, but keep the scene intact for restoration
       this.gameState.getGameFrame().setCurrentScene(null);
     }
-
-    // Create WorldScene through the factory in REPLAY MODE
-    this.replayScene = this.worldSceneFactory.create({ replayMode: true });
-
-    // Load the scene - it will skip entity creation due to replay mode
-    this.replayScene.load();
 
     // Set as current scene
     this.gameState.getGameFrame().setCurrentScene(this.replayScene);

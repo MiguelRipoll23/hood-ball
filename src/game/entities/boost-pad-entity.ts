@@ -5,7 +5,6 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../engine/models/remote-event.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
 import { GameEventType } from "../enums/event-type.js";
-import { container } from "../../engine/services/di-container.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {

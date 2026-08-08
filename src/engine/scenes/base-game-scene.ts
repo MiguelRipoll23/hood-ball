@@ -7,7 +7,6 @@ import type { SceneManagerServiceContract } from "../interfaces/services/scene/s
 import type { EventConsumerServiceContract } from "../interfaces/services/gameplay/event-consumer-service-interface.js";
 import type { EventSubscription } from "../types/event-subscription.js";
 import { CameraService } from "../services/gameplay/camera-service.js";
-import { container } from "../services/di-container.js";
 import type { EventType } from "../enums/event-type.js";
 import { EventTypeNames } from "../enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
