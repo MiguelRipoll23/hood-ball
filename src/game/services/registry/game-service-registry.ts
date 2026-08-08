@@ -10,6 +10,9 @@ import { MatchmakingNetworkService } from "../network/matchmaking-network-servic
 import { MatchLifecycleService } from "../gameplay/match-lifecycle-service.js";
 import { DisconnectionMonitor } from "../gameplay/disconnection-monitor.js";
 import { CredentialService } from "../security/credential-service.js";
+import { AntiCheatService } from "../security/anti-cheat-service.js";
+import { AntiCheatMonitorService } from "../security/anti-cheat-monitor-service.js";
+import { AntiCheatReportingService } from "../security/anti-cheat-reporting-service.js";
 import { SpawnPointService } from "../gameplay/spawn-point-service.js";
 import { ChatService } from "../network/chat-service.js";
 import { PlayerModerationService } from "../network/player-moderation-service.js";
@@ -80,6 +83,18 @@ export class GameServiceRegistry {
       useClass: MatchActionsLogService,
     });
     container.bind({ provide: CredentialService, useClass: CredentialService });
+    container.bind({
+      provide: AntiCheatReportingService,
+      useClass: AntiCheatReportingService,
+    });
+    container.bind({
+      provide: AntiCheatMonitorService,
+      useClass: AntiCheatMonitorService,
+    });
+    container.bind({
+      provide: AntiCheatService,
+      useClass: AntiCheatService,
+    });
 
     // Contract tokens resolve to the same singleton instances
     container.bind({
@@ -131,10 +146,13 @@ export class GameServiceRegistry {
       const eventProcessorService: EventProcessorService =
         container.get(EventProcessorService);
       const chatService: ChatService = container.get(ChatService);
+      const antiCheatService: AntiCheatService =
+        container.get(AntiCheatService);
 
       // Single composition root: register all cross-service command handlers
       websocketService.registerCommandHandlers(matchmakingNetworkService);
       websocketService.registerCommandHandlers(chatService);
+      websocketService.registerCommandHandlers(antiCheatService);
       webrtcService.registerCommandHandlers(matchmakingNetworkService);
       webrtcService.registerCommandHandlers(chatService);
 
