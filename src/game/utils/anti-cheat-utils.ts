@@ -32,6 +32,8 @@ export interface TrackedEntity {
   y: number;
   ownerId: string;
   typeId: number;
+  /** True when the entity was intentionally teleported (e.g. spawn point). */
+  skipInterpolation: boolean;
 }
 
 // ---------------------------------------------------------------------------

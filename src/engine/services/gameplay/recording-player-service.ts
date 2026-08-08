@@ -8,12 +8,9 @@ import type { EntityTransformDelta } from "../../interfaces/recording/entity-tra
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 import type { GameEntity } from "../../models/game-entity.js";
 import { EntityRegistry } from "../entity-registry.js";
+import { SceneRegistry } from "../scene-registry.js";
 import { GameState } from "../../models/game-state.js";
 import { LayerType } from "../../enums/layer-type.js";
-import {
-  WORLD_SCENE_FACTORY_TOKEN,
-  type WorldSceneFactoryContract,
-} from "../../interfaces/services/gameplay/world-scene-factory-contract.js";
 import { EngineLogger } from "../engine-logger.js";
 
 export enum PlaybackState {
@@ -50,9 +47,6 @@ export class RecordingPlayerService {
 
   constructor(
     private readonly gameState: GameState = inject(GameState),
-    private readonly worldSceneFactory: WorldSceneFactoryContract = inject(
-      WORLD_SCENE_FACTORY_TOKEN
-    )
   ) {
     EngineLogger.info("RecordingPlayer", "RecordingPlayerService initialized");
   }
@@ -291,11 +285,12 @@ export class RecordingPlayerService {
       return;
     }
 
-    // Create the replay scene before mutating GameFrame state.
-    // This ensures GameFrame is never left with a dangling null scene on failure.
-    const scene = this.worldSceneFactory.create({ replayMode: true });
+    const sceneId = this.recordingData.metadata.sceneId;
+
+    // Look up the replay scene class via the SceneRegistry
+    const scene = SceneRegistry.create(sceneId);
     if (!scene) {
-      EngineLogger.warn("RecordingPlayer", "WorldSceneFactory returned null, aborting playback");
+      EngineLogger.warn("RecordingPlayer", `No replay scene registered for sceneId ${sceneId}, aborting playback`);
       this.playbackState = PlaybackState.Stopped;
       return;
     }

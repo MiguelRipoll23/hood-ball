@@ -3,6 +3,7 @@ import type {
   WorldSceneFactoryContract,
   WorldSceneFactoryOptions,
 } from "../../../engine/interfaces/services/gameplay/world-scene-factory-contract.js";
+import { BaseGameScene } from "../../../engine/scenes/base-game-scene.js";
 import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneTransitionService } from "../../../engine/services/gameplay/scene-transition-service.js";
@@ -19,36 +20,36 @@ import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { WorldScene } from "./world-scene.js";
+import { ReplayScene } from "../replay/replay-scene.js";
 import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 
 @injectable()
 export class WorldSceneFactory implements WorldSceneFactoryContract {
-  public create(options: WorldSceneFactoryOptions = {}): WorldScene {
+  public create(options: WorldSceneFactoryOptions = {}): BaseGameScene {
     const replayMode = options.replayMode ?? false;
+
+    if (replayMode) {
+      return new ReplayScene(
+        container.get(GameState),
+        container.get(EventConsumerService),
+      );
+    }
+
     const deps: WorldSceneDependencies = {
       gameState: container.get(GameState),
       eventConsumerService: container.get(EventConsumerService),
       sceneTransitionService: container.get(SceneTransitionService),
       timerManagerService: container.get(TimerManagerService),
-      matchmakingService: replayMode
-        ? null
-        : container.get(MatchmakingService),
-      matchmakingController: replayMode
-        ? null
-        : container.get(MatchmakingControllerService),
-      entityOrchestrator: replayMode
-        ? null
-        : container.get(EntityOrchestratorService),
+      matchmakingService: container.get(MatchmakingService),
+      matchmakingController: container.get(MatchmakingControllerService),
+      entityOrchestrator: container.get(EntityOrchestratorService),
       eventProcessorService: container.get(EventProcessorService),
-      spawnPointService: replayMode ? null : container.get(SpawnPointService),
-      chatService: replayMode ? null : container.get(ChatService),
-      matchActionsLogService: replayMode
-        ? null
-        : container.get(MatchActionsLogService),
+      spawnPointService: container.get(SpawnPointService),
+      chatService: container.get(ChatService),
+      matchActionsLogService: container.get(MatchActionsLogService),
       gamePlayer: container.get(GamePlayer),
       gameServer: container.get(GameServer),
       matchSessionService: container.get(MatchSessionService),
-      replayMode,
     };
     return new WorldScene(deps);
   }

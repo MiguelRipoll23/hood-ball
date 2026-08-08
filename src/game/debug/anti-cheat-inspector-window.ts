@@ -8,6 +8,7 @@ import { MatchSessionService } from "../services/session/match-session-service.j
 import { AntiCheatRuleType } from "../enums/anti-cheat-rule-type.js";
 import { GameEventType } from "../enums/event-type.js";
 import type { AntiCheatRule } from "../models/anti-cheat-rule.js";
+import type { ReportedViolation } from "../services/security/anti-cheat-reporting-service.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 const RULE_TYPE_NAMES: Record<number, string> = {
@@ -21,8 +22,11 @@ const RED = 0xff0000ff;
 
 export class AntiCheatInspectorWindow extends BaseWindow {
   constructor() {
-    super("Anti-cheat inspector", new ImVec2(280, 120));
-    EngineLogger.info("AntiCheatInspectorWindow", "AntiCheatInspectorWindow created");
+    super("Anti-cheat inspector", new ImVec2(480, 350));
+    EngineLogger.info(
+      "AntiCheatInspectorWindow",
+      "AntiCheatInspectorWindow created",
+    );
   }
 
   protected override renderContent(): void {
@@ -51,51 +55,35 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       }
     }
 
-    ImGui.Separator();
-
-    // ── Show Rules button ──
-    if (ImGui.Button("Show Rules", new ImVec2(-1, 0))) {
-      ImGui.OpenPopup("AntiCheatRulesPopup");
-    }
-
-    // ── Show Violations button ──
-    if (ImGui.Button("Show Violations", new ImVec2(-1, 0))) {
-      ImGui.OpenPopup("AntiCheatViolationsPopup");
-    }
-
-    // ── Rules popup ──
-    if (ImGui.BeginPopup("AntiCheatRulesPopup")) {
+    // ── Rules ──
+    if (
+      ImGui.CollapsingHeader("Rules", ImGui.TreeNodeFlags.DefaultOpen)
+    ) {
       const rules = monitor.getRules();
       if (rules.length === 0) {
         ImGui.Text("No rules loaded.");
       } else {
         this.renderRulesTable(rules);
       }
-      ImGui.EndPopup();
     }
 
-    // ── Violations popup ──
-    if (ImGui.BeginPopup("AntiCheatViolationsPopup")) {
-      const reported = reporting.getReportedViolations();
-      if (reported.length === 0) {
+    // ── Violations ──
+    if (
+      ImGui.CollapsingHeader(
+        "Violation History",
+        ImGui.TreeNodeFlags.DefaultOpen,
+      )
+    ) {
+      const violations = reporting.getReportedViolations();
+      if (violations.length === 0) {
         ImGui.Text("No violations reported yet.");
       } else {
-        for (const key of reported) {
-          const [ruleId, userId] = key.split(":");
-          const player = match?.getPlayerByNetworkId(userId);
-          const playerName = player?.getName() ?? userId.substring(0, 8);
-          ImGui.PushStyleColor(ImGui.Col.Text, YELLOW);
-          ImGui.Text(`Rule #${ruleId} — ${playerName} (${userId.substring(0, 8)}...)`);
-          ImGui.PopStyleColor();
-        }
+        this.renderViolationsTable(violations, match);
       }
-      ImGui.EndPopup();
     }
   }
 
-  private renderRulesTable(
-    rules: readonly AntiCheatRule[],
-  ): void {
+  private renderRulesTable(rules: readonly AntiCheatRule[]): void {
     const flags =
       ImGui.TableFlags.BordersOuter |
       ImGui.TableFlags.RowBg |
@@ -113,7 +101,8 @@ export class AntiCheatInspectorWindow extends BaseWindow {
 
     for (const rule of rules) {
       ImGui.TableNextRow();
-      const typeName = RULE_TYPE_NAMES[rule.ruleType] ?? `Unknown (${rule.ruleType})`;
+      const typeName =
+        RULE_TYPE_NAMES[rule.ruleType] ?? `Unknown (${rule.ruleType})`;
 
       // ID
       ImGui.TableSetColumnIndex(0);
@@ -134,9 +123,92 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     ImGui.EndTable();
   }
 
-  private formatField(ruleType: number, fieldId: number, value: number): string {
+  private renderViolationsTable(
+    violations: readonly ReportedViolation[],
+    match: ReturnType<MatchSessionService["getMatch"]>,
+  ): void {
+    const flags =
+      ImGui.TableFlags.BordersOuter |
+      ImGui.TableFlags.RowBg |
+      ImGui.TableFlags.Resizable |
+      ImGui.TableFlags.ScrollY |
+      ImGui.TableFlags.SizingStretchProp;
+
+    if (!ImGui.BeginTable("AntiCheatViolations", 5, flags)) return;
+
+    ImGui.TableSetupColumn("Rule", ImGui.TableColumnFlags.WidthFixed, 40);
+    ImGui.TableSetupColumn("Player", ImGui.TableColumnFlags.WidthStretch);
+    ImGui.TableSetupColumn("Reason", ImGui.TableColumnFlags.WidthStretch);
+    ImGui.TableSetupColumn(
+      "Time",
+      ImGui.TableColumnFlags.WidthFixed,
+      90,
+    );
+    ImGui.TableSetupColumn(
+      "Relative",
+      ImGui.TableColumnFlags.WidthFixed,
+      70,
+    );
+
+    ImGui.TableHeadersRow();
+
+    const now = Date.now();
+
+    for (const v of violations) {
+      ImGui.TableNextRow();
+
+      const player = match?.getPlayerByNetworkId(v.userId);
+      const playerName =
+        player?.getName() ?? v.userId.substring(0, 8) + "...";
+
+      // Rule ID
+      ImGui.TableSetColumnIndex(0);
+      ImGui.Text(`#${v.ruleId}`);
+
+      // Player
+      ImGui.TableSetColumnIndex(1);
+      ImGui.PushStyleColor(ImGui.Col.Text, YELLOW);
+      ImGui.Text(playerName);
+      ImGui.PopStyleColor();
+
+      // Reason
+      ImGui.TableSetColumnIndex(2);
+      ImGui.Text(v.reason);
+
+      // Player time (absolute)
+      ImGui.TableSetColumnIndex(3);
+      const date = new Date(v.timestamp);
+      const timeStr = date.toLocaleTimeString();
+      ImGui.Text(timeStr);
+
+      // Relative time
+      ImGui.TableSetColumnIndex(4);
+      const elapsedMs = now - v.timestamp;
+      const elapsedStr = this.formatElapsed(elapsedMs);
+      ImGui.Text(elapsedStr);
+    }
+
+    ImGui.EndTable();
+  }
+
+  private formatElapsed(ms: number): string {
+    if (ms < 1000) return "just now";
+    const secs = Math.floor(ms / 1000);
+    if (secs < 60) return `${secs}s ago`;
+    const mins = Math.floor(secs / 60);
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    return `${hours}h ago`;
+  }
+
+  private formatField(
+    ruleType: number,
+    fieldId: number,
+    value: number,
+  ): string {
     if (ruleType === AntiCheatRuleType.EventRateLimit) {
-      if (fieldId === 0) return `event=${(GameEventType as Record<number, string>)[value] ?? value}`;
+      if (fieldId === 0)
+        return `event=${(GameEventType as Record<number, string>)[value] ?? value}`;
       if (fieldId === 1) return `maxCount=${value}`;
       if (fieldId === 2) return `window=${value}s`;
     }
@@ -147,5 +219,4 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     }
     return `f${fieldId}=${value}`;
   }
-
 }

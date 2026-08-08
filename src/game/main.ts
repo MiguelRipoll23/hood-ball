@@ -11,6 +11,8 @@ import {
   registerGameEntityTypes,
   getEntityTypeMapper,
 } from "./utils/entity-type-registry.js";
+// Side-effect import: registers replay scene classes in SceneRegistry
+import "./utils/scene-type-registry.js";
 import { RecorderService } from "../engine/services/gameplay/recorder-service.js";
 import { registerEventTypeNames } from "./enums/event-type.js";
 import { GAME_VERSION } from "./constants/game-constants.js";

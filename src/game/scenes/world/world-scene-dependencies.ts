@@ -18,15 +18,14 @@ export interface WorldSceneDependencies {
   eventConsumerService: EventConsumerService;
   sceneTransitionService: SceneTransitionService;
   timerManagerService: TimerManagerService;
-  matchmakingService: MatchmakingServiceContract | null;
-  matchmakingController: MatchmakingControllerContract | null;
-  entityOrchestrator: EntityOrchestratorService | null;
+  matchmakingService: MatchmakingServiceContract;
+  matchmakingController: MatchmakingControllerContract;
+  entityOrchestrator: EntityOrchestratorService;
   eventProcessorService: EventProcessorService;
-  spawnPointService: SpawnPointService | null;
-  chatService: ChatService | null;
-  matchActionsLogService: MatchActionsLogService | null;
+  spawnPointService: SpawnPointService;
+  chatService: ChatService;
+  matchActionsLogService: MatchActionsLogService;
   gamePlayer: GamePlayer;
   gameServer: GameServer;
   matchSessionService: MatchSessionService;
-  replayMode?: boolean;
 }
