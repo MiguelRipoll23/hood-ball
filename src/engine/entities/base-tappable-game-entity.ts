@@ -4,9 +4,6 @@ import { InteractionComponent } from "../components/interaction-component.js";
 import { EngineLogger } from "../services/engine-logger.js";
 
 export class BaseTappableGameEntity extends BaseMoveableGameEntity {
-  protected width = 0;
-  protected height = 0;
-
   protected active = true;
 
   protected hovering = false;

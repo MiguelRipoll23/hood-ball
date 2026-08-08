@@ -44,8 +44,6 @@ export class CarEntity extends BaseCollidingGameEntity {
   private readonly SMOKE_DURATION = 1500; // ms
   private readonly SMOKE_SPAWN_INTERVAL = 5; // ms
   // Reference delta at 60 fps (1000/60 ≈ 16.667ms) — used to normalize delta-time
-  private readonly REFERENCE_DELTA = 1000 / 60;
-
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
   private readonly PLAYER_NAME_RADIUS = 10;
@@ -55,8 +53,6 @@ export class CarEntity extends BaseCollidingGameEntity {
   private readonly PING_ACTIVE_COLOR = "#C6FF00";
   private readonly PING_INACTIVE_COLOR = "#FF0000";
 
-  protected width: number = 50;
-  protected height: number = 50;
   protected canvas: HTMLCanvasElement | null = null;
   protected speed: number = 0;
 
@@ -89,9 +85,8 @@ export class CarEntity extends BaseCollidingGameEntity {
     this.x = x;
     this.y = y;
     this.angle = angle;
-    this.transform.x = x;
-    this.transform.y = y;
-    this.transform.angle = angle;
+    this.width = 50;
+    this.height = 50;
     this.physics.mass = this.MASS;
     this.setBounciness(0.5);
 
@@ -106,7 +101,7 @@ export class CarEntity extends BaseCollidingGameEntity {
   }
 
   public override reset(): void {
-    this.transform.angle = 1.5708;
+    this.angle = 1.5708;
     this.speed = 0;
     this.boost = this.MAX_BOOST;
     this.boosting = false;
@@ -198,9 +193,9 @@ export class CarEntity extends BaseCollidingGameEntity {
 
     const newDemolished = binaryReader.boolean();
 
-    this.transform.x = newX;
-    this.transform.y = newY;
-    this.transform.angle = newAngle;
+    this.x = newX;
+    this.y = newY;
+    this.angle = newAngle;
     this.speed = newSpeed;
     this.boosting = newBoosting;
     this.boost = newBoost;
@@ -618,9 +613,7 @@ export class CarEntity extends BaseCollidingGameEntity {
   }
 
   private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
-    // Scale particle movement by delta so behaviour is frame-rate independent.
-    // Velocities are calibrated for 60 fps; divide by the reference delta.
-    const scale = delta / this.REFERENCE_DELTA;
+    const scale = delta / 16;
     this.smokeParticles.forEach((p) => {
       p.x += p.vx * scale;
       p.y += p.vy * scale;
