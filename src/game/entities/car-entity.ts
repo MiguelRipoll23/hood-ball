@@ -86,6 +86,9 @@ export class CarEntity extends BaseCollidingGameEntity {
   constructor(x: number, y: number, angle: number, private remote = false) {
     super();
     this.remote = remote;
+    this.x = x;
+    this.y = y;
+    this.angle = angle;
     this.transform.x = x;
     this.transform.y = y;
     this.transform.angle = angle;
