@@ -10,7 +10,6 @@ export class DebugSettings {
   private hitboxVisible: boolean = true;
   private gizmosVisible: boolean = false;
   private menuEnabled: boolean = false;
-  private ballTrajectoryVisible: boolean = false;
 
   constructor(debugging: boolean) {
     this.debugging = debugging;
@@ -93,12 +92,4 @@ export class DebugSettings {
     EngineLogger.info("DebugSettings", `Menu enabled set to: ${value}`);
   }
 
-  public isBallTrajectoryVisible(): boolean {
-    return this.ballTrajectoryVisible;
-  }
-
-  public setBallTrajectoryVisibility(value: boolean): void {
-    this.ballTrajectoryVisible = value;
-    EngineLogger.info("DebugSettings", `Ball trajectory visibility set to: ${value}`);
-  }
 }

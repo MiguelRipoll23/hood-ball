@@ -7,6 +7,7 @@ import { PeerInspectorWindow } from "./peer-inspector-window.js";
 import { AnimationInspectorWindow } from "./animation-inspector-window.js";
 import { ModWindow } from "./mod-window.js";
 import { RecordingInspectorWindow } from "./recording-inspector-window.js";
+import { AntiCheatInspectorWindow } from "./anti-cheat-inspector-window.js";
 import type { GameState } from "../../engine/models/game-state.js";
 
 export class DebugWindow extends BaseWindow {
@@ -17,6 +18,7 @@ export class DebugWindow extends BaseWindow {
   private sceneInspectorWindow: SceneInspectorWindow;
   private modWindow: ModWindow;
   private recordingInspectorWindow: RecordingInspectorWindow;
+  private antiCheatInspectorWindow: AntiCheatInspectorWindow;
 
   constructor(private gameState: GameState) {
     super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
@@ -27,6 +29,7 @@ export class DebugWindow extends BaseWindow {
     this.sceneInspectorWindow = new SceneInspectorWindow(gameState);
     this.modWindow = new ModWindow(gameState);
     this.recordingInspectorWindow = new RecordingInspectorWindow();
+    this.antiCheatInspectorWindow = new AntiCheatInspectorWindow();
     this.open();
   }
 
@@ -66,6 +69,10 @@ export class DebugWindow extends BaseWindow {
     if (this.recordingInspectorWindow.isOpen()) {
       this.recordingInspectorWindow.render();
     }
+
+    if (this.antiCheatInspectorWindow.isOpen()) {
+      this.antiCheatInspectorWindow.render();
+    }
   }
 
   private renderMenu(): void {
@@ -99,6 +106,10 @@ export class DebugWindow extends BaseWindow {
 
         if (ImGui.MenuItem("Recording", "R")) {
           this.recordingInspectorWindow.toggle();
+        }
+
+        if (ImGui.MenuItem("Anti-Cheat", "C")) {
+          this.antiCheatInspectorWindow.toggle();
         }
 
         ImGui.EndMenu();
@@ -156,11 +167,6 @@ export class DebugWindow extends BaseWindow {
         debugSettings.setGizmosVisibility.bind(debugSettings)
       );
 
-      this.renderCheckbox(
-        "Show ball trajectory",
-        debugSettings.isBallTrajectoryVisible(),
-        debugSettings.setBallTrajectoryVisibility.bind(debugSettings)
-      );
     }
   }
 
