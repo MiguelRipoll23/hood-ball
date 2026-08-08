@@ -257,29 +257,23 @@ export class BallEntity
     this.setSyncableByHost(true);
   }
 
-  // Function to create and draw the gradient ball
+  // Draw the ball with two overlapping circles instead of a radial gradient.
+  // This avoids allocating a CanvasGradient every frame while keeping the same look.
   private drawBallWithGradient(context: CanvasRenderingContext2D): void {
-    const gradient = this.createGradient(context);
+    // Outer circle (light gray)
     context.beginPath();
-    context.fillStyle = gradient;
+    context.fillStyle = "rgba(200, 200, 200, 1)";
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
-    context.closePath();
-  }
 
-  // Function to create the radial gradient
-  private createGradient(context: CanvasRenderingContext2D): CanvasGradient {
-    const gradient = context.createRadialGradient(
-      this.x,
-      this.y,
-      0,
-      this.x,
-      this.y,
-      this.radius
-    );
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)"); // Inner color (white)
-    gradient.addColorStop(1, "rgba(200, 200, 200, 1)"); // Outer color (light gray)
-    return gradient;
+    // Inner circle (white highlight) — slightly offset for a 3D effect
+    const innerRadius = this.radius * 0.55;
+    const innerX = this.x - this.radius * 0.15;
+    const innerY = this.y - this.radius * 0.15;
+    context.beginPath();
+    context.fillStyle = "rgba(255, 255, 255, 1)";
+    context.arc(innerX, innerY, innerRadius, 0, Math.PI * 2);
+    context.fill();
   }
 
   // Function to apply the glow effect when the ball is inactive
@@ -293,6 +287,7 @@ export class BallEntity
   // Function to draw the ball with the glow effect
   private drawBallWithGlow(context: CanvasRenderingContext2D): void {
     context.beginPath();
+    context.fillStyle = "rgba(255, 255, 255, 1)";
     context.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     context.fill();
     context.closePath();

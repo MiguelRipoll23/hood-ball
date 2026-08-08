@@ -4,109 +4,100 @@
 
 ## Summary
 
-Hood Ball is a multiplayer HTML5 canvas game with a custom engine. The architecture follows a clean separation between engine (`src/engine/`) and game (`src/game/`) code, uses dependency injection via `@needle-di/core`, and implements a host-authoritative WebRTC networking model. This review covers all systems after the recent refactoring passes (ECS-lite component system, inheritance flattening, DI standardization, and WorldScene decomposition).
+Hood Ball is a multiplayer HTML5 canvas game with a custom engine. Clean engine/game separation, DI via `@needle-di/core`, host-authoritative WebRTC networking. This review reflects the state after the ECS-lite component system, inheritance flattening, DI standardization, logger migration, and performance optimizations.
 
 ---
 
 ## Category Grades
 
-| Category | Grade | Key Action |
-|----------|-------|------------|
-| Architecture | **A** | Clean engine/game separation. WorldScene decomposed into WeatherSystem + ChatUISystem + controllers. Remaining methods are tightly coupled to scene state — further extraction would hurt readability. |
-| Entity System | **A** | Inheritance flattened from 7→4 levels. 3 intermediate base classes deleted. ECS-lite component system (Transform, Physics, Collision, Network, Interaction) with 7 components. Physics deprecated fields removed — entities use `this.physics.*` directly. |
-| Networking | **A** | Host-authoritative star topology with three-channel WebRTC (reliable-ordered, reliable-unordered, unreliable-unordered). Binary protocol with sequence tracking. ECDSA signature verification for identity and chat. |
-| Event System | **A-** | Clean local/remote queue separation. Host authority enforced on remote events. Event batching would be a nice optimization. |
-| DI / Service Layer | **A** | Constructors standardized on deps-object injection. WorldScene, WorldController, ScoreManagerService all use explicit deps interfaces. Testable without a DI container. |
-| Performance | **B+** | Binary protocol is efficient. Collision detection is O(n²) — consider spatial partitioning if entity count grows. Canvas gradients recreated each frame. Smoke particles use hardcoded delta scaling. |
-| Security | **A-** | ECDSA-signed chat messages, server-pushed anti-cheat rules, per-frame entity position validation, host-only remote event dispatch. Add velocity validation to anti-cheat rules. |
-| Tooling | **A-** | `.prettierrc` + `.editorconfig` added. ESLint flat config. `noImplicitOverride` not yet enabled (needs tsconfig fix). |
-| Test Coverage | **F** | No tests. DI is now clean and mockable — add Vitest unit tests for serialization, collision math, and event dispatch. |
-| Code Quality | **A** | Zero eslint-disable comments. Zero raw `console.*` calls (all via `EngineLogger`). Consistent `override` keyword usage. `.prettierrc` + `.editorconfig` added. `Object.values()` hot-path allocations cached. |
+| Category | Grade | Notes |
+|----------|-------|-------|
+| Architecture | **A** | Clean engine/game separation. WorldScene decomposed into WeatherSystem + ChatUISystem. |
+| Entity System | **A** | Inheritance flattened 7→4 levels. ECS-lite (7 components). Physics deprecated fields removed. Override consistency enforced. |
+| Networking | **A** | Host-authoritative star topology, 3-channel WebRTC, binary protocol, ECDSA signatures. |
+| Event System | **A-** | Local/remote queue separation. Host authority enforced. Batching would help. |
+| DI / Service Layer | **A** | Constructor deps objects only. No `container.get()` in constructors. Fully mockable. |
+| Performance | **A-** | Spatial grid for collision (O(n) typical). Ball gradient eliminated (no allocations). Smoke particles use proper delta scaling. |
+| Security | **A-** | ECDSA-signed chat, anti-cheat rules, host-only remote event dispatch. |
+| Code Quality | **A** | 0 eslint-disable comments. 0 raw `console.*` calls. Consistent `override` usage. `.prettierrc` + `.editorconfig`. |
+| Tooling | **A-** | Prettier + EditorConfig added. ESLint flat config. `noImplicitOverride` not yet enabled. |
+| Test Coverage | **F** | No tests. DI is mockable — add Vitest tests for serialization, collision math, events. |
 
 ---
 
-## Key Architectural Decisions
-
-### Entity Hierarchy (post-flattening)
+## Entity Hierarchy
 
 ```
 BaseGameEntity                              (lifecycle, state, opacity, component container)
-└─ BaseMultiplayerGameEntity                (+NetworkComponent: owner, sync flags)
+└─ BaseMultiplayerGameEntity                (+NetworkComponent)
    └─ BaseMoveableGameEntity               (+TransformComponent, scale, animations)
-      ├─ BaseTappableGameEntity            (+InteractionComponent: hover/press)
-      │   └─ 14 UI entities (buttons, menus)
+      ├─ BaseTappableGameEntity            (+InteractionComponent) → 14 UI entities
       ├─ BaseCollidingGameEntity           (+PhysicsComponent + CollisionComponent)
       │   ├─ CarEntity, BallEntity          (isDynamic = true)
-      │   └─ GoalEntity, BoostPadEntity,    (isDynamic = false)
-      │      WorldBackgroundEntity
-      └─ 12 non-colliding entities          (snow, confetti, explosions, UI elements)
+      │   └─ GoalEntity, BoostPadEntity     (isDynamic = false)
+      └─ 12 non-colliding entities          (snow, confetti, explosions, UI)
+
+Max depth: 4 (was 7). Components: Transform, Physics, Collision, Network, Interaction.
+Access: entity.getComponent(TransformComponent)?.teleport(x, y)
 ```
-
-**Max depth: 4** (was 7 before the ECS-lite + flattening refactors). Components provide an escape hatch from the remaining inheritance: new entities can attach `TransformComponent`, `PhysicsComponent`, `CollisionComponent`, `NetworkComponent`, or `InteractionComponent` directly.
-
-### Networking Model
-- **Star topology**: One host, all peers connect to host via WebRTC.
-- **Three data channels**: reliable-ordered (handshake, events), reliable-unordered (chat, removal), unreliable-unordered (entity state, ping).
-- **Host authority**: Only the host dispatches remote events. Non-host event injection is silently dropped.
-
-### Event System
-- **Local queue**: Process-local signals (connection lifecycle, UI triggers). Every client subscribes independently.
-- **Remote queue**: Host-dispatched authoritative state changes. Non-hosts mirror them.
-
-### Dependency Injection
-- **Pattern**: Classes accept a single deps interface in their constructor (e.g., `WorldSceneDependencies`). No `container.get()` in constructors.
-- **Composition root**: `GameServiceRegistry.initializeServices()` wires all cross-service handlers.
-
----
 
 ## Component Catalog
 
 | Component | Key Properties | Used By |
 |-----------|---------------|---------|
 | `TransformComponent` | x, y, width, height, angle, scale, teleport() | BaseMoveableGameEntity |
-| `PhysicsComponent` | vx, vy, mass, bounciness, rigidBody, isDynamic | BaseCollidingGameEntity |
+| `PhysicsComponent` | vx, vy, mass, bounciness, rigidBody, isDynamic, resetVelocity() | BaseCollidingGameEntity |
 | `CollisionComponent` | hitboxEntities, collidingEntities, collision exclusions | BaseCollidingGameEntity |
 | `NetworkComponent` | networkId, typeId, owner, syncable, sync flags | BaseMultiplayerGameEntity |
 | `InteractionComponent` | active, hovering, pressed, stealFocus | BaseTappableGameEntity |
-
-Access via: `entity.getComponent(TransformComponent)?.teleport(x, y)` or `entity.addComponent(new MyComponent())`.
-
----
 
 ## WorldScene Decomposition
 
 | Subsystem | Location | Responsibility |
 |-----------|----------|---------------|
-| `WeatherSystem` | `systems/weather-system.ts` | Snow effects, icy friction physics |
-| `ChatUISystem` | `systems/chat-ui-system.ts` | Chat input/button, match menu, player list refresh |
-| `WorldController` | `world-controller.ts` | Countdown, spawn points, car demolitions, match state |
-| `ScoreManagerService` | `services/gameplay/score-manager-service.ts` | Goal detection, scoring, game-over logic |
-| `WorldEntityFactory` | `world-entity-factory.ts` | Entity creation (cars, ball, goals, boost pads, UI) |
+| `WeatherSystem` | `systems/weather-system.ts` | Snow effects, icy friction |
+| `ChatUISystem` | `systems/chat-ui-system.ts` | Chat input, match menu, player list |
+| `WorldController` | `world-controller.ts` | Countdown, spawn points, demolitions |
+| `ScoreManagerService` | `services/gameplay/score-manager-service.ts` | Goals, scoring, game-over |
+| `WorldEntityFactory` | `world-entity-factory.ts` | Entity creation (cars, ball, goals, etc.) |
 
----
+## Networking Model
+
+- **Star topology**: One host, peers connect to host via WebRTC
+- **3 data channels**: reliable-ordered (handshake, events), reliable-unordered (chat, removal), unreliable-unordered (entity state, ping)
+- **Host authority**: Only the host dispatches remote events. Non-host injection silently dropped.
+
+## Event System
+
+- **Local queue**: Process-local signals (connection lifecycle, UI triggers). Every client subscribes independently.
+- **Remote queue**: Host-dispatched authoritative changes. Non-hosts mirror them.
+
+## Dependency Injection
+
+- **Pattern**: Constructor deps objects (e.g., `WorldSceneDependencies`). No `container.get()` in constructors.
+- **Composition root**: `GameServiceRegistry.initializeServices()` wires cross-service handlers.
+
+## Logging
+
+All logging via `EngineLogger` (static, engine-level). **Disabled by default**, enabled via `?debug` URL query param (`main.ts` → `DebugSettings` → `EngineLogger.setEnabled()`). Usage: `EngineLogger.info("Category", "message", ...args)`.
+
+## Performance Optimizations
+
+- **Spatial grid** (`SpatialGrid`): Collision detection bins entities into fixed-size cells. O(n) typical case, down from O(n²) brute-force.
+- **Ball rendering**: Radial gradient replaced with two filled circles — zero `CanvasGradient` allocations per frame.
+- **Smoke particles**: Delta scaling uses `REFERENCE_DELTA = 1000/60` instead of hardcoded `delta / 16`.
 
 ## Remaining Opportunities
 
-1. **Tests** — All deps interfaces are mockable. Start with `BinaryWriter`/`BinaryReader` serialization tests and collision math tests.
-2. **Collision performance** — O(n²) brute force; a spatial grid or quadtree would help if entities scale.
-3. **Event batching** — Multiple remote events per frame could be batched into a single WebRTC message.
-4. **Canvas gradient caching** — `BallEntity.createGradient()` allocates a new gradient each frame. Cache and only recreate on position change.
-5. **Smoke particle delta scaling** — `CarEntity.updateSmokeParticles()` uses `delta / 16` (60fps assumption). Use proper delta-time scaling.
-6. **`noImplicitOverride`** — Enable in `tsconfig.json` to enforce `override` keyword everywhere.
-
-### Logging
-
-All logging goes through `EngineLogger` (static, engine-level). It is **disabled by default** and enabled via the `?debug` URL query parameter (flowing through `main.ts` → `DebugSettings` → `EngineLogger.setEnabled()`). 
-
-Usage: `EngineLogger.info("Category", "message", ...args)`. The ConsoleSink prepends `[Category]` for readability. When disabled, all log calls are no-ops.
-
----
+1. **Tests** — DI is mockable. Start with `BinaryWriter`/`BinaryReader` and collision math.
+2. **Event batching** — Batch multiple remote events per WebRTC message.
+3. **`noImplicitOverride`** — Enable in `tsconfig.json` to enforce `override` everywhere.
+4. **Spatial grid cell size** — Tuned at 100px; profile and adjust for different entity densities.
 
 ## Migration Notes
 
-- **Deprecated fields on base classes**: The base classes (`BaseMoveableGameEntity`, `BaseCollidingGameEntity`, etc.) maintain both deprecated `protected` fields AND component-backed storage. This is deliberate for backward compatibility — 55 entity subclasses still access `this.x`, `this.mass`, `this.rigidBody`, etc. directly. Over time, migrate entities to use `getComponent()` exclusively, then remove the deprecated fields.
-- **`BaseAnimatedGameEntity`, `BaseStaticCollidingGameEntity`, `BaseDynamicCollidingGameEntity`**: These files have been deleted. All functionality now lives in `BaseMoveableGameEntity` (animations) and `BaseCollidingGameEntity` (physics + collision).
-- **`LoggerUtils`** (`src/game/utils/logger-utils.ts`): Deleted — fully replaced by `EngineLogger`.
-- **Physics deprecated fields** (`vx`, `vy`, `mass`, `bounciness`, `rigidBody`): Removed from `BaseCollidingGameEntity`. Entities now use `this.physics.*` directly. Getters/setters delegate to `PhysicsComponent`.
-- **`Object.values(this.dataChannels)`**: Cached as `dataChannelValues` array in `WebRTCPeerService` to avoid per-call allocations.
-- **`BallEntity.deserialize()` DOM query**: Replaced with `container.get(GameState).getCanvas()` — no more `document.querySelector` in static methods.
+- **`BaseAnimatedGameEntity`, `BaseStaticCollidingGameEntity`, `BaseDynamicCollidingGameEntity`**: Deleted. Functionality in `BaseMoveableGameEntity` and `BaseCollidingGameEntity`.
+- **`LoggerUtils`**: Deleted. Replaced by `EngineLogger`.
+- **Physics deprecated fields** (`vx`, `vy`, `mass`, `bounciness`, `rigidBody`): Removed from `BaseCollidingGameEntity`. Entities use `this.physics.*`.
+- **`Object.values(this.dataChannels)`**: Cached as `dataChannelValues` in `WebRTCPeerService`.
+- **`BallEntity.deserialize()`**: Uses `container.get(GameState).getCanvas()` instead of `document.querySelector`.

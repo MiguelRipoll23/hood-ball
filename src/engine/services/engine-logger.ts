@@ -27,20 +27,29 @@ export interface LogSink {
  */
 class ConsoleSink implements LogSink {
   public write(level: LogLevel, category: string, message: string, ...args: unknown[]): void {
-    const prefix = `[${category}]`;
+    // When the message uses %c console styling, merge the category into the
+    // styled string so the category is visible AND colour applies correctly.
+    if (message.startsWith("%c")) {
+      this.writeRaw(level, `%c[${category}] ${message.slice(2)}`, ...args);
+      return;
+    }
 
+    this.writeRaw(level, `[${category}]`, message, ...args);
+  }
+
+  private writeRaw(level: LogLevel, ...args: unknown[]): void {
     switch (level) {
       case LogLevel.Debug:
-        console.debug(prefix, message, ...args);
+        console.debug(...args);
         break;
       case LogLevel.Info:
-        console.info(prefix, message, ...args);
+        console.info(...args);
         break;
       case LogLevel.Warn:
-        console.warn(prefix, message, ...args);
+        console.warn(...args);
         break;
       case LogLevel.Error:
-        console.error(prefix, message, ...args);
+        console.error(...args);
         break;
     }
   }
