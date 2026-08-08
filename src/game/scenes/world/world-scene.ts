@@ -52,6 +52,8 @@ import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { NpcService } from "../../services/gameplay/npc-service.js";
+import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
+import { AntiCheatService } from "../../services/security/anti-cheat-service.js";
 import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 
 export class WorldScene extends BaseCollidingGameScene {
@@ -95,6 +97,7 @@ export class WorldScene extends BaseCollidingGameScene {
   // Weather state
   private activeWeatherEntity: SnowEntity | null = null;
   private weatherFrictionMultiplier = 1.0;
+  private readonly antiCheatService: AntiCheatService | null = null;
 
   constructor(deps: WorldSceneDependencies) {
     super(deps.gameState, deps.eventConsumerService);
@@ -113,6 +116,13 @@ export class WorldScene extends BaseCollidingGameScene {
     this.spawnPointService = deps.spawnPointService;
     this.chatService = deps.chatService;
     this.matchActionsLogService = deps.matchActionsLogService;
+
+    // Resolve AntiCheatService for per-frame entity checks
+    try {
+      this.antiCheatService = container.get(AntiCheatService);
+    } catch {
+      this.antiCheatService = null;
+    }
 
     // Fix for hovering acting as press:
     // Ensure pointer events are cleared automatically after update
@@ -243,6 +253,9 @@ export class WorldScene extends BaseCollidingGameScene {
   public override onTransitionEnd(): void {
     super.onTransitionEnd();
 
+    // Start anti-cheat monitoring now that the scene is active
+    this.antiCheatService?.startMonitoring();
+
     this.scoreboardEntity?.reset();
     if (!this.helpShown) {
       const text = this.getHelpText();
@@ -292,6 +305,9 @@ export class WorldScene extends BaseCollidingGameScene {
     if (this.entityOrchestrator) {
       this.entityOrchestrator.sendLocalData(this, deltaTimeStamp);
     }
+
+    // Anti-cheat movement checks each frame
+    this.antiCheatService?.update(deltaTimeStamp, this.getAntiCheatTrackedEntities());
   }
 
   public override render(context: CanvasRenderingContext2D): void {
@@ -803,7 +819,40 @@ export class WorldScene extends BaseCollidingGameScene {
     });
   }
 
+  /**
+   * Yield every world entity that has a position and an owner so the
+   * anti-cheat system can evaluate movement rules against it.
+   * Uses {@link BaseMoveableGameEntity} — any entity with x/y/owner.
+   */
+  private *getAntiCheatTrackedEntities(): Generator<{
+    id: string;
+    x: number;
+    y: number;
+    ownerId: string;
+    typeId: number;
+  }> {
+    for (const entity of this.worldEntities) {
+      if (!(entity instanceof BaseMoveableGameEntity)) {
+        continue;
+      }
+      const ownerId = entity.getOwner()?.getNetworkId();
+      const typeId = entity.getTypeId();
+      if (ownerId && typeId !== null) {
+        yield {
+          id: entity.getId(),
+          x: entity.getX(),
+          y: entity.getY(),
+          ownerId,
+          typeId,
+        };
+      }
+    }
+  }
+
   public override dispose(): void {
+    // Stop anti-cheat monitoring
+    this.antiCheatService?.stopMonitoring();
+
     // Hide chat input when leaving the game scene
     const chatInputElement = document.querySelector(
       "#chat-input"

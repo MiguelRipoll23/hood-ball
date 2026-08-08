@@ -12,6 +12,7 @@ import type { LoginEntities } from "./login-entity-factory.js";
 import { GameServer } from "../../../models/game-server.js";
 import { container } from "../../../../engine/services/di-container.js";
 import { LoginController } from "./login-controller.js";
+import { AntiCheatService } from "../../../services/security/anti-cheat-service.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
 
 export class LoginScene extends BaseGameScene {
@@ -221,6 +222,14 @@ export class LoginScene extends BaseGameScene {
     configuration: ConfigurationType
   ): Promise<void> {
     this.gameServer.setConfiguration(configuration);
+
+    // Load anti-cheat rules from the game configuration
+    try {
+      const antiCheatService = container.get(AntiCheatService);
+      antiCheatService.loadConfigurationFromGameServer();
+    } catch {
+      // AntiCheatService may not be available in all build configurations
+    }
 
     console.log("Configuration response (decrypted)", configuration);
 
