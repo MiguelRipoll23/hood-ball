@@ -12,6 +12,7 @@ import { EventTypeNames } from "../enums/event-type.js";
 import type { GameState } from "../models/game-state.js";
 import type { SceneType } from "../enums/scene-type.js";
 import { SceneTypeUnknown } from "../enums/scene-type.js";
+import { EngineLogger } from "../services/engine-logger.js";
 
 export class BaseGameScene implements GameScene {
   protected eventConsumerService: EventConsumerServiceContract;
@@ -216,9 +217,7 @@ export class BaseGameScene implements GameScene {
     );
     this.localEventSubscriptions.push(sub);
 
-    console.log(
-      `${this.constructor.name} subscribed to local event ${EventTypeNames[eventType] ?? eventType}`
-    );
+    EngineLogger.info("Scene", `${this.constructor.name} subscribed to local event ${EventTypeNames[eventType] ?? eventType}`);
   }
 
   protected subscribeToRemoteEvent<T>(
@@ -231,9 +230,7 @@ export class BaseGameScene implements GameScene {
     );
     this.remoteEventSubscriptions.push(sub);
 
-    console.log(
-      `${this.constructor.name} subscribed to remote event ${EventTypeNames[eventType] ?? eventType}`
-    );
+    EngineLogger.info("Scene", `${this.constructor.name} subscribed to remote event ${EventTypeNames[eventType] ?? eventType}`);
   }
 
   protected deleteEntityIfRemoved(
