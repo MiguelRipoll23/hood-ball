@@ -4,6 +4,7 @@ import type { GameState } from "../../engine/models/game-state.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { LocalCarEntity as LocalCarEntityClass } from "../entities/local-car-entity.js";
 import { GoalEntity } from "../entities/goal-entity.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class ModWindow extends BaseWindow {
   // Game tab state
@@ -72,9 +73,9 @@ export class ModWindow extends BaseWindow {
 
     if (ImGui.Checkbox("Infinite Boost", this.infiniteBoost)) {
       if (this.infiniteBoost[0]) {
-        console.log("Infinite boost enabled");
+        EngineLogger.info("ModWindow", "Infinite boost enabled");
       } else {
-        console.log("Infinite boost disabled");
+        EngineLogger.info("ModWindow", "Infinite boost disabled");
       }
     }
     ImGui.TextWrapped("Keeps boost at 100% at all times");
@@ -105,7 +106,7 @@ export class ModWindow extends BaseWindow {
         this.toggleAutoScore();
       } else {
         this.autoScore[0] = false;
-        console.warn("Cannot enable aimbot: Ball or Goal not found");
+        EngineLogger.warn("ModWindow", "Cannot enable aimbot: Ball or Goal not found");
       }
     }
 
@@ -115,7 +116,7 @@ export class ModWindow extends BaseWindow {
   private applySpeedMultiplier(): void {
     const localCar = this.getLocalCar();
     if (!localCar) {
-      console.warn("Cannot apply speed multiplier: local car not found");
+      EngineLogger.warn("ModWindow", "Cannot apply speed multiplier: local car not found");
       return;
     }
 
@@ -123,14 +124,14 @@ export class ModWindow extends BaseWindow {
     localCar.setTopSpeed(this.baseTopSpeed * this.speedMultiplier[0]);
     localCar.setAcceleration(this.baseAcceleration * this.speedMultiplier[0]);
 
-    console.log(`Speed multiplier set to: ${this.speedMultiplier[0]}`);
+    EngineLogger.info("ModWindow", `Speed multiplier set to: ${this.speedMultiplier[0]}`);
   }
 
   private toggleAutoScore(): void {
     if (this.autoScore[0]) {
-      console.log("Aimbot enabled");
+      EngineLogger.info("ModWindow", "Aimbot enabled");
     } else {
-      console.log("Aimbot disabled");
+      EngineLogger.info("ModWindow", "Aimbot disabled");
     }
   }
 

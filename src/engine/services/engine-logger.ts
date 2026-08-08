@@ -47,9 +47,22 @@ class ConsoleSink implements LogSink {
 }
 
 export class EngineLogger {
+  private static enabled = false;
   private static minimumLevel: LogLevel = LogLevel.Debug;
   private static sinks: LogSink[] = [new ConsoleSink()];
   private static categoryFilters: Map<string, LogLevel> = new Map();
+
+  /**
+   * Enable or disable all logging. When disabled, all log calls are no-ops.
+   * Defaults to false; set to true via the `?debug` URL query parameter.
+   */
+  public static setEnabled(value: boolean): void {
+    this.enabled = value;
+  }
+
+  public static isEnabled(): boolean {
+    return this.enabled;
+  }
 
   /**
    * Set the minimum log level. Messages below this level are suppressed.
@@ -96,6 +109,10 @@ export class EngineLogger {
   }
 
   private static log(level: LogLevel, category: string, message: string, ...args: unknown[]): void {
+    if (!this.enabled) {
+      return;
+    }
+
     const effectiveLevel = this.categoryFilters.get(category) ?? this.minimumLevel;
 
     if (level < effectiveLevel) {

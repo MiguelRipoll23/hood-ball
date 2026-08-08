@@ -15,6 +15,9 @@ import { EntityOrchestratorService } from "../../services/gameplay/entity-orches
 import { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
 import { MatchActionsLogService } from "../../services/gameplay/match-actions-log-service.js";
 import { ChatService } from "../../services/network/chat-service.js";
+import { GamePlayer } from "../../models/game-player.js";
+import { GameServer } from "../../models/game-server.js";
+import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { WorldScene } from "./world-scene.js";
 import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 
@@ -42,6 +45,9 @@ export class WorldSceneFactory implements WorldSceneFactoryContract {
       matchActionsLogService: replayMode
         ? null
         : container.get(MatchActionsLogService),
+      gamePlayer: container.get(GamePlayer),
+      gameServer: container.get(GameServer),
+      matchSessionService: container.get(MatchSessionService),
       replayMode,
     };
     return new WorldScene(deps);

@@ -5,6 +5,7 @@ import { GameState } from "../../../engine/models/game-state.js";
 import { EventConsumerService } from "../../../engine/services/gameplay/event-consumer-service.js";
 import { SceneManagerService } from "../../../engine/services/gameplay/scene-manager-service.js";
 import { container } from "../../../engine/services/di-container.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class MainScene extends BaseGameScene {
   private scene: GameScene | null = null;
@@ -30,7 +31,7 @@ export class MainScene extends BaseGameScene {
     this.createMainBackgroundEntity();
 
     if (this.scene === null) {
-      console.warn("MainScene: No scene has been set");
+      EngineLogger.warn("MainScene", "MainScene: No scene has been set");
     } else {
       this.scene?.load();
       super.load();

@@ -1,4 +1,5 @@
 import { BaseGameEntity } from "./base-game-entity.js";
+import { EngineLogger } from "../services/engine-logger.js";
 import {
   RecordingPlayerService,
   PlaybackState,
@@ -22,7 +23,7 @@ export class MediaPlayerEntity extends BaseGameEntity {
   }
 
   public override load(): void {
-    console.log(`${this.constructor.name} loaded`);
+    EngineLogger.info("MediaPlayer", `${this.constructor.name} loaded`);
     this.loaded = true;
   }
 

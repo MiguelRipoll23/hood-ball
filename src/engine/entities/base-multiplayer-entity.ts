@@ -2,19 +2,36 @@ import type { EntityType } from "../enums/entity-type.js";
 import type { Player } from "../interfaces/models/player-interface.js";
 import { BaseGameEntity } from "./base-game-entity.js";
 import type { MultiplayerGameEntity } from "../interfaces/entities/multiplayer-game-entity-interface.js";
+import { NetworkComponent } from "../components/network-component.js";
+import { EngineLogger } from "../services/engine-logger.js";
 
 export class BaseMultiplayerGameEntity
   extends BaseGameEntity
   implements MultiplayerGameEntity
 {
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected id: string | null = null;
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected typeId: EntityType | null = null;
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected syncable: boolean = false;
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected syncableByHost: boolean = false;
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected owner: Player | null = null;
 
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected sync: boolean = false;
+  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
   protected syncReliably: boolean = false;
+
+  /** Backing NetworkComponent – all network state is stored here. */
+  protected readonly network: NetworkComponent;
+
+  constructor() {
+    super();
+    this.network = this.addComponent(new NetworkComponent());
+  }
 
   public static getTypeId(): EntityType {
     throw new Error("Method not implemented.");
@@ -31,62 +48,68 @@ export class BaseMultiplayerGameEntity
    * Returns the multiplayer ID if set, otherwise falls back to the auto-generated ID.
    */
   public override getId(): string {
-    return this.id ?? this.entityId;
+    return this.network.networkId ?? this.entityId;
   }
 
   public override setId(id: string): void {
-    this.id = id;
+    this.network.networkId = id;
+    this.id = id; // keep deprecated field in sync
   }
 
   public getTypeId(): EntityType | null {
-    return this.typeId;
+    return this.network.typeId;
   }
 
   public setTypeId(entityTypeId: EntityType): void {
-    this.typeId = entityTypeId;
+    this.network.typeId = entityTypeId;
+    this.typeId = entityTypeId; // keep deprecated field in sync
   }
 
   public isSyncable(): boolean {
-    return this.syncable;
+    return this.network.syncable;
   }
 
   public isSyncableByHost(): boolean {
-    return this.syncableByHost;
+    return this.network.syncableByHost;
   }
 
   public setSyncableByHost(syncableByHost: boolean): void {
-    this.syncableByHost = syncableByHost;
+    this.network.syncableByHost = syncableByHost;
+    this.syncableByHost = syncableByHost; // keep deprecated field in sync
   }
 
   public getOwner(): Player | null {
-    return this.owner;
+    return this.network.owner;
   }
 
   public setOwner(playerOwner: Player | null): void {
-    this.owner = playerOwner;
+    this.network.owner = playerOwner;
+    this.owner = playerOwner; // keep deprecated field in sync
   }
 
   public mustSync(): boolean {
-    return this.sync;
+    return this.network.mustSyncFlag;
   }
 
   public setSync(sync: boolean): void {
-    this.sync = sync;
+    this.network.mustSyncFlag = sync;
+    this.sync = sync; // keep deprecated field in sync
 
     if (sync) {
-      console.log("Forced ordered unreliable sync for entity", this);
+      EngineLogger.info("MultiplayerEntity", "Forced ordered unreliable sync for entity", this);
     }
   }
 
   public mustSyncReliably(): boolean {
-    return this.syncReliably;
+    return this.network.mustSyncReliablyFlag;
   }
 
   public setSyncReliably(syncReliably: boolean): void {
-    this.syncReliably = syncReliably;
+    this.network.mustSyncReliablyFlag = syncReliably;
+    this.syncReliably = syncReliably; // keep deprecated field in sync
 
     if (syncReliably) {
-      console.log("Forced ordered reliable sync for entity", this);
+      EngineLogger.info("MultiplayerEntity", "Forced ordered reliable sync for entity", this);
     }
   }
 

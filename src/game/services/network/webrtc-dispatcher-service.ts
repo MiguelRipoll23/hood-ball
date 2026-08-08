@@ -3,6 +3,7 @@ import { WebRTCType } from "../../../engine/enums/webrtc-type.js";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import type { PeerCommandHandlerFunction } from "../../types/peer-command-handler-function-type.js";
 import type { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class WebRTCDispatcherService {
   private commandHandlers = new Map<WebRTCType, PeerCommandHandlerFunction>();
@@ -17,7 +18,7 @@ export class WebRTCDispatcherService {
       const method = instance[methodName];
 
       if (typeof method !== "function") {
-        console.error(
+        EngineLogger.error("WebrtcDispatcherService", 
           `Method "${methodName}" not found or is not a function on the instance.`
         );
         continue;
@@ -36,7 +37,7 @@ export class WebRTCDispatcherService {
     const commandHandler = this.commandHandlers.get(commandId);
 
     if (commandHandler === undefined) {
-      console.warn(
+      EngineLogger.warn("WebrtcDispatcherService", 
         `No peer command handler found for ${WebRTCType[commandId]}`
       );
       return;
@@ -45,7 +46,7 @@ export class WebRTCDispatcherService {
     const result = commandHandler(webrtcPeer, binaryReader);
     if (result instanceof Promise) {
       result.catch((error) =>
-        console.error(
+        EngineLogger.error("WebrtcDispatcherService", 
           `Unhandled error in async peer command handler for ${WebRTCType[commandId]}:`,
           error
         )
@@ -58,6 +59,6 @@ export class WebRTCDispatcherService {
     commandHandler: PeerCommandHandlerFunction
   ): void {
     this.commandHandlers.set(commandId, commandHandler);
-    console.log(`Peer command handler bound for ${WebRTCType[commandId]}`);
+    EngineLogger.info("WebrtcDispatcherService", `Peer command handler bound for ${WebRTCType[commandId]}`);
   }
 }

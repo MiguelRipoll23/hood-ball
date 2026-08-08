@@ -2,6 +2,7 @@ import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
 import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
 import { BackdropEntity } from "./backdrop-entity.js";
 import { formatDate } from "../../../engine/utils/time-utils.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class CloseableWindowEntity extends BaseTappableGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;
@@ -71,7 +72,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
   public close(): void {
     if (this.opened === false) {
-      console.warn("CloseableWindowEntity is already closed");
+      EngineLogger.warn("CloseableWindowEntity", "CloseableWindowEntity is already closed");
       return;
     }
 
@@ -81,7 +82,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.active = false;
   }
 
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.pressed) {
       this.close();
     }

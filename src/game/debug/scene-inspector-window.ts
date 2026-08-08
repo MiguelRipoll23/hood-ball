@@ -1,18 +1,19 @@
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameEntity } from "../../engine/models/game-entity.js";
 import type { GameScene } from "../../engine/interfaces/scenes/game-scene-interface.js";
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../engine/debug/base-window.js";
 import type { GameState } from "../../engine/models/game-state.js";
 import { container } from "../../engine/services/di-container.js";
 import { GamePlayer } from "../models/game-player.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class SceneInspectorWindow extends BaseWindow {
   constructor(private gameState: GameState) {
     super("Scene inspector", new ImVec2(300, 350));
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("SceneInspectorWindow", `${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {
@@ -96,7 +97,7 @@ export class SceneInspectorWindow extends BaseWindow {
   }
 
   private renderEntityActions(entity: GameEntity, uniqueId: string): void {
-    if (entity instanceof BaseAnimatedGameEntity) {
+    if (entity instanceof BaseMoveableGameEntity) {
       if (ImGui.Button(`Teleport##${uniqueId}`)) {
         const canvasWidth = this.gameState.getCanvas().width;
         const canvasHeight = this.gameState.getCanvas().height;

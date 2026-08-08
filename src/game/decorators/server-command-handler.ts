@@ -1,5 +1,6 @@
 import type { WebSocketType } from "../enums/websocket-type.js";
 import type { ServerCommandHandlerMetadata } from "../interfaces/server-command-handler-metadata-interface.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 const commandHandlers: ServerCommandHandlerMetadata[] = [];
 
@@ -16,7 +17,7 @@ export function ServerCommandHandler(commandId: WebSocketType) {
 
     // Prevent duplicate registrations
     if (hasServerCommandHandler(target, propertyKey, commandId)) {
-      console.warn(
+      EngineLogger.warn("ServerCommandHandler", 
         `Duplicate @ServerCommandHandler registration for ${propertyKey} with command ${commandId}`
       );
       return;

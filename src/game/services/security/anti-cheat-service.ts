@@ -8,6 +8,7 @@ import { ServerCommandHandler } from "../../decorators/server-command-handler.js
 import { WebSocketType } from "../../enums/websocket-type.js";
 import { parseAntiCheatRules } from "../../utils/anti-cheat-utils.js";
 import type { TrackedEntity } from "../../utils/anti-cheat-utils.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class AntiCheatService {
@@ -28,7 +29,7 @@ export class AntiCheatService {
 
     const raw = config[ANTI_CHEAT_CONFIG_KEY];
     if (typeof raw !== "string" || raw.length === 0) {
-      console.log("[AntiCheat] No configuration key found, skipping");
+      EngineLogger.info("AntiCheatService", "[AntiCheat] No configuration key found, skipping");
       return;
     }
 
@@ -36,11 +37,11 @@ export class AntiCheatService {
       const decoded = Base64Utils.base64UrlToArrayBuffer(raw);
       const rules = parseAntiCheatRules(decoded);
       this.monitor.setRules(rules);
-      console.log(
+      EngineLogger.info("AntiCheatService", 
         `[AntiCheat] Loaded ${rules.length} rule(s) from game configuration`,
       );
     } catch (error) {
-      console.error("[AntiCheat] Failed to parse configuration rules:", error);
+      EngineLogger.error("AntiCheatService", "[AntiCheat] Failed to parse configuration rules:", error);
     }
   }
 
@@ -54,11 +55,11 @@ export class AntiCheatService {
       const remaining = binaryReader.bytesAsArrayBuffer();
       const rules = parseAntiCheatRules(remaining);
       this.monitor.setRules(rules);
-      console.log(
+      EngineLogger.info("AntiCheatService", 
         `[AntiCheat] Updated ${rules.length} rule(s) from server push`,
       );
     } catch (error) {
-      console.error("[AntiCheat] Failed to parse server-pushed rules:", error);
+      EngineLogger.error("AntiCheatService", "[AntiCheat] Failed to parse server-pushed rules:", error);
     }
   }
 

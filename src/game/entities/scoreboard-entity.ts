@@ -76,7 +76,8 @@ export class ScoreboardEntity
     return this.elapsedMilliseconds;
   }
 
-  public reset(): void {
+  public override reset(): void {
+    super.reset();
     this.elapsedMilliseconds = 0;
     this.flashElapsedMilliseconds = 0;
   }
@@ -141,7 +142,7 @@ export class ScoreboardEntity
     );
   }
 
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.active) {
       if (this.elapsedMilliseconds < this.durationMilliseconds) {
         this.elapsedMilliseconds += deltaTimeStamp;
@@ -155,7 +156,7 @@ export class ScoreboardEntity
     );
   }
 
-  public render(context: CanvasRenderingContext2D): void {
+  public override render(context: CanvasRenderingContext2D): void {
     context.save();
     this.applyOpacity(context);
 

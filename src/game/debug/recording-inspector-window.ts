@@ -8,6 +8,7 @@ import { RecorderService } from "../../engine/services/gameplay/recorder-service
 import { container } from "../../engine/services/di-container.js";
 import { MediaPlayerEntity } from "../../engine/entities/media-player-entity.js";
 import { GameState } from "../../engine/models/game-state.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class RecordingInspectorWindow extends BaseWindow {
   private playerService: RecordingPlayerService;
@@ -23,7 +24,7 @@ export class RecordingInspectorWindow extends BaseWindow {
     this.playerService = container.get(RecordingPlayerService);
     this.recorderService = container.get(RecorderService);
     this.gameState = container.get(GameState);
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("RecordingInspectorWindow", `${this.constructor.name} created`);
     this.createFileInput();
   }
 
@@ -51,12 +52,12 @@ export class RecordingInspectorWindow extends BaseWindow {
     try {
       this.errorMessage = "";
       await this.playerService.loadRecording(this.selectedFile);
-      console.log(`Loaded recording: ${this.selectedFile.name}`);
+      EngineLogger.info("RecordingInspectorWindow", `Loaded recording: ${this.selectedFile.name}`);
     } catch (error) {
       this.errorMessage = `Failed to load recording: ${
         error instanceof Error ? error.message : String(error)
       }`;
-      console.error("Failed to load recording:", error);
+      EngineLogger.error("RecordingInspectorWindow", "Failed to load recording:", error);
     }
   }
 
@@ -373,7 +374,7 @@ export class RecordingInspectorWindow extends BaseWindow {
     // Set in game frame so it renders last in game loop
     this.gameState.getGameFrame().setMediaPlayerEntity(this.mediaPlayerEntity);
 
-    console.log("Media player entity added to game frame");
+    EngineLogger.info("RecordingInspectorWindow", "Media player entity added to game frame");
   }
 
   private removeMediaPlayerFromScene(): void {
@@ -385,7 +386,7 @@ export class RecordingInspectorWindow extends BaseWindow {
     this.gameState.getGameFrame().setMediaPlayerEntity(null);
 
     this.mediaPlayerEntity = null;
-    console.log("Media player entity removed from game frame");
+    EngineLogger.info("RecordingInspectorWindow", "Media player entity removed from game frame");
   }
   public override close(): void {
     super.close();

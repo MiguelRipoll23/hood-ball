@@ -14,6 +14,7 @@ import { container } from "../../../../engine/services/di-container.js";
 import { LoginController } from "./login-controller.js";
 import { AntiCheatService } from "../../../services/security/anti-cheat-service.js";
 import type { ConfigurationType } from "../../../types/configuration-type.js";
+import { EngineLogger } from "../../../../engine/services/engine-logger.js";
 
 export class LoginScene extends BaseGameScene {
   private controller: LoginController;
@@ -127,7 +128,7 @@ export class LoginScene extends BaseGameScene {
       this.entities?.messageEntity.hide();
       this.showDialog();
     } catch (error) {
-      console.error(error);
+      EngineLogger.error("LoginScene", "Failed to check for updates:", error);
       this.showError("Failed to check for updates");
     }
   }
@@ -192,7 +193,7 @@ export class LoginScene extends BaseGameScene {
     error: Error,
     buttonElement: HTMLElement
   ): void {
-    console.error(error);
+    EngineLogger.error("LoginScene", "Credential error:", error);
 
     if (error.name !== "NotAllowedError") {
       alert(error.message);
@@ -213,7 +214,7 @@ export class LoginScene extends BaseGameScene {
         await this.applyConfiguration(configuration);
       })
       .catch((error) => {
-        console.error(error);
+        EngineLogger.error("LoginScene", "Refresh error:", error);
         this.showError("Failed to fetch configuration");
       });
   }
@@ -231,7 +232,7 @@ export class LoginScene extends BaseGameScene {
       // AntiCheatService may not be available in all build configurations
     }
 
-    console.log("Configuration response (decrypted)", configuration);
+    EngineLogger.info("LoginScene", "Configuration response (decrypted)", configuration);
 
     this.connectToServer();
   }

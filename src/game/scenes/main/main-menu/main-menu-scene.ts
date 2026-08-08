@@ -23,6 +23,7 @@ import { container } from "../../../../engine/services/di-container.js";
 import { WebSocketService } from "../../../services/network/websocket-service.js";
 import { ErrorScene } from "../../error/error-scene.js";
 import { MainScene } from "../main-scene.js";
+import { EngineLogger } from "../../../../engine/services/engine-logger.js";
 
 export class MainMenuScene extends BaseGameScene {
   private MENU_OPTIONS_TEXT: string[] = ["Join game", "Scoreboard", "Settings"];
@@ -159,14 +160,14 @@ export class MainMenuScene extends BaseGameScene {
         this.showMessages(messages);
       })
       .catch((error) => {
-        console.error(error);
+        EngineLogger.error("MainMenuScene", error);
         this.closeableMessageEntity?.show("Failed to download server messages");
       });
   }
 
   private showMessages(messagesResponse: ServerMessagesResponse): void {
     if (messagesResponse.results.length === 0) {
-      console.log("No server messages to show");
+      EngineLogger.info("MainMenuScene", "No server messages to show");
       return;
     }
 
@@ -192,7 +193,7 @@ export class MainMenuScene extends BaseGameScene {
             this.showMessage(index);
           })
           .catch((error) => {
-            console.error(error);
+            EngineLogger.error("MainMenuScene", error);
             if (this.serverMessageWindowEntity?.isOpened()) {
               this.serverMessageWindowEntity.closeAll();
             }
@@ -365,7 +366,7 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private handleUserBannedByServerEvent(): void {
-    console.log("User banned by server, navigating to error scene");
+    EngineLogger.info("MainMenuScene", "User banned by server, navigating to error scene");
 
     const mainScene = new MainScene();
     const errorScene = new ErrorScene("You have been banned from the server");
@@ -380,7 +381,7 @@ export class MainMenuScene extends BaseGameScene {
   }
 
   private handleUserKickedByServerEvent(): void {
-    console.log("User kicked by server, navigating to error scene");
+    EngineLogger.info("MainMenuScene", "User kicked by server, navigating to error scene");
 
     const mainScene = new MainScene();
     const errorScene = new ErrorScene("You have been kicked from the server");

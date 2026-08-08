@@ -1,4 +1,5 @@
 import { injectable } from "@needle-di/core";
+import { EngineLogger } from "../engine-logger.js";
 import type { SceneManager } from "../../interfaces/scenes/scene-manager-interface.js";
 import type { GameScene } from "../../interfaces/scenes/game-scene-interface.js";
 import type { SceneTransitionServiceContract } from "../../interfaces/services/scene/scene-transition-service-contract.js";
@@ -46,11 +47,11 @@ export class SceneTransitionService implements SceneTransitionServiceContract {
     this.sceneManager = sceneManager;
 
     if (this.isNextSceneAlreadySet(nextScene)) {
-      console.warn("Ignoring duplicated transition to the same scene");
+      EngineLogger.warn("SceneTransition", "Ignoring duplicated transition to the same scene");
       return;
     }
 
-    console.log("Fading out and in to", nextScene.constructor.name);
+    EngineLogger.info("SceneTransition", "Fading out and in to", nextScene.constructor.name);
 
     // Check if there is an active transition
     if (this.isTransitionActive()) {
@@ -74,11 +75,11 @@ export class SceneTransitionService implements SceneTransitionServiceContract {
     this.sceneManager = sceneManager;
 
     if (this.isNextSceneAlreadySet(nextScene)) {
-      console.warn("Ignoring duplicated transition to the same scene");
+      EngineLogger.warn("SceneTransition", "Ignoring duplicated transition to the same scene");
       return;
     }
 
-    console.log("Crossfading to", nextScene.constructor.name);
+    EngineLogger.info("SceneTransition", "Crossfading to", nextScene.constructor.name);
 
     // Check if there is an active transition
     if (this.isTransitionActive()) {

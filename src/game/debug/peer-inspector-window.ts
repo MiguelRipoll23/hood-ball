@@ -4,6 +4,7 @@ import { WebRTCService } from "../services/network/webrtc-service.js";
 import { container } from "../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
 import { getPingTextColor } from "../utils/ping-utils.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 @injectable()
 export class PeerInspectorWindow extends BaseWindow {
@@ -15,7 +16,7 @@ export class PeerInspectorWindow extends BaseWindow {
   constructor() {
     super("Peer inspector", new ImVec2(500, 300));
     this.webrtcService = container.get(WebRTCService);
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("PeerInspectorWindow", `${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {

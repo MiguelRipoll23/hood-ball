@@ -1,7 +1,7 @@
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseStaticCollidingGameEntity } from "../../engine/entities/base-static-colliding-game-entity.js";
+import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
 
-export class GoalEntity extends BaseStaticCollidingGameEntity {
+export class GoalEntity extends BaseCollidingGameEntity {
   private readonly WIDTH: number = 100; // Width of the goal
   private readonly HEIGHT: number = 40; // Height of the goal (adjusted)
   private readonly BORDER_SIZE: number = 2; // Border size
@@ -12,7 +12,8 @@ export class GoalEntity extends BaseStaticCollidingGameEntity {
 
   constructor(canvas: HTMLCanvasElement) {
     super();
-    this.rigidBody = false;
+    this.physics.isDynamic = false;
+    this.physics.rigidBody = false;
     this.setSize();
     this.setPosition(canvas);
   }

@@ -1,5 +1,6 @@
 import { GameServer } from "../models/game-server.js";
 import type { ConfigurationType } from "../types/configuration-type.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export function getConfigurationKey<T>(
   key: string,
@@ -13,7 +14,7 @@ export function getConfigurationKey<T>(
   }
 
   if (key in configuration === false) {
-    console.warn(`Configuration key not found: ${key}`);
+    EngineLogger.warn("ConfigurationUtils", `Configuration key not found: ${key}`);
 
     return defaultValue;
   }

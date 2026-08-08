@@ -5,8 +5,7 @@ import { TeamType } from "../../enums/team-type.js";
 import { RemoteEvent } from "../../../engine/models/remote-event.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { MatchAction } from "../../models/match-action.js";
-import { MatchSessionService } from "../session/match-session-service.js";
-import { container } from "../../../engine/services/di-container.js";
+import type { MatchSessionService } from "../session/match-session-service.js";
 
 import { BinaryWriter } from "../../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
@@ -21,6 +20,7 @@ import { EventProcessorService } from "../../../engine/services/gameplay/event-p
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import { MatchActionsLogService } from "./match-actions-log-service.js";
 import type { ScoreManagerServiceDependencies } from "./score-manager-service-dependencies.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class ScoreManagerService {
   private readonly gamePlayer: GamePlayer;
@@ -69,8 +69,8 @@ export class ScoreManagerService {
     this.gameOverEndCallback = gameOverEndCallback;
     this.explosionCallback = explosionCallback;
     this.gameOverEffectCallback = gameOverEffectCallback;
-    this.gamePlayer = container.get(GamePlayer);
-    this.matchSessionService = container.get(MatchSessionService);
+    this.gamePlayer = deps.gamePlayer;
+    this.matchSessionService = deps.matchSessionService;
   }
 
   public updateScoreboard(): void {
@@ -103,12 +103,12 @@ export class ScoreManagerService {
 
   public handleRemoteGoal(arrayBuffer: ArrayBuffer | null): void {
     if (arrayBuffer === null) {
-      console.warn("Array buffer is null");
+      EngineLogger.warn("ScoreManagerService", "Array buffer is null");
       return;
     }
 
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.warn("Host should not receive goal event");
+      EngineLogger.warn("ScoreManagerService", "Host should not receive goal event");
       return;
     }
 
@@ -147,12 +147,12 @@ export class ScoreManagerService {
 
   public handleRemoteGameOverStartEvent(arrayBuffer: ArrayBuffer | null): void {
     if (arrayBuffer === null) {
-      console.warn("Array buffer is null");
+      EngineLogger.warn("ScoreManagerService", "Array buffer is null");
       return;
     }
 
     if (this.matchSessionService.getMatch()?.isHost()) {
-      console.warn("Host should not receive game over event");
+      EngineLogger.warn("ScoreManagerService", "Host should not receive game over event");
       return;
     }
 
@@ -187,7 +187,7 @@ export class ScoreManagerService {
     const player = this.ballEntity.getLastPlayer();
 
     if (player === null) {
-      console.warn("Player is null");
+      EngineLogger.warn("ScoreManagerService", "Player is null");
       return;
     }
 
@@ -345,7 +345,7 @@ export class ScoreManagerService {
     if (this.matchSessionService.getMatch()?.isHost()) {
       this.matchmakingService
         .savePlayerScore()
-        .catch((error) => console.error("Failed to save player scores", error));
+        .catch((error) => EngineLogger.error("ScoreManagerService", "Failed to save player scores", error));
     }
   }
 }

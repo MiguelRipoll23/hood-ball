@@ -19,6 +19,7 @@ import { container } from "../../engine/services/di-container.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
 import { GamePlayer } from "../models/game-player.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 /**
  * Register all game entity types for recording/playback
@@ -127,7 +128,7 @@ export function registerGameEntityTypes(canvas: HTMLCanvasElement): void {
     WorldBackgroundEntity
   );
 
-  console.log(
+  EngineLogger.info("EntityTypeRegistry", 
     `Registered ${
       EntityRegistry.getRegisteredTypes().length
     } entity types for recording playback`

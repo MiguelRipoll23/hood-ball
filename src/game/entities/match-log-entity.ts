@@ -1,4 +1,4 @@
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";
 import { MatchActionType } from "../enums/match-action-type.js";
@@ -10,7 +10,7 @@ interface TextPart {
   color: string;
 }
 
-export class MatchLogEntity extends BaseAnimatedGameEntity {
+export class MatchLogEntity extends BaseMoveableGameEntity {
   private readonly padding = 10;
   private readonly fontSize = 16;
   private readonly lineHeight = 16;

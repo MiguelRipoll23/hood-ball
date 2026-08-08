@@ -2,6 +2,7 @@ import { ImGui, ImGuiImplWeb, ImVec2 } from "@mori2003/jsimgui";
 import { GameState } from "../../models/game-state.js";
 import { injectable, inject } from "@needle-di/core";
 import { BaseWindow } from "../../debug/base-window.js";
+import { EngineLogger } from "../engine-logger.js";
 
 @injectable()
 export class DebugService {
@@ -19,7 +20,7 @@ export class DebugService {
   private errorMessages: string[] = [];
 
   constructor(private gameState: GameState = inject(GameState)) {
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("Debug", `${this.constructor.name} created`);
     this.debugCanvas = this.getDebugCanvas();
     this.gameCanvas = this.gameState.getCanvas();
     this.setCanvasSize();
@@ -54,14 +55,14 @@ export class DebugService {
 
   public async init(): Promise<void> {
     if (this.initialized) {
-      console.log(`${this.constructor.name} already initialized, skipping`);
+      EngineLogger.info("Debug", `${this.constructor.name} already initialized, skipping`);
       return;
     }
     await ImGuiImplWeb.Init({ canvas: this.debugCanvas });
     this.setCanvasContext();
     ImGui.SetNextWindowFocus();
     this.initialized = true;
-    console.log(`${this.constructor.name} initialized`);
+    EngineLogger.info("Debug", `${this.constructor.name} initialized`);
   }
 
   public render(): void {
@@ -137,7 +138,7 @@ export class DebugService {
       const cloned = new EventConstructor(event.type, event);
       this.gameCanvas.dispatchEvent(cloned);
     } catch (error) {
-      console.warn(`Could not forward event "${event.type}":`, error);
+      EngineLogger.warn("Debug", `Could not forward event "${event.type}":`, error);
     }
   }
 

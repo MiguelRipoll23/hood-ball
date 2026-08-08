@@ -1,4 +1,4 @@
-import { BaseStaticCollidingGameEntity } from "../../engine/entities/base-static-colliding-game-entity.js";
+import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
@@ -17,7 +17,7 @@ function colorWithAlpha(hex: string, alpha: number): string {
 
 const PAD_COOLDOWN_MS = 10000;
 
-export class BoostPadEntity extends BaseStaticCollidingGameEntity {
+export class BoostPadEntity extends BaseCollidingGameEntity {
   private readonly RADIUS = 16;
   private active = true;
   private cooldownRemaining = 0;
@@ -31,11 +31,12 @@ export class BoostPadEntity extends BaseStaticCollidingGameEntity {
     private readonly eventProcessorService: EventProcessorService
   ) {
     super();
+    this.physics.isDynamic = false;
+    this.physics.rigidBody = false;
     this.x = this.startX;
     this.y = this.startY;
     this.width = this.RADIUS * 2;
     this.height = this.RADIUS * 2;
-    this.rigidBody = false;
   }
 
   public override load(): void {

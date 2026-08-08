@@ -1,3 +1,5 @@
+import { EngineLogger } from "../engine-logger.js";
+
 export class IntervalService {
   private elapsedMilliseconds: number = 0;
   private durationMilliseconds: number = 0;
@@ -8,7 +10,7 @@ export class IntervalService {
     callback: () => void,
     private started: boolean = true
   ) {
-    console.log(`${this.constructor.name} created`, this);
+    EngineLogger.info("Interval", `${this.constructor.name} created`, this);
 
     this.durationMilliseconds = durationSeconds * 1000;
     this.callback = callback;

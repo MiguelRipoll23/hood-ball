@@ -3,6 +3,7 @@ import type { SceneManagerServiceContract } from "../../engine/interfaces/servic
 import type { SceneTransitionServiceContract } from "../../engine/interfaces/services/scene/scene-transition-service-contract.js";
 import { MainScene } from "../scenes/main/main-scene.js";
 import { LoginScene } from "../scenes/main/login/login-scene.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class SceneTransitionUtils {
   /**
@@ -42,7 +43,7 @@ export class SceneTransitionUtils {
         1
       );
     } else {
-      console.error("Invalid arguments for transitionToLoginScene");
+      EngineLogger.error("SceneTransitionUtils", "Invalid arguments for transitionToLoginScene");
     }
   }
 }

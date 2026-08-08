@@ -4,6 +4,7 @@ import { injectable, inject } from "@needle-di/core";
 import type { TimerManagerServiceContract } from "../../../engine/interfaces/services/gameplay/timer-manager-service-interface.js";
 import type { TimerServiceContract } from "../../../engine/interfaces/services/gameplay/timer-service-interface.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class MatchSessionService {
@@ -25,22 +26,22 @@ export class MatchSessionService {
     if (match === null) {
       this.match = null;
       this.clearAdvertiseDebounce();
-      console.log("Match removed from match session");
+      EngineLogger.info("MatchSessionService", "Match removed from match session");
       return;
     }
 
     this.match = match;
 
     if (match.isHost()) {
-      console.log("Match created in match session", match);
+      EngineLogger.info("MatchSessionService", "Match created in match session", match);
     } else {
-      console.log("Match set in match session", match);
+      EngineLogger.info("MatchSessionService", "Match set in match session", match);
     }
   }
 
   public setMatchState(state: MatchStateType): void {
     if (this.match === null) {
-      console.warn("Cannot set state, match is null");
+      EngineLogger.warn("MatchSessionService", "Cannot set state, match is null");
       return;
     }
 
@@ -82,7 +83,7 @@ export class MatchSessionService {
             callback();
           }
         } catch (error) {
-          console.error("Error in advertise callback:", error);
+          EngineLogger.error("MatchSessionService", "Error in advertise callback:", error);
         }
       },
       true // autoStart

@@ -19,6 +19,7 @@ import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { EVENT_PROCESSOR_SERVICE_TOKEN, type EventProcessorServiceContract } from "../../../engine/interfaces/services/events/event-processor-service-contract.js";
 import { injectable, inject } from "@needle-di/core";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class MatchFinderService {
@@ -79,7 +80,7 @@ export class MatchFinderService {
     const match = this.matchSessionService.getMatch();
 
     if (match === null) {
-      console.warn("Game match is null");
+      EngineLogger.warn("MatchFinderService", "Game match is null");
       return;
     }
 

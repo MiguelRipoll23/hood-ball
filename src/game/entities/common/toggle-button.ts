@@ -1,6 +1,6 @@
-import { BaseAnimatedGameEntity } from "../../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
 
-export class ToggleEntity extends BaseAnimatedGameEntity {
+export class ToggleEntity extends BaseMoveableGameEntity {
   protected width: number = 55; // Incremented width to 55
   protected height: number = 30;
   private radius: number = 15; // Adjusted radius for rounded corners based on height

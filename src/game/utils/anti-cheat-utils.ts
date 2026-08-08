@@ -3,6 +3,7 @@ import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { AntiCheatRule } from "../models/anti-cheat-rule.js";
 import type { AntiCheatRuleField } from "../models/anti-cheat-rule.js";
 import { AntiCheatRuleType } from "../enums/anti-cheat-rule-type.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -98,7 +99,7 @@ function parseSingleRule(reader: BinaryReader): AntiCheatRule {
       value = reader.float32();
     } else {
       reader.float32(); // skip 4 bytes to stay aligned
-      console.warn(
+      EngineLogger.warn("AntiCheatUtils", 
         `[AntiCheat] Unknown field value type 0x${valueType.toString(16)} for rule ${ruleId}, field ${fieldId}`,
       );
       continue;

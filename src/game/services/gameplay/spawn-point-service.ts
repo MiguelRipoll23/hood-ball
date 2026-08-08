@@ -1,4 +1,5 @@
 import { injectable } from "@needle-di/core";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class SpawnPointService {
@@ -38,12 +39,12 @@ export class SpawnPointService {
     this.validateIndex(index);
 
     if (this.availableSpawnPointIndexes.has(index)) {
-      console.warn(`Spawn point ${index} is already available`);
+      EngineLogger.warn("SpawnPointService", `Spawn point ${index} is already available`);
       return;
     }
 
     this.availableSpawnPointIndexes.add(index);
-    console.debug(`Spawn point ${index} released`);
+    EngineLogger.debug("SpawnPointService", `Spawn point ${index} released`);
   }
 
   public isSpawnPointAvailable(index: number): boolean {

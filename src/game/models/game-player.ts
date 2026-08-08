@@ -1,5 +1,6 @@
 import { UUIDUtils } from "../utils/uuid-utils.js";
 import type { Player } from "../../engine/interfaces/models/player-interface.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class GamePlayer implements Player {
   private id: string;
@@ -100,7 +101,7 @@ export class GamePlayer implements Player {
     this.score = 0;
     this.spawnPointIndex = 0;
 
-    console.log("Player with name", this.name + " has been reset");
+    EngineLogger.info("GamePlayer", "Player with name", this.name + " has been reset");
   }
 
   private getNormalizedId(id: string): string {

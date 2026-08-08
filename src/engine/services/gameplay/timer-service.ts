@@ -1,4 +1,5 @@
 import type { TimerServiceContract } from "../../interfaces/services/gameplay/timer-service-interface.js";
+import { EngineLogger } from "../engine-logger.js";
 
 export class TimerService implements TimerServiceContract {
   private elapsedMilliseconds: number = 0;
@@ -14,7 +15,7 @@ export class TimerService implements TimerServiceContract {
     callback: () => void,
     private started: boolean = true
   ) {
-    console.log(`${this.constructor.name} created`, this);
+    EngineLogger.info("Timer", `${this.constructor.name} created`, this);
 
     this.durationMilliseconds = durationSeconds * 1000;
     this.callback = callback;
@@ -22,7 +23,8 @@ export class TimerService implements TimerServiceContract {
 
   public setDuration(durationSeconds: number): void {
     this.durationMilliseconds = durationSeconds * 1000;
-    console.log(
+    EngineLogger.info(
+      "Timer",
       `${this.constructor.name} duration set to ${durationSeconds}s`,
       this
     );
@@ -41,9 +43,9 @@ export class TimerService implements TimerServiceContract {
     this.finished = finished;
 
     if (this.finished) {
-      console.log(`${this.constructor.name} finished`, this);
+      EngineLogger.info("Timer", `${this.constructor.name} finished`, this);
     } else {
-      console.log(`${this.constructor.name} stopped`, this);
+      EngineLogger.info("Timer", `${this.constructor.name} stopped`, this);
     }
 
     this.started = false;
@@ -71,6 +73,6 @@ export class TimerService implements TimerServiceContract {
     this.finished = false;
     this.started = false;
 
-    console.log(`${this.constructor.name} reset`, this);
+    EngineLogger.info("Timer", `${this.constructor.name} reset`, this);
   }
 }

@@ -13,6 +13,7 @@ import {
   evaluateEventRateRules,
   evaluateMovementRules,
 } from "../../utils/anti-cheat-utils.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 import type {
   TrackedEntity,
   MovementSample,
@@ -52,7 +53,7 @@ export class AntiCheatMonitorService {
     if (this.monitoring) return;
     this.monitoring = true;
     this.subscribeToAllEventTypes();
-    console.log("[AntiCheat] Monitoring started");
+    EngineLogger.info("AntiCheatMonitorService", "[AntiCheat] Monitoring started");
   }
 
   public stop(): void {
@@ -70,7 +71,7 @@ export class AntiCheatMonitorService {
 
     this.eventWindows.clear();
     this.movementSamples.clear();
-    console.log("[AntiCheat] Monitoring stopped");
+    EngineLogger.info("AntiCheatMonitorService", "[AntiCheat] Monitoring stopped");
   }
 
   public update(entities: Iterable<TrackedEntity>): void {

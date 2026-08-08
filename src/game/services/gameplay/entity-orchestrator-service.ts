@@ -14,6 +14,7 @@ import { injectable, inject } from "@needle-di/core";
 import type { WebRTCPeer } from "../../../engine/interfaces/network/webrtc-peer-interface.js";
 import { MatchSessionService } from "../session/match-session-service.js";
 import { GamePlayer } from "../../models/game-player.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class EntityOrchestratorService {
@@ -34,7 +35,7 @@ export class EntityOrchestratorService {
   public initialize(webrtcService: WebRTCService): void {
     this.webrtcService = webrtcService;
     this.webrtcService.registerCommandHandlers(this);
-    console.log("Entity orchestrator service initialized");
+    EngineLogger.info("EntityOrchestratorService", "Entity orchestrator service initialized");
   }
 
   public sendLocalData(
@@ -78,7 +79,7 @@ export class EntityOrchestratorService {
 
     // Check for owner
     if (EntityUtils.hasInvalidOwner(webrtcPeer, entityOwnerId)) {
-      console.warn(
+      EngineLogger.warn("EntityOrchestratorService", 
         "Received entity data from unauthorized player",
         entityOwnerId
       );
@@ -92,7 +93,7 @@ export class EntityOrchestratorService {
     );
 
     if (entityMultiplayerScene === null) {
-      console.warn(`Scene not found with id ${sceneId}`);
+      EngineLogger.warn("EntityOrchestratorService", `Scene not found with id ${sceneId}`);
       return;
     }
 
@@ -112,7 +113,7 @@ export class EntityOrchestratorService {
         break;
 
       default:
-        console.warn(`Unknown entity state: ${entityStateId}`);
+        EngineLogger.warn("EntityOrchestratorService", `Unknown entity state: ${entityStateId}`);
     }
   }
 
@@ -282,7 +283,7 @@ export class EntityOrchestratorService {
     const entityClass = multiplayerScene.getSyncableEntityClass(entityTypeId);
 
     if (entityClass === null) {
-      console.warn(`Entity class not found for type ${entityTypeId}`);
+      EngineLogger.warn("EntityOrchestratorService", `Entity class not found for type ${entityTypeId}`);
       return;
     }
 
@@ -293,7 +294,7 @@ export class EntityOrchestratorService {
         ?.getPlayerByNetworkId(entityOwnerId) ?? null;
 
     if (player === null) {
-      console.warn("Cannot find player with id", entityOwnerId);
+      EngineLogger.warn("EntityOrchestratorService", "Cannot find player with id", entityOwnerId);
       return;
     }
 
@@ -303,13 +304,13 @@ export class EntityOrchestratorService {
     try {
       entityInstance = entityClass.deserialize(entityId, entityData);
     } catch (error) {
-      console.warn("Cannot deserialize entity with id", entityId, error);
+      EngineLogger.warn("EntityOrchestratorService", "Cannot deserialize entity with id", entityId, error);
       return;
     }
 
     entityInstance.setOwner(player);
     multiplayerScene?.addEntityToSceneLayer(entityInstance);
-    console.log("Added entity to scene layer", entityInstance);
+    EngineLogger.info("EntityOrchestratorService", "Added entity to scene layer", entityInstance);
   }
 
   private removeEntity(
@@ -319,7 +320,7 @@ export class EntityOrchestratorService {
     const entity = multiplayerScene.getSyncableEntity(entityId);
 
     if (entity === null) {
-      console.warn(`Entity not found with id ${entityId}`);
+      EngineLogger.warn("EntityOrchestratorService", `Entity not found with id ${entityId}`);
       return;
     }
 

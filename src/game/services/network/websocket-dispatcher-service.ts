@@ -2,6 +2,7 @@ import { getServerCommandHandlers } from "../../decorators/server-command-handle
 import { WebSocketType } from "../../enums/websocket-type.js";
 import type { ServerCommandHandlerFunction } from "../../types/server-command-handler-function-type.js";
 import type { BinaryReader } from "../../../engine/utils/binary-reader-utils.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class WebSocketDispatcherService {
   private commandHandlers = new Map<
@@ -19,7 +20,7 @@ export class WebSocketDispatcherService {
       const method = instance[methodName];
 
       if (typeof method !== "function") {
-        console.error(
+        EngineLogger.error("WebsocketDispatcherService", 
           `Method "${methodName}" not found or is not a function on the instance.`
         );
         continue;
@@ -37,7 +38,7 @@ export class WebSocketDispatcherService {
     const commandHandler = this.commandHandlers.get(commandId);
 
     if (commandHandler === undefined) {
-      console.warn(
+      EngineLogger.warn("WebsocketDispatcherService", 
         `No server command handler found for ${WebSocketType[commandId]}`
       );
       return;
@@ -46,7 +47,7 @@ export class WebSocketDispatcherService {
     try {
       commandHandler(binaryReader);
     } catch (error) {
-      console.error(
+      EngineLogger.error("WebsocketDispatcherService", 
         `Error executing command handler for ${WebSocketType[commandId]}:`,
         error
       );
@@ -58,6 +59,6 @@ export class WebSocketDispatcherService {
     commandHandler: ServerCommandHandlerFunction
   ): void {
     this.commandHandlers.set(commandId, commandHandler);
-    console.log(`Server command handler bound for ${WebSocketType[commandId]}`);
+    EngineLogger.info("WebsocketDispatcherService", `Server command handler bound for ${WebSocketType[commandId]}`);
   }
 }

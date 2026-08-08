@@ -1,6 +1,7 @@
 import type { MatchAttributes } from "../interfaces/match-attributes-interface.js";
 import { MatchStateType } from "../enums/match-state-type.js";
 import { GamePlayer } from "./game-player.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class MatchSession {
   private host: boolean;
@@ -35,7 +36,7 @@ export class MatchSession {
 
   public setState(state: MatchStateType): void {
     this.state = state;
-    console.log("Match state changed to", MatchStateType[state]);
+    EngineLogger.info("MatchSession", "Match state changed to", MatchStateType[state]);
   }
 
   public getTotalSlots(): number {
@@ -69,7 +70,7 @@ export class MatchSession {
   public addPlayer(player: GamePlayer): void {
     this.players.set(player.getNetworkId(), player);
 
-    console.log(
+    EngineLogger.info("MatchSession", 
       `Added player ${player.getName()} to match, total players`,
       this.players.size
     );
@@ -78,7 +79,7 @@ export class MatchSession {
   public removePlayer(player: GamePlayer): void {
     this.players.delete(player.getNetworkId());
 
-    console.log(
+    EngineLogger.info("MatchSession", 
       `Removed player ${player.getName()} from match, total players`,
       this.players.size
     );
@@ -87,7 +88,7 @@ export class MatchSession {
   public removePlayerByNetworkId(networkId: string): void {
     this.players.delete(networkId);
 
-    console.log(
+    EngineLogger.info("MatchSession", 
       `Removed player ${networkId} from match, total players`,
       this.players.size
     );

@@ -1,8 +1,8 @@
-import { BaseStaticCollidingGameEntity } from "../../../engine/entities/base-static-colliding-game-entity.js";
+import { BaseCollidingGameEntity } from "../../../engine/entities/base-colliding-game-entity.js";
 import { HitboxEntity } from "../../../engine/entities/hitbox-entity.js";
 import type { GameEntity } from "../../../engine/models/game-entity.js";
 
-export class WorldBackgroundEntity extends BaseStaticCollidingGameEntity {
+export class WorldBackgroundEntity extends BaseCollidingGameEntity {
   private readonly BACKGROUND_COLOR: string = "#00a000";
   private readonly BOUNDARY_COLOR: string = "#ffffff";
 
@@ -18,6 +18,7 @@ export class WorldBackgroundEntity extends BaseStaticCollidingGameEntity {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.physics.isDynamic = false;
     this.collisionEntities = [];
     this.calculateFieldDimensions();
     this.calculateCenter();

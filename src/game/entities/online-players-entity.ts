@@ -1,7 +1,7 @@
-import { BaseAnimatedGameEntity } from "../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 
-export class OnlinePlayersEntity extends BaseAnimatedGameEntity {
+export class OnlinePlayersEntity extends BaseMoveableGameEntity {
   private static readonly SPACING = 10;
   private static readonly ONLINE_TEXT = "ONLINE";
   private onlinePlayers = 0;

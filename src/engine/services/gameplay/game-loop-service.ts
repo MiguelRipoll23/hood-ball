@@ -11,6 +11,7 @@ import { DebugEntity } from "../../entities/debug-entity.js";
 import { GameState } from "../../models/game-state.js";
 import { SceneTransitionService } from "./scene-transition-service.js";
 import { TimerManagerService } from "./timer-manager-service.js";
+import { EngineLogger } from "../engine-logger.js";
 import { IntervalManagerService } from "./interval-manager-service.js";
 import { LoadingIndicatorEntity } from "../../entities/loading-indicator-entity.js";
 import { RecorderService } from "./recorder-service.js";
@@ -94,7 +95,7 @@ export class GameLoopService {
   private logDebugInfo(): void {
     if (this.debug === false) return;
 
-    console.info(
+    EngineLogger.info(
       "%cDebug mode on",
       "color: #b6ff35; font-size: 20px; font-weight: bold"
     );

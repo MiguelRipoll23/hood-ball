@@ -1,5 +1,5 @@
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseDynamicCollidingGameEntity } from "../../engine/entities/base-dynamic-colliding-game-entity.js";
+import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
 import { CarEntity } from "./car-entity.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import { EntityRegistryType } from "../enums/entity-registry-type.js";
@@ -9,10 +9,13 @@ import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { MathUtils } from "../../engine/utils/math-utils.js";
-import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
+import { container } from "../../engine/services/di-container.js";
+import { GameState } from "../../engine/models/game-state.js";
+import { TELEPORT_SKIP_FRAMES, BALL_NETWORK_ID } from "../constants/entity-constants.js";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class BallEntity
-  extends BaseDynamicCollidingGameEntity
+  extends BaseCollidingGameEntity
   implements MultiplayerGameEntity
 {
   private readonly MASS: number = 1;
@@ -39,8 +42,8 @@ export class BallEntity
     super();
     this.x = x;
     this.y = y;
-    this.mass = this.MASS;
-    this.setBounciness(0.8);
+    this.physics.mass = this.MASS;
+    this.physics.bounciness = 0.8;
     this.setSyncableValues();
   }
 
@@ -67,10 +70,8 @@ export class BallEntity
     // we would need a way to get the canvas. For now, we'll return a ball with a dummy canvas
     // or throw a more descriptive error if we can't support dynamic ball creation yet.
 
-    const canvas = document.querySelector("canvas");
-    if (!canvas) {
-      throw new Error("Canvas not found for BallEntity deserialization");
-    }
+    // Resolve canvas via DI rather than querying the DOM directly
+    const canvas = container.get(GameState).getCanvas();
 
     const ball = new BallEntity(0, 0, canvas);
     ball.setId(id);
@@ -114,8 +115,8 @@ export class BallEntity
 
   public handleGoalScored(): void {
     this.inactive = true;
-    this.vx = -this.vx * 2;
-    this.vy = -this.vy * 2;
+    this.physics.vx = -this.physics.vx * 2;
+    this.physics.vy = -this.physics.vy * 2;
   }
 
   public setInactive(inactive: boolean): void {
@@ -136,7 +137,7 @@ export class BallEntity
     this.weatherFrictionMultiplier = multiplier;
   }
 
-  public update(_deltaTimeStamp: DOMHighResTimeStamp): void {
+  public override update(_deltaTimeStamp: DOMHighResTimeStamp): void {
     this.applyFriction();
     this.calculateMovement();
     this.updateHitbox();
@@ -176,8 +177,8 @@ export class BallEntity
     const arrayBuffer = BinaryWriter.build()
       .unsignedInt16(this.x)
       .unsignedInt16(this.y)
-      .signedInt16(this.vx)
-      .signedInt16(this.vy)
+      .signedInt16(this.physics.vx)
+      .signedInt16(this.physics.vy)
       .toArrayBuffer();
 
     return arrayBuffer;
@@ -207,8 +208,8 @@ export class BallEntity
       this.y = MathUtils.lerp(this.y, newY, 0.5);
     }
 
-    this.vx = binaryReader.signedInt16();
-    this.vy = binaryReader.signedInt16();
+    this.physics.vx = binaryReader.signedInt16();
+    this.physics.vy = binaryReader.signedInt16();
 
     this.updateHitbox();
   }
@@ -217,8 +218,8 @@ export class BallEntity
     const arrayBuffer = BinaryWriter.build()
       .unsignedInt16(this.x)
       .unsignedInt16(this.y)
-      .signedInt16(this.vx)
-      .signedInt16(this.vy)
+      .signedInt16(this.physics.vx)
+      .signedInt16(this.physics.vy)
       .toArrayBuffer();
 
     return arrayBuffer;
@@ -228,7 +229,7 @@ export class BallEntity
     // Guard against empty or invalid buffers
     // Minimum size: 2 (uint16) * 2 + 2 (int16) * 2 = 8 bytes
     if (!arrayBuffer || arrayBuffer.byteLength < 8) {
-      console.warn(
+      EngineLogger.warn("BallEntity", 
         `BallEntity: applyReplayState received invalid buffer size: ${
           arrayBuffer ? arrayBuffer.byteLength : 0
         }`
@@ -243,15 +244,15 @@ export class BallEntity
 
     this.x = newX;
     this.y = newY;
-    this.vx = binaryReader.signedInt16();
-    this.vy = binaryReader.signedInt16();
+    this.physics.vx = binaryReader.signedInt16();
+    this.physics.vy = binaryReader.signedInt16();
 
     this.updateHitbox();
   }
 
   private setSyncableValues() {
     this.syncable = true;
-    this.setId("00000000000000000000000000000000");
+    this.setId(BALL_NETWORK_ID);
     this.setTypeId(EntityRegistryType.Ball);
     this.setSyncableByHost(true);
   }
@@ -312,19 +313,19 @@ export class BallEntity
     // Define a small threshold for near-zero velocity
     // Apply weather-modified friction
     const effectiveFriction = this.FRICTION * this.weatherFrictionMultiplier;
-    this.vx *= 1 - effectiveFriction;
-    this.vy *= 1 - effectiveFriction;
+    this.physics.vx *= 1 - effectiveFriction;
+    this.physics.vy *= 1 - effectiveFriction;
 
     // If velocity is below the threshold, set it to zero
-    if (Math.abs(this.vx) < this.MIN_VELOCITY) this.vx = 0;
-    if (Math.abs(this.vy) < this.MIN_VELOCITY) this.vy = 0;
+    if (Math.abs(this.physics.vx) < this.MIN_VELOCITY) this.physics.vx = 0;
+    if (Math.abs(this.physics.vy) < this.MIN_VELOCITY) this.physics.vy = 0;
 
     this.limitVelocity(); // Apply the velocity limit after friction
   }
 
   private calculateMovement(): void {
-    this.x -= this.vx;
-    this.y -= this.vy;
+    this.x -= this.physics.vx;
+    this.y -= this.physics.vy;
   }
 
   public updateHitbox(): void {
@@ -343,16 +344,16 @@ export class BallEntity
   }
 
   public override mustSync(): boolean {
-    return this.vx !== 0 || this.vy !== 0;
+    return this.physics.vx !== 0 || this.physics.vy !== 0;
   }
 
   // Function to limit velocity to the maximum speed
   private limitVelocity(): void {
-    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    const speed = Math.sqrt(this.physics.vx * this.physics.vx + this.physics.vy * this.physics.vy);
     if (speed > this.MAX_VELOCITY) {
       const scale = this.MAX_VELOCITY / speed;
-      this.vx *= scale;
-      this.vy *= scale;
+      this.physics.vx *= scale;
+      this.physics.vy *= scale;
     }
   }
 
@@ -361,8 +362,8 @@ export class BallEntity
     const effectiveFriction = this.FRICTION * this.weatherFrictionMultiplier;
     let px = this.x;
     let py = this.y;
-    let vx = this.vx;
-    let vy = this.vy;
+    let vx = this.physics.vx;
+    let vy = this.physics.vy;
 
     for (let i = 0; i < steps; i++) {
       vx *= 1 - effectiveFriction;

@@ -1,6 +1,7 @@
-import { BaseAnimatedGameEntity } from "../../../engine/entities/base-animated-entity.js";
+import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
-export class MessageEntity extends BaseAnimatedGameEntity {
+export class MessageEntity extends BaseMoveableGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
   private readonly DEFAULT_HEIGHT = 100;
   private readonly DEFAULT_WIDTH = 340;
@@ -27,7 +28,7 @@ export class MessageEntity extends BaseAnimatedGameEntity {
 
   public hide(): void {
     if (this.opacity === 0) {
-      console.warn("MessageEntity is already hidden");
+      EngineLogger.warn("MessageEntity", "MessageEntity is already hidden");
       return;
     }
 

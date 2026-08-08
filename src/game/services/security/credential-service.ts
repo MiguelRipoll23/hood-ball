@@ -16,6 +16,7 @@ import { injectable, inject } from "@needle-di/core";
 import { SignatureService } from "./signature-service.js";
 import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class CredentialService {
@@ -154,7 +155,7 @@ export class CredentialService {
         credentialId,
       });
 
-      console.log(
+      EngineLogger.info("CredentialService", 
         `Signaled unknown credential for credential (${credentialId})`
       );
     }

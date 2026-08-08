@@ -8,6 +8,7 @@ import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
 import { container } from "../../engine/services/di-container.js";
 import { injectable } from "@needle-di/core";
+import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 @injectable()
 export class EventInspectorWindow extends BaseWindow {
@@ -19,7 +20,7 @@ export class EventInspectorWindow extends BaseWindow {
   constructor() {
     super("Event inspector", new ImVec2(195, 230));
     this.eventProcessorService = container.get(EventProcessorService);
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("EventInspectorWindow", `${this.constructor.name} created`);
   }
 
   protected override renderContent(): void {
@@ -116,7 +117,7 @@ export class EventInspectorWindow extends BaseWindow {
   }
 
   private replayEvent(event: GameEvent): void {
-    console.log(`Replaying event: ${event.getType()}`);
+    EngineLogger.info("EventInspectorWindow", `Replaying event: ${event.getType()}`);
 
     const newEvent = this.createEventClone(event);
 

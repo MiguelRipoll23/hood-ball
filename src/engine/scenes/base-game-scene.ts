@@ -37,7 +37,7 @@ export class BaseGameScene implements GameScene {
     protected gameState: GameState,
     eventConsumerService: EventConsumerServiceContract
   ) {
-    console.log(`${this.constructor.name} created`);
+    EngineLogger.info("Scene", `${this.constructor.name} created`);
     this.canvas = gameState.getCanvas();
     this.gamePointer = gameState.getGamePointer();
     this.eventConsumerService = eventConsumerService;
@@ -68,7 +68,7 @@ export class BaseGameScene implements GameScene {
     this.worldEntities.forEach((entity) => entity.load());
     this.uiEntities.forEach((entity) => entity.load());
 
-    console.log(`${this.constructor.name} loaded`);
+    EngineLogger.info("Scene", `${this.constructor.name} loaded`);
 
     this.loaded = true;
   }
@@ -94,12 +94,12 @@ export class BaseGameScene implements GameScene {
   }
 
   public onTransitionStart(): void {
-    console.log(`Transition to ${this.constructor.name} started`);
+    EngineLogger.info("Scene", `Transition to ${this.constructor.name} started`);
     this.updateDebugStateForEntities();
   }
 
   public onTransitionEnd(): void {
-    console.log(`Transition to ${this.constructor.name} finished`);
+    EngineLogger.info("Scene", `Transition to ${this.constructor.name} finished`);
   }
 
   public getTotalEntitiesCount(): number {
@@ -174,7 +174,6 @@ export class BaseGameScene implements GameScene {
    * Clears the current pressed state of the game pointer. Subclasses may call
    * this manually when deferring pointer handling to nested scenes.
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
   protected clearPointerEvents(): void {
     this.gamePointer.clearPressed();
   }
@@ -185,14 +184,12 @@ export class BaseGameScene implements GameScene {
    * {@link shouldClearPointerEvents} to delay or disable clearing
    * when delegating events to nested scenes.
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
   protected clearPointerEventsAutomatically = false;
 
   /**
    * Determines if pointer events should be cleared at the end of
    * the default update cycle.
    */
-  // eslint-disable-next-line @typescript-eslint/explicit-member-accessibility
   protected shouldClearPointerEvents(): boolean {
     return this.clearPointerEventsAutomatically;
   }
@@ -294,7 +291,7 @@ export class BaseGameScene implements GameScene {
 
     previousScene.resubscribeEvents();
 
-    console.log("Returning to", previousScene.constructor.name);
+    EngineLogger.info("Scene", "Returning to", previousScene.constructor.name);
 
     this.sceneManagerService
       ?.getTransitionService()

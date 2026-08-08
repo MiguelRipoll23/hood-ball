@@ -1,4 +1,5 @@
 import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class CloseableMessageEntity extends BaseTappableGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
@@ -28,7 +29,7 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
 
   public close(): void {
     if (this.opacity === 0) {
-      console.warn("CloseableMessageEntity is already closed");
+      EngineLogger.warn("CloseableMessageEntity", "CloseableMessageEntity is already closed");
       return;
     }
 
@@ -36,7 +37,7 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
     this.fadeOut(0.2);
   }
 
-  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.pressed) {
       this.close();
     }
@@ -44,7 +45,7 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
     super.update(deltaTimeStamp);
   }
 
-  public render(context: CanvasRenderingContext2D): void {
+  public override render(context: CanvasRenderingContext2D): void {
     context.save();
     this.applyOpacity(context);
     this.drawRoundedRectangle(context);

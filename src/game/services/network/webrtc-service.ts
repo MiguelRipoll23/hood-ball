@@ -20,6 +20,7 @@ import { MatchSessionService } from "../session/match-session-service.js";
 import { GameServer } from "../../models/game-server.js";
 import { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import { IntervalManagerService } from "../../../engine/services/gameplay/interval-manager-service.js";
+import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 @injectable()
 export class WebRTCService implements WebRTCServiceContract {
@@ -61,7 +62,7 @@ export class WebRTCService implements WebRTCServiceContract {
   public initialize(listener: PeerConnectionListener): void {
     this.webSocketService.registerCommandHandlers(this);
     this.connectionListener = listener;
-    console.log("WebRTC service initialized");
+    EngineLogger.info("WebrtcService", "WebRTC service initialized");
   }
 
   public registerCommandHandlers(instance: object): void {
@@ -80,7 +81,7 @@ export class WebRTCService implements WebRTCServiceContract {
     const peer = this.addPeer(token);
     const offer = await peer.createOffer();
 
-    console.log("Sending WebRTC offer...", token, offer);
+    EngineLogger.info("WebrtcService", "Sending WebRTC offer...", token, offer);
 
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     const offerBytes = new TextEncoder().encode(JSON.stringify(offer));
@@ -119,7 +120,7 @@ export class WebRTCService implements WebRTCServiceContract {
         return this.handleSessionDescriptionMessage(originToken, tunnelData);
 
       default:
-        console.warn("Unknown tunnel type id", tunnelTypeId);
+        EngineLogger.warn("WebrtcService", "Unknown tunnel type id", tunnelTypeId);
     }
   }
 
@@ -138,7 +139,7 @@ export class WebRTCService implements WebRTCServiceContract {
     token: string,
     iceCandidate: RTCIceCandidateInit
   ): void {
-    console.log("Sending ICE candidate...", token, iceCandidate);
+    EngineLogger.info("WebrtcService", "Sending ICE candidate...", token, iceCandidate);
 
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     const iceCandidateBytes = new TextEncoder().encode(
@@ -161,7 +162,7 @@ export class WebRTCService implements WebRTCServiceContract {
     const peer = this.getPeer(originToken);
 
     if (peer === null) {
-      console.warn("WebRTC peer with token not found", originToken);
+      EngineLogger.warn("WebrtcService", "WebRTC peer with token not found", originToken);
       return;
     }
 
@@ -170,7 +171,7 @@ export class WebRTCService implements WebRTCServiceContract {
 
   @PeerCommandHandler(WebRTCType.GracefulDisconnect)
   public handleGracefulDisconnect(peer: WebRTCPeer): void {
-    console.log("Received graceful disconnect message");
+    EngineLogger.info("WebrtcService", "Received graceful disconnect message");
     peer.disconnect(true);
     this.connectionListener?.onPeerDisconnected(peer, true);
   }
@@ -259,7 +260,7 @@ export class WebRTCService implements WebRTCServiceContract {
     try {
       iceCandidateData = JSON.parse(new TextDecoder().decode(payload));
     } catch (error) {
-      console.error("Failed to parse ICE candidate data", error);
+      EngineLogger.error("WebrtcService", "Failed to parse ICE candidate data", error);
       return;
     }
 
@@ -275,7 +276,7 @@ export class WebRTCService implements WebRTCServiceContract {
     try {
       sessionDescriptionData = JSON.parse(new TextDecoder().decode(payload));
     } catch (error) {
-      console.error("Failed to parse session description data", error);
+      EngineLogger.error("WebrtcService", "Failed to parse session description data", error);
       return;
     }
 
@@ -286,12 +287,12 @@ export class WebRTCService implements WebRTCServiceContract {
     token: string,
     offer: RTCSessionDescriptionInit
   ): Promise<void> {
-    console.log("Received WebRTC offer", token, offer);
+    EngineLogger.info("WebrtcService", "Received WebRTC offer", token, offer);
 
     const peer = this.addPeer(token);
     const answer = await peer.createAnswer(offer);
 
-    console.log("Sending WebRTC answer...", token, answer);
+    EngineLogger.info("WebrtcService", "Sending WebRTC answer...", token, answer);
 
     const tokenBytes = Uint8Array.from(atob(token), (c) => c.charCodeAt(0));
     const answerBytes = new TextEncoder().encode(JSON.stringify(answer));
@@ -309,12 +310,12 @@ export class WebRTCService implements WebRTCServiceContract {
     token: string,
     rtcSessionDescription: RTCSessionDescriptionInit
   ): Promise<void> {
-    console.log("Received WebRTC answer", token, rtcSessionDescription);
+    EngineLogger.info("WebrtcService", "Received WebRTC answer", token, rtcSessionDescription);
 
     const peer = this.getPeer(token);
 
     if (peer === null) {
-      console.warn("WebRTC peer with token not found", token);
+      EngineLogger.warn("WebrtcService", "WebRTC peer with token not found", token);
       return;
     }
 
