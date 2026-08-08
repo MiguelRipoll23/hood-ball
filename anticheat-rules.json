@@ -1,0 +1,29 @@
+[
+  {
+    "ruleId": 1,
+    "ruleType": 1,
+    "fields": [
+      { "fieldId": 0, "valueType": 1, "value": 600 },
+      { "fieldId": 1, "valueType": 1, "value": 3 },
+      { "fieldId": 2, "valueType": 0, "value": 0 }
+    ]
+  },
+  {
+    "ruleId": 2,
+    "ruleType": 0,
+    "fields": [
+      { "fieldId": 0, "valueType": 0, "value": 10 },
+      { "fieldId": 1, "valueType": 1, "value": 3 },
+      { "fieldId": 2, "valueType": 1, "value": 10 }
+    ]
+  },
+  {
+    "ruleId": 3,
+    "ruleType": 1,
+    "fields": [
+      { "fieldId": 0, "valueType": 1, "value": 300 },
+      { "fieldId": 1, "valueType": 1, "value": 3 },
+      { "fieldId": 2, "valueType": 0, "value": 1 }
+    ]
+  }
+]
