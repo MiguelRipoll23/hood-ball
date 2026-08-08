@@ -9,6 +9,7 @@ export class DebugSettings {
   private tappableAreasVisible: boolean = true;
   private hitboxVisible: boolean = true;
   private gizmosVisible: boolean = false;
+  private showSyncableEntities: boolean = false;
   private menuEnabled: boolean = false;
 
   constructor(debugging: boolean) {
@@ -81,6 +82,15 @@ export class DebugSettings {
   public setGizmosVisibility(value: boolean): void {
     this.gizmosVisible = value;
     EngineLogger.info("DebugSettings", `Gizmos visibility set to: ${value}`);
+  }
+
+  public showSyncableEntitiesOverlay(): boolean {
+    return this.showSyncableEntities;
+  }
+
+  public setShowSyncableEntities(value: boolean): void {
+    this.showSyncableEntities = value;
+    EngineLogger.info("DebugSettings", `Show syncable entities set to: ${value}`);
   }
 
   public isMenuEnabled(): boolean {

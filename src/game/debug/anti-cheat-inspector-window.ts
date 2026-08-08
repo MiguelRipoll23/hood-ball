@@ -3,6 +3,7 @@ import { BaseWindow } from "../../engine/debug/base-window.js";
 import { container } from "../../engine/services/di-container.js";
 import { AntiCheatMonitorService } from "../services/security/anti-cheat-monitor-service.js";
 import { AntiCheatReportingService } from "../services/security/anti-cheat-reporting-service.js";
+import { AntiCheatService } from "../services/security/anti-cheat-service.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 import { AntiCheatRuleType } from "../enums/anti-cheat-rule-type.js";
 import { GameEventType } from "../enums/event-type.js";
@@ -20,7 +21,7 @@ const RED = 0xff0000ff;
 
 export class AntiCheatInspectorWindow extends BaseWindow {
   constructor() {
-    super("Anti-cheat inspector", new ImVec2(500, 350));
+    super("Anti-cheat inspector", new ImVec2(280, 120));
     EngineLogger.info("AntiCheatInspectorWindow", "AntiCheatInspectorWindow created");
   }
 
@@ -28,32 +29,53 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     const monitor = container.get(AntiCheatMonitorService);
     const reporting = container.get(AntiCheatReportingService);
     const match = container.get(MatchSessionService).getMatch();
+    const antiCheat = container.get(AntiCheatService);
 
-    // ── Status ──
+    // ── State ──
     if (monitor.isMonitoring()) {
       ImGui.PushStyleColor(ImGui.Col.Text, GREEN);
-      ImGui.Text("ANTI-CHEAT: ACTIVE");
+      ImGui.Text("State: active");
       ImGui.PopStyleColor();
     } else {
       ImGui.PushStyleColor(ImGui.Col.Text, RED);
-      ImGui.Text("ANTI-CHEAT: INACTIVE");
+      ImGui.Text("State: inactive");
       ImGui.PopStyleColor();
+    }
+
+    ImGui.SameLine();
+    if (ImGui.Button(monitor.isMonitoring() ? "Stop" : "Start")) {
+      if (monitor.isMonitoring()) {
+        antiCheat.stopMonitoring();
+      } else {
+        antiCheat.startMonitoring();
+      }
     }
 
     ImGui.Separator();
 
-    // ── Loaded Rules ──
-    if (ImGui.CollapsingHeader("Loaded Rules", ImGui.TreeNodeFlags.DefaultOpen)) {
+    // ── Show Rules button ──
+    if (ImGui.Button("Show Rules", new ImVec2(-1, 0))) {
+      ImGui.OpenPopup("AntiCheatRulesPopup");
+    }
+
+    // ── Show Violations button ──
+    if (ImGui.Button("Show Violations", new ImVec2(-1, 0))) {
+      ImGui.OpenPopup("AntiCheatViolationsPopup");
+    }
+
+    // ── Rules popup ──
+    if (ImGui.BeginPopup("AntiCheatRulesPopup")) {
       const rules = monitor.getRules();
       if (rules.length === 0) {
         ImGui.Text("No rules loaded.");
       } else {
         this.renderRulesTable(rules);
       }
+      ImGui.EndPopup();
     }
 
-    // ── Violations ──
-    if (ImGui.CollapsingHeader("Reported Violations")) {
+    // ── Violations popup ──
+    if (ImGui.BeginPopup("AntiCheatViolationsPopup")) {
       const reported = reporting.getReportedViolations();
       if (reported.length === 0) {
         ImGui.Text("No violations reported yet.");
@@ -67,6 +89,7 @@ export class AntiCheatInspectorWindow extends BaseWindow {
           ImGui.PopStyleColor();
         }
       }
+      ImGui.EndPopup();
     }
   }
 

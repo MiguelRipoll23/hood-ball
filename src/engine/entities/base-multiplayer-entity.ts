@@ -9,23 +9,7 @@ export class BaseMultiplayerGameEntity
   extends BaseGameEntity
   implements MultiplayerGameEntity
 {
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected id: string | null = null;
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected typeId: EntityType | null = null;
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected syncable: boolean = false;
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected syncableByHost: boolean = false;
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected owner: Player | null = null;
-
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected sync: boolean = false;
-  /** @deprecated Use `getComponent(NetworkComponent)` for new code. */
-  protected syncReliably: boolean = false;
-
-  /** Backing NetworkComponent – all network state is stored here. */
+  /** Backing NetworkComponent — all network state is stored here. */
   protected readonly network: NetworkComponent;
 
   constructor() {
@@ -53,7 +37,6 @@ export class BaseMultiplayerGameEntity
 
   public override setId(id: string): void {
     this.network.networkId = id;
-    this.id = id; // keep deprecated field in sync
   }
 
   public getTypeId(): EntityType | null {
@@ -62,11 +45,14 @@ export class BaseMultiplayerGameEntity
 
   public setTypeId(entityTypeId: EntityType): void {
     this.network.typeId = entityTypeId;
-    this.typeId = entityTypeId; // keep deprecated field in sync
   }
 
   public isSyncable(): boolean {
     return this.network.syncable;
+  }
+
+  public setSyncable(syncable: boolean): void {
+    this.network.syncable = syncable;
   }
 
   public isSyncableByHost(): boolean {
@@ -75,7 +61,6 @@ export class BaseMultiplayerGameEntity
 
   public setSyncableByHost(syncableByHost: boolean): void {
     this.network.syncableByHost = syncableByHost;
-    this.syncableByHost = syncableByHost; // keep deprecated field in sync
   }
 
   public getOwner(): Player | null {
@@ -84,7 +69,6 @@ export class BaseMultiplayerGameEntity
 
   public setOwner(playerOwner: Player | null): void {
     this.network.owner = playerOwner;
-    this.owner = playerOwner; // keep deprecated field in sync
   }
 
   public mustSync(): boolean {
@@ -93,7 +77,6 @@ export class BaseMultiplayerGameEntity
 
   public setSync(sync: boolean): void {
     this.network.mustSyncFlag = sync;
-    this.sync = sync; // keep deprecated field in sync
 
     if (sync) {
       EngineLogger.info("MultiplayerEntity", "Forced ordered unreliable sync for entity", this);
@@ -106,7 +89,6 @@ export class BaseMultiplayerGameEntity
 
   public setSyncReliably(syncReliably: boolean): void {
     this.network.mustSyncReliablyFlag = syncReliably;
-    this.syncReliably = syncReliably; // keep deprecated field in sync
 
     if (syncReliably) {
       EngineLogger.info("MultiplayerEntity", "Forced ordered reliable sync for entity", this);

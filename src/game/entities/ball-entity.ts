@@ -253,7 +253,7 @@ export class BallEntity
   }
 
   private setSyncableValues() {
-    this.syncable = true;
+    this.setSyncable(true);
     this.setId(BALL_NETWORK_ID);
     this.setTypeId(EntityRegistryType.Ball);
     this.setSyncableByHost(true);

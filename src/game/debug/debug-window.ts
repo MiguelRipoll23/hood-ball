@@ -21,7 +21,7 @@ export class DebugWindow extends BaseWindow {
   private antiCheatInspectorWindow: AntiCheatInspectorWindow;
 
   constructor(private gameState: GameState) {
-    super("Debug menu", new ImVec2(220, 220), false, ImGui.WindowFlags.MenuBar);
+    super("Debug menu", new ImVec2(220, 280), false, ImGui.WindowFlags.MenuBar);
     this.animationInspectorWindow = new AnimationInspectorWindow();
     this.eventInspectorWindow = new EventInspectorWindow();
     this.matchInspectorWindow = new MatchInspectorWindow();
@@ -79,6 +79,7 @@ export class DebugWindow extends BaseWindow {
     this.renderMenuBar();
     this.renderLoggingSettings();
     this.renderUISettings();
+    this.renderNetworkSettings();
   }
 
   private renderMenuBar(): void {
@@ -167,6 +168,18 @@ export class DebugWindow extends BaseWindow {
         debugSettings.setGizmosVisibility.bind(debugSettings)
       );
 
+    }
+  }
+
+  private renderNetworkSettings(): void {
+    if (ImGui.CollapsingHeader("Network")) {
+      const debugSettings = this.gameState.getDebugSettings();
+
+      this.renderCheckbox(
+        "Show syncable entities",
+        debugSettings.showSyncableEntitiesOverlay(),
+        debugSettings.setShowSyncableEntities.bind(debugSettings)
+      );
     }
   }
 

@@ -4,9 +4,19 @@ import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
 import type { GameState } from "../models/game-state.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
 import type { GameEntity } from "../models/game-entity.js";
+import { SpatialGrid } from "../utils/spatial-grid.js";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../constants/canvas-constants.js";
+
+const GRID_CELL_SIZE = 100;
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   protected isReplayMode = false;
+
+  private readonly spatialGrid = new SpatialGrid<BaseCollidingGameEntity>(
+    GRID_CELL_SIZE,
+    Math.ceil(CANVAS_WIDTH / GRID_CELL_SIZE),
+    Math.ceil(CANVAS_HEIGHT / GRID_CELL_SIZE),
+  );
 
   constructor(
     gameState: GameState,
@@ -32,14 +42,28 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   public detectCollisions(): void {
     const entities = this.worldEntities.filter(this.isCollidingEntity);
 
+    // Clear collision state and rebuild spatial grid
     for (const e of entities) {
-      e.getHitboxEntities().forEach((h) => h.setColliding(false));
-
-      for (const other of entities) {
-        if (e === other) continue;
-        this.detectCollisionsBetween(e, other);
+      // Clear existing collisions (iterate over copy since removal modifies the array)
+      for (const other of [...e.getCollidingEntities()]) {
+        e.removeCollidingEntity(other);
+        other.removeCollidingEntity(e);
       }
+      e.getHitboxEntities().forEach((h) => h.setColliding(false));
+    }
 
+    this.spatialGrid.clear();
+    for (const e of entities) {
+      this.spatialGrid.insert(e);
+    }
+
+    // Only check pairs that share the same or adjacent cells
+    this.spatialGrid.forEachPair((a, b) => {
+      this.detectCollisionsBetween(a, b);
+    });
+
+    // Reset avoidingCollision for entities no longer colliding
+    for (const e of entities) {
       if (!e.isColliding()) {
         e.setAvoidingCollision(false);
       }

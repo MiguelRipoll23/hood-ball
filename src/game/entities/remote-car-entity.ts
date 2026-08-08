@@ -97,9 +97,9 @@ export class RemoteCarEntity extends CarEntity {
   }
 
   private setSyncableValues(syncableId: string) {
-    this.syncable = true;
-    this.id = syncableId;
-    this.typeId = EntityRegistryType.RemoteCar;
-    this.syncableByHost = true;
+    this.setSyncable(true);
+    this.setId(syncableId);
+    this.setTypeId(EntityRegistryType.RemoteCar);
+    this.setSyncableByHost(true);
   }
 }

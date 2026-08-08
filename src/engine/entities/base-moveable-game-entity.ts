@@ -194,6 +194,48 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
     );
   }
 
+  // ── Debug overlay ──────────────────────────────────────────────
+
+  private static readonly HEXAGON_SIDES = 6;
+  private static readonly HEXAGON_RADIUS = 25;
+  private static readonly HEXAGON_COLOR = "rgba(255, 105, 180, 0.45)";
+
+  public override render(context: CanvasRenderingContext2D): void {
+    super.render(context);
+
+    if (
+      !this.debugSettings?.showSyncableEntitiesOverlay() ||
+      !this.isSyncable()
+    ) return;
+
+    this.drawHexagon(context);
+  }
+
+  private drawHexagon(context: CanvasRenderingContext2D): void {
+    const cx = this.getX();
+    const cy = this.getY();
+
+    context.save();
+    context.strokeStyle = BaseMoveableGameEntity.HEXAGON_COLOR;
+    context.lineWidth = 1.5;
+    context.beginPath();
+
+    const r = BaseMoveableGameEntity.HEXAGON_RADIUS;
+    for (let i = 0; i < BaseMoveableGameEntity.HEXAGON_SIDES; i++) {
+      const angle = (Math.PI / 3) * i - Math.PI / 6;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      if (i === 0) {
+        context.moveTo(x, y);
+      } else {
+        context.lineTo(x, y);
+      }
+    }
+    context.closePath();
+    context.stroke();
+    context.restore();
+  }
+
   // ── Lifecycle ──────────────────────────────────────────────────
 
   public reset(): void {
