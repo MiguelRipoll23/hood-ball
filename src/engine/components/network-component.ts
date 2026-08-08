@@ -13,7 +13,8 @@ import { TransformComponent } from "./transform-component.js";
  * the "show syncable entities" debug toggle is on.
  */
 export class NetworkComponent implements Component {
-  public readonly componentType = "NetworkComponent";
+  static readonly componentType = "NetworkComponent";
+  public readonly componentType = NetworkComponent.componentType;
   public networkId: string | null = null;
   public typeId: EntityType | null = null;
   public syncable = false;

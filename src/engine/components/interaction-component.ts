@@ -5,7 +5,8 @@ import type { Component } from "./component.js";
  * stealing. Previously part of BaseTappableGameEntity.
  */
 export class InteractionComponent implements Component {
-  public readonly componentType = "InteractionComponent";
+  static readonly componentType = "InteractionComponent";
+  public readonly componentType = InteractionComponent.componentType;
   public active = true;
   public hovering = false;
   public pressed = false;

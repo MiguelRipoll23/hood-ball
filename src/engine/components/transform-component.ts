@@ -6,7 +6,8 @@ import type { Component } from "./component.js";
  * BaseAnimatedGameEntity.
  */
 export class TransformComponent implements Component {
-  public readonly componentType = "TransformComponent";
+  static readonly componentType = "TransformComponent";
+  public readonly componentType = TransformComponent.componentType;
   public x = 0;
   public y = 0;
   public width = 0;
