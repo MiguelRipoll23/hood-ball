@@ -143,6 +143,12 @@ export class BallEntity
     this.updateHitbox();
     this.handlePlayerCollision();
 
+    // Update angle from velocity direction so the debug gizmo arrow
+    // points the way the ball is actually moving.
+    if (this.physics.vx !== 0 || this.physics.vy !== 0) {
+      this.angle = Math.atan2(-this.physics.vy, -this.physics.vx);
+    }
+
     EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
   }
 

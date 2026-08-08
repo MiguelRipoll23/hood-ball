@@ -17,7 +17,6 @@ const RULE_TYPE_NAMES: Record<number, string> = {
 const GREEN = 0x00ff00ff;
 const YELLOW = 0xffff00ff;
 const RED = 0xff0000ff;
-const GRAY = 0x808080ff;
 
 export class AntiCheatInspectorWindow extends BaseWindow {
   constructor() {
@@ -33,11 +32,11 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     // ── Status ──
     if (monitor.isMonitoring()) {
       ImGui.PushStyleColor(ImGui.Col.Text, GREEN);
-      ImGui.Text("● Monitoring active");
+      ImGui.Text("ANTI-CHEAT: ACTIVE");
       ImGui.PopStyleColor();
     } else {
-      ImGui.PushStyleColor(ImGui.Col.Text, GRAY);
-      ImGui.Text("○ Monitoring inactive");
+      ImGui.PushStyleColor(ImGui.Col.Text, RED);
+      ImGui.Text("ANTI-CHEAT: INACTIVE");
       ImGui.PopStyleColor();
     }
 
@@ -49,7 +48,7 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       if (rules.length === 0) {
         ImGui.Text("No rules loaded.");
       } else {
-        this.renderRulesTable(rules, reporting);
+        this.renderRulesTable(rules);
       }
     }
 
@@ -73,7 +72,6 @@ export class AntiCheatInspectorWindow extends BaseWindow {
 
   private renderRulesTable(
     rules: readonly AntiCheatRule[],
-    reporting: AntiCheatReportingService,
   ): void {
     const flags =
       ImGui.TableFlags.BordersOuter |
@@ -82,12 +80,11 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       ImGui.TableFlags.ScrollY |
       ImGui.TableFlags.SizingStretchProp;
 
-    if (!ImGui.BeginTable("AntiCheatRules", 4, flags)) return;
+    if (!ImGui.BeginTable("AntiCheatRules", 3, flags)) return;
 
     ImGui.TableSetupColumn("ID", ImGui.TableColumnFlags.WidthFixed, 30);
     ImGui.TableSetupColumn("Type", ImGui.TableColumnFlags.WidthStretch);
     ImGui.TableSetupColumn("Fields", ImGui.TableColumnFlags.WidthStretch);
-    ImGui.TableSetupColumn("Status", ImGui.TableColumnFlags.WidthFixed, 80);
 
     ImGui.TableHeadersRow();
 
@@ -109,19 +106,6 @@ export class AntiCheatInspectorWindow extends BaseWindow {
         .map((f) => this.formatField(rule.ruleType, f.fieldId, f.value))
         .join(", ");
       ImGui.Text(fieldText);
-
-      // Status — check if any player has been reported for this rule
-      ImGui.TableSetColumnIndex(3);
-      const hasViolation = this.ruleHasViolation(rule.ruleId, reporting);
-      if (hasViolation) {
-        ImGui.PushStyleColor(ImGui.Col.Text, RED);
-        ImGui.Text("Violated");
-        ImGui.PopStyleColor();
-      } else {
-        ImGui.PushStyleColor(ImGui.Col.Text, GREEN);
-        ImGui.Text("Clean");
-        ImGui.PopStyleColor();
-      }
     }
 
     ImGui.EndTable();
@@ -141,10 +125,4 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     return `f${fieldId}=${value}`;
   }
 
-  private ruleHasViolation(ruleId: number, reporting: AntiCheatReportingService): boolean {
-    for (const key of reporting.getReportedViolations()) {
-      if (key.startsWith(`${ruleId}:`)) return true;
-    }
-    return false;
-  }
 }
