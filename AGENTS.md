@@ -1,6 +1,17 @@
 # AGENTS.md — Hood Ball Architecture Reference
 
-This document describes the functional design of the multiplayer systems in Hood Ball. Read it before touching any networking, event, entity, or chat code.
+This document describes the functional design of the multiplayer systems in Hood Ball. Read it before touching any networking, event, entity, chat, or entity code.
+
+## Recent Major Changes (August 2026)
+
+- **ECS-lite component system**: 7 components (Transform, Physics, Collision, Network, Interaction, plus a base `Component` interface). Entities compose behavior via `addComponent()`/`getComponent()`. Old entities still use deprecated fields that sync to components — migrate gradually.
+- **Inheritance flattened**: 7→4 levels. `BaseAnimatedGameEntity`, `BaseStaticCollidingGameEntity`, `BaseDynamicCollidingGameEntity` deleted. Merged into `BaseMoveableGameEntity` (animations) and `BaseCollidingGameEntity` (physics+collision, uses `isDynamic` flag).
+- **Logger migration**: All ~140 `console.*` calls replaced with `EngineLogger.info/warn/error/debug("Category", msg)`. Logger disabled by default, enabled via `?debug` URL query param. `LoggerUtils` deleted.
+- **DI standardized**: All constructors use deps-object injection. No `container.get()` in constructors. WorldScene, WorldController, ScoreManagerService refactored.
+- **WorldScene decomposed**: WeatherSystem + ChatUISystem extracted.
+- **Physics fields removed**: `vx`, `vy`, `mass`, `bounciness`, `rigidBody` no longer exist on `BaseCollidingGameEntity`. Use `this.physics.*` or `getComponent(PhysicsComponent)`.
+- **Performance optimizations**: Spatial grid collision partitioning (O(n) typical), ball rendering without gradients (zero allocations), smoke particles use proper delta scaling.
+- **Code quality**: 0 eslint-disable comments, consistent `override` usage, `.prettierrc` + `.editorconfig` added, `Object.values(this.dataChannels)` cached.
 
 ---
 

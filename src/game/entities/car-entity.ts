@@ -43,6 +43,8 @@ export class CarEntity extends BaseCollidingGameEntity {
   // Duration of each smoke particle in milliseconds
   private readonly SMOKE_DURATION = 1500; // ms
   private readonly SMOKE_SPAWN_INTERVAL = 5; // ms
+  // Reference delta at 60 fps (1000/60 ≈ 16.667ms) — used to normalize delta-time
+  private readonly REFERENCE_DELTA = 1000 / 60;
 
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
@@ -613,10 +615,13 @@ export class CarEntity extends BaseCollidingGameEntity {
   }
 
   private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
+    // Scale particle movement by delta so behaviour is frame-rate independent.
+    // Velocities are calibrated for 60 fps; divide by the reference delta.
+    const scale = delta / this.REFERENCE_DELTA;
     this.smokeParticles.forEach((p) => {
-      p.x += p.vx * (delta / 16);
-      p.y += p.vy * (delta / 16);
-      p.size += 0.03 * (delta / 16);
+      p.x += p.vx * scale;
+      p.y += p.vy * scale;
+      p.size += 0.03 * scale;
       p.life -= delta;
     });
     this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
