@@ -1,20 +1,15 @@
 import { injectable, inject } from "@needle-di/core";
 import { PlayerModerationService } from "../network/player-moderation-service.js";
-import { MatchSessionService } from "../session/match-session-service.js";
 import { GamePlayer } from "../../models/game-player.js";
-
-const REPORT_THROTTLE_MS = 5000;
 
 @injectable()
 export class AntiCheatReportingService {
-  private readonly lastReportTime = new Map<number, number>();
+  /** Keys of already-reported violations. Format: `${ruleId}:${userId}` */
+  private readonly reported = new Set<string>();
 
   constructor(
     private readonly playerModerationService: PlayerModerationService = inject(
       PlayerModerationService,
-    ),
-    private readonly matchSessionService: MatchSessionService = inject(
-      MatchSessionService,
     ),
     private readonly gamePlayer: GamePlayer = inject(GamePlayer),
   ) {}
@@ -24,29 +19,16 @@ export class AntiCheatReportingService {
     reason: string,
     targetUserId?: string,
   ): void {
-    const now = Date.now();
-    const lastReport = this.lastReportTime.get(ruleId);
+    const userId = targetUserId ?? this.gamePlayer.getNetworkId();
+    const key = `${ruleId}:${userId}`;
 
-    if (lastReport !== undefined && now - lastReport < REPORT_THROTTLE_MS) {
-      return;
-    }
-
-    this.lastReportTime.set(ruleId, now);
+    if (this.reported.has(key)) return;
+    this.reported.add(key);
 
     const fullReason = `Rule #${ruleId}: ${reason}`;
-    const match = this.matchSessionService.getMatch();
+    this.send(userId, fullReason);
 
-    if (targetUserId) {
-      this.send(targetUserId, fullReason);
-    } else if (match) {
-      for (const player of match.getPlayers()) {
-        this.send(player.getNetworkId(), fullReason);
-      }
-    } else {
-      this.send(this.gamePlayer.getNetworkId(), fullReason);
-    }
-
-    console.warn(`[AntiCheat] Rule ${ruleId} violated: ${reason}`);
+    console.warn(`[AntiCheat] Rule ${ruleId} violated by ${userId}: ${reason}`);
   }
 
   private send(userId: string, reason: string): void {

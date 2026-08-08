@@ -30,6 +30,7 @@ export interface TrackedEntity {
   x: number;
   y: number;
   ownerId: string;
+  typeId: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -156,8 +157,8 @@ export function evaluateEventRateRules(
 
 export function evaluateMovementRules(
   rules: readonly AntiCheatRule[],
-  entityId: string,
   ownerId: string,
+  entityTypeId: number,
   samples: readonly MovementSample[],
   now: number,
 ): RuleViolation[] {
@@ -165,6 +166,12 @@ export function evaluateMovementRules(
 
   for (const rule of rules) {
     if (rule.ruleType !== AntiCheatRuleType.MovementSpeedLimit) {
+      continue;
+    }
+
+    // Optional entity-type filter (fieldId=2). 0 or absent = all types.
+    const ruleEntityTypeId = rule.getFieldOrDefault(2, 0);
+    if (ruleEntityTypeId !== 0 && ruleEntityTypeId !== entityTypeId) {
       continue;
     }
 
@@ -190,7 +197,7 @@ export function evaluateMovementRules(
     if (cumulativeDistance > maxDistance) {
       violations.push({
         ruleId: rule.ruleId,
-        reason: `MovementSpeedLimit exceeded: entityId=${entityId}, distance=${cumulativeDistance.toFixed(2)}, max=${maxDistance}, window=${windowSeconds}s`,
+        reason: `MovementSpeedLimit exceeded: entityType=${entityTypeId}, distance=${cumulativeDistance.toFixed(2)}, max=${maxDistance}, window=${windowSeconds}s`,
         targetUserId: ownerId,
       });
     }

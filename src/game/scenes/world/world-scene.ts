@@ -829,18 +829,21 @@ export class WorldScene extends BaseCollidingGameScene {
     x: number;
     y: number;
     ownerId: string;
+    typeId: number;
   }> {
     for (const entity of this.worldEntities) {
       if (!(entity instanceof BaseMoveableGameEntity)) {
         continue;
       }
       const ownerId = entity.getOwner()?.getNetworkId();
-      if (ownerId) {
+      const typeId = entity.getTypeId();
+      if (ownerId && typeId !== null) {
         yield {
           id: entity.getId(),
           x: entity.getX(),
           y: entity.getY(),
           ownerId,
+          typeId,
         };
       }
     }

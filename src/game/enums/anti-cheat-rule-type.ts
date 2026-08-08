@@ -17,6 +17,7 @@
  * Fields:
  *   - fieldId=0, valueType=float32 (0x01): maxDistance
  *   - fieldId=1, valueType=float32 (0x01): windowSeconds
+ *   - fieldId=2, valueType=uint16  (0x00): entityTypeId (optional, 0 = all types)
  */
 export const AntiCheatRuleType = {
   EventRateLimit: 0x00,

@@ -21,7 +21,8 @@ import type {
 @injectable()
 export class AntiCheatMonitorService {
   private rules: readonly AntiCheatRule[] = [];
-  private readonly eventWindows = new Map<number, number[]>();
+  /** Key: `${actorId}:${eventType}` → timestamps (ms) */
+  private readonly eventWindows = new Map<string, number[]>();
   private readonly movementSamples = new Map<string, MovementSample[]>();
   private readonly localSubscriptions: EventSubscription[] = [];
   private readonly remoteSubscriptions: EventSubscription[] = [];
@@ -88,8 +89,8 @@ export class AntiCheatMonitorService {
 
       const violations = evaluateMovementRules(
         this.rules,
-        entity.id,
         entity.ownerId,
+        entity.typeId,
         samples,
         now,
       );
@@ -118,24 +119,37 @@ export class AntiCheatMonitorService {
     for (const eventType of eventTypes) {
       const localSub = this.eventConsumerService.subscribeToLocalEvent(
         eventType,
-        () => this.onEvent(eventType),
+        (data: unknown) => this.onEvent(eventType, this.extractActor(data)),
       );
       this.localSubscriptions.push(localSub);
 
       const remoteSub = this.eventConsumerService.subscribeToRemoteEvent(
         eventType,
-        () => this.onEvent(eventType),
+        () =>
+          this.onEvent(
+            eventType,
+            // Remote events always originate from the host.
+            this.matchSessionService
+              .getMatch()
+              ?.getHost()
+              ?.getNetworkId(),
+          ),
       );
       this.remoteSubscriptions.push(remoteSub);
     }
   }
 
-  private onEvent(eventType: number): void {
+  private onEvent(eventType: number, actorId: string | undefined): void {
+    // No actor to attribute — skip tracking for this event.
+    if (!actorId) return;
+
     const now = Date.now();
-    let timestamps = this.eventWindows.get(eventType);
+    const windowKey = `${actorId}:${eventType}`;
+
+    let timestamps = this.eventWindows.get(windowKey);
     if (!timestamps) {
       timestamps = [];
-      this.eventWindows.set(eventType, timestamps);
+      this.eventWindows.set(windowKey, timestamps);
     }
     timestamps.push(now);
 
@@ -147,14 +161,30 @@ export class AntiCheatMonitorService {
     );
 
     for (const v of violations) {
-      const hostId = this.matchSessionService
-        .getMatch()
-        ?.getHost()
-        ?.getNetworkId();
-      this.reporting.reportViolation(v.ruleId, v.reason, hostId ?? undefined);
+      this.reporting.reportViolation(v.ruleId, v.reason, actorId);
     }
 
     this.pruneEventWindows(now);
+  }
+
+  /**
+   * Best-effort extraction of a player network ID from event callback data.
+   * Local events may carry a `player` property; remote events carry binary
+   * data and rely on the caller to supply the host as the actor.
+   */
+  private extractActor(data: unknown): string | undefined {
+    if (
+      data &&
+      typeof data === "object" &&
+      "player" in data &&
+      typeof (data as Record<string, unknown>).player === "object"
+    ) {
+      const player = (data as Record<string, unknown>).player as {
+        getNetworkId?: () => string;
+      };
+      return player.getNetworkId?.();
+    }
+    return undefined;
   }
 
   // -------------------------------------------------------------------
