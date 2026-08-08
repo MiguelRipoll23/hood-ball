@@ -3,11 +3,6 @@ import { EngineLogger } from "../../../engine/services/engine-logger.js";
 
 export class MessageEntity extends BaseMoveableGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
-  private readonly DEFAULT_HEIGHT = 100;
-  private readonly DEFAULT_WIDTH = 340;
-
-  protected width = this.DEFAULT_WIDTH;
-  protected height = this.DEFAULT_HEIGHT;
 
   private textX = 0;
   private textY = 0;

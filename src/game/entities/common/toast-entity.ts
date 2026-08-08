@@ -2,9 +2,6 @@ import { TimerService } from "../../../engine/services/gameplay/timer-service.js
 import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
 
 export class ToastEntity extends BaseMoveableGameEntity {
-  protected width: number = 0;
-  protected height: number = 0;
-
   private text: string = "Unknown";
   private readonly padding: number = 10;
   private readonly topMargin: number = 160; // Top margin

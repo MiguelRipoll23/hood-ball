@@ -4,17 +4,9 @@ import { AnimationType } from "../enums/animation-type.js";
 import { EntityAnimationService } from "../services/gameplay/entity-animation-service.js";
 
 export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
-  protected x: number = 0;
-  protected y: number = 0;
-  protected width: number = 0;
-  protected height: number = 0;
-  protected angle: number = 0;
-  protected skipInterpolation = false;
-  protected scale: number = 1;
-
   protected animationTasks: EntityAnimationService[] = [];
 
-  /** Backing TransformComponent – use getComponent(TransformComponent) for new code. */
+  /** Backing TransformComponent — all position/size/angle getters delegate here. */
   protected readonly transform: TransformComponent;
 
   constructor() {
@@ -22,66 +14,112 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
     this.transform = this.addComponent(new TransformComponent());
   }
 
-  // ── Transform ──────────────────────────────────────────────────
+  // ── Transform getters/setters (single source of truth) ─────────
+
+  protected get x(): number {
+    return this.transform.x;
+  }
+
+  protected set x(value: number) {
+    this.transform.x = value;
+  }
+
+  protected get y(): number {
+    return this.transform.y;
+  }
+
+  protected set y(value: number) {
+    this.transform.y = value;
+  }
+
+  protected get width(): number {
+    return this.transform.width;
+  }
+
+  protected set width(value: number) {
+    this.transform.width = value;
+  }
+
+  protected get height(): number {
+    return this.transform.height;
+  }
+
+  protected set height(value: number) {
+    this.transform.height = value;
+  }
+
+  protected get angle(): number {
+    return this.transform.angle;
+  }
+
+  protected set angle(value: number) {
+    this.transform.angle = value;
+  }
+
+  protected get scale(): number {
+    return this.transform.scale;
+  }
+
+  protected set scale(value: number) {
+    this.transform.scale = value;
+  }
+
+  protected get skipInterpolation(): boolean {
+    return this.transform.skipInterpolation;
+  }
+
+  protected set skipInterpolation(value: boolean) {
+    this.transform.skipInterpolation = value;
+  }
+
+  // ── Public Transform API ───────────────────────────────────────
 
   public getX(): number {
-    return this.x;
+    return this.transform.x;
   }
 
   public setX(x: number): void {
-    this.x = x;
     this.transform.x = x;
   }
 
   public getY(): number {
-    return this.y;
+    return this.transform.y;
   }
 
   public setY(y: number): void {
-    this.y = y;
     this.transform.y = y;
   }
 
   public getWidth(): number {
-    return this.width;
+    return this.transform.width;
   }
 
   public setWidth(width: number): void {
-    this.width = width;
     this.transform.width = width;
   }
 
   public getHeight(): number {
-    return this.height;
+    return this.transform.height;
   }
 
   public setHeight(height: number): void {
-    this.height = height;
     this.transform.height = height;
   }
 
   public getAngle(): number {
-    return this.angle;
+    return this.transform.angle;
   }
 
   public setAngle(angle: number): void {
-    this.angle = angle;
     this.transform.angle = angle;
   }
 
   public setSkipInterpolation(): void {
-    this.skipInterpolation = true;
     this.transform.skipInterpolation = true;
   }
 
   public teleport(x: number, y: number, angle?: number): void {
     this.transform.teleport(x, y, angle);
-    this.x = x;
-    this.y = y;
-    if (angle !== undefined) {
-      this.angle = angle;
-    }
-    this.skipInterpolation = this.transform.skipInterpolation;
   }
 
   // ── Scale ──────────────────────────────────────────────────────
@@ -92,7 +130,6 @@ export class BaseMoveableGameEntity extends BaseMultiplayerGameEntity {
 
   public setScale(scale: number): void {
     this.scale = scale;
-    this.transform.scale = scale;
   }
 
   // ── Animations ─────────────────────────────────────────────────
