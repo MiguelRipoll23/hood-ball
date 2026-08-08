@@ -44,6 +44,8 @@ export class CarEntity extends BaseCollidingGameEntity {
   private readonly SMOKE_DURATION = 1500; // ms
   private readonly SMOKE_SPAWN_INTERVAL = 5; // ms
   // Reference delta at 60 fps (1000/60 ≈ 16.667ms) — used to normalize delta-time
+  private readonly REFERENCE_DELTA = 1000 / 60;
+
   private readonly PLAYER_NAME_PADDING = 10;
   private readonly PLAYER_NAME_RECT_HEIGHT = 24;
   private readonly PLAYER_NAME_RADIUS = 10;
@@ -171,11 +173,11 @@ export class CarEntity extends BaseCollidingGameEntity {
     this.loadCarImage();
 
     // Update or create owner with the player name from replay
-    if (!this.owner) {
+    if (!this.getOwner()) {
       this.setOwner(
         new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
       );
-    } else if (this.owner.getName() !== playerName) {
+    } else if (this.getOwner()!.getName() !== playerName) {
       // Owner name changed, create new player with updated name
       this.setOwner(
         new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
@@ -269,7 +271,7 @@ export class CarEntity extends BaseCollidingGameEntity {
 
     context.restore();
 
-    if (this.owner?.isHost()) {
+    if (this.getOwner()?.isHost()) {
       this.renderHostIndicator(context);
     } else {
       this.renderPingLevel(context);
@@ -286,7 +288,7 @@ export class CarEntity extends BaseCollidingGameEntity {
   }
 
   public getPlayer(): GamePlayer | null {
-    return this.owner as GamePlayer | null;
+    return this.getOwner() as GamePlayer | null;
   }
 
   public getBoost(): number {
@@ -436,7 +438,7 @@ export class CarEntity extends BaseCollidingGameEntity {
   private handleBoostPads(): void {
     this.getCollidingEntities().forEach((entity) => {
       if (entity instanceof BoostPadEntity && this.boost < this.MAX_BOOST) {
-        const playerId = this.owner?.getNetworkId();
+        const playerId = this.getOwner()?.getNetworkId();
 
         if (playerId && entity.tryConsume(playerId)) {
           this.refillBoost();
@@ -469,7 +471,7 @@ export class CarEntity extends BaseCollidingGameEntity {
   }
 
   private renderPingLevel(context: CanvasRenderingContext2D): void {
-    const pingTime = (this.owner as GamePlayer | null)?.getPingTime() ?? null;
+    const pingTime = (this.getOwner() as GamePlayer | null)?.getPingTime() ?? null;
 
     if (pingTime === null) {
       return;
@@ -512,7 +514,7 @@ export class CarEntity extends BaseCollidingGameEntity {
   private renderPlayerName(context: CanvasRenderingContext2D): void {
     context.save();
 
-    const playerName = this.owner?.getName() ?? "Unknown";
+    const playerName = this.getOwner()?.getName() ?? "Unknown";
     context.font = "16px system-ui";
 
     const textWidth = context.measureText(playerName).width;
@@ -613,7 +615,9 @@ export class CarEntity extends BaseCollidingGameEntity {
   }
 
   private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
-    const scale = delta / 16;
+    // Scale particle movement by delta so behaviour is frame-rate independent.
+    // Velocities are calibrated for 60 fps; divide by the reference delta.
+    const scale = delta / this.REFERENCE_DELTA;
     this.smokeParticles.forEach((p) => {
       p.x += p.vx * scale;
       p.y += p.vy * scale;
