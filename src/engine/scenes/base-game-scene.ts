@@ -1,8 +1,6 @@
 import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.js";
 import { LayerType } from "../enums/layer-type.js";
 import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
-import { BaseMultiplayerGameEntity } from "../entities/base-multiplayer-entity.js";
-import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.js";
 import type { GameEntity } from "../models/game-entity.js";
 import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
 import type { SceneManagerServiceContract } from "../interfaces/services/scene/scene-manager-service-contract.js";
@@ -168,8 +166,6 @@ export class BaseGameScene implements GameScene {
     this.renderEntities(this.worldEntities, context);
     this.renderEntities(this.uiEntities, context);
 
-    this.renderSyncableEntityOverlays(context);
-
     context.globalAlpha = 1;
     context.restore();
   }
@@ -178,47 +174,6 @@ export class BaseGameScene implements GameScene {
    * Clears the current pressed state of the game pointer. Subclasses may call
    * this manually when deferring pointer handling to nested scenes.
    */
-  private static readonly HEXAGON_SIDES = 6;
-  private static readonly HEXAGON_RADIUS = 25;
-  private static readonly HEXAGON_COLOR = "rgba(255, 105, 180, 0.45)";
-
-  private renderSyncableEntityOverlays(context: CanvasRenderingContext2D): void {
-    if (!this.gameState.getDebugSettings().showSyncableEntitiesOverlay()) return;
-
-    const all = [...this.worldEntities, ...this.uiEntities];
-    for (const entity of all) {
-      if (
-        entity instanceof BaseMultiplayerGameEntity &&
-        entity.isSyncable() &&
-        entity instanceof BaseMoveableGameEntity
-      ) {
-        this.drawHexagon(context, entity.getX(), entity.getY());
-      }
-    }
-  }
-
-  private drawHexagon(context: CanvasRenderingContext2D, cx: number, cy: number): void {
-    context.save();
-    context.strokeStyle = BaseGameScene.HEXAGON_COLOR;
-    context.lineWidth = 1.5;
-    context.beginPath();
-
-    const r = BaseGameScene.HEXAGON_RADIUS;
-    for (let i = 0; i < BaseGameScene.HEXAGON_SIDES; i++) {
-      const angle = (Math.PI / 3) * i - Math.PI / 6; // rotate so flat side is top
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      if (i === 0) {
-        context.moveTo(x, y);
-      } else {
-        context.lineTo(x, y);
-      }
-    }
-    context.closePath();
-    context.stroke();
-    context.restore();
-  }
-
   protected clearPointerEvents(): void {
     this.gamePointer.clearPressed();
   }
