@@ -29,11 +29,13 @@ export class BaseGameEntity implements GameEntity {
 
   /**
    * Attach a component to this entity. If a component of the same type
-   * already exists, it is replaced.
+   * already exists, it is replaced. The component's {@code entity} reference
+   * is set to this entity.
    */
   public addComponent<T extends Component>(component: T): T {
     const key = component.constructor.name;
     this.components.set(key, component);
+    component.entity = this;
     component.init?.();
     return component;
   }
@@ -131,6 +133,15 @@ export class BaseGameEntity implements GameEntity {
 
   public setDebugSettings(debugSettings: DebugSettings | null): void {
     this.debugSettings = debugSettings;
+
+    // Propagate debug settings to components that carry their own
+    // debug-rendering logic (PhysicsComponent, CollisionComponent,
+    // NetworkComponent, etc.).
+    this.components.forEach((comp) => {
+      if ("debugSettings" in comp) {
+        (comp as Record<string, unknown>).debugSettings = debugSettings;
+      }
+    });
   }
 
   public getReplayState(): ArrayBuffer | null {
@@ -142,7 +153,15 @@ export class BaseGameEntity implements GameEntity {
     // Base implementation does nothing - override in subclasses that need it
   }
 
-  public update(_deltaTimeStamp: DOMHighResTimeStamp): void {}
+  public update(deltaTimeStamp: DOMHighResTimeStamp): void {
+    this.components.forEach((component) =>
+      component.update?.(deltaTimeStamp),
+    );
+  }
 
-  public render(_context: CanvasRenderingContext2D): void {}
+  public render(context: CanvasRenderingContext2D): void {
+    this.components.forEach((component) =>
+      component.render?.(context),
+    );
+  }
 }

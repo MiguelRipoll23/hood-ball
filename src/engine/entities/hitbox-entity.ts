@@ -46,24 +46,12 @@ export class HitboxEntity extends BaseGameEntity {
     this.colliding = colliding;
   }
 
-  public render(context: CanvasRenderingContext2D): void {
-    if (
-      this.debugSettings?.isDebugging() &&
-      this.debugSettings?.areHitboxesVisible()
-    ) {
-      context.save();
-
-      context.strokeStyle = "rgba(148, 0, 211, 0.2)";
-      context.strokeRect(this.x, this.y, this.width, this.height);
-
-      if (this.colliding) {
-        // Fill with transparent purple
-        context.fillStyle = "rgba(148, 0, 211, 0.5)"; // Adjust alpha value for transparency
-        context.fillRect(this.x, this.y, this.width, this.height);
-      }
-
-      context.restore();
-    }
+  /**
+   * Hitbox rendering is now handled by {@link CollisionComponent.render}.
+   * This method is a no-op — kept to satisfy the GameEntity interface.
+   */
+  public render(_context: CanvasRenderingContext2D): void {
+    // Hitbox debug overlay rendering moved to CollisionComponent.render()
   }
 
   private setPosition(x: number, y: number): void {

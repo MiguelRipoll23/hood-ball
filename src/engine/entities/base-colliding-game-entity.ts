@@ -11,9 +11,12 @@ type CollidingGameEntityConstructor = new (
  * Unified colliding entity — replaces both BaseStaticCollidingGameEntity and
  * BaseDynamicCollidingGameEntity. A "static" collider is simply one with
  * {@link PhysicsComponent.isDynamic} = false and zero velocity.
+ *
+ * Debug overlays (gizmos, hitboxes) are rendered by the PhysicsComponent and
+ * CollisionComponent respectively — no rendering code lives here.
  */
 export class BaseCollidingGameEntity extends BaseMoveableGameEntity {
-  /** Physics state — prefer accessing via this getComponent(PhysicsComponent) for new code. */
+  /** Physics state — prefer accessing via {@code getComponent(PhysicsComponent)} for new code. */
   protected readonly physics: PhysicsComponent;
 
   // ── Collision (from old BaseStaticCollidingGameEntity) ─────────
@@ -24,20 +27,8 @@ export class BaseCollidingGameEntity extends BaseMoveableGameEntity {
   private avoidingCollision = false;
   private excludedCollisionClasses: CollidingGameEntityConstructor[] = [];
 
-  /** Backing CollisionComponent – use getComponent(CollisionComponent) for new code. */
+  /** Backing CollisionComponent — use {@code getComponent(CollisionComponent)} for new code. */
   protected readonly collision: CollisionComponent;
-
-  // ── Debug gizmos ───────────────────────────────────────────────
-
-  private static readonly LINE_LENGTH = 50;
-  private static readonly ARROW_SIZE = 15;
-  private static readonly CENTER_CIRCLE_RADIUS = 7;
-  private static readonly CENTER_FILL_STYLE = "rgba(255, 255, 0, 0.6)";
-  private static readonly CENTER_STROKE_STYLE = "yellow";
-  private static readonly DIRECTION_STROKE_STYLE = "orange";
-  private static readonly ARROW_ANGLE_OFFSET = Math.PI / 7;
-  private static readonly LINE_WIDTH = 3;
-  private static readonly CENTER_LINE_WIDTH = 2;
 
   constructor() {
     super();
@@ -87,13 +78,6 @@ export class BaseCollidingGameEntity extends BaseMoveableGameEntity {
   }
 
   // ── Collision accessors ────────────────────────────────────────
-
-  public override load(): void {
-    this.hitboxEntities.forEach((entity) =>
-      entity.setDebugSettings(this.debugSettings)
-    );
-    super.load();
-  }
 
   public isColliding(): boolean {
     this.syncCollisionState();
@@ -170,59 +154,16 @@ export class BaseCollidingGameEntity extends BaseMoveableGameEntity {
     // Default implementation — subclasses override
   }
 
-  // ── Render (debug gizmos + hitboxes) ───────────────────────────
+  // ── Render ─────────────────────────────────────────────────────
 
+  /**
+   * Debug overlays (gizmos, hitbox rectangles) are now rendered by
+   * {@link PhysicsComponent.render} and {@link CollisionComponent.render}
+   * respectively, invoked via the component lifecycle in
+   * {@link BaseGameEntity.render}. This method only chains to the parent.
+   */
   public override render(context: CanvasRenderingContext2D): void {
-    if (this.debugSettings?.isDebugging()) {
-      this.renderDebugGizmos(context);
-    }
-    this.hitboxEntities.forEach((entity) => entity.render(context));
     super.render(context);
-  }
-
-  private renderDebugGizmos(context: CanvasRenderingContext2D): void {
-    if (this.debugSettings?.areGizmosVisible() === false) return;
-
-    context.save();
-
-    // Center circle
-    context.fillStyle = BaseCollidingGameEntity.CENTER_FILL_STYLE;
-    context.strokeStyle = BaseCollidingGameEntity.CENTER_STROKE_STYLE;
-    context.lineWidth = BaseCollidingGameEntity.CENTER_LINE_WIDTH;
-    context.beginPath();
-    context.arc(
-      this.x, this.y,
-      BaseCollidingGameEntity.CENTER_CIRCLE_RADIUS,
-      0, 2 * Math.PI,
-    );
-    context.fill();
-    context.stroke();
-
-    // Direction arrow
-    const lineLength = BaseCollidingGameEntity.LINE_LENGTH;
-    const endX = this.x + Math.cos(this.angle) * lineLength;
-    const endY = this.y + Math.sin(this.angle) * lineLength;
-
-    context.strokeStyle = BaseCollidingGameEntity.DIRECTION_STROKE_STYLE;
-    context.lineWidth = BaseCollidingGameEntity.LINE_WIDTH;
-    context.beginPath();
-    context.moveTo(this.x, this.y);
-    context.lineTo(endX, endY);
-    context.stroke();
-
-    // Arrowhead
-    const arrowSize = BaseCollidingGameEntity.ARROW_SIZE;
-    context.fillStyle = BaseCollidingGameEntity.DIRECTION_STROKE_STYLE;
-    context.beginPath();
-    const a1 = this.angle + BaseCollidingGameEntity.ARROW_ANGLE_OFFSET;
-    const a2 = this.angle - BaseCollidingGameEntity.ARROW_ANGLE_OFFSET;
-    context.moveTo(endX, endY);
-    context.lineTo(endX - arrowSize * Math.cos(a1), endY - arrowSize * Math.sin(a1));
-    context.lineTo(endX - arrowSize * Math.cos(a2), endY - arrowSize * Math.sin(a2));
-    context.closePath();
-    context.fill();
-
-    context.restore();
   }
 
   // ── Internal sync ──────────────────────────────────────────────
