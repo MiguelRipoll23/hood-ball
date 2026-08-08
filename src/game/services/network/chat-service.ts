@@ -110,8 +110,9 @@ export class ChatService {
       peer.sendReliableUnorderedMessage(chatMessagePayload);
     });
 
-    // Execute command and skip chat output if handled
-    if (this.handleCommand(text, userId, timestamp)) {
+    // Execute command and skip chat output if handled.
+    // Convert server timestamp (seconds) to ms for consistent throttling.
+    if (this.handleCommand(text, userId, timestamp * 1000)) {
       return;
     }
 
@@ -145,8 +146,9 @@ export class ChatService {
       return;
     }
 
-    // Execute command and skip chat output if handled
-    if (this.handleCommand(text, userId, timestampSeconds)) {
+    // Execute command and skip chat output if handled.
+    // Convert peer timestamp (seconds) to ms for consistent throttling.
+    if (this.handleCommand(text, userId, timestampSeconds * 1000)) {
       return;
     }
 
@@ -216,7 +218,7 @@ export class ChatService {
 
     if (
       lastLoggedAt !== undefined &&
-      now - lastLoggedAt < ChatService.LOG_THROTTLE_MS
+      now - lastLoggedAt <= ChatService.LOG_THROTTLE_MS
     ) {
       return;
     }
