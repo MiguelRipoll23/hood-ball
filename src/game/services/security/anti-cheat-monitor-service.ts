@@ -49,6 +49,10 @@ export class AntiCheatMonitorService {
     return this.rules;
   }
 
+  public isMonitoring(): boolean {
+    return this.monitoring;
+  }
+
   public start(): void {
     if (this.monitoring) return;
     this.monitoring = true;

@@ -8,6 +8,16 @@ export class AntiCheatReportingService {
   /** Keys of already-reported violations. Format: `${ruleId}:${userId}` */
   private readonly reported = new Set<string>();
 
+  /** Returns a snapshot of all reported violation keys. */
+  public getReportedViolations(): readonly string[] {
+    return [...this.reported];
+  }
+
+  /** Returns whether a specific violation has been reported. */
+  public isReported(ruleId: number, userId: string): boolean {
+    return this.reported.has(`${ruleId}:${userId}`);
+  }
+
   constructor(
     private readonly playerModerationService: PlayerModerationService = inject(
       PlayerModerationService,
