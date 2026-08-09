@@ -15,8 +15,9 @@ const RULE_TYPE_NAMES: Record<number, string> = {
   [AntiCheatRuleType.MovementSpeedLimit]: "Movement Speed Limit",
 };
 
-const GREEN = 0x00ff00ff;
-const YELLOW = 0xffff00ff;
+// Packed as IM_COL32(R, G, B, A): (A << 24) | (B << 16) | (G << 8) | R
+const GREEN = 0xff00ff00;
+const YELLOW = 0xff00ffff;
 const RED = 0xff0000ff;
 
 const RULES_TABLE_ROWS = 6;
@@ -49,13 +50,7 @@ export class AntiCheatInspectorWindow extends BaseWindow {
     ImGui.Text(monitoring ? "active" : "inactive");
     ImGui.PopStyleColor();
 
-    if (ImGui.Button(monitoring ? "Stop" : "Start")) {
-      if (monitoring) {
-        this.antiCheat.stopMonitoring();
-      } else {
-        this.antiCheat.startMonitoring();
-      }
-    }
+    // Monitoring is started/stopped automatically with the world scene.
 
     // ── Rules ──
     if (

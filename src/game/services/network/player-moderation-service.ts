@@ -7,6 +7,7 @@ import {
 import type { ReportUserRequest } from "../../interfaces/requests/report-user-request-interface.js";
 import type { BanUserRequest } from "../../interfaces/requests/ban-user-request-interface.js";
 import { APIUtils } from "../../utils/api-utils.js";
+import { UUIDUtils } from "../../utils/uuid-utils.js";
 
 @injectable()
 export class PlayerModerationService {
@@ -21,8 +22,10 @@ export class PlayerModerationService {
     reason: string,
     automatic: boolean = false
   ): Promise<void> {
+    // The moderation API expects a canonical UUID (36 chars with dashes).
+    // Network IDs are stored without dashes, so normalize before sending.
     const reportRequest: ReportUserRequest = {
-      userId,
+      userId: UUIDUtils.format(userId),
       reason,
       automatic,
     };
@@ -48,8 +51,10 @@ export class PlayerModerationService {
     reason: string,
     duration?: { value: number; unit: string }
   ): Promise<void> {
+    // The moderation API expects a canonical UUID (36 chars with dashes).
+    // Network IDs are stored without dashes, so normalize before sending.
     const banRequest: BanUserRequest = {
-      userId,
+      userId: UUIDUtils.format(userId),
       reason,
       duration,
     };
