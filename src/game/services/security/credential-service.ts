@@ -44,6 +44,9 @@ export class CredentialService {
       challenge: WebAuthnUtils.challengeToArrayBuffer(
         authenticationOptions.challenge
       ),
+      rpId: authenticationOptions.rpId,
+      userVerification: authenticationOptions.userVerification,
+      timeout: authenticationOptions.timeout,
     };
 
     const credential = await navigator.credentials.get({
