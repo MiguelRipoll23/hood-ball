@@ -25,6 +25,9 @@ export class DebugSettings {
     this.debugging = value;
 
     if (this.debugging) {
+      // Enable logging first so the "Debug mode on" banner is captured,
+      // mirroring the ?debug URL query parameter behavior.
+      EngineLogger.setEnabled(true);
       EngineLogger.info(
         "DebugSettings",
         "%cDebug mode on",
@@ -36,6 +39,7 @@ export class DebugSettings {
         "%cDebug mode off",
         "color: #ff5733; font-size: 20px; font-weight: bold"
       );
+      EngineLogger.setEnabled(false);
     }
   }
 
