@@ -67,7 +67,10 @@ export class BallEntity
   }
 
   public override reset(): void {
-    this.ballScript.reset(this.canvas.width / 2, this.canvas.height / 2);
+    // Pass the FULL canvas dimensions: BallScript.reset() halves them to
+    // compute the center. Passing width/2 here would double-halve and leave
+    // the ball at (width/4, height/4) instead of center.
+    this.ballScript.reset(this.canvas.width, this.canvas.height);
     // Force an immediate reliable broadcast of the reset position so all
     // peers snap to center instead of holding a stale position during the
     // countdown (mustSync() is false once velocity is zeroed, so the
