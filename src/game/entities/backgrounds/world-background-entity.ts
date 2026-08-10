@@ -10,7 +10,6 @@ export class WorldBackgroundEntity extends BaseGameEntity {
   private readonly BACKGROUND_COLOR = "#00a000";
   private readonly BOUNDARY_COLOR = "#ffffff";
   private readonly RADIUS = 50;
-  private collisionEntities: GameEntity[];
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
@@ -18,7 +17,6 @@ export class WorldBackgroundEntity extends BaseGameEntity {
     const phys = this.addComponent(new PhysicsComponent());
     this.addComponent(new CollisionComponent());
     phys.isDynamic = false;
-    this.collisionEntities = [];
 
     const fw = this.canvas.width - 25;
     const fh = this.canvas.height - 25;
@@ -54,5 +52,7 @@ export class WorldBackgroundEntity extends BaseGameEntity {
     super.load();
   }
 
-  public getCollisionHitboxes(): GameEntity[] { return this.collisionEntities; }
+  public getCollisionHitboxes(): GameEntity[] {
+    return this.getComponent(CollisionComponent)!.hitboxEntities as GameEntity[];
+  }
 }

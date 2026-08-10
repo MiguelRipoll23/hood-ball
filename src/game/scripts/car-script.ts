@@ -165,6 +165,7 @@ export class CarScript implements ScriptLifecycle {
 
   teleport(x: number, y: number, angle?: number): void {
     this.transform.teleport(x, y, angle);
+    this.physics.resetVelocity();
     this.speed = 0;
     this.updateHitbox();
   }

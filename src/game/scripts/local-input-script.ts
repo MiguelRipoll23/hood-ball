@@ -52,7 +52,6 @@ export class LocalInputScript implements ScriptLifecycle {
   }
 
   private canProcessInput(): boolean {
-    if (!this.gamePointer || !this.gameKeyboard || !this.gameGamepad) return false;
     const isChatActive = this.chatButtonEntity?.isInputVisible() ?? false;
     return this.inputActive && !isChatActive;
   }

@@ -1,5 +1,6 @@
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 import { TransformComponent } from "../../engine/components/transform-component.js";
 
@@ -25,6 +26,7 @@ export class OnlinePlayersEntity extends BaseGameEntity {
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
     this.addComponent(new TransformComponent());
+    this.addComponent(new AnimationComponent());
     this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.baseX = this.canvas.width / 2;
     this.baseY = this.canvas.height - 40;

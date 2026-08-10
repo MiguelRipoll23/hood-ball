@@ -62,6 +62,8 @@ export class HitboxEntity extends BaseGameEntity {
   }
 
   private setSize(width: number, height: number): void {
+    this._width = width;
+    this._height = height;
     this.getComponent(TransformComponent)!.width = width;
     this.getComponent(TransformComponent)!.height = height;
   }
