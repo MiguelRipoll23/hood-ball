@@ -152,5 +152,4 @@ export class JoystickEntity extends BaseGameEntity {
   private resetJoystick(): void {
     this.getComponent(InputComponent)!.active = false;
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
 }

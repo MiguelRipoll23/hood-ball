@@ -229,15 +229,7 @@ export class BaseGameEntity implements GameEntity {
 
   // ── Per-frame lifecycle ───────────────────────────────────────
 
-  private _updating = false;
-  private _rendering = false;
-
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    // Guard against re-entrant calls (e.g. entities calling super.update()
-    // from within a script callback that BaseGameEntity.update() invoked)
-    if (this._updating) return;
-    this._updating = true;
-
     const scripts: { comp: Component; priority: number }[] = [];
     this.components.forEach((component) => {
       const prio = (component as { updatePriority?: number }).updatePriority;
@@ -250,14 +242,9 @@ export class BaseGameEntity implements GameEntity {
       if (!run.has(component)) component.update?.(deltaTimeStamp);
     });
     const t = this.t; if (t) t.skipInterpolation = false;
-
-    this._updating = false;
   }
 
   public render(context: CanvasRenderingContext2D): void {
-    if (this._rendering) return;
-    this._rendering = true;
     this.components.forEach((component) => component.render?.(context));
-    this._rendering = false;
   }
 }

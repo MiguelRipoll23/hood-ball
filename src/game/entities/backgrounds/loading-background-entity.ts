@@ -33,6 +33,4 @@ export class LoadingBackgroundEntity extends BaseGameEntity {
     context.fillStyle = gradient;
     context.fillRect(0, 0, this.canvas.width, this.canvas.height);
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

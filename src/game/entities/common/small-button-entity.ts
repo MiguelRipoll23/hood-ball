@@ -57,16 +57,14 @@ export class SmallButtonEntity extends BaseGameEntity {
     super.handlePointerEvent(gamePointer);
   }
 
-  private scriptUpdate(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     if (this.disabled) {
-      super.update(delta);
       return;
     }
 
     if (this.getComponent(InputComponent)!.pressed) {
       this.wasPressed = true;
     }
-    super.update(delta);
   }
 
   public isButtonPressed(): boolean {
@@ -102,7 +100,6 @@ export class SmallButtonEntity extends BaseGameEntity {
     );
 
     context.restore();
-    super.render(context);
   }
 
   private drawRoundedRect(
@@ -130,6 +127,4 @@ export class SmallButtonEntity extends BaseGameEntity {
     context.quadraticCurveTo(x, y, x + radius, y);
     context.closePath();
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

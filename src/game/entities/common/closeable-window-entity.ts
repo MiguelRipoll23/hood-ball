@@ -97,7 +97,6 @@ export class CloseableWindowEntity extends BaseGameEntity {
 
     this.backdropEntity.update(deltaTimeStamp);
 
-    super.update(deltaTimeStamp);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -110,7 +109,6 @@ export class CloseableWindowEntity extends BaseGameEntity {
 
     context.restore();
 
-    super.render(context);
   }
 
   private setInitialState(): void {
@@ -302,6 +300,4 @@ export class CloseableWindowEntity extends BaseGameEntity {
     }
     context.font = originalFont;
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

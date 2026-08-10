@@ -48,7 +48,6 @@ export class HelpEntity extends BaseGameEntity {
 
   private scriptUpdate(delta: DOMHighResTimeStamp): void {
     this.timer?.update(delta);
-    super.update(delta);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -130,6 +129,4 @@ export class HelpEntity extends BaseGameEntity {
       y += this.lineHeight;
     }
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

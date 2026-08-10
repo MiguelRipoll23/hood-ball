@@ -146,7 +146,5 @@ export class ButtonEntity extends BaseGameEntity {
     );
 
     context.restore();
-    super.render(context);
   }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

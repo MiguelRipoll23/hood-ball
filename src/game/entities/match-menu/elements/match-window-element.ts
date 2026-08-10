@@ -63,5 +63,4 @@ export class MatchWindowElement extends BaseGameEntity {
     context.quadraticCurveTo(x, y, x + radius, y);
     context.closePath();
   }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

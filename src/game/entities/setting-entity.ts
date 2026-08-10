@@ -49,14 +49,13 @@ export class SettingEntity extends BaseGameEntity {
     this.updated = updated;
   }
 
-  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(_deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.getComponent(InputComponent)!.pressed) {
       this.settingState = !this.settingState;
       this.toggleEntity?.setToggleState(this.settingState);
       this.updated = true;
     }
 
-    super.update(deltaTimeStamp);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -91,8 +90,5 @@ export class SettingEntity extends BaseGameEntity {
     context.restore();
 
     // Call the parent render method (if needed)
-    super.render(context);
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

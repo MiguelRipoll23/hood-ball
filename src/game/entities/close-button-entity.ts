@@ -27,10 +27,8 @@ export class CloseButtonEntity extends BaseGameEntity {
     this.getComponent(TransformComponent)!.y = y;
   }
 
-  private scriptUpdate(delta: DOMHighResTimeStamp): void {
-    // Only call super.update(delta) after handling press event!
-
-    super.update(delta);
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
+    // super.update removed — BaseGameEntity.update already runs scripts
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -48,6 +46,4 @@ export class CloseButtonEntity extends BaseGameEntity {
 
     context.restore();
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

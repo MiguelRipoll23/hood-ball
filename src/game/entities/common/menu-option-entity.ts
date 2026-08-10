@@ -141,7 +141,6 @@ export class MenuOptionEntity extends BaseGameEntity {
     context.fillText(this.content, this.textX, this.textY);
 
     context.restore();
-    super.render(context);
   }
 
   private setSize(canvas: HTMLCanvasElement): void {
@@ -153,5 +152,4 @@ export class MenuOptionEntity extends BaseGameEntity {
     this.textX = this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width / 2 + 8;
     this.textY = this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2 + 8;
   }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

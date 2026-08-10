@@ -152,8 +152,6 @@ export class ScoreboardEntity
     );
   }
 
-  public override update(_dt: DOMHighResTimeStamp): void { super.update(_dt); }
-  public override render(ctx: CanvasRenderingContext2D): void { super.render(ctx); }
 
   private setSyncableValues() {
     this.setId("d4e5f6a78b9c0d1e2f3a4b5c6d7e8f9a");

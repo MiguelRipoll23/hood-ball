@@ -18,7 +18,6 @@ export class ToggleEntity extends BaseGameEntity {
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
-    super.render(context);
 
     // Draw the background (rounded rectangle)
     context.fillStyle = this.toggleState ? "#4CAF50" : "#ccc"; // Green when on, grey when off
@@ -59,5 +58,4 @@ export class ToggleEntity extends BaseGameEntity {
     context.closePath();
     context.fill();
   }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

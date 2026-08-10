@@ -120,6 +120,4 @@ export class CarEntity extends BaseGameEntity {
     this.carScript.updateHitbox();
   }
 
-  public override update(dt: DOMHighResTimeStamp): void { super.update(dt); }
-  public override render(ctx: CanvasRenderingContext2D): void { super.render(ctx); }
 }

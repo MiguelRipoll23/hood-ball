@@ -130,7 +130,7 @@ export class ConfirmationMessageEntity extends BaseGameEntity {
     }
   }
 
-  private scriptUpdate(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     if (!this.isOpened) return;
 
     if (this.getComponent(InputComponent)!.pressed) {
@@ -141,7 +141,6 @@ export class ConfirmationMessageEntity extends BaseGameEntity {
       }
     }
 
-    super.update(delta);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -155,7 +154,6 @@ export class ConfirmationMessageEntity extends BaseGameEntity {
     this.renderButtons(context);
 
     context.restore();
-    super.render(context);
   }
 
   private renderBox(context: CanvasRenderingContext2D): void {
@@ -268,6 +266,4 @@ export class ConfirmationMessageEntity extends BaseGameEntity {
   ): boolean {
     return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

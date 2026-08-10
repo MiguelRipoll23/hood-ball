@@ -219,7 +219,7 @@ export class ReportMenuEntity extends BaseGameEntity implements ActionMenuContra
     }
   }
 
-  private scriptUpdate(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     // Handle button presses BEFORE calling super.update
     if (this.getComponent(InputComponent)!.pressed) {
       // Check if confirm button was clicked
@@ -241,7 +241,6 @@ export class ReportMenuEntity extends BaseGameEntity implements ActionMenuContra
       }
     }
 
-    super.update(delta);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -265,7 +264,6 @@ export class ReportMenuEntity extends BaseGameEntity implements ActionMenuContra
     this.renderButtons(context);
 
     context.restore();
-    super.render(context);
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -494,6 +492,4 @@ export class ReportMenuEntity extends BaseGameEntity implements ActionMenuContra
     context.quadraticCurveTo(x, y, x + radius, y);
     context.closePath();
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

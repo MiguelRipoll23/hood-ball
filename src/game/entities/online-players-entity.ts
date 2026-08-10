@@ -100,7 +100,6 @@ export class OnlinePlayersEntity extends BaseGameEntity {
     this.getComponent(TransformComponent)!.x = this.baseX + offsetX;
     this.getComponent(TransformComponent)!.y = this.baseY + offsetY;
 
-    super.update(deltaTimeStamp);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -129,7 +128,5 @@ export class OnlinePlayersEntity extends BaseGameEntity {
     context.restore();
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
 
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

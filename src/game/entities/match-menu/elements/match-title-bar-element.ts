@@ -78,5 +78,4 @@ export class MatchTitleBarElement extends BaseGameEntity {
     );
     context.restore();
   }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

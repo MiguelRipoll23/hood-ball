@@ -111,7 +111,6 @@ export class PlayerListItemEntity extends BaseGameEntity {
   private scriptUpdate(delta: DOMHighResTimeStamp): void {
     this.reportButton?.update(delta);
     this.banButton?.update(delta);
-    super.update(delta);
   }
 
   public isReportButtonPressed(): boolean {
@@ -145,6 +144,4 @@ export class PlayerListItemEntity extends BaseGameEntity {
 
     context.restore();
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

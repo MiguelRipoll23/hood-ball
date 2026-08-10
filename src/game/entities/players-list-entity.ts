@@ -150,7 +150,6 @@ export class PlayersListEntity extends BaseGameEntity {
       item.update(delta);
     }
 
-    super.update(delta);
   }
 
   public closeActiveActionMenu(): void {
@@ -225,6 +224,4 @@ export class PlayersListEntity extends BaseGameEntity {
 
     context.restore();
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

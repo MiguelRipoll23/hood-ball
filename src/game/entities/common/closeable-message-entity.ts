@@ -45,12 +45,11 @@ export class CloseableMessageEntity extends BaseGameEntity {
     this.getComponent(AnimationComponent)!.fadeOut(0.2);
   }
 
-  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(_deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.getComponent(InputComponent)!.pressed) {
       this.close();
     }
 
-    super.update(deltaTimeStamp);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -60,7 +59,6 @@ export class CloseableMessageEntity extends BaseGameEntity {
     this.drawText(context);
     context.restore();
 
-    super.render(context);
   }
 
   private setSize(): void {
@@ -105,6 +103,4 @@ export class CloseableMessageEntity extends BaseGameEntity {
     this.textX = this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width / 2;
     this.textY = this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2 + 5;
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

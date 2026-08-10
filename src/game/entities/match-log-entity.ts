@@ -88,8 +88,7 @@ export class MatchLogEntity extends BaseGameEntity {
     }
   }
 
-  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
-    super.update(deltaTimeStamp);
+  private scriptUpdate(_deltaTimeStamp: DOMHighResTimeStamp): void {
 
     if (this.isFadingIn && this.getOpacity() >= 1) {
       this.isFadingIn = false;
@@ -373,6 +372,4 @@ export class MatchLogEntity extends BaseGameEntity {
     }
     return context;
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

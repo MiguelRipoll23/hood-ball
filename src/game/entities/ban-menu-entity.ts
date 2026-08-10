@@ -278,7 +278,7 @@ export class BanMenuEntity extends BaseGameEntity implements ActionMenuContract 
     return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
   }
 
-  private scriptUpdate(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     if (this.getComponent(InputComponent)!.pressed) {
       if (this.confirmButtonHovered && this.selectedReason) {
         this.confirmedData = {
@@ -307,7 +307,6 @@ export class BanMenuEntity extends BaseGameEntity implements ActionMenuContract 
         }
       }
     }
-    super.update(delta);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -323,7 +322,6 @@ export class BanMenuEntity extends BaseGameEntity implements ActionMenuContract 
     this.renderButtons(context);
 
     context.restore();
-    super.render(context);
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {
@@ -495,6 +493,4 @@ export class BanMenuEntity extends BaseGameEntity implements ActionMenuContract 
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

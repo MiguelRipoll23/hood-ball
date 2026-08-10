@@ -120,7 +120,7 @@ export class ChatButtonEntity extends BaseGameEntity {
     this.prevEscapePressed = escapePressed;
   }
 
-  private scriptUpdate(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     // Only show input on a new button press (not just hover/held)
     if (this.getComponent(InputComponent)!.pressed && !this.prevButtonPressed && !this.inputVisible) {
       this.showInput();
@@ -131,7 +131,6 @@ export class ChatButtonEntity extends BaseGameEntity {
     }
 
     this.prevButtonPressed = this.getComponent(InputComponent)!.pressed;
-    super.update(delta);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -150,8 +149,5 @@ export class ChatButtonEntity extends BaseGameEntity {
       this.getComponent(TransformComponent)!.y + this.SIZE / 2 + 1
     );
     context.restore();
-    super.render(context);
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

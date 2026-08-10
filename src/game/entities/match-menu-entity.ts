@@ -224,7 +224,6 @@ export class MatchMenuEntity extends BaseGameEntity {
         this.pendingClose = false;
         this.onClose();
       }
-      super.update(delta);
       return;
     }
 
@@ -241,13 +240,11 @@ export class MatchMenuEntity extends BaseGameEntity {
         // Submenu stays open so user can pick a different reason
       }
 
-      super.update(delta);
       return;
     }
 
     if (this.playersListEntity.isActionMenuOpen()) {
       this.playersListEntity.update(delta);
-      super.update(delta);
       return;
     }
 
@@ -266,7 +263,6 @@ export class MatchMenuEntity extends BaseGameEntity {
     this.leaveMatchButton.update(delta);
     this.playersListEntity.update(delta);
 
-    super.update(delta);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -293,8 +289,5 @@ export class MatchMenuEntity extends BaseGameEntity {
     }
 
     context.restore();
-    super.render(context);
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

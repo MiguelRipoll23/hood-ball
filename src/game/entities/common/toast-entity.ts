@@ -53,7 +53,6 @@ export class ToastEntity extends BaseGameEntity {
 
   private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.timer?.update(deltaTimeStamp);
-    super.update(deltaTimeStamp);
   }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
@@ -164,6 +163,4 @@ export class ToastEntity extends BaseGameEntity {
       currentX += this.context.measureText(segment.text).width;
     });
   }
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
-  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }
