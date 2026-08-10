@@ -1,7 +1,10 @@
 import { TimerService } from "../../../engine/services/gameplay/timer-service.js";
-import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
+import { TransformComponent } from "../../../engine/components/transform-component.js";
+import { AnimationComponent } from "../../../engine/components/animation-component.js";
 
-export class ToastEntity extends BaseMoveableGameEntity {
+export class ToastEntity extends BaseGameEntity {
   private text: string = "Unknown";
   private readonly padding: number = 10;
   private readonly topMargin: number = 160; // Top margin
@@ -14,6 +17,9 @@ export class ToastEntity extends BaseMoveableGameEntity {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.addComponent(new AnimationComponent());
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     this.reset();
   }
@@ -22,9 +28,9 @@ export class ToastEntity extends BaseMoveableGameEntity {
     this.text = text;
     this.parseTextSegments();
     this.reset();
-    this.fadeIn(0.2);
-    this.scaleTo(1, 0.2);
-    this.rotateTo(-2, 0.2);
+    this.getComponent(AnimationComponent)!.fadeIn(0.2);
+    this.getComponent(AnimationComponent)!.scaleTo(1, 0.2);
+    this.getComponent(AnimationComponent)!.rotateTo(-2, 0.2);
 
     if (duration > 0) {
       this.timer = new TimerService(duration, this.hide.bind(this));
@@ -32,25 +38,24 @@ export class ToastEntity extends BaseMoveableGameEntity {
   }
 
   public hide(): void {
-    this.fadeOut(0.2);
-    this.scaleTo(0, 0.2);
+    this.getComponent(AnimationComponent)!.fadeOut(0.2);
+    this.getComponent(AnimationComponent)!.scaleTo(0, 0.2);
   }
 
   public override reset(): void {
     this.opacity = 0;
-    this.angle = 6;
-    this.scale = 0;
+    this.getComponent(TransformComponent)!.angle = 6;
+    this.getComponent(TransformComponent)!.scale = 0;
 
     this.measureDimensions();
     this.setPosition();
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.timer?.update(deltaTimeStamp);
-    super.update(deltaTimeStamp);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
 
     this.applyOpacity(context);
@@ -81,22 +86,22 @@ export class ToastEntity extends BaseMoveableGameEntity {
 
   private measureDimensions(): void {
     this.context.font = "16px Arial";
-    this.width = this.parsedTextSegments.reduce((totalWidth, segment) => {
+    this.getComponent(TransformComponent)!.width = this.parsedTextSegments.reduce((totalWidth, segment) => {
       return totalWidth + this.context.measureText(segment.text).width;
     }, this.padding * 2);
-    this.height = 30; // Fixed height for simplicity
+    this.getComponent(TransformComponent)!.height = 30; // Fixed height for simplicity
   }
 
   private setPosition(): void {
-    this.x = (this.canvas.width - this.width) / 2;
-    this.y = this.topMargin; // Set y position based on topMargin
+    this.getComponent(TransformComponent)!.x = (this.canvas.width - this.getComponent(TransformComponent)!.width) / 2;
+    this.getComponent(TransformComponent)!.y = this.topMargin; // Set y position based on topMargin
   }
 
   private applyTransformations(context: CanvasRenderingContext2D): void {
-    context.translate(this.x + this.width / 2, this.y + this.height / 2);
-    context.rotate((this.angle * Math.PI) / 180);
-    context.scale(this.scale, this.scale);
-    context.translate(-(this.x + this.width / 2), -(this.y + this.height / 2));
+    context.translate(this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width / 2, this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2);
+    context.rotate((this.getComponent(TransformComponent)!.angle * Math.PI) / 180);
+    context.scale(this.getComponent(TransformComponent)!.scale, this.getComponent(TransformComponent)!.scale);
+    context.translate(-(this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width / 2), -(this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2));
   }
 
   private drawToastBackground(context: CanvasRenderingContext2D): void {
@@ -104,40 +109,40 @@ export class ToastEntity extends BaseMoveableGameEntity {
     context.beginPath();
 
     // Rounded rectangle with corner radius
-    context.moveTo(this.x + this.cornerRadius, this.y);
-    context.lineTo(this.x + this.width - this.cornerRadius, this.y);
+    context.moveTo(this.getComponent(TransformComponent)!.x + this.cornerRadius, this.getComponent(TransformComponent)!.y);
+    context.lineTo(this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width - this.cornerRadius, this.getComponent(TransformComponent)!.y);
     context.arcTo(
-      this.x + this.width,
-      this.y,
-      this.x + this.width,
-      this.y + this.height,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
       this.cornerRadius
     );
     context.lineTo(
-      this.x + this.width,
-      this.y + this.height - this.cornerRadius
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height - this.cornerRadius
     );
     context.arcTo(
-      this.x + this.width,
-      this.y + this.height,
-      this.x + this.width - this.cornerRadius,
-      this.y + this.height,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width - this.cornerRadius,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
       this.cornerRadius
     );
-    context.lineTo(this.x + this.cornerRadius, this.y + this.height);
+    context.lineTo(this.getComponent(TransformComponent)!.x + this.cornerRadius, this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height);
     context.arcTo(
-      this.x,
-      this.y + this.height,
-      this.x,
-      this.y + this.height - this.cornerRadius,
+      this.getComponent(TransformComponent)!.x,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
+      this.getComponent(TransformComponent)!.x,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height - this.cornerRadius,
       this.cornerRadius
     );
-    context.lineTo(this.x, this.y + this.cornerRadius);
+    context.lineTo(this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y + this.cornerRadius);
     context.arcTo(
-      this.x,
-      this.y,
-      this.x + this.cornerRadius,
-      this.y,
+      this.getComponent(TransformComponent)!.x,
+      this.getComponent(TransformComponent)!.y,
+      this.getComponent(TransformComponent)!.x + this.cornerRadius,
+      this.getComponent(TransformComponent)!.y,
       this.cornerRadius
     );
 
@@ -146,14 +151,14 @@ export class ToastEntity extends BaseMoveableGameEntity {
   }
 
   private drawToastText(context: CanvasRenderingContext2D): void {
-    let currentX = this.x + this.padding;
+    let currentX = this.getComponent(TransformComponent)!.x + this.padding;
 
     this.parsedTextSegments.forEach((segment) => {
       context.fillStyle = segment.isEm ? this.emColor : "white";
       context.font = "16px system-ui";
       context.textAlign = "left";
       context.textBaseline = "middle";
-      context.fillText(segment.text, currentX, this.y + this.height / 2);
+      context.fillText(segment.text, currentX, this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2);
 
       currentX += this.context.measureText(segment.text).width;
     });

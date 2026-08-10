@@ -1,7 +1,10 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
 
-export class OnlinePlayersEntity extends BaseMoveableGameEntity {
+export class OnlinePlayersEntity extends BaseGameEntity {
   private static readonly SPACING = 10;
   private static readonly ONLINE_TEXT = "ONLINE";
   private onlinePlayers = 0;
@@ -22,10 +25,13 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.addComponent(new TransformComponent());
+    this.addComponent(new AnimationComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.baseX = this.canvas.width / 2;
     this.baseY = this.canvas.height - 40;
-    this.x = this.baseX;
-    this.y = this.baseY;
+    this.getComponent(TransformComponent)!.x = this.baseX;
+    this.getComponent(TransformComponent)!.y = this.baseY;
     this.context = this.canvas.getContext("2d") as CanvasRenderingContext2D;
     // Ensure font is properly set before measuring text
     this.context.font = "bold 28px system-ui";
@@ -72,7 +78,7 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
     this.bounceElapsed = 0;
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
     let offsetX = 0;
     let offsetY = 0;
 
@@ -93,13 +99,12 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
       offsetY = (Math.random() * 2 - 1) * this.shakeMagnitude * progress;
     }
 
-    this.x = this.baseX + offsetX;
-    this.y = this.baseY + offsetY;
+    this.getComponent(TransformComponent)!.x = this.baseX + offsetX;
+    this.getComponent(TransformComponent)!.y = this.baseY + offsetY;
 
-    super.update(deltaTimeStamp);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
     this.applyOpacity(context);
 
@@ -113,15 +118,17 @@ export class OnlinePlayersEntity extends BaseMoveableGameEntity {
     const totalWidth =
       this.countWidth + OnlinePlayersEntity.SPACING + this.labelWidth;
 
-    const countX = this.x - totalWidth / 2;
+    const countX = this.getComponent(TransformComponent)!.x - totalWidth / 2;
     const labelX = countX + this.countWidth + OnlinePlayersEntity.SPACING;
 
     context.fillStyle = LIGHT_GREEN_COLOR;
-    context.fillText(countText, countX, this.y);
+    context.fillText(countText, countX, this.getComponent(TransformComponent)!.y);
 
     context.fillStyle = "#ffffff";
-    context.fillText(labelText, labelX, this.y);
+    context.fillText(labelText, labelX, this.getComponent(TransformComponent)!.y);
 
     context.restore();
   }
+
+
 }

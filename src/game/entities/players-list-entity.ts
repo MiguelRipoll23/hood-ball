@@ -1,4 +1,5 @@
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { PlayerListItemEntity } from "./player-list-item-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
@@ -21,6 +22,7 @@ export class PlayersListEntity extends BaseGameEntity {
 
   constructor(apiService: APIService) {
     super();
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.apiService = apiService;
   }
 
@@ -97,7 +99,7 @@ export class PlayersListEntity extends BaseGameEntity {
     }
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(delta: DOMHighResTimeStamp): void {
     // Process report menu
     if (this.reportMenuEntity && this.reportMenuEntity.isOpen()) {
       this.processActionMenu(
@@ -148,7 +150,6 @@ export class PlayersListEntity extends BaseGameEntity {
       item.update(delta);
     }
 
-    super.update(delta);
   }
 
   public closeActiveActionMenu(): void {
@@ -196,7 +197,7 @@ export class PlayersListEntity extends BaseGameEntity {
     }
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
 
     // Render section title

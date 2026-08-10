@@ -1,115 +1,37 @@
 import { BaseGameEntity } from "./base-game-entity.js";
+import { ScriptComponent } from "../components/script-component.js";
 import { EngineLogger } from "../services/engine-logger.js";
-import {
-  RecordingPlayerService,
-  PlaybackState,
-} from "../services/gameplay/recording-player-service.js";
+import { RecordingPlayerService, PlaybackState } from "../services/gameplay/recording-player-service.js";
 
-/**
- * MediaPlayerEntity - Full-screen media player for recording playback
- *
- * This entity takes over the entire canvas to display recorded gameplay.
- * When active, it renders the recording with playback controls overlay.
- */
 export class MediaPlayerEntity extends BaseGameEntity {
   private readonly playerService: RecordingPlayerService;
 
-  constructor(
-    _canvas: HTMLCanvasElement,
-    playerService: RecordingPlayerService
-  ) {
+  constructor(_canvas: HTMLCanvasElement, playerService: RecordingPlayerService) {
     super();
     this.playerService = playerService;
+    const ps = playerService;
+    this.addComponent(new ScriptComponent({
+      update: (dt) => { ps.update(dt); },
+      render: (ctx) => {
+        const state = ps.getPlaybackState();
+        if (state === PlaybackState.Stopped) return;
+        ctx.save(); ctx.resetTransform();
+        const cw = ctx.canvas.width, ch = ctx.canvas.height, ctrlH = 60, ctrlY = ch - ctrlH, pad = 20;
+        ctx.fillStyle = "rgba(0, 0, 0, 0.7)"; ctx.fillRect(0, ctrlY, cw, ctrlH);
+        const barY = ctrlY + 15, barH = 8, barW = cw - pad * 2, barX = pad;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.3)"; ctx.fillRect(barX, barY, barW, barH);
+        ctx.fillStyle = "#2196F3"; ctx.fillRect(barX, barY, barW * ps.getProgress(), barH);
+        ctx.fillStyle = "white"; ctx.font = "14px monospace"; ctx.textAlign = "left";
+        ctx.fillText(`${this.fmt(ps.getCurrentTimeMs())} / ${this.fmt(ps.getTotalDurationMs())}`, barX, barY + barH + 20);
+        ctx.textAlign = "right";
+        ctx.fillText(state === PlaybackState.Playing ? "\u25b6 Playing" : "\u23f8 Paused", cw - pad, barY + barH + 20);
+        ctx.restore();
+      },
+    }));
   }
 
-  public override load(): void {
-    EngineLogger.info("MediaPlayer", `${this.constructor.name} loaded`);
-    this.loaded = true;
-  }
-
-  public override update(deltaTime: number): void {
-    // Update playback state
-    this.playerService.update(deltaTime);
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    // Render playback controls at the bottom of the screen
-    const state = this.playerService.getPlaybackState();
-    if (state === PlaybackState.Stopped) {
-      return; // Don't render if not playing
-    }
-
-    // Save context state
-    context.save();
-    context.resetTransform();
-
-    const canvas = context.canvas;
-    const controlHeight = 60;
-    const controlY = canvas.height - controlHeight;
-    const padding = 20;
-
-    // Semi-transparent background for controls
-    context.fillStyle = "rgba(0, 0, 0, 0.7)";
-    context.fillRect(0, controlY, canvas.width, controlHeight);
-
-    // Progress bar
-    const barY = controlY + 15;
-    const barHeight = 8;
-    const barWidth = canvas.width - padding * 2;
-    const barX = padding;
-
-    // Background bar
-    context.fillStyle = "rgba(255, 255, 255, 0.3)";
-    context.fillRect(barX, barY, barWidth, barHeight);
-
-    // Progress bar (blue)
-    const progress = this.playerService.getProgress();
-    context.fillStyle = "#2196F3"; // Blue
-    context.fillRect(barX, barY, barWidth * progress, barHeight);
-
-    // Time display
-    const currentTime = this.playerService.getCurrentTimeMs();
-    const totalTime = this.playerService.getTotalDurationMs();
-    const currentTimeStr = this.formatTime(currentTime);
-    const totalTimeStr = this.formatTime(totalTime);
-
-    context.fillStyle = "white";
-    context.font = "14px monospace";
-    context.textAlign = "left";
-    context.fillText(
-      `${currentTimeStr} / ${totalTimeStr}`,
-      barX,
-      barY + barHeight + 20
-    );
-
-    // Playback state indicator
-    context.textAlign = "right";
-    const stateText =
-      state === PlaybackState.Playing ? "▶ Playing" : "⏸ Paused";
-    context.fillText(stateText, canvas.width - padding, barY + barHeight + 20);
-
-    context.restore();
-  }
-
-  private formatTime(ms: number): string {
-    const totalSeconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }
-
-  /**
-   * Check if the media player is currently active (playing or paused)
-   */
-  public isActive(): boolean {
-    const state = this.playerService.getPlaybackState();
-    return state === PlaybackState.Playing || state === PlaybackState.Paused;
-  }
-
-  /**
-   * Get the underlying RecordingPlayerService for control operations
-   */
-  public getPlayerService(): RecordingPlayerService {
-    return this.playerService;
-  }
+  public override load(): void { EngineLogger.info("MediaPlayer", `${this.constructor.name} loaded`); this.loaded = true; }
+  private fmt(ms: number): string { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`; }
+  public isActive(): boolean { const s = this.playerService.getPlaybackState(); return s === PlaybackState.Playing || s === PlaybackState.Paused; }
+  public getPlayerService(): RecordingPlayerService { return this.playerService; }
 }

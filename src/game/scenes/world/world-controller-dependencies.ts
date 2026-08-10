@@ -1,6 +1,6 @@
 import type { TimerManagerService } from "../../../engine/services/gameplay/timer-manager-service.js";
 import type { EventProcessorService } from "../../../engine/services/gameplay/event-processor-service.js";
-import type { BaseMultiplayerGameEntity } from "../../../engine/entities/base-multiplayer-entity.js";
+import type { MultiplayerGameEntity } from "../../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import type { ScoreboardEntity } from "../../entities/scoreboard-entity.js";
 import type { BallEntity } from "../../entities/ball-entity.js";
@@ -26,7 +26,7 @@ export interface WorldControllerDependencies {
   matchActionsLogService: MatchActionsLogService;
   boostPadsEntities: BoostPadEntity[];
   spawnPointEntities: SpawnPointEntity[];
-  getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[];
+  getEntitiesByOwner: (player: GamePlayer) => MultiplayerGameEntity[];
   npcService: NpcService;
   gamePlayer: GamePlayer;
   matchSessionService: MatchSessionService;

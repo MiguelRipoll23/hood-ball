@@ -1,7 +1,9 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { BackdropEntity } from "./common/backdrop-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
 interface ReportOption {
   id: string;
@@ -13,7 +15,7 @@ interface ReportOption {
   hovered: boolean;
 }
 
-export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMenuContract {
+export class ReportMenuEntity extends BaseGameEntity implements ActionMenuContract {
   private readonly WINDOW_WIDTH = 400;
   private readonly WINDOW_HEIGHT = 450;
   private readonly TITLE_BAR_HEIGHT = 50;
@@ -54,7 +56,9 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
   private cancelButtonHovered = false;
 
   constructor(canvas: HTMLCanvasElement) {
-    super(false);
+    super();
+    this.addComponent(new InputComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.canvas = canvas;
     this.opacity = 0;
   }
@@ -94,7 +98,7 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
     this.confirmedReason = null;
     this.cancelled = false;
     this.opacity = 1;
-    this.active = true;
+    this.getComponent(InputComponent)!.active = true;
 
     this.calculateLayout();
   }
@@ -104,7 +108,7 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
     this.reportedPlayer = null;
     this.selectedReason = null;
     this.opacity = 0;
-    this.active = false;
+    this.getComponent(InputComponent)!.active = false;
   }
 
   private calculateLayout(): void {
@@ -147,13 +151,13 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
     this.cancelButtonY = buttonY;
   }
 
-  public override handlePointerEvent(
+  public handlePointerEvent(
     gamePointer: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract
   ): void {
     const touches = gamePointer.getTouchPoints();
     
-    this.hovering = false;
-    this.pressed = false;
+    this.getComponent(InputComponent)!.hovering = false;
+    this.getComponent(InputComponent)!.pressed = false;
     this.confirmButtonHovered = false;
     this.cancelButtonHovered = false;
     this.reportOptions.forEach((opt) => (opt.hovered = false));
@@ -194,7 +198,7 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
       const isHoveringSomething = !!(isInConfirm || isInCancel || touchedOption);
 
       if (isHoveringSomething) {
-        this.hovering = true;
+        this.getComponent(InputComponent)!.hovering = true;
         
         // Set visual hover states for all touches
         if (isInConfirm) this.confirmButtonHovered = true;
@@ -202,7 +206,7 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
         if (touchedOption) touchedOption.hovered = true;
 
         if (touch.pressed) {
-          this.pressed = true;
+          this.getComponent(InputComponent)!.pressed = true;
           // On press, lock the hover state to only the pressed element
           this.confirmButtonHovered = isInConfirm;
           this.cancelButtonHovered = isInCancel;
@@ -215,9 +219,9 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
     }
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     // Handle button presses BEFORE calling super.update
-    if (this.pressed) {
+    if (this.getComponent(InputComponent)!.pressed) {
       // Check if confirm button was clicked
       if (this.confirmButtonHovered && this.selectedReason) {
         this.confirmedReason = this.selectedReason;
@@ -237,10 +241,9 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
       }
     }
 
-    super.update(delta);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     if (!this.isOpened || this.opacity === 0) {
       return;
     }
@@ -261,7 +264,6 @@ export class ReportMenuEntity extends BaseTappableGameEntity implements ActionMe
     this.renderButtons(context);
 
     context.restore();
-    super.render(context);
   }
 
   private renderWindow(context: CanvasRenderingContext2D): void {

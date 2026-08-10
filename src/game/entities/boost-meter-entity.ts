@@ -1,184 +1,76 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
-import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { BoostMeterScript } from "../scripts/boost-meter-script.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
 
-export class BoostMeterEntity extends BaseMoveableGameEntity {
-  private readonly RADIUS = 32;
-  private boostLevel = 1; // target level 0..1
-  private displayLevel = 1; // rendered level 0..1
-  private boostAttemptWhileEmpty = false;
-  // Fill or drain the meter in roughly 0.2 seconds
-  private readonly FILL_RATE_UP = 1 / 100; // units/ms
-  private readonly FILL_RATE_DOWN = 1 / 200; // units/ms
+const RADIUS = 32;
 
-  private gradient: CanvasGradient | null = null;
-
-  private readonly canvas: HTMLCanvasElement;
+export class BoostMeterEntity extends BaseGameEntity {
+  private readonly script: BoostMeterScript;
 
   constructor(canvas: HTMLCanvasElement) {
     super();
-    this.canvas = canvas;
-    this.width = this.RADIUS * 2;
-    this.height = this.RADIUS * 2;
-    this.setPosition(canvas.width / 2, canvas.height - this.RADIUS - 30);
-    const ctx = this.canvas.getContext("2d");
-    if (ctx) {
-      this.updateGradient(ctx);
-    }
-  }
+    this.addComponent(new TransformComponent());
+    this.script = new BoostMeterScript();
+    this.addComponent(new ScriptComponent(this.script));
 
-  private updateGradient(context: CanvasRenderingContext2D): void {
-    this.gradient = context.createLinearGradient(
-      0,
-      this.y + this.height,
-      0,
-      this.y
-    );
-    this.gradient.addColorStop(0, "#ffe066");
-    this.gradient.addColorStop(1, LIGHT_GREEN_COLOR);
+    this.getComponent(TransformComponent)!.width = RADIUS * 2;
+    this.getComponent(TransformComponent)!.height = RADIUS * 2;
+    this.setPosition(canvas.width / 2, canvas.height - RADIUS - 30);
   }
 
   public setBoostLevel(level: number): void {
-    this.boostLevel = Math.max(0, Math.min(1, level));
+    this.script.boostLevel = Math.max(0, Math.min(1, level));
   }
-
   public setAttemptingBoostWhileEmpty(active: boolean): void {
-    this.boostAttemptWhileEmpty = active;
+    this.script.boostAttemptWhileEmpty = active;
   }
-
-  public getBoostLevel(): number {
-    return this.boostLevel;
-  }
-
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    const diff = this.boostLevel - this.displayLevel;
-    if (diff !== 0) {
-      const rate = diff > 0 ? this.FILL_RATE_UP : this.FILL_RATE_DOWN;
-      const step = rate * deltaTimeStamp;
-      if (Math.abs(diff) <= step) {
-        this.displayLevel = this.boostLevel;
-      } else {
-        this.displayLevel += Math.sign(diff) * step;
-      }
-    }
-
-    super.update(deltaTimeStamp);
-  }
-
-  public getX(): number {
-    return this.x;
-  }
-
-  public getY(): number {
-    return this.y;
-  }
-
-  public getWidth(): number {
-    return this.width;
-  }
-
-  public getHeight(): number {
-    return this.height;
-  }
+  public getBoostLevel(): number { return this.script.boostLevel; }
+  public getX(): number { return this.getComponent(TransformComponent)!.x; }
+  public getY(): number { return this.getComponent(TransformComponent)!.y; }
+  public getWidth(): number { return this.getComponent(TransformComponent)!.width; }
+  public getHeight(): number { return this.getComponent(TransformComponent)!.height; }
 
   public setPosition(x: number, y: number): void {
-    this.x = x - this.width / 2;
-    this.y = y - this.height / 2;
-    const ctx = this.canvas.getContext("2d");
-    if (ctx) {
-      this.updateGradient(ctx);
-    }
+    this.getComponent(TransformComponent)!.x = x - this.getComponent(TransformComponent)!.width / 2;
+    this.getComponent(TransformComponent)!.y = y - this.getComponent(TransformComponent)!.height / 2;
+    this.script.x = this.getComponent(TransformComponent)!.x;
+    this.script.y = this.getComponent(TransformComponent)!.y;
   }
 
   public override getReplayState(): ArrayBuffer | null {
-    // Store boost level and boost attempt state for replay
     return BinaryWriter.build()
-      .float32(this.boostLevel)
-      .boolean(this.boostAttemptWhileEmpty)
+      .float32(this.script.boostLevel)
+      .boolean(this.script.boostAttemptWhileEmpty)
       .toArrayBuffer();
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
-    // Guard against empty or invalid buffers
-    // Minimum size: 4 (float32) + 1 (boolean) = 5 bytes
     if (!arrayBuffer || arrayBuffer.byteLength < 5) {
-      EngineLogger.warn("BoostMeterEntity", 
-        `BoostMeterEntity: applyReplayState received invalid buffer size: ${
-          arrayBuffer ? arrayBuffer.byteLength : 0
-        }`
+      EngineLogger.warn("BoostMeterEntity",
+        `applyReplayState received invalid buffer size: ${arrayBuffer ? arrayBuffer.byteLength : 0}`,
       );
       return;
     }
-
     try {
       const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
-      const newBoostLevel = reader.float32();
-      const newBoostAttempt = reader.boolean();
-
-      // Update boost level and display level for immediate visual update
-      this.boostLevel = newBoostLevel;
-      this.boostAttemptWhileEmpty = newBoostAttempt;
-      this.displayLevel = newBoostLevel; // Sync display immediately during replay
+      this.script.boostLevel = reader.float32();
+      this.script.boostAttemptWhileEmpty = reader.boolean();
+      this.script.displayLevel = this.script.boostLevel;
     } catch (error) {
-      EngineLogger.error("BoostMeterEntity", 
-        "BoostMeterEntity: Error applying replay state, buffer length:",
-        arrayBuffer.byteLength,
-        error
+      EngineLogger.error("BoostMeterEntity",
+        "Error applying replay state, buffer length:", arrayBuffer.byteLength, error,
       );
     }
   }
 
   public override render(context: CanvasRenderingContext2D): void {
-    context.save();
-    this.applyOpacity(context);
-
-    const cx = this.x + this.RADIUS;
-    const cy = this.y + this.RADIUS;
-
-    if (!this.gradient) {
-      this.updateGradient(context);
-    }
-
-    const gradient = this.gradient!;
-
-    // base background when empty
-    context.beginPath();
-    context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
-    context.closePath();
-    context.fillStyle =
-      this.displayLevel === 0
-        ? this.boostAttemptWhileEmpty
-          ? "rgba(255,0,0,0.6)"
-          : "rgba(255,0,0,0.3)"
-        : "rgba(0,0,0,0.2)";
-    context.fill();
-
-    if (this.displayLevel > 0) {
-      const fillHeight = this.height * this.displayLevel;
-      context.save();
-      context.beginPath();
-      context.arc(cx, cy, this.RADIUS, 0, Math.PI * 2);
-      context.closePath();
-      context.clip();
-      context.fillStyle = gradient;
-      context.fillRect(
-        this.x,
-        this.y + this.height - fillHeight,
-        this.width,
-        fillHeight
-      );
-      context.restore();
-    }
-
-    context.font = `${this.RADIUS * 1.0}px system-ui`;
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillStyle = "#000";
-    context.fillText("🚀", cx, cy + 1);
-
-    context.restore();
+    this.script.x = this.getComponent(TransformComponent)!.x;
+    this.script.y = this.getComponent(TransformComponent)!.y;
+    this.script.globalAlpha = this.getOpacity();
     super.render(context);
   }
 }

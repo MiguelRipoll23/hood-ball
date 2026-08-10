@@ -7,10 +7,11 @@ import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui-interface.js";
-import { BaseMultiplayerGameEntity } from "../../engine/entities/base-multiplayer-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 
 export class ScoreboardEntity
-  extends BaseMultiplayerGameEntity
+  extends BaseGameEntity
   implements MultiplayerGameEntity, ScoreboardUI
 {
   private readonly SQUARE_SIZE: number = 50;
@@ -30,13 +31,13 @@ export class ScoreboardEntity
   // Interval used for fade in/out effect when the timer is below 5 seconds
   private readonly FADE_INTERVAL_MS: number = 500;
 
-  private x: number;
-  private y: number = 90;
+  private _sx: number;
+  private _sy: number = 90;
 
   private blueScore: number = 0;
   private redScore: number = 0;
 
-  private active: boolean = false;
+  private _sactive: boolean = false;
   private elapsedMilliseconds: number = 0;
   private flashElapsedMilliseconds: number = 0;
   private durationMilliseconds: number = 0;
@@ -44,8 +45,17 @@ export class ScoreboardEntity
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.x = this.canvas.width / 2 - this.SPACE_BETWEEN / 2;
+    this._sx = this.canvas.width / 2 - this.SPACE_BETWEEN / 2;
     this.setSyncableValues();
+    this.attachScript();
+  }
+
+  private attachScript(): void {
+    const self = this;
+    this.addComponent(new ScriptComponent({
+      update: (dt) => { if (self._sactive) { if (self.elapsedMilliseconds < self.durationMilliseconds) { self.elapsedMilliseconds += dt; } self.flashElapsedMilliseconds += dt; } self.remainingSeconds = Math.max(0, Math.ceil((self.durationMilliseconds - self.elapsedMilliseconds) / 1000)); },
+      render: (ctx) => { ctx.save(); self.applyOpacity(ctx); const tw = 2 * self["SQUARE_SIZE"] + self["SPACE_BETWEEN"] + self["TIME_BOX_WIDTH"]; const sx = self._sx - tw / 2; self["renderSquare"](ctx, sx, self["BLUE_SHAPE_COLOR"], self.blueScore); const ft = self["formatTime"](self.remainingSeconds); const tx = sx + self["SQUARE_SIZE"] + self["SPACE_BETWEEN"]; const ty = self._sy + (self["SQUARE_SIZE"] - self["TIME_BOX_HEIGHT"]) / 2; self["renderTimeBox"](ctx, tx, ty, self["TIME_BOX_WIDTH"], self["TIME_BOX_HEIGHT"], ft); const rx = sx + self["SQUARE_SIZE"] + self["SPACE_BETWEEN"] + self["TIME_BOX_WIDTH"] + self["SPACE_BETWEEN"]; self["renderSquare"](ctx, rx, self["RED_SHAPE_COLOR"], self.redScore); ctx.restore(); },
+    }));
   }
 
   public static getTypeId(): EntityRegistryType {
@@ -53,11 +63,11 @@ export class ScoreboardEntity
   }
 
   public isActive(): boolean {
-    return this.active;
+    return this._sactive;
   }
 
   public setActive(active: boolean): void {
-    this.active = active;
+    this._sactive = active;
   }
 
   public setTimerDuration(durationSeconds: number): void {
@@ -65,11 +75,11 @@ export class ScoreboardEntity
   }
 
   public startTimer(): void {
-    this.active = true;
+    this._sactive = true;
   }
 
   public stopTimer(): void {
-    this.active = false;
+    this._sactive = false;
   }
 
   public getElapsedMilliseconds(): number {
@@ -119,7 +129,7 @@ export class ScoreboardEntity
     const arrayBuffer = BinaryWriter.build()
       .unsignedInt8(this.blueScore)
       .unsignedInt8(this.redScore)
-      .boolean(this.active)
+      .boolean(this._sactive)
       .unsignedInt32(this.durationMilliseconds)
       .unsignedInt32(this.elapsedMilliseconds)
       .toArrayBuffer();
@@ -131,7 +141,7 @@ export class ScoreboardEntity
     const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
     this.blueScore = binaryReader.unsignedInt8();
     this.redScore = binaryReader.unsignedInt8();
-    this.active = binaryReader.boolean();
+    this._sactive = binaryReader.boolean();
     this.durationMilliseconds = binaryReader.unsignedInt32();
     this.elapsedMilliseconds = binaryReader.unsignedInt32();
 
@@ -142,51 +152,6 @@ export class ScoreboardEntity
     );
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.active) {
-      if (this.elapsedMilliseconds < this.durationMilliseconds) {
-        this.elapsedMilliseconds += deltaTimeStamp;
-      }
-      this.flashElapsedMilliseconds += deltaTimeStamp;
-    }
-
-    this.remainingSeconds = Math.max(
-      0,
-      Math.ceil((this.durationMilliseconds - this.elapsedMilliseconds) / 1000)
-    );
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    context.save();
-    this.applyOpacity(context);
-
-    const totalWidth =
-      2 * this.SQUARE_SIZE + this.SPACE_BETWEEN + this.TIME_BOX_WIDTH;
-    const startX = this.x - totalWidth / 2;
-
-    this.renderSquare(context, startX, this.BLUE_SHAPE_COLOR, this.blueScore);
-    const formattedTime = this.formatTime(this.remainingSeconds);
-    const timeX = startX + this.SQUARE_SIZE + this.SPACE_BETWEEN;
-    const timeY = this.y + (this.SQUARE_SIZE - this.TIME_BOX_HEIGHT) / 2;
-    this.renderTimeBox(
-      context,
-      timeX,
-      timeY,
-      this.TIME_BOX_WIDTH,
-      this.TIME_BOX_HEIGHT,
-      formattedTime
-    );
-
-    const redScoreX =
-      startX +
-      this.SQUARE_SIZE +
-      this.SPACE_BETWEEN +
-      this.TIME_BOX_WIDTH +
-      this.SPACE_BETWEEN;
-    this.renderSquare(context, redScoreX, this.RED_SHAPE_COLOR, this.redScore);
-
-    context.restore();
-  }
 
   private setSyncableValues() {
     this.setId("d4e5f6a78b9c0d1e2f3a4b5c6d7e8f9a");
@@ -204,7 +169,7 @@ export class ScoreboardEntity
     this.roundedRect(
       context,
       x,
-      this.y,
+      this._sy,
       this.SQUARE_SIZE,
       this.SQUARE_SIZE,
       this.CORNER_RADIUS
@@ -214,7 +179,7 @@ export class ScoreboardEntity
       context,
       score.toString(),
       x + this.SQUARE_SIZE / 2,
-      this.y + 12.5 + this.SQUARE_SIZE / 2
+      this._sy + 12.5 + this.SQUARE_SIZE / 2
     );
   }
 
@@ -233,7 +198,7 @@ export class ScoreboardEntity
     const atZero = this.remainingSeconds <= 0;
     const underFive = this.remainingSeconds > 0 && this.remainingSeconds <= 5;
 
-    const shouldFlash = (atZero && this.active) || (underFive && this.active);
+    const shouldFlash = (atZero && this._sactive) || (underFive && this._sactive);
     let alpha = 1;
     if (shouldFlash) {
       // Use a consistent flash rate for low and zero time
@@ -245,7 +210,7 @@ export class ScoreboardEntity
     context.save();
     const baseAlpha = context.globalAlpha;
     // When not active but time is low, show red color at full opacity
-    const useFlashingAlpha = shouldFlash && this.active;
+    const useFlashingAlpha = shouldFlash && this._sactive;
     context.globalAlpha = baseAlpha * (useFlashingAlpha ? alpha : 1);
     const color = atZero || underFive ? this.FLASH_COLOR : this.TEXT_COLOR;
     this.renderText(context, text, x + width / 2, y + 12.5 + height / 2, color);

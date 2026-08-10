@@ -1,6 +1,9 @@
-import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
+import { TransformComponent } from "../../../engine/components/transform-component.js";
+import { InputComponent } from "../../../engine/components/input-component.js";
 
-export class SmallButtonEntity extends BaseTappableGameEntity {
+export class SmallButtonEntity extends BaseGameEntity {
   private readonly FONT = "bold 15px system-ui";
   private text: string;
   private backgroundColor: string;
@@ -20,9 +23,12 @@ export class SmallButtonEntity extends BaseTappableGameEntity {
     radius: number = 20
   ) {
     super();
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    const _s = this; this.addComponent(new ScriptComponent({ update: (dt) => _s.scriptUpdate(dt), render: (ctx) => _s.scriptRender(ctx) }));
     this.text = text;
-    this.width = width;
-    this.height = height;
+    this.getComponent(TransformComponent)!.width = width;
+    this.getComponent(TransformComponent)!.height = height;
     this.backgroundColor = backgroundColor;
     this.hoverColor = hoverColor;
     this.textColor = textColor;
@@ -30,15 +36,15 @@ export class SmallButtonEntity extends BaseTappableGameEntity {
   }
 
   public setPosition(x: number, y: number): void {
-    this.x = x;
-    this.y = y;
+    this.getComponent(TransformComponent)!.x = x;
+    this.getComponent(TransformComponent)!.y = y;
   }
 
   public setDisabled(disabled: boolean): void {
     this.disabled = disabled;
     if (disabled) {
-      this.hovering = false;
-      this.pressed = false;
+      this.getComponent(InputComponent)!.hovering = false;
+      this.getComponent(InputComponent)!.pressed = false;
     }
   }
 
@@ -46,21 +52,19 @@ export class SmallButtonEntity extends BaseTappableGameEntity {
     return this.disabled;
   }
 
-  public override handlePointerEvent(gamePointer: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
+  public handlePointerEvent(gamePointer: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
     if (this.disabled) return;
     super.handlePointerEvent(gamePointer);
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     if (this.disabled) {
-      super.update(delta);
       return;
     }
 
-    if (this.pressed) {
+    if (this.getComponent(InputComponent)!.pressed) {
       this.wasPressed = true;
     }
-    super.update(delta);
   }
 
   public isButtonPressed(): boolean {
@@ -69,8 +73,8 @@ export class SmallButtonEntity extends BaseTappableGameEntity {
     return result;
   }
 
-  public render(context: CanvasRenderingContext2D): void {
-    if (!this.active) return;
+  private scriptRender(context: CanvasRenderingContext2D): void {
+    if (!this.getComponent(InputComponent)!.active) return;
 
     context.save();
     context.globalAlpha = this.opacity;
@@ -78,10 +82,10 @@ export class SmallButtonEntity extends BaseTappableGameEntity {
     if (this.disabled) {
       context.fillStyle = "rgba(180, 180, 180, 0.5)";
     } else {
-      context.fillStyle = this.hovering ? this.hoverColor : this.backgroundColor;
+      context.fillStyle = this.getComponent(InputComponent)!.hovering ? this.hoverColor : this.backgroundColor;
     }
 
-    this.drawRoundedRect(context, this.x, this.y, this.width, this.height, this.radius);
+    this.drawRoundedRect(context, this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y, this.getComponent(TransformComponent)!.width, this.getComponent(TransformComponent)!.height, this.radius);
     context.fill();
 
     // Draw button text
@@ -91,12 +95,11 @@ export class SmallButtonEntity extends BaseTappableGameEntity {
     context.textBaseline = "middle";
     context.fillText(
       this.text,
-      this.x + this.width / 2,
-      this.y + this.height / 2
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width / 2,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2
     );
 
     context.restore();
-    super.render(context);
   }
 
   private drawRoundedRect(

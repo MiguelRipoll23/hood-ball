@@ -1,7 +1,11 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { ToggleEntity } from "./common/toggle-button.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
+import { InputComponent } from "../../engine/components/input-component.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 
-export class SettingEntity extends BaseTappableGameEntity {
+export class SettingEntity extends BaseGameEntity {
   private toggleEntity: ToggleEntity | null = null;
   private updated = false;
   private indented = false;
@@ -12,7 +16,11 @@ export class SettingEntity extends BaseTappableGameEntity {
     private settingState = false
   ) {
     super();
-    this.height = 40;
+    this.addComponent(new AnimationComponent());
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
+    this.getComponent(TransformComponent)!.height = 40;
   }
 
   public setIndented(indented: boolean): void {
@@ -41,22 +49,21 @@ export class SettingEntity extends BaseTappableGameEntity {
     this.updated = updated;
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.isPressed()) {
+  private scriptUpdate(_deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.getComponent(InputComponent)!.pressed) {
       this.settingState = !this.settingState;
       this.toggleEntity?.setToggleState(this.settingState);
       this.updated = true;
     }
 
-    super.update(deltaTimeStamp);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
 
     // Get the canvas width
     const canvasWidth = context.canvas.width;
-    this.width = canvasWidth;
+    this.getComponent(TransformComponent)!.width = canvasWidth;
 
     // Set the font and alignment for the setting text
     context.fillStyle = "white";
@@ -66,12 +73,12 @@ export class SettingEntity extends BaseTappableGameEntity {
     context.textBaseline = "middle";
 
     // Draw the setting text with indent if this is a child setting
-    const textX = this.indented ? this.x + 50 : this.x + 30;
-    context.fillText(this.settingText, textX, this.y + this.height / 2);
+    const textX = this.indented ? this.getComponent(TransformComponent)!.x + 50 : this.getComponent(TransformComponent)!.x + 30;
+    context.fillText(this.settingText, textX, this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2);
 
     // Set the position of the toggleEntity (right side of the canvas)
     const toggleX = canvasWidth - 80; // Adjust this value for your toggle entity's width
-    const toggleY = this.y + 5;
+    const toggleY = this.getComponent(TransformComponent)!.y + 5;
 
     // Set the position of the toggle entity
     this.toggleEntity?.setX(toggleX);
@@ -83,6 +90,5 @@ export class SettingEntity extends BaseTappableGameEntity {
     context.restore();
 
     // Call the parent render method (if needed)
-    super.render(context);
   }
 }

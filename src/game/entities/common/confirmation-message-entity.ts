@@ -1,7 +1,9 @@
-import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
 import type { GamePointerContract } from "../../../engine/interfaces/input/game-pointer-interface.js";
+import { InputComponent } from "../../../engine/components/input-component.js";
 
-export class ConfirmationMessageEntity extends BaseTappableGameEntity {
+export class ConfirmationMessageEntity extends BaseGameEntity {
   private readonly BOX_WIDTH = 300;
   private readonly BOX_HEIGHT = 130;
   private readonly CORNER_RADIUS = 8;
@@ -31,7 +33,9 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
   private cancelled = false;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
-    super(false);
+    super();
+    this.addComponent(new InputComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.opacity = 0;
   }
 
@@ -61,14 +65,14 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     this.confirmed = false;
     this.cancelled = false;
     this.opacity = 1;
-    this.setActive(true);
+    this.getComponent(InputComponent)!.active = true;
     this.calculateLayout();
   }
 
   public close(): void {
     this.isOpened = false;
     this.opacity = 0;
-    this.setActive(false);
+    this.getComponent(InputComponent)!.active = false;
   }
 
   private calculateLayout(): void {
@@ -87,15 +91,15 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     this.cancelBtnY = buttonsY;
   }
 
-  public override handlePointerEvent(gamePointer: GamePointerContract): void {
+  public handlePointerEvent(gamePointer: GamePointerContract): void {
     if (!this.isOpened || this.opacity === 0) return;
 
     const touches = gamePointer.getTouchPoints();
 
     this.confirmHovered = false;
     this.cancelHovered = false;
-    this.pressed = false;
-    this.hovering = false;
+    this.getComponent(InputComponent)!.pressed = false;
+    this.getComponent(InputComponent)!.hovering = false;
 
     if (touches.length === 0) return;
 
@@ -112,12 +116,12 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
       );
 
       if (inConfirm || inCancel) {
-        this.hovering = true;
+        this.getComponent(InputComponent)!.hovering = true;
         if (inConfirm) this.confirmHovered = true;
         if (inCancel) this.cancelHovered = true;
 
         if (touch.pressed) {
-          this.pressed = true;
+          this.getComponent(InputComponent)!.pressed = true;
           this.confirmHovered = inConfirm;
           this.cancelHovered = inCancel;
           break;
@@ -126,10 +130,10 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     }
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
     if (!this.isOpened) return;
 
-    if (this.pressed) {
+    if (this.getComponent(InputComponent)!.pressed) {
       if (this.confirmHovered) {
         this.confirmed = true;
       } else if (this.cancelHovered) {
@@ -137,10 +141,9 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
       }
     }
 
-    super.update(delta);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     if (!this.isOpened || this.opacity === 0) return;
 
     context.save();
@@ -151,7 +154,6 @@ export class ConfirmationMessageEntity extends BaseTappableGameEntity {
     this.renderButtons(context);
 
     context.restore();
-    super.render(context);
   }
 
   private renderBox(context: CanvasRenderingContext2D): void {

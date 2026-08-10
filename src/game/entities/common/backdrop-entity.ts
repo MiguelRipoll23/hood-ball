@@ -1,6 +1,6 @@
-import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
 
-export class BackdropEntity extends BaseMoveableGameEntity {
+export class BackdropEntity extends BaseGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
 
   constructor(private readonly canvas: HTMLCanvasElement) {

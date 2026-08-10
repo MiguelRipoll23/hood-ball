@@ -1,41 +1,43 @@
 import { BaseGameEntity } from "./base-game-entity.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
 
 export class HitboxEntity extends BaseGameEntity {
-  private x: number = 0;
-  private y: number = 0;
-  private width: number = 0;
-  private height: number = 0;
+  private _x: number = 0;
+  private _y: number = 0;
+  private _width: number = 0;
+  private _height: number = 0;
   private colliding: boolean = false;
 
   constructor(x: number, y: number, width: number, height: number) {
     super();
+    this.addComponent(new TransformComponent());
 
     this.setPosition(x, y);
     this.setSize(width, height);
   }
 
   public setX(x: number): void {
-    this.x = x;
+    this._x = x;
   }
 
   public getX(): number {
-    return this.x;
+    return this._x;
   }
 
   public setY(y: number): void {
-    this.y = y;
+    this._y = y;
   }
 
   public getY(): number {
-    return this.y;
+    return this._y;
   }
 
   public getWidth(): number {
-    return this.width;
+    return this._width;
   }
 
   public getHeight(): number {
-    return this.height;
+    return this._height;
   }
 
   public isColliding(): boolean {
@@ -55,12 +57,14 @@ export class HitboxEntity extends BaseGameEntity {
   }
 
   private setPosition(x: number, y: number): void {
-    this.x = x;
-    this.y = y;
+    this._x = x;
+    this._y = y;
   }
 
   private setSize(width: number, height: number): void {
-    this.width = width;
-    this.height = height;
+    this._width = width;
+    this._height = height;
+    this.getComponent(TransformComponent)!.width = width;
+    this.getComponent(TransformComponent)!.height = height;
   }
 }

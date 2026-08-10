@@ -1,4 +1,5 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { BackdropEntity } from "./common/backdrop-entity.js";
 import { CloseButtonEntity } from "./close-button-entity.js";
 import { SmallButtonEntity } from "./common/small-button-entity.js";
@@ -12,8 +13,9 @@ import type { PlayerModerationService } from "../services/network/player-moderat
 import type { APIService } from "../services/network/api-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
-export class MatchMenuEntity extends BaseTappableGameEntity {
+export class MatchMenuEntity extends BaseGameEntity {
   private readonly WINDOW_WIDTH_RATIO = 0.85;
   private readonly WINDOW_HEIGHT = 400;
   private readonly TITLE_BAR_HEIGHT = 50;
@@ -45,7 +47,9 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     private readonly onClose: () => void,
     private readonly onLeaveMatch: () => void
   ) {
-    super(false);
+    super();
+    this.addComponent(new InputComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.opacity = 0;
 
     this.backdropEntity = new BackdropEntity(canvas);
@@ -85,12 +89,12 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
   }
 
   public show(): void {
-    this.setActive(true);
+    this.getComponent(InputComponent)!.active = true;
     this.opacity = 1;
   }
 
   public close(): void {
-    this.setActive(false);
+    this.getComponent(InputComponent)!.active = false;
     this.opacity = 0;
   }
 
@@ -177,8 +181,8 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     this.confirmationEntity.show(`Are you sure you want to ban ${playerName}?`);
   }
 
-  public override handlePointerEvent(gamePointer: GamePointerContract): void {
-    if (!this.active || this.opacity === 0) {
+  public handlePointerEvent(gamePointer: GamePointerContract): void {
+    if (!this.getComponent(InputComponent)!.active || this.opacity === 0) {
       return;
     }
 
@@ -213,14 +217,13 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     super.handlePointerEvent(gamePointer);
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(delta: DOMHighResTimeStamp): void {
     if (this.pendingClose) {
       this.messageEntity.update(delta);
       if (!this.messageEntity.isActive()) {
         this.pendingClose = false;
         this.onClose();
       }
-      super.update(delta);
       return;
     }
 
@@ -237,13 +240,11 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
         // Submenu stays open so user can pick a different reason
       }
 
-      super.update(delta);
       return;
     }
 
     if (this.playersListEntity.isActionMenuOpen()) {
       this.playersListEntity.update(delta);
-      super.update(delta);
       return;
     }
 
@@ -262,10 +263,9 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     this.leaveMatchButton.update(delta);
     this.playersListEntity.update(delta);
 
-    super.update(delta);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     if (this.opacity === 0) {
       return;
     }
@@ -289,6 +289,5 @@ export class MatchMenuEntity extends BaseTappableGameEntity {
     }
 
     context.restore();
-    super.render(context);
   }
 }

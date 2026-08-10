@@ -1,34 +1,38 @@
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
 export class JoystickEntity extends BaseGameEntity {
   private readonly RADIUS: number = 40;
   private readonly MAX_DISTANCE: number = 30;
 
-  private x: number = 0;
-  private y: number = 0;
+  private _jx: number = 0;
+  private _jy: number = 0;
 
-  private active: boolean = false;
-  private angle: number = 0;
+  private _jactive: boolean = false;
+  private _ja: number = 0;
   private magnitude: number = 1;
 
   constructor(private readonly gamePointer: GamePointerContract) {
     super();
+    this.addComponent(new InputComponent());
+    this.addComponent(new ScriptComponent({ update: () => this.scriptUpdate() }));
   }
 
   public isActive(): boolean {
-    return this.active;
+    return this._jactive;
   }
 
   public getAngle(): number {
-    return this.angle;
+    return this._ja;
   }
 
   public getMagnitude(): number {
     return this.magnitude;
   }
 
-  public override update(): void {
+  private scriptUpdate(): void {
     if (this.gamePointer.isTouch()) {
       this.handleGamePointerEvents();
       this.updateJoystickPosition();
@@ -43,9 +47,9 @@ export class JoystickEntity extends BaseGameEntity {
 
   private handleGamePointerEvents(): void {
     if (this.gamePointer.isPressing()) {
-      this.active = true;
+      this._jactive = true;
     } else {
-      this.reset();
+      this.resetJoystick();
     }
   }
 
@@ -53,8 +57,8 @@ export class JoystickEntity extends BaseGameEntity {
     const distance = this.calculateDistance();
 
     if (distance <= this.MAX_DISTANCE) {
-      this.x = this.gamePointer.getX();
-      this.y = this.gamePointer.getY();
+      this._jx = this.gamePointer.getX();
+      this._jy = this.gamePointer.getY();
     } else {
       this.adjustPosition();
     }
@@ -76,21 +80,21 @@ export class JoystickEntity extends BaseGameEntity {
       this.gamePointer.getX() - this.gamePointer.getInitialX()
     );
 
-    this.x =
+    this._jx =
       this.gamePointer.getInitialX() + this.MAX_DISTANCE * Math.cos(drawAngle);
 
-    this.y =
+    this._jy =
       this.gamePointer.getInitialY() + this.MAX_DISTANCE * Math.sin(drawAngle);
   }
 
   private calculateAngle(): void {
-    const relativeX = this.x - this.gamePointer.getInitialX();
-    const relativeY = this.y - this.gamePointer.getInitialY();
+    const relativeX = this._jx - this.gamePointer.getInitialX();
+    const relativeY = this._jy - this.gamePointer.getInitialY();
 
     const controlX = relativeX / this.MAX_DISTANCE;
     const controlY = relativeY / this.MAX_DISTANCE;
 
-    this.angle = Math.atan2(-controlY, -controlX);
+    this._ja = Math.atan2(-controlY, -controlX);
   }
 
   private drawJoystick(context: CanvasRenderingContext2D): void {
@@ -117,13 +121,13 @@ export class JoystickEntity extends BaseGameEntity {
 
   private drawJoystickCircle(context: CanvasRenderingContext2D): void {
     context.beginPath();
-    context.arc(this.x, this.y, this.RADIUS, 0, Math.PI * 2);
+    context.arc(this._jx, this._jy, this.RADIUS, 0, Math.PI * 2);
     const gradient = context.createRadialGradient(
-      this.x,
-      this.y,
+      this._jx,
+      this._jy,
       0,
-      this.x,
-      this.y,
+      this._jx,
+      this._jy,
       this.RADIUS
     );
     gradient.addColorStop(0, "rgba(0, 0, 0, 0.8)");
@@ -145,7 +149,7 @@ export class JoystickEntity extends BaseGameEntity {
     context.closePath();
   }
 
-  private reset(): void {
-    this.active = false;
+  private resetJoystick(): void {
+    this.getComponent(InputComponent)!.active = false;
   }
 }

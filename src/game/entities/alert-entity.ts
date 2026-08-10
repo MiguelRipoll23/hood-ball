@@ -3,14 +3,17 @@ import {
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
 import { TimerService } from "../../engine/services/gameplay/timer-service.js";
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 
 export class AlertEntity
-  extends BaseMoveableGameEntity
+  extends BaseGameEntity
   implements MultiplayerGameEntity
 {
   private textLines: string[] = ["Unknown", "message"];
@@ -23,6 +26,9 @@ export class AlertEntity
 
   constructor(protected readonly canvas: HTMLCanvasElement) {
     super();
+    this.addComponent(new AnimationComponent());
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.setInitialValues();
   }
 
@@ -55,8 +61,8 @@ export class AlertEntity
 
     this.fontSize = textLines.length === 1 ? 74 : 44;
 
-    this.fadeIn(0.3);
-    this.scaleTo(1, 0.3);
+    this.getComponent(AnimationComponent)!.fadeIn(0.3);
+    this.getComponent(AnimationComponent)!.scaleTo(1, 0.3);
 
     if (duration > 0) {
       this.timer = this.getTimerService(duration);
@@ -64,16 +70,15 @@ export class AlertEntity
   }
 
   public hide(): void {
-    this.fadeOut(0.3);
-    this.scaleTo(0, 0.3);
+    this.getComponent(AnimationComponent)!.fadeOut(0.3);
+    this.getComponent(AnimationComponent)!.scaleTo(0, 0.3);
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.timer?.update(deltaTimeStamp);
-    super.update(deltaTimeStamp);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
 
     this.setTransformOrigin(context);
@@ -110,7 +115,7 @@ export class AlertEntity
     }
 
     writer.float32(this.opacity);
-    writer.float32(this.scale);
+    writer.float32(this.getComponent(TransformComponent)!.scale);
     writer.unsignedInt8(this.fontSize);
 
     return writer.toArrayBuffer();
@@ -142,7 +147,7 @@ export class AlertEntity
       this.color = this.lineColorsHex[0] ?? "#FFFFFF";
 
       this.opacity = reader.float32();
-      this.scale = reader.float32();
+      this.getComponent(TransformComponent)!.scale = reader.float32();
       this.fontSize = reader.unsignedInt8();
     } catch (err) {
       EngineLogger.error("AlertEntity", "AlertEntity: failed to apply replay state", err);
@@ -150,9 +155,9 @@ export class AlertEntity
   }
 
   private setTransformOrigin(context: CanvasRenderingContext2D): void {
-    context.translate(this.x, this.y);
-    context.scale(this.scale, this.scale);
-    context.translate(-this.x, -this.y);
+    context.translate(this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y);
+    context.scale(this.getComponent(TransformComponent)!.scale, this.getComponent(TransformComponent)!.scale);
+    context.translate(-this.getComponent(TransformComponent)!.x, -this.getComponent(TransformComponent)!.y);
   }
 
   private setFontStyle(context: CanvasRenderingContext2D): void {
@@ -170,12 +175,12 @@ export class AlertEntity
   private renderMultilineText(context: CanvasRenderingContext2D): void {
     const lineHeight = this.fontSize;
     const blockHeight = this.textLines.length * lineHeight;
-    const startY = this.y - blockHeight / 2 + lineHeight / 2;
+    const startY = this.getComponent(TransformComponent)!.y - blockHeight / 2 + lineHeight / 2;
 
     this.textLines.forEach((line, index) => {
       const yPosition = startY + index * lineHeight;
       context.fillStyle = this.lineColorsHex[index] ?? this.color;
-      this.drawText(context, line, this.x, yPosition);
+      this.drawText(context, line, this.getComponent(TransformComponent)!.x, yPosition);
     });
   }
 
@@ -205,12 +210,12 @@ export class AlertEntity
 
   private setInitialValues() {
     this.opacity = 0;
-    this.scale = 0;
+    this.getComponent(TransformComponent)!.scale = 0;
     this.setCenterPosition();
   }
 
   private setCenterPosition(): void {
-    this.x = this.canvas.width / 2;
-    this.y = this.canvas.height / 2;
+    this.getComponent(TransformComponent)!.x = this.canvas.width / 2;
+    this.getComponent(TransformComponent)!.y = this.canvas.height / 2;
   }
 }

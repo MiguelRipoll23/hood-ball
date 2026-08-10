@@ -1,8 +1,18 @@
 import type { GamePointerContract } from "../interfaces/input/game-pointer-interface.js";
 import { LayerType } from "../enums/layer-type.js";
-import { BaseTappableGameEntity } from "../entities/base-tappable-game-entity.js";
 import type { GameEntity } from "../models/game-entity.js";
 import type { GameScene } from "../interfaces/scenes/game-scene-interface.js";
+
+/**
+ * Duck-type interface for entities that handle pointer/touch input.
+ * Replaces the removed {@code BaseGameEntity} base class.
+ */
+export interface TappableEntity extends GameEntity {
+  handlePointerEvent(gamePointer: GamePointerContract): void;
+  isActive(): boolean;
+  isHovering(): boolean;
+  isPressed(): boolean;
+}
 import type { SceneManagerServiceContract } from "../interfaces/services/scene/scene-manager-service-contract.js";
 import type { EventConsumerServiceContract } from "../interfaces/services/gameplay/event-consumer-service-interface.js";
 import type { EventSubscription } from "../types/event-subscription.js";
@@ -243,8 +253,8 @@ export class BaseGameScene implements GameScene {
   protected handlePointerEvent(): void {
     const tappableEntities = this.uiEntities
       .filter(
-        (entity): entity is BaseTappableGameEntity =>
-          entity instanceof BaseTappableGameEntity
+        (entity): entity is TappableEntity =>
+          this.isTappableEntity(entity)
       )
       .filter((entity) => entity.isActive())
       .reverse();
@@ -256,6 +266,17 @@ export class BaseGameScene implements GameScene {
         break;
       }
     }
+  }
+
+  private isTappableEntity(
+    entity: GameEntity,
+  ): entity is TappableEntity {
+    return (
+      "handlePointerEvent" in entity &&
+      "isActive" in entity &&
+      "isHovering" in entity &&
+      "isPressed" in entity
+    );
   }
 
   protected updateEntities(

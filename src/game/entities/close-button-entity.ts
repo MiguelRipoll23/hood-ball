@@ -1,40 +1,47 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
-export class CloseButtonEntity extends BaseTappableGameEntity {
+export class CloseButtonEntity extends BaseGameEntity {
   private readonly BUTTON_SIZE = 40;
   private readonly TEXT_COLOR = "#ffffff";
   private readonly HOVER_COLOR = "#7ed321";
 
   constructor(x: number, y: number) {
     super();
-    this.x = x;
-    this.y = y;
-    this.width = this.BUTTON_SIZE;
-    this.height = this.BUTTON_SIZE;
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    const _s = this; this.addComponent(new ScriptComponent({ update: (dt) => _s.scriptUpdate(dt), render: (ctx) => _s.scriptRender(ctx) }));
+    this.getComponent(TransformComponent)!.x = x;
+    this.getComponent(TransformComponent)!.y = y;
+    this.getComponent(TransformComponent)!.width = this.BUTTON_SIZE;
+    this.getComponent(TransformComponent)!.height = this.BUTTON_SIZE;
   }
+
+    public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
 
   public setPosition(x: number, y: number): void {
-    this.x = x;
-    this.y = y;
+    this.getComponent(TransformComponent)!.x = x;
+    this.getComponent(TransformComponent)!.y = y;
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
-    // Only call super.update(delta) after handling press event!
-
-    super.update(delta);
+  private scriptUpdate(_delta: DOMHighResTimeStamp): void {
+    // super.update removed — BaseGameEntity.update already runs scripts
   }
 
-  public render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
 
     context.font = "28px system-ui";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillStyle = this.hovering ? this.HOVER_COLOR : this.TEXT_COLOR;
+    context.fillStyle = this.getComponent(InputComponent)!.hovering ? this.HOVER_COLOR : this.TEXT_COLOR;
     context.fillText(
       "✕",
-      this.x + this.BUTTON_SIZE / 2,
-      this.y + this.BUTTON_SIZE / 2
+      this.getComponent(TransformComponent)!.x + this.BUTTON_SIZE / 2,
+      this.getComponent(TransformComponent)!.y + this.BUTTON_SIZE / 2
     );
 
     context.restore();

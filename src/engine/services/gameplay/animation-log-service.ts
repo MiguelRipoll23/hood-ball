@@ -1,5 +1,5 @@
 import { injectable } from "@needle-di/core";
-import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.js";
+import type { BaseGameEntity } from "../../entities/base-game-entity.js";
 import type { EntityAnimationService } from "./entity-animation-service.js";
 import { AnimationType } from "../../enums/animation-type.js";
 
@@ -17,7 +17,7 @@ export class AnimationLogService {
 
   public register(
     service: EntityAnimationService,
-    entity: AnimatableEntity,
+    entity: BaseGameEntity,
     type: AnimationType
   ): void {
     const entry: AnimationLogItem = {

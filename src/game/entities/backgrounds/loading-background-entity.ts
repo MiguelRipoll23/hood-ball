@@ -1,21 +1,23 @@
 import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
 
 export class LoadingBackgroundEntity extends BaseGameEntity {
   private gradientOffset = 0; // Offset for moving gradient
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
   }
 
   // Update the gradient offset to animate the background
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.gradientOffset += deltaTimeStamp * 0.01; // Adjust speed as needed
     if (this.gradientOffset > this.canvas.width) {
       this.gradientOffset = 0; // Loop the gradient
     }
   }
 
-  public override render(context: CanvasRenderingContext2D) {
+  private scriptRender(context: CanvasRenderingContext2D) {
     this.drawMovingGradientSky(context);
   }
 
