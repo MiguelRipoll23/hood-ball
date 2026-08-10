@@ -9,6 +9,7 @@ import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { ScoreboardUI } from "../interfaces/ui/scoreboard-ui-interface.js";
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
+import { NetworkComponent } from "../../engine/components/network-component.js";
 
 export class ScoreboardEntity
   extends BaseGameEntity
@@ -45,6 +46,7 @@ export class ScoreboardEntity
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.addComponent(new NetworkComponent());
     this._sx = this.canvas.width / 2 - this.SPACE_BETWEEN / 2;
     this.setSyncableValues();
     this.attachScript();

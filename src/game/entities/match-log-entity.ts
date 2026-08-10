@@ -6,6 +6,7 @@ import { MatchActionType } from "../enums/match-action-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
 import { TransformComponent } from "../../engine/components/transform-component.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 
 interface TextPart {
   text: string;
@@ -33,6 +34,7 @@ export class MatchLogEntity extends BaseGameEntity {
   ) {
     super();
     this.addComponent(new TransformComponent());
+    this.addComponent(new AnimationComponent());
     this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.opacity = 0;
   }
@@ -350,14 +352,14 @@ export class MatchLogEntity extends BaseGameEntity {
   private startFadeIn(): void {
     this.isFadingOut = false;
     this.isFadingIn = true;
-    this.animationTasks.length = 0;
+    this.getComponent(AnimationComponent)!.clearAnimations();
     this.fadeIn(this.fadeInDurationSeconds);
   }
 
   private startFadeOut(durationSeconds?: number): void {
     this.isFadingIn = false;
     this.isFadingOut = true;
-    this.animationTasks.length = 0;
+    this.getComponent(AnimationComponent)!.clearAnimations();
     const fadeDuration =
       durationSeconds !== undefined && durationSeconds > 0
         ? durationSeconds

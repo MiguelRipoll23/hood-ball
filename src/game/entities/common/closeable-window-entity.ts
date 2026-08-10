@@ -40,7 +40,7 @@ export class CloseableWindowEntity extends BaseGameEntity {
   constructor(private canvas: HTMLCanvasElement) {
     super();
     this.addComponent(new AnimationComponent());
-    this.addComponent(new InputComponent());
+    this.addComponent(new InputComponent(true)); // stealFocus: tapping anywhere (incl. backdrop) closes
     this.addComponent(new TransformComponent());
     this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.backdropEntity = new BackdropEntity(this.canvas);
