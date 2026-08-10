@@ -148,6 +148,13 @@ export class BallScript implements ScriptLifecycle {
   // ── ScriptLifecycle ───────────────────────────────────────────
 
   update(_delta: DOMHighResTimeStamp): void {
+    // Close the teleport skip window after a fixed number of frames even if
+    // no network packet arrives. Otherwise a stale EntityData could snap the
+    // ball away from its reset position (e.g. center during countdown) while
+    // the window stays open waiting for the next periodic sync.
+    if (this.teleportFrameCount > 0) {
+      this.teleportFrameCount--;
+    }
     this.applyFriction();
     this.calculateMovement();
     this.updateHitbox();

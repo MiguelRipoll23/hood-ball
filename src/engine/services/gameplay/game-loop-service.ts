@@ -96,6 +96,7 @@ export class GameLoopService {
     if (this.debug === false) return;
 
     EngineLogger.info(
+      "GameLoopService",
       "%cDebug mode on",
       "color: #b6ff35; font-size: 20px; font-weight: bold"
     );

@@ -25,6 +25,13 @@ export class ToastEntity extends BaseGameEntity {
   }
 
   public show(text: string, duration = 0): void {
+    // A persistent toast (duration 0) already showing the same message
+    // doesn't need to be re-shown. Both the player-disconnect and
+    // match-advertised handlers can show "Waiting for players..."
+    // back-to-back; re-showing just makes it flash.
+    if (duration === 0 && this.text === text && this.opacity > 0) {
+      return;
+    }
     this.text = text;
     this.parseTextSegments();
     this.reset();

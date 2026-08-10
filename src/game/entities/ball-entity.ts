@@ -68,6 +68,15 @@ export class BallEntity
 
   public override reset(): void {
     this.ballScript.reset(this.canvas.width / 2, this.canvas.height / 2);
+    // Force an immediate reliable broadcast of the reset position so all
+    // peers snap to center instead of holding a stale position during the
+    // countdown (mustSync() is false once velocity is zeroed, so the
+    // periodic 500ms sync alone would leave remote balls off-center).
+    // Only the host broadcasts the ball — on non-hosts the flag would stick
+    // because the orchestrator skips host-owned entities without clearing it.
+    if (this.getOwner() === container.get(GamePlayer)) {
+      this.setSyncReliably(true);
+    }
     super.reset();
   }
 
