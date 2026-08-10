@@ -10,6 +10,11 @@ import { TransformComponent } from "./transform-component.js";
  *
  * When attached to an entity, call animate*() methods to queue animations
  * that will be processed each frame during update().
+ *
+ * Semantics: **last animation wins.** Starting a new animation cancels any
+ * pending task that drives the same property (opacity for fades, scale, angle,
+ * x, y) and resets that property to its canonical starting value so the new
+ * animation always begins from a fresh state instead of fighting a stale one.
  */
 export class AnimationComponent implements Component {
   static readonly componentType = "AnimationComponent";
@@ -23,6 +28,8 @@ export class AnimationComponent implements Component {
   public fadeIn(seconds: number): void {
     const entity = this.entity;
     if (!entity) return;
+    this.removeTasksOfType(AnimationType.FadeIn, AnimationType.FadeOut);
+    entity.setOpacity(0);
     this.animationTasks.push(
       new EntityAnimationService(entity, AnimationType.FadeIn, 0, 1, seconds),
     );
@@ -31,6 +38,8 @@ export class AnimationComponent implements Component {
   public fadeOut(seconds: number): void {
     const entity = this.entity;
     if (!entity) return;
+    this.removeTasksOfType(AnimationType.FadeIn, AnimationType.FadeOut);
+    entity.setOpacity(1);
     this.animationTasks.push(
       new EntityAnimationService(entity, AnimationType.FadeOut, 1, 0, seconds),
     );
@@ -39,6 +48,7 @@ export class AnimationComponent implements Component {
   public moveToX(newX: number, seconds: number): void {
     const entity = this.entity;
     if (!entity) return;
+    this.removeTasksOfType(AnimationType.MoveX);
     const transform = entity.getComponent(
       TransformComponent as unknown as new (...args: never[]) => TransformComponent,
     );
@@ -51,6 +61,7 @@ export class AnimationComponent implements Component {
   public moveToY(newY: number, seconds: number): void {
     const entity = this.entity;
     if (!entity) return;
+    this.removeTasksOfType(AnimationType.MoveY);
     const transform = entity.getComponent(
       TransformComponent as unknown as new (...args: never[]) => TransformComponent,
     );
@@ -63,6 +74,7 @@ export class AnimationComponent implements Component {
   public rotateTo(newAngle: number, seconds: number): void {
     const entity = this.entity;
     if (!entity) return;
+    this.removeTasksOfType(AnimationType.Rotate);
     const transform = entity.getComponent(
       TransformComponent as unknown as new (...args: never[]) => TransformComponent,
     );
@@ -81,6 +93,7 @@ export class AnimationComponent implements Component {
   public scaleTo(newScale: number, seconds: number): void {
     const entity = this.entity;
     if (!entity) return;
+    this.removeTasksOfType(AnimationType.Scale);
     const transform = entity.getComponent(
       TransformComponent as unknown as new (...args: never[]) => TransformComponent,
     );
@@ -98,6 +111,18 @@ export class AnimationComponent implements Component {
 
   public clearAnimations(): void {
     this.animationTasks.length = 0;
+  }
+
+  /** True while at least one animation task is still running. */
+  public hasActiveAnimations(): boolean {
+    return this.animationTasks.length > 0;
+  }
+
+  /** Cancel any pending tasks that drive the same property as the new animation. */
+  private removeTasksOfType(...types: AnimationType[]): void {
+    this.animationTasks = this.animationTasks.filter(
+      (task) => !types.includes(task.getAnimationType()),
+    );
   }
 
   public update(deltaTimeStamp: DOMHighResTimeStamp): void {

@@ -32,14 +32,23 @@ export class ToastEntity extends BaseGameEntity {
     this.getComponent(AnimationComponent)!.scaleTo(1, 0.2);
     this.getComponent(AnimationComponent)!.rotateTo(-2, 0.2);
 
+    // Cancel any pending hide from a previous show so a re-shown toast
+    // (e.g. a no-duration "Waiting for players...") isn't hidden by a stale timer.
+    this.timer?.stop(false);
+    this.timer = null;
+
     if (duration > 0) {
       this.timer = new TimerService(duration, this.hide.bind(this));
     }
   }
 
   public hide(): void {
+    // Skip when already hidden so fadeOut's reset-to-1 doesn't flash the toast.
+    if (this.opacity === 0) return;
     this.getComponent(AnimationComponent)!.fadeOut(0.2);
     this.getComponent(AnimationComponent)!.scaleTo(0, 0.2);
+    this.timer?.stop(false);
+    this.timer = null;
   }
 
   public override reset(): void {

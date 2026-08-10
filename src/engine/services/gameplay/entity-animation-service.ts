@@ -83,6 +83,10 @@ export class EntityAnimationService {
     return Math.min(this.elapsedMilliseconds / this.durationMilliseconds, 1);
   }
 
+  public getAnimationType(): AnimationType {
+    return this.animationType;
+  }
+
   public isCompleted(): boolean {
     return this.completed;
   }
