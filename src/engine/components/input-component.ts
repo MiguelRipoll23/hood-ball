@@ -57,6 +57,15 @@ export class InputComponent implements Component {
     }
   }
 
+  /**
+   * Reset per-frame input state. Called automatically by BaseGameEntity each
+   * frame (after scripts have consumed the previous frame's events), matching
+   * the pre-migration BaseTappableGameEntity.update() behaviour.
+   */
+  public update(): void {
+    this.resetFrame();
+  }
+
   public resetFrame(): void {
     this.hovering = false;
     this.pressed = false;

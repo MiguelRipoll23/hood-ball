@@ -1,8 +1,14 @@
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 import type { UserScore } from "../interfaces/responses/user-scores-response-interface.js";
 
 export class RankingTableEntity extends BaseGameEntity {
   private ranking: UserScore[] = [];
+
+  constructor() {
+    super();
+    this.addComponent(new AnimationComponent());
+  }
 
   public setRanking(ranking: UserScore[]): void {
     this.ranking = ranking;

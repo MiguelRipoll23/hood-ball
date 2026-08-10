@@ -19,7 +19,7 @@ export class CloseableMessageEntity extends BaseGameEntity {
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
     this.addComponent(new AnimationComponent());
-    this.addComponent(new InputComponent());
+    this.addComponent(new InputComponent(true)); // stealFocus: tapping anywhere (incl. backdrop) closes
     this.addComponent(new TransformComponent());
     this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.getComponent(InputComponent)!.active = false;

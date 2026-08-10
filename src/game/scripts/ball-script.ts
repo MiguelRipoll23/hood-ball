@@ -1,46 +1,60 @@
 import type { ScriptLifecycle } from "../../engine/components/script-component.js";
-import { TransformComponent } from "../../engine/components/transform-component.js";
-import { PhysicsComponent } from "../../engine/components/physics-component.js";
-import { CollisionComponent } from "../../engine/components/collision-component.js";
+import type { TransformComponent } from "../../engine/components/transform-component.js";
+import type { PhysicsComponent } from "../../engine/components/physics-component.js";
+import type { CollisionComponent } from "../../engine/components/collision-component.js";
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
 import { CarEntity } from "../entities/car-entity.js";
+import type { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import type { GamePlayer } from "../models/game-player.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { MathUtils } from "../../engine/utils/math-utils.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
-import type { DebugSettings } from "../../engine/models/debug-settings.js";
+import { EntityUtils } from "../../engine/utils/entity-utils.js";
 import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
 
+/**
+ * Script behaviour encapsulating the ball's per-frame game logic.
+ * Attached to a BallEntity via ScriptComponent — mirrors the CarScript pattern.
+ */
 export class BallScript implements ScriptLifecycle {
   private readonly RADIUS = 20;
   private readonly FRICTION = 0.01;
   private readonly MIN_VELOCITY = 0.1;
   private readonly MAX_VELOCITY = 10;
 
+  // ── Component / entity references ─────────────────────────────
   private transform!: TransformComponent;
   private physics!: PhysicsComponent;
   private collision!: CollisionComponent;
+  entity!: BaseGameEntity;
+  canvas: HTMLCanvasElement | null = null;
 
-  radius: number = this.RADIUS;
+  private readonly radius: number = this.RADIUS;
   inactive: boolean = false;
   lastPlayer: GamePlayer | null = null;
   weatherFrictionMultiplier = 1.0;
-  debugSettings: DebugSettings | null = null;
   private teleportFrameCount = 0;
 
   setInactive(v: boolean): void { this.inactive = v; }
+  isInactive(): boolean { return this.inactive; }
   getLastPlayer(): GamePlayer | null { return this.lastPlayer; }
   clearLastPlayerIfMatches(player: GamePlayer): void {
     if (this.lastPlayer === player) this.lastPlayer = null;
   }
   setWeatherFrictionMultiplier(m: number): void { this.weatherFrictionMultiplier = m; }
 
-  resolveComponents(t: TransformComponent, p: PhysicsComponent, c: CollisionComponent): void {
-    this.transform = t;
-    this.physics = p;
-    this.collision = c;
+  resolveComponents(
+    entity: BaseGameEntity,
+    transform: TransformComponent,
+    physics: PhysicsComponent,
+    collision: CollisionComponent,
+  ): void {
+    this.entity = entity;
+    this.transform = transform;
+    this.physics = physics;
+    this.collision = collision;
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────
@@ -50,13 +64,13 @@ export class BallScript implements ScriptLifecycle {
     this.transform.y = y;
     this.transform.width = this.RADIUS * 2;
     this.transform.height = this.RADIUS * 2;
+    this.physics.isDynamic = true; // Dynamic collider — matches pre-migration default
     this.physics.mass = 1;
     this.physics.bounciness = 0.8;
   }
 
   reset(canvasWidth: number, canvasHeight: number): void {
-    this.transform.teleport(canvasWidth / 2, canvasHeight / 2);
-    this.physics.resetVelocity();
+    this.teleport(canvasWidth / 2, canvasHeight / 2);
     this.inactive = false;
   }
 
@@ -141,6 +155,9 @@ export class BallScript implements ScriptLifecycle {
     if (this.physics.vx !== 0 || this.physics.vy !== 0) {
       this.transform.angle = Math.atan2(-this.physics.vy, -this.physics.vx);
     }
+    if (this.canvas) {
+      EntityUtils.fixEntityPositionIfOutOfBounds(this.entity, this.canvas);
+    }
   }
 
   render(context: CanvasRenderingContext2D): void {
@@ -153,7 +170,7 @@ export class BallScript implements ScriptLifecycle {
       context.fill(); context.closePath();
     }
     context.restore();
-    if (this.debugSettings?.isDebugging()) {
+    if (this.entity.debugSettings?.isDebugging()) {
       DebugUtils.renderText(context, this.transform.x - this.radius, this.transform.y + this.radius + 5,
         `X(${Math.round(this.transform.x)}) Y(${Math.round(this.transform.y)})`);
     }

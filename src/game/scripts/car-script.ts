@@ -104,6 +104,7 @@ export class CarScript implements ScriptLifecycle {
     this.transform.height = 50;
     this.physics.mass = 1000;
     this.physics.bounciness = 0.5;
+    this.physics.isDynamic = true; // Dynamic collider — matches pre-migration BaseCollidingGameEntity default
     this.isRemote = remote;
     this.imagePath = remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
   }
