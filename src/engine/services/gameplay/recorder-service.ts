@@ -1,6 +1,5 @@
 import { injectable } from "@needle-di/core";
 import type { GameEntity } from "../../models/game-entity.js";
-import { BaseMoveableGameEntity } from "../../entities/base-moveable-game-entity.js";
 import { BinaryWriter } from "../../utils/binary-writer-utils.js";
 import type { GameFrame } from "../../models/game-frame.js";
 import type { EntitySnapshot } from "../../interfaces/recording/entity-snapshot-interface.js";
@@ -10,6 +9,18 @@ import type { EntityTransformDelta } from "../../interfaces/recording/entity-tra
 import type { EntityStateDelta } from "../../interfaces/recording/entity-state-delta-interface.js";
 import { EngineLogger } from "../engine-logger.js";
 import { LayerType } from "../../enums/layer-type.js";
+
+/**
+ * Duck-type interface for entities that have position/dimension getters
+ * for recording purposes. Replaces the removed {@code BaseGameEntity}.
+ */
+interface MoveableRecorderEntity extends GameEntity {
+  getX?(): number;
+  getY?(): number;
+  getWidth?(): number;
+  getHeight?(): number;
+  getAngle?(): number;
+}
 import type { SceneType } from "../../enums/scene-type.js";
 import { SceneTypeUnknown } from "../../enums/scene-type.js";
 
@@ -319,7 +330,7 @@ export class RecorderService {
   }
 
   private createEntitySnapshot(entity: GameEntity): EntitySnapshot | null {
-    const moveable = entity as BaseMoveableGameEntity;
+    const moveable = entity as MoveableRecorderEntity;
     const dynamic = entity as {
       vx?: number;
       vy?: number;
@@ -371,7 +382,7 @@ export class RecorderService {
 
       if (!this.trackedEntities.has(id)) {
         // New entity spawned
-        const moveable = entity as BaseMoveableGameEntity;
+        const moveable = entity as MoveableRecorderEntity;
         const dynamic = entity as {
           vx?: number;
           vy?: number;
@@ -452,7 +463,7 @@ export class RecorderService {
         continue; // Entity not tracked yet
       }
 
-      const moveable = entity as BaseMoveableGameEntity;
+      const moveable = entity as MoveableRecorderEntity;
       const dynamic = entity as {
         vx?: number;
         vy?: number;

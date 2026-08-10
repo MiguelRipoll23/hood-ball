@@ -1,7 +1,8 @@
+import { TransformComponent } from "../../engine/components/transform-component.js";
 import { ImGui, ImVec2 } from "@mori2003/jsimgui";
 import type { GameEntity } from "../../engine/models/game-entity.js";
 import type { GameScene } from "../../engine/interfaces/scenes/game-scene-interface.js";
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+
 import { BallEntity } from "../entities/ball-entity.js";
 import { RemoteCarEntity } from "../entities/remote-car-entity.js";
 import { BaseWindow } from "../../engine/debug/base-window.js";
@@ -96,8 +97,14 @@ export class SceneInspectorWindow extends BaseWindow {
       });
   }
 
+  private isMoveableEntity(
+    entity: GameEntity,
+  ): entity is GameEntity & { setX(x: number): void; setY(y: number): void } {
+    return "setX" in entity && "setY" in entity;
+  }
+
   private renderEntityActions(entity: GameEntity, uniqueId: string): void {
-    if (entity instanceof BaseMoveableGameEntity) {
+    if (this.isMoveableEntity(entity)) {
       if (ImGui.Button(`Teleport##${uniqueId}`)) {
         const canvasWidth = this.gameState.getCanvas().width;
         const canvasHeight = this.gameState.getCanvas().height;
@@ -110,7 +117,7 @@ export class SceneInspectorWindow extends BaseWindow {
       ImGui.SameLine();
 
       if (ImGui.Button(`Reset##${uniqueId}`)) {
-        entity.reset();
+        (entity as any).reset?.();
       }
 
       ImGui.SameLine();
@@ -133,13 +140,13 @@ export class SceneInspectorWindow extends BaseWindow {
 
   private renderBallEntityActions(entity: BallEntity, uniqueId: string): void {
     if (ImGui.Button(`Duplicate##${uniqueId}`)) {
-      const x = entity.getX();
-      const y = entity.getY() - entity.getHeight() * 2;
+      const x = entity.getComponent(TransformComponent)!.x;
+      const y = entity.getComponent(TransformComponent)!.y - entity.getComponent(TransformComponent)!.height * 2;
 
       const ballEntity = new BallEntity(x, y, this.gameState.getCanvas());
       ballEntity.setId(crypto.randomUUID().replaceAll("-", ""));
       ballEntity.setDebugSettings(this.gameState.getDebugSettings());
-      ballEntity.setVY(5);
+      ballEntity.setSyncReliably(true);
       ballEntity.load();
 
       const currentScene = this.gameState.getGameFrame().getCurrentScene();
@@ -155,9 +162,9 @@ export class SceneInspectorWindow extends BaseWindow {
     uniqueId: string
   ): void {
     if (ImGui.Button(`Duplicate##${uniqueId}`)) {
-      const x = entity.getX();
-      const y = entity.getY() - entity.getHeight() * 2;
-      const angle = entity.getAngle();
+      const x = entity.getComponent(TransformComponent)!.x;
+      const y = entity.getComponent(TransformComponent)!.y - entity.getComponent(TransformComponent)!.height * 2;
+      const angle = entity.getComponent(TransformComponent)!.angle;
 
       const remoteCarEntity = new RemoteCarEntity(
         crypto.randomUUID().replaceAll("-", ""),
@@ -172,7 +179,7 @@ export class SceneInspectorWindow extends BaseWindow {
       remoteCarEntity.setDebugSettings(this.gameState.getDebugSettings());
       remoteCarEntity.setOwner(container.get(GamePlayer));
 
-      remoteCarEntity.setVY(5);
+      remoteCarEntity.setSyncReliably(true);
 
       const currentScene = this.gameState.getGameFrame().getCurrentScene();
 

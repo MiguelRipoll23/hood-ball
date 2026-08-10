@@ -1,16 +1,18 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { MatchAction } from "../models/match-action.js";
 import { TeamType } from "../enums/team-type.js";
 import { MatchActionType } from "../enums/match-action-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { MatchSessionService } from "../services/session/match-session-service.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
 
 interface TextPart {
   text: string;
   color: string;
 }
 
-export class MatchLogEntity extends BaseMoveableGameEntity {
+export class MatchLogEntity extends BaseGameEntity {
   private readonly padding = 10;
   private readonly fontSize = 16;
   private readonly lineHeight = 16;
@@ -30,6 +32,8 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
     private readonly gamePlayer: GamePlayer
   ) {
     super();
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.opacity = 0;
   }
 
@@ -37,8 +41,8 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
     this.actions = actions.slice(-this.maxActions);
 
     if (this.actions.length === 0) {
-      this.width = 0;
-      this.height = 0;
+      this.getComponent(TransformComponent)!.width = 0;
+      this.getComponent(TransformComponent)!.height = 0;
       if ((this.opacity > 0 || this.isFadingIn) && !this.isFadingOut) {
         this.startFadeOut();
       }
@@ -84,7 +88,7 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
     }
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
     super.update(deltaTimeStamp);
 
     if (this.isFadingIn && this.getOpacity() >= 1) {
@@ -96,7 +100,7 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
     }
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     if (this.opacity === 0 || this.actions.length === 0) {
       return;
     }
@@ -109,8 +113,8 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
 
   private measure(): void {
     if (this.actions.length === 0) {
-      this.width = 0;
-      this.height = 0;
+      this.getComponent(TransformComponent)!.width = 0;
+      this.getComponent(TransformComponent)!.height = 0;
       return;
     }
 
@@ -127,16 +131,16 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
 
     context.font = previousFont;
 
-    this.width = maxWidth + this.padding * 2;
-    this.height =
+    this.getComponent(TransformComponent)!.width = maxWidth + this.padding * 2;
+    this.getComponent(TransformComponent)!.height =
       this.actions.length * this.lineHeight +
       (this.actions.length - 1) * this.actionMargin +
       this.padding * 2;
   }
 
   private setPosition(): void {
-    this.x = 20;
-    this.y = 20;
+    this.getComponent(TransformComponent)!.x = 20;
+    this.getComponent(TransformComponent)!.y = 20;
   }
 
   private drawText(ctx: CanvasRenderingContext2D): void {
@@ -146,8 +150,8 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
     ctx.shadowBlur = 4;
     ctx.shadowOffsetX = 1;
     ctx.shadowOffsetY = 1;
-    let y = this.y + this.padding + this.lineHeight / 2;
-    const baseX = this.x + this.padding;
+    let y = this.getComponent(TransformComponent)!.y + this.padding + this.lineHeight / 2;
+    const baseX = this.getComponent(TransformComponent)!.x + this.padding;
 
     for (let i = 0; i < this.actions.length; i++) {
       const action = this.actions[i];
@@ -369,4 +373,6 @@ export class MatchLogEntity extends BaseMoveableGameEntity {
     }
     return context;
   }
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

@@ -1,10 +1,14 @@
 import { LIGHT_GREEN_COLOR } from "../../constants/colors-constants.js";
-import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
 import { BackdropEntity } from "./backdrop-entity.js";
 import { formatDate } from "../../../engine/utils/time-utils.js";
 import { EngineLogger } from "../../../engine/services/engine-logger.js";
+import { TransformComponent } from "../../../engine/components/transform-component.js";
+import { InputComponent } from "../../../engine/components/input-component.js";
+import { AnimationComponent } from "../../../engine/components/animation-component.js";
 
-export class CloseableWindowEntity extends BaseTappableGameEntity {
+export class CloseableWindowEntity extends BaseGameEntity {
   private readonly TITLE_BAR_HEIGHT: number = 40;
   private readonly TEXT_LINE_HEIGHT: number = 20;
   private readonly EMPHASIS_COLOR: string = "#4a9c0f";
@@ -34,7 +38,11 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
   private opened: boolean = false;
 
   constructor(private canvas: HTMLCanvasElement) {
-    super(true);
+    super();
+    this.addComponent(new AnimationComponent());
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.backdropEntity = new BackdropEntity(this.canvas);
     this.setInitialState();
   }
@@ -59,7 +67,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     timestamp?: number
   ): void {
     if (this.opened === false) {
-      this.fadeIn(0.2);
+      this.getComponent(AnimationComponent)!.fadeIn(0.2);
     }
 
     this.opened = true;
@@ -67,7 +75,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     this.title = title;
     this.content = content;
     this.timestamp = timestamp ?? null;
-    this.active = true;
+    this.getComponent(InputComponent)!.active = true;
   }
 
   public close(): void {
@@ -76,14 +84,14 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
       return;
     }
 
-    this.fadeOut(0.2);
+    this.getComponent(AnimationComponent)!.fadeOut(0.2);
 
     this.opened = false;
-    this.active = false;
+    this.getComponent(InputComponent)!.active = false;
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.pressed) {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.getComponent(InputComponent)!.pressed) {
       this.close();
     }
 
@@ -92,7 +100,7 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     super.update(deltaTimeStamp);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
 
     this.applyOpacity(context);
@@ -107,37 +115,37 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
   private setInitialState(): void {
     this.opacity = 0;
-    this.active = false;
+    this.getComponent(InputComponent)!.active = false;
     this.setSize();
     this.setCenterPosition();
     this.calculatePositions();
   }
 
   private setSize(): void {
-    this.width = this.canvas.width;
-    this.height = this.canvas.height;
-    this.width = this.canvas.width * 0.9;
-    this.height = 300;
+    this.getComponent(TransformComponent)!.width = this.canvas.width;
+    this.getComponent(TransformComponent)!.height = this.canvas.height;
+    this.getComponent(TransformComponent)!.width = this.canvas.width * 0.9;
+    this.getComponent(TransformComponent)!.height = 300;
   }
 
   private setCenterPosition(): void {
-    this.x = (this.canvas.width - this.width) / 2;
-    this.y = (this.canvas.height - this.height) / 2;
+    this.getComponent(TransformComponent)!.x = (this.canvas.width - this.getComponent(TransformComponent)!.width) / 2;
+    this.getComponent(TransformComponent)!.y = (this.canvas.height - this.getComponent(TransformComponent)!.height) / 2;
   }
 
   private calculatePositions(): void {
-    this.titleBarTextX = this.x + 15;
-    this.titleBarTextY = this.y + 28;
+    this.titleBarTextX = this.getComponent(TransformComponent)!.x + 15;
+    this.titleBarTextY = this.getComponent(TransformComponent)!.y + 28;
 
-    this.titleTextX = this.x + 14;
-    this.titleTextY = this.y + 68; // More top padding from title bar
+    this.titleTextX = this.getComponent(TransformComponent)!.x + 14;
+    this.titleTextY = this.getComponent(TransformComponent)!.y + 68; // More top padding from title bar
 
-    this.formattedDateTextX = this.x + 14;
-    this.formattedDateTextY = this.y + this.height - 14; // Bottom left of window
+    this.formattedDateTextX = this.getComponent(TransformComponent)!.x + 14;
+    this.formattedDateTextY = this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height - 14; // Bottom left of window
 
-    this.contentTextX = this.x + 14;
-    this.contentTextY = this.y + this.TITLE_BAR_HEIGHT + 55; // Reduced top margin
-    this.contentTextMaxWidth = this.width - 25;
+    this.contentTextX = this.getComponent(TransformComponent)!.x + 14;
+    this.contentTextY = this.getComponent(TransformComponent)!.y + this.TITLE_BAR_HEIGHT + 55; // Reduced top margin
+    this.contentTextMaxWidth = this.getComponent(TransformComponent)!.width - 25;
   }
 
   private wrapText(
@@ -208,12 +216,12 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
 
   private renderBackground(context: CanvasRenderingContext2D): void {
     context.fillStyle = "rgb(255, 255, 255, 0.8)";
-    context.fillRect(this.x, this.y, this.width, this.height);
+    context.fillRect(this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y, this.getComponent(TransformComponent)!.width, this.getComponent(TransformComponent)!.height);
   }
 
   private renderTitleBar(context: CanvasRenderingContext2D): void {
     context.fillStyle = LIGHT_GREEN_COLOR;
-    context.fillRect(this.x, this.y, this.width, this.TITLE_BAR_HEIGHT);
+    context.fillRect(this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y, this.getComponent(TransformComponent)!.width, this.TITLE_BAR_HEIGHT);
   }
 
   private renderWindowTitle(context: CanvasRenderingContext2D): void {
@@ -294,4 +302,6 @@ export class CloseableWindowEntity extends BaseTappableGameEntity {
     }
     context.font = originalFont;
   }
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

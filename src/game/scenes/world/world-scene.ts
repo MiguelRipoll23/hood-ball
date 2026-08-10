@@ -46,7 +46,7 @@ import { GamePlayer } from "../../models/game-player.js";
 import { GameServer } from "../../models/game-server.js";
 import { MatchSessionService } from "../../services/session/match-session-service.js";
 import { NpcService } from "../../services/gameplay/npc-service.js";
-import { BaseMoveableGameEntity } from "../../../engine/entities/base-moveable-game-entity.js";
+
 import { AntiCheatService } from "../../services/security/anti-cheat-service.js";
 import type { WorldSceneDependencies } from "./world-scene-dependencies.js";
 import { WeatherSystem } from "./systems/weather-system.js";
@@ -617,19 +617,20 @@ export class WorldScene extends BaseCollidingGameScene {
     skipInterpolation: boolean;
   }> {
     for (const entity of this.worldEntities) {
-      if (!(entity instanceof BaseMoveableGameEntity)) {
+      const moveable = entity as any;
+      if (!moveable.getOwner || !moveable.getTypeId || !moveable.getX || !moveable.getY) {
         continue;
       }
-      const ownerId = entity.getOwner()?.getNetworkId();
-      const typeId = entity.getTypeId();
+      const ownerId = moveable.getOwner()?.getNetworkId();
+      const typeId = moveable.getTypeId();
       if (ownerId && typeId !== null) {
         yield {
           id: entity.getId(),
-          x: entity.getX(),
-          y: entity.getY(),
+          x: moveable.getX(),
+          y: moveable.getY(),
           ownerId,
           typeId,
-          skipInterpolation: entity.wasSkipInterpolationSet(),
+          skipInterpolation: moveable.wasSkipInterpolationSet?.() ?? false,
         };
       }
     }

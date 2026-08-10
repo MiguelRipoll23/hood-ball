@@ -1,11 +1,10 @@
-import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
-import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
+import type { ScriptLifecycle } from "../../engine/components/script-component.js";
 import { LIGHT_GREEN_COLOR } from "../constants/colors-constants.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { RemoteEvent } from "../../engine/models/remote-event.js";
-import { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
+import type { EventProcessorService } from "../../engine/services/gameplay/event-processor-service.js";
 import { GameEventType } from "../enums/event-type.js";
-import { MatchSessionService } from "../services/session/match-session-service.js";
+import type { MatchSessionService } from "../services/session/match-session-service.js";
 
 function colorWithAlpha(hex: string, alpha: number): string {
   const bigint = parseInt(hex.replace("#", ""), 16);
@@ -17,36 +16,28 @@ function colorWithAlpha(hex: string, alpha: number): string {
 
 const PAD_COOLDOWN_MS = 10000;
 
-export class BoostPadEntity extends BaseGameEntity {
+export class BoostPadScript implements ScriptLifecycle {
   private readonly RADIUS = 16;
-  private active = true;
+  active = true;
   private cooldownRemaining = 0;
   private glowTimer = 0;
+  x: number;
+  y: number;
+  globalAlpha = 1;
 
   constructor(
-    private startX: number,
-    private startY: number,
+    x: number,
+    y: number,
     private readonly index: number,
     private readonly matchSessionService: MatchSessionService,
-    private readonly eventProcessorService: EventProcessorService
+    private readonly eventProcessorService: EventProcessorService,
   ) {
-    super();
-    this.physics.isDynamic = false;
-    this.physics.rigidBody = false;
-    this.x = this.startX;
-    this.y = this.startY;
-    this.width = this.RADIUS * 2;
-    this.height = this.RADIUS * 2;
+    this.x = x;
+    this.y = y;
   }
 
-  public override load(): void {
-    this.createHitbox();
-    super.load();
-  }
-
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
+  update(deltaTimeStamp: DOMHighResTimeStamp): void {
     this.glowTimer += deltaTimeStamp;
-
     if (!this.active) {
       this.cooldownRemaining -= deltaTimeStamp;
       if (this.cooldownRemaining <= 0) {
@@ -54,69 +45,39 @@ export class BoostPadEntity extends BaseGameEntity {
         this.cooldownRemaining = 0;
       }
     }
-
-    super.update(deltaTimeStamp);
   }
 
-  private createHitbox(): void {
-    const hitbox = new HitboxEntity(
-      this.x - this.width / 2,
-      this.y - this.height / 2,
-      this.width,
-      this.height
-    );
-    this.setHitboxEntities([hitbox]);
-  }
-
-  public tryConsume(playerId: string): boolean {
-    if (!this.active) {
-      return false;
-    }
+  tryConsume(playerId: string): boolean {
+    if (!this.active) return false;
     this.active = false;
     this.cooldownRemaining = PAD_COOLDOWN_MS;
     this.sendConsumeEvent(playerId);
     return true;
   }
 
-  public forceConsume(): void {
+  forceConsume(): void {
     this.active = false;
     this.cooldownRemaining = PAD_COOLDOWN_MS;
   }
 
-  public reset(): void {
+  reset(): void {
     this.active = true;
     this.cooldownRemaining = 0;
   }
 
-  public getIndex(): number {
-    return this.index;
-  }
-
-  public isActive(): boolean {
-    return this.active;
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
+  render(context: CanvasRenderingContext2D): void {
     context.save();
-    this.applyOpacity(context);
+    if (this.globalAlpha < 1) context.globalAlpha = this.globalAlpha;
 
     if (this.active) {
       const pulse = (Math.sin(this.glowTimer / 200) + 1) / 2;
       const radius = this.RADIUS * (0.8 + 0.2 * pulse);
       const gradient = context.createRadialGradient(
-        this.x,
-        this.y,
-        0,
-        this.x,
-        this.y,
-        radius
+        this.x, this.y, 0, this.x, this.y, radius,
       );
       gradient.addColorStop(0, "#ffe066");
       gradient.addColorStop(1, LIGHT_GREEN_COLOR);
-      context.shadowColor = colorWithAlpha(
-        LIGHT_GREEN_COLOR,
-        context.globalAlpha
-      );
+      context.shadowColor = colorWithAlpha(LIGHT_GREEN_COLOR, context.globalAlpha);
       context.shadowBlur = 20 + pulse * 20;
       context.fillStyle = gradient;
       context.beginPath();
@@ -134,19 +95,14 @@ export class BoostPadEntity extends BaseGameEntity {
     }
 
     context.restore();
-    super.render(context);
   }
 
   private sendConsumeEvent(playerId: string): void {
-    if (!this.matchSessionService.getMatch()?.isHost()) {
-      return;
-    }
-
+    if (!this.matchSessionService.getMatch()?.isHost()) return;
     const payload = BinaryWriter.build()
       .unsignedInt8(this.index)
       .fixedLengthString(playerId, 32)
       .toArrayBuffer();
-
     const event = new RemoteEvent(GameEventType.BoostPadConsumed);
     event.setData(payload);
     this.eventProcessorService.sendEvent(event);

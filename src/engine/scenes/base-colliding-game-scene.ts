@@ -1,18 +1,22 @@
-import { BaseCollidingGameEntity } from "../entities/base-colliding-game-entity.js";
 import { HitboxEntity } from "../entities/hitbox-entity.js";
 import { BaseMultiplayerScene } from "./base-multiplayer-scene.js";
 import type { GameState } from "../models/game-state.js";
 import { EventConsumerService } from "../services/gameplay/event-consumer-service.js";
-import type { GameEntity } from "../models/game-entity.js";
+import { BaseGameEntity } from "../entities/base-game-entity.js";
 import { SpatialGrid } from "../utils/spatial-grid.js";
+import { CollisionComponent } from "../components/collision-component.js";
+import { PhysicsComponent } from "../components/physics-component.js";
+import { TransformComponent } from "../components/transform-component.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../constants/canvas-constants.js";
 
 const GRID_CELL_SIZE = 100;
 
+interface GridEntry { getX(): number; getY(): number; entity: BaseGameEntity }
+
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   protected isReplayMode = false;
 
-  private readonly spatialGrid = new SpatialGrid<BaseCollidingGameEntity>(
+  private readonly spatialGrid = new SpatialGrid<GridEntry>(
     GRID_CELL_SIZE,
     Math.ceil(CANVAS_WIDTH / GRID_CELL_SIZE),
     Math.ceil(CANVAS_HEIGHT / GRID_CELL_SIZE),
@@ -20,7 +24,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
 
   constructor(
     gameState: GameState,
-    eventConsumerService: EventConsumerService
+    eventConsumerService: EventConsumerService,
   ) {
     super(gameState, eventConsumerService);
   }
@@ -30,335 +34,213 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    // During replay mode, skip entity updates (entities are driven by recorded data)
     super.update(deltaTimeStamp, this.isReplayMode);
-
-    // Skip collision detection in replay mode
     if (!this.isReplayMode) {
       this.detectCollisions();
     }
   }
 
   public detectCollisions(): void {
-    const entities = this.worldEntities.filter(this.isCollidingEntity);
+    const entities = this.worldEntities.filter(
+      (e): e is BaseGameEntity =>
+        e instanceof BaseGameEntity &&
+        e.hasComponent(CollisionComponent) &&
+        e.hasComponent(PhysicsComponent) &&
+        e.hasComponent(TransformComponent),
+    );
 
-    // Clear collision state and rebuild spatial grid
     for (const e of entities) {
-      // Clear existing collisions (iterate over copy since removal modifies the array)
-      for (const other of [...e.getCollidingEntities()]) {
-        e.removeCollidingEntity(other);
-        other.removeCollidingEntity(e);
+      const c = e.getComponent(CollisionComponent)!;
+      for (const other of [...c.collidingEntities]) {
+        const oc = (other as BaseGameEntity).getComponent(CollisionComponent);
+        c.collidingEntities = c.collidingEntities.filter((x) => x !== other);
+        if (oc) oc.collidingEntities = oc.collidingEntities.filter((x) => x !== e);
       }
-      e.getHitboxEntities().forEach((h) => h.setColliding(false));
+      c.hitboxEntities.forEach((h) => h.setColliding(false));
     }
 
     this.spatialGrid.clear();
     for (const e of entities) {
-      this.spatialGrid.insert(e);
+      const t = e.getComponent(TransformComponent)!;
+      this.spatialGrid.insert({ getX: () => t.x, getY: () => t.y, entity: e });
     }
 
-    // Only check pairs that share the same or adjacent cells
     this.spatialGrid.forEachPair((a, b) => {
-      this.detectCollisionsBetween(a, b);
+      this.detectCollisionsBetween(a.entity, b.entity);
     });
 
-    // Reset avoidingCollision for entities no longer colliding
     for (const e of entities) {
-      if (!e.isColliding()) {
-        e.setAvoidingCollision(false);
+      const c = e.getComponent(CollisionComponent)!;
+      if (!c.isColliding()) {
+        c.avoidingCollision = false;
       }
     }
-  }
-
-  private isCollidingEntity(
-    gameEntity: GameEntity
-  ): gameEntity is BaseCollidingGameEntity {
-    return gameEntity instanceof BaseCollidingGameEntity;
   }
 
   private detectCollisionsBetween(
-    collidingEntity: BaseCollidingGameEntity,
-    otherCollidingEntity: BaseCollidingGameEntity
+    a: BaseGameEntity,
+    b: BaseGameEntity,
   ): void {
-    const hitboxes = collidingEntity.getHitboxEntities();
-    const otherHitboxes = otherCollidingEntity.getHitboxEntities();
+    const ca = a.getComponent(CollisionComponent)!;
+    const cb = b.getComponent(CollisionComponent)!;
 
-    if (this.doesHitboxesIntersect(hitboxes, otherHitboxes) === false) {
-      collidingEntity.removeCollidingEntity(otherCollidingEntity);
-      otherCollidingEntity.removeCollidingEntity(collidingEntity);
+    if (!this.doesHitboxesIntersect(ca.hitboxEntities, cb.hitboxEntities)) {
+      ca.collidingEntities = ca.collidingEntities.filter((x) => x !== b);
+      cb.collidingEntities = cb.collidingEntities.filter((x) => x !== a);
       return;
     }
 
-    collidingEntity.addCollidingEntity(otherCollidingEntity);
-    otherCollidingEntity.addCollidingEntity(collidingEntity);
+    ca.collidingEntities.push(b);
+    cb.collidingEntities.push(a);
 
-    if (
-      collidingEntity.hasRigidBody() === false ||
-      otherCollidingEntity.hasRigidBody() === false
-    ) {
-      return;
-    }
+    const pa = a.getComponent(PhysicsComponent)!;
+    const pb = b.getComponent(PhysicsComponent)!;
 
-    const areDynamicEntitiesColliding =
-      collidingEntity.isDynamic() && otherCollidingEntity.isDynamic();
+    if (!pa.rigidBody || !pb.rigidBody) return;
 
-    const isDynamicEntityCollidingWithStatic =
-      collidingEntity.isDynamic() && !otherCollidingEntity.isDynamic();
-
-    if (areDynamicEntitiesColliding) {
-      this.simulateCollisionBetweenDynamicEntities(
-        collidingEntity,
-        otherCollidingEntity
-      );
-    } else if (isDynamicEntityCollidingWithStatic) {
-      if (collidingEntity.isAvoidingCollision()) {
-        return;
-      }
-
-      this.simulateCollisionBetweenDynamicAndStaticEntities(collidingEntity);
+    if (pa.isDynamic && pb.isDynamic) {
+      this.simulateCollisionBetweenDynamicEntities(a, pa, b, pb);
+    } else if (pa.isDynamic && !pb.isDynamic) {
+      if (ca.avoidingCollision) return;
+      this.simulateCollisionBetweenDynamicAndStaticEntities(a, pa);
     }
   }
 
   private doesHitboxesIntersect(
-    hitboxEntities: HitboxEntity[],
-    otherHitboxEntities: HitboxEntity[]
-  ) {
+    hitboxes: HitboxEntity[],
+    others: HitboxEntity[],
+  ): boolean {
     let intersecting = false;
-
-    hitboxEntities.forEach((hitbox) => {
-      otherHitboxEntities.forEach((otherHitbox) => {
+    hitboxes.forEach((h) => {
+      others.forEach((o) => {
         if (
-          hitbox.getX() < otherHitbox.getX() + otherHitbox.getWidth() &&
-          hitbox.getX() + hitbox.getWidth() > otherHitbox.getX() &&
-          hitbox.getY() < otherHitbox.getY() + otherHitbox.getHeight() &&
-          hitbox.getY() + hitbox.getHeight() > otherHitbox.getY()
+          h.getX() < o.getX() + o.getWidth() &&
+          h.getX() + h.getWidth() > o.getX() &&
+          h.getY() < o.getY() + o.getHeight() &&
+          h.getY() + h.getHeight() > o.getY()
         ) {
           intersecting = true;
-          hitbox.setColliding(true);
-          otherHitbox.setColliding(true);
+          h.setColliding(true);
+          o.setColliding(true);
         }
       });
     });
-
     return intersecting;
   }
 
   private calculatePenetrationCorrection(
-    dynamicEntity: BaseCollidingGameEntity
+    entity: BaseGameEntity,
   ): { x: number; y: number } {
-    const dynamicHitboxes = dynamicEntity.getHitboxEntities();
-    let maxPenetrationX = 0;
-    let maxPenetrationY = 0;
-    let maxPenetrationDepth = 0;
+    const c = entity.getComponent(CollisionComponent)!;
+    let maxDepth = 0;
+    let corrX = 0;
+    let corrY = 0;
 
-    // Find the static entity we're colliding with
-    const collidingEntities = dynamicEntity.getCollidingEntities();
-    for (const staticEntity of collidingEntities) {
-      if (staticEntity.isDynamic() || !staticEntity.hasRigidBody()) {
-        continue;
-      }
+    for (const other of c.collidingEntities) {
+      const otherEntity = other as BaseGameEntity;
+      const op = otherEntity.getComponent(PhysicsComponent);
+      if (!op || op.isDynamic || !op.rigidBody) continue;
 
-      const staticHitboxes = staticEntity.getHitboxEntities();
+      const oc = otherEntity.getComponent(CollisionComponent)!;
+      for (const dh of c.hitboxEntities) {
+        for (const sh of oc.hitboxEntities) {
+          const dx1 = dh.getX(), dy1 = dh.getY(), dw = dh.getWidth(), dh_ = dh.getHeight();
+          const sx1 = sh.getX(), sy1 = sh.getY(), sw = sh.getWidth(), sh_ = sh.getHeight();
 
-      // Check all hitbox pairs for penetration
-      for (const dynamicHitbox of dynamicHitboxes) {
-        for (const staticHitbox of staticHitboxes) {
-          const dx1 = dynamicHitbox.getX();
-          const dy1 = dynamicHitbox.getY();
-          const dw = dynamicHitbox.getWidth();
-          const dh = dynamicHitbox.getHeight();
+          if (dx1 < sx1 + sw && dx1 + dw > sx1 && dy1 < sy1 + sh_ && dy1 + dh_ > sy1) {
+            const pL = dx1 + dw - sx1, pR = sx1 + sw - dx1;
+            const pT = dy1 + dh_ - sy1, pB = sy1 + sh_ - dy1;
+            const mH = Math.min(pL, pR), mV = Math.min(pT, pB);
 
-          const sx1 = staticHitbox.getX();
-          const sy1 = staticHitbox.getY();
-          const sw = staticHitbox.getWidth();
-          const sh = staticHitbox.getHeight();
-
-          // Check if hitboxes intersect
-          if (
-            dx1 < sx1 + sw &&
-            dx1 + dw > sx1 &&
-            dy1 < sy1 + sh &&
-            dy1 + dh > sy1
-          ) {
-            // Calculate penetration depths on each axis
-            const penetrationLeft = dx1 + dw - sx1;
-            const penetrationRight = sx1 + sw - dx1;
-            const penetrationTop = dy1 + dh - sy1;
-            const penetrationBottom = sy1 + sh - dy1;
-
-            // Find the smallest penetration (the axis of least resistance)
-            const minHorizontal = Math.min(penetrationLeft, penetrationRight);
-            const minVertical = Math.min(penetrationTop, penetrationBottom);
-
-            if (minHorizontal < minVertical) {
-              // Horizontal correction is smaller
-              const depth = minHorizontal;
-              if (depth > maxPenetrationDepth) {
-                maxPenetrationDepth = depth;
-                maxPenetrationX =
-                  penetrationLeft < penetrationRight
-                    ? -penetrationLeft
-                    : penetrationRight;
-                maxPenetrationY = 0;
+            if (mH < mV) {
+              if (mH > maxDepth) {
+                maxDepth = mH;
+                corrX = pL < pR ? -pL : pR;
+                corrY = 0;
               }
             } else {
-              // Vertical correction is smaller
-              const depth = minVertical;
-              if (depth > maxPenetrationDepth) {
-                maxPenetrationDepth = depth;
-                maxPenetrationX = 0;
-                maxPenetrationY =
-                  penetrationTop < penetrationBottom
-                    ? -penetrationTop
-                    : penetrationBottom;
+              if (mV > maxDepth) {
+                maxDepth = mV;
+                corrX = 0;
+                corrY = pT < pB ? -pT : pB;
               }
             }
           }
         }
       }
     }
-
-    return { x: maxPenetrationX, y: maxPenetrationY };
+    return { x: corrX, y: corrY };
   }
 
   private simulateCollisionBetweenDynamicAndStaticEntities(
-    dynamicCollidingEntity: BaseCollidingGameEntity
-  ) {
-    // Calculate penetration depth and correction
-    const correction = this.calculatePenetrationCorrection(
-      dynamicCollidingEntity
-    );
-
-    // Apply position correction to push entity back inside bounds
+    entity: BaseGameEntity,
+    phys: PhysicsComponent,
+  ): void {
+    const t = entity.getComponent(TransformComponent)!;
+    const correction = this.calculatePenetrationCorrection(entity);
     if (correction.x !== 0 || correction.y !== 0) {
-      const currentX = dynamicCollidingEntity.getX();
-      const currentY = dynamicCollidingEntity.getY();
-      const newX = currentX + correction.x;
-      const newY = currentY + correction.y;
-      dynamicCollidingEntity.setX(newX);
-      dynamicCollidingEntity.setY(newY);
-
-      // Update hitboxes to match corrected position immediately
-      dynamicCollidingEntity.updateHitbox();
+      t.x += correction.x;
+      t.y += correction.y;
+      entity.getComponent(CollisionComponent)!.hitboxEntities.forEach((h) => {
+        h.setX(t.x - h.getWidth() / 2);
+        h.setY(t.y - h.getHeight() / 2);
+      });
     }
 
-    const restitution = dynamicCollidingEntity.getBounciness();
-    let vx = -dynamicCollidingEntity.getVX() * restitution;
-    let vy = -dynamicCollidingEntity.getVY() * restitution;
+    const rest = phys.bounciness;
+    let vx = -phys.vx * rest;
+    let vy = -phys.vy * rest;
+    if (vx > -1 && vx < 1) vx = vx < 0 ? -1 : 1;
+    if (vy > -1 && vy < 1) vy = vy < 0 ? -1 : 1;
 
-    // Impulse to avoid becoming stuck
-    if (vx > -1 && vx < 1) {
-      vx = vx < 0 ? -1 : 1;
-    }
-
-    if (vy > -1 && vy < 1) {
-      vy = vy < 0 ? -1 : 1;
-    }
-
-    dynamicCollidingEntity.setAvoidingCollision(true);
-    dynamicCollidingEntity.setVX(vx);
-    dynamicCollidingEntity.setVY(vy);
+    entity.getComponent(CollisionComponent)!.avoidingCollision = true;
+    phys.vx = vx;
+    phys.vy = vy;
   }
 
   private simulateCollisionBetweenDynamicEntities(
-    dynamicCollidingEntity: BaseCollidingGameEntity,
-    otherDynamicCollidingEntity: BaseCollidingGameEntity
-  ) {
-    // Calculate collision vector
-    const vCollision = {
-      x: otherDynamicCollidingEntity.getX() - dynamicCollidingEntity.getX(),
-      y: otherDynamicCollidingEntity.getY() - dynamicCollidingEntity.getY(),
-    };
+    a: BaseGameEntity, pa: PhysicsComponent,
+    b: BaseGameEntity, pb: PhysicsComponent,
+  ): void {
+    const ta = a.getComponent(TransformComponent)!;
+    const tb = b.getComponent(TransformComponent)!;
 
-    // Calculate distance between entities
-    let distance = Math.sqrt(
-      Math.pow(vCollision.x, 2) + Math.pow(vCollision.y, 2)
-    );
-
+    const vCollision = { x: tb.x - ta.x, y: tb.y - ta.y };
+    let distance = Math.sqrt(vCollision.x ** 2 + vCollision.y ** 2);
     const MIN_DISTANCE = 1;
 
-    // If entities are extremely close, push them apart to avoid being stuck
     if (distance < MIN_DISTANCE) {
       if (distance === 0) {
-        // Choose deterministic direction when they share the same position
-        const idPair = [
-          dynamicCollidingEntity.getId() ?? "",
-          otherDynamicCollidingEntity.getId() ?? "",
-        ]
-          .sort()
-          .join("");
+        const ids = [a.getId(), b.getId()].sort().join("");
         let hash = 0;
-        for (let i = 0; i < idPair.length; i++) {
-          hash = (hash + idPair.charCodeAt(i)) % 360;
-        }
+        for (let i = 0; i < ids.length; i++) hash = (hash + ids.charCodeAt(i)) % 360;
         const angle = (hash / 360) * Math.PI * 2;
         vCollision.x = Math.cos(angle);
         vCollision.y = Math.sin(angle);
         distance = 1;
       }
-
       const pushX = (vCollision.x / distance) * MIN_DISTANCE;
       const pushY = (vCollision.y / distance) * MIN_DISTANCE;
-
-      dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() - pushX);
-      dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() - pushY);
-
-      otherDynamicCollidingEntity.setVX(
-        otherDynamicCollidingEntity.getVX() + pushX
-      );
-      otherDynamicCollidingEntity.setVY(
-        otherDynamicCollidingEntity.getVY() + pushY
-      );
-
+      pa.vx -= pushX;
+      pa.vy -= pushY;
+      pb.vx += pushX;
+      pb.vy += pushY;
       return;
     }
 
-    // Normalize collision vector
-    const vCollisionNorm = {
-      x: vCollision.x / distance,
-      y: vCollision.y / distance,
-    };
+    const norm = { x: vCollision.x / distance, y: vCollision.y / distance };
+    const relVel = { x: pb.vx - pa.vx, y: pb.vy - pa.vy };
+    const speed = relVel.x * norm.x + relVel.y * norm.y;
+    if (speed < 0) return;
 
-    // Calculate relative velocity
-    const vRelativeVelocity = {
-      x: otherDynamicCollidingEntity.getVX() - dynamicCollidingEntity.getVX(),
-      y: otherDynamicCollidingEntity.getVY() - dynamicCollidingEntity.getVY(),
-    };
+    const rest = Math.min(pa.bounciness, pb.bounciness);
+    const impulse = ((1 + rest) * speed) / (pa.mass + pb.mass);
+    const ix = impulse * pb.mass * norm.x;
+    const iy = impulse * pb.mass * norm.y;
 
-    // Calculate speed along collision normal
-    const speed =
-      vRelativeVelocity.x * vCollisionNorm.x +
-      vRelativeVelocity.y * vCollisionNorm.y;
-
-    if (speed < 0) {
-      // Collision has already been resolved
-      return;
-    }
-
-    // Calculate impulse with restitution
-    const restitution = Math.min(
-      dynamicCollidingEntity.getBounciness(),
-      otherDynamicCollidingEntity.getBounciness()
-    );
-    const impulse =
-      ((1 + restitution) * speed) /
-      (dynamicCollidingEntity.getMass() +
-        otherDynamicCollidingEntity.getMass());
-
-    // Update velocities for both movable entities
-    const impulseX =
-      impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.x;
-    const impulseY =
-      impulse * otherDynamicCollidingEntity.getMass() * vCollisionNorm.y;
-
-    dynamicCollidingEntity.setVX(dynamicCollidingEntity.getVX() + impulseX);
-    dynamicCollidingEntity.setVY(dynamicCollidingEntity.getVY() + impulseY);
-
-    otherDynamicCollidingEntity.setVX(
-      otherDynamicCollidingEntity.getVX() - impulseX
-    );
-    otherDynamicCollidingEntity.setVY(
-      otherDynamicCollidingEntity.getVY() - impulseY
-    );
+    pa.vx += ix;
+    pa.vy += iy;
+    pb.vx -= ix;
+    pb.vy -= iy;
   }
 }

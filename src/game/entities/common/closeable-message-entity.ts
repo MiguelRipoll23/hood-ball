@@ -1,7 +1,11 @@
-import { BaseTappableGameEntity } from "../../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
 import { EngineLogger } from "../../../engine/services/engine-logger.js";
+import { TransformComponent } from "../../../engine/components/transform-component.js";
+import { InputComponent } from "../../../engine/components/input-component.js";
+import { AnimationComponent } from "../../../engine/components/animation-component.js";
 
-export class CloseableMessageEntity extends BaseTappableGameEntity {
+export class CloseableMessageEntity extends BaseGameEntity {
   private readonly FILL_COLOR = "rgba(0, 0, 0, 0.8)";
 
   private readonly DEFAULT_HEIGHT = 100;
@@ -13,8 +17,12 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
   private content = "Whoops! Something went wrong!";
 
   constructor(private readonly canvas: HTMLCanvasElement) {
-    super(true);
-    this.active = false;
+    super();
+    this.addComponent(new AnimationComponent());
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
+    this.getComponent(InputComponent)!.active = false;
     this.opacity = 0;
     this.setSize();
     this.setPosition();
@@ -23,8 +31,8 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
   public show(value: string): void {
     this.setPosition();
     this.content = value;
-    this.fadeIn(0.2);
-    this.active = true;
+    this.getComponent(AnimationComponent)!.fadeIn(0.2);
+    this.getComponent(InputComponent)!.active = true;
   }
 
   public close(): void {
@@ -33,19 +41,19 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
       return;
     }
 
-    this.active = false;
-    this.fadeOut(0.2);
+    this.getComponent(InputComponent)!.active = false;
+    this.getComponent(AnimationComponent)!.fadeOut(0.2);
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.pressed) {
+  private scriptUpdate(deltaTimeStamp: DOMHighResTimeStamp): void {
+    if (this.getComponent(InputComponent)!.pressed) {
       this.close();
     }
 
     super.update(deltaTimeStamp);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.save();
     this.applyOpacity(context);
     this.drawRoundedRectangle(context);
@@ -56,30 +64,30 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
   }
 
   private setSize(): void {
-    this.width = this.DEFAULT_WIDTH;
-    this.height = this.DEFAULT_HEIGHT;
+    this.getComponent(TransformComponent)!.width = this.DEFAULT_WIDTH;
+    this.getComponent(TransformComponent)!.height = this.DEFAULT_HEIGHT;
   }
 
   private drawRoundedRectangle(context: CanvasRenderingContext2D): void {
     context.fillStyle = this.FILL_COLOR;
     context.beginPath();
-    context.moveTo(this.x + 6, this.y);
+    context.moveTo(this.getComponent(TransformComponent)!.x + 6, this.getComponent(TransformComponent)!.y);
     context.arcTo(
-      this.x + this.width,
-      this.y,
-      this.x + this.width,
-      this.y + this.height,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
       6
     );
     context.arcTo(
-      this.x + this.width,
-      this.y + this.height,
-      this.x,
-      this.y + this.height,
+      this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
+      this.getComponent(TransformComponent)!.x,
+      this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height,
       6
     );
-    context.arcTo(this.x, this.y + this.height, this.x, this.y, 6);
-    context.arcTo(this.x, this.y, this.x + this.width, this.y, 6);
+    context.arcTo(this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height, this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y, 6);
+    context.arcTo(this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y, this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width, this.getComponent(TransformComponent)!.y, 6);
     context.closePath();
     context.fill();
   }
@@ -92,9 +100,11 @@ export class CloseableMessageEntity extends BaseTappableGameEntity {
   }
 
   private setPosition(): void {
-    this.x = this.canvas.width / 2 - this.width / 2;
-    this.y = this.canvas.height / 2 - this.height / 2;
-    this.textX = this.x + this.width / 2;
-    this.textY = this.y + this.height / 2 + 5;
+    this.getComponent(TransformComponent)!.x = this.canvas.width / 2 - this.getComponent(TransformComponent)!.width / 2;
+    this.getComponent(TransformComponent)!.y = this.canvas.height / 2 - this.getComponent(TransformComponent)!.height / 2;
+    this.textX = this.getComponent(TransformComponent)!.x + this.getComponent(TransformComponent)!.width / 2;
+    this.textY = this.getComponent(TransformComponent)!.y + this.getComponent(TransformComponent)!.height / 2 + 5;
   }
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

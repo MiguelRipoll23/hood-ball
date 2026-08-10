@@ -1,681 +1,125 @@
-import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
+import { PhysicsComponent } from "../../engine/components/physics-component.js";
+import { CollisionComponent } from "../../engine/components/collision-component.js";
+import { NetworkComponent } from "../../engine/components/network-component.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { CarScript } from "../scripts/car-script.js";
 import { GamePlayer } from "../models/game-player.js";
-import {
-  BLUE_TEAM_TRANSPARENCY_COLOR,
-  RED_TEAM_TRANSPARENCY_COLOR,
-} from "../constants/colors-constants.js";
-import { SPAWN_ANGLE } from "../constants/entity-constants.js";
-import {
-  SCALE_FACTOR_FOR_ANGLES,
-  SCALE_FACTOR_FOR_SPEED,
-  SCALE_FACTOR_FOR_COORDINATES,
-} from "../constants/webrtc-constants.js";
-import { DebugUtils } from "../../engine/utils/debug-utils.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
-import { BoostPadEntity } from "./boost-pad-entity.js";
+import { SCALE_FACTOR_FOR_ANGLES, SCALE_FACTOR_FOR_COORDINATES } from "../constants/webrtc-constants.js";
 
-export class CarEntity extends BaseCollidingGameEntity {
-  protected topSpeed: number = 0.3;
-  protected acceleration: number = 0.002;
-  protected readonly HANDLING: number = 0.007;
+/**
+ * Pure component container. All per-frame game logic, rendering, physics,
+ * boost, smoke, and networking live in {@link CarScript}.
+ */
+export class CarEntity extends BaseGameEntity {
+  protected readonly carScript: CarScript;
+  protected remote: boolean;
 
-  private readonly IMAGE_BLUE_PATH = "./images/car-blue.png";
-  private readonly IMAGE_RED_PATH = "./images/car-red.png";
-
-  private readonly MASS: number = 1000;
-  private readonly FRICTION: number = 0.001;
-
-  // Boost related constants
-  protected readonly MAX_BOOST: number = 100;
-  // drain entire boost in roughly 1 second
-  protected readonly BOOST_DRAIN_RATE: number = 100; // units per second
-  protected readonly BOOST_TOP_SPEED_MULTIPLIER: number = 2;
-  protected readonly BOOST_ACCELERATION_MULTIPLIER: number = 2;
-
-  // Turbo rendering constants
-  private readonly TURBO_MIN_LENGTH = 15;
-  private readonly TURBO_MAX_LENGTH = 30;
-  private readonly TURBO_WIDTH = 15;
-
-  // Smoke trail constants
-  // Duration of each smoke particle in milliseconds
-  private readonly SMOKE_DURATION = 1500; // ms
-  private readonly SMOKE_SPAWN_INTERVAL = 5; // ms
-  // Reference delta at 60 fps (1000/60 ≈ 16.667ms) — used to normalize delta-time
-  private readonly REFERENCE_DELTA = 1000 / 60;
-
-  private readonly PLAYER_NAME_PADDING = 10;
-  private readonly PLAYER_NAME_RECT_HEIGHT = 24;
-  private readonly PLAYER_NAME_RADIUS = 10;
-
-  private readonly PING_CIRCLE_RADIUS = 3;
-  private readonly PING_CIRCLE_SPACING = 4;
-  private readonly PING_ACTIVE_COLOR = "#C6FF00";
-  private readonly PING_INACTIVE_COLOR = "#FF0000";
-
-  protected canvas: HTMLCanvasElement | null = null;
-  protected speed: number = 0;
-
-  private smokeParticles: {
-    x: number;
-    y: number;
-    size: number;
-    life: number; // remaining life in ms
-    vx: number;
-    vy: number;
-  }[] = [];
-  private smokeSpawnElapsed = 0;
-
-  protected boost: number = this.MAX_BOOST;
-  protected boosting: boolean = false;
-
-  private demolished = false;
-  private respawnTimer = 0;
-  private respawnX = 0;
-  private respawnY = 0;
-
-  private carImage: HTMLImageElement | null = null;
-  private imagePath = this.IMAGE_BLUE_PATH;
-
-  private weatherFrictionMultiplier = 1.0;
-
-  constructor(x: number, y: number, angle: number, private remote = false) {
+  constructor(x: number, y: number, angle: number, remote = false) {
     super();
     this.remote = remote;
-    this.x = x;
-    this.y = y;
-    this.angle = angle;
-    this.width = 50;
-    this.height = 50;
-    this.physics.mass = this.MASS;
-    this.setBounciness(0.5);
 
-    if (remote) {
-      this.imagePath = this.IMAGE_RED_PATH;
-    }
+    const transform = this.addComponent(new TransformComponent());
+    const physics = this.addComponent(new PhysicsComponent());
+    const collision = this.addComponent(new CollisionComponent());
+    this.addComponent(new NetworkComponent());
+
+    this.carScript = new CarScript();
+    this.addComponent(new ScriptComponent(this.carScript));
+    this.carScript.resolveComponents(this, transform, physics, collision);
+
+    this.carScript.init(x, y, angle, remote);
   }
 
   public override load(): void {
-    this.createHitbox();
-    this.loadCarImage();
+    this.carScript.createHitbox();
+    this.carScript.loadCarImage(() => super.load());
   }
 
   public override reset(): void {
-    this.angle = 1.5708;
-    this.speed = 0;
-    this.boost = this.MAX_BOOST;
-    this.boosting = false;
+    this.carScript.reset();
     super.reset();
   }
 
-  private serializeNetworkData(writer: BinaryWriter): void {
-    const angle = Math.round(this.angle * SCALE_FACTOR_FOR_ANGLES);
-    const speed = Math.round(this.speed * SCALE_FACTOR_FOR_SPEED);
-    const boost = Math.round(this.boost);
+  // ── Public API (delegates to CarScript) ───────────────────────
 
-    const scaledX = Math.round(this.x * SCALE_FACTOR_FOR_COORDINATES);
-    const scaledY = Math.round(this.y * SCALE_FACTOR_FOR_COORDINATES);
+  public getPlayer(): GamePlayer | null { return this.getOwner() as GamePlayer | null; }
+  public getBoost(): number { return this.carScript.getBoost(); }
+  public setBoost(boost: number): void { this.carScript.setBoost(boost); }
+  public isBoosting(): boolean { return this.carScript.boosting; }
+  public getSpeed(): number { return this.carScript.speed; }
+  public setSpeed(speed: number): void { this.carScript.speed = speed; }
+  public getTopSpeed(): number { return this.carScript.getTopSpeed(); }
+  public getBoostTopSpeedMultiplier(): number { return this.carScript.getBoostTopSpeedMultiplier(); }
+  public setTopSpeed(topSpeed: number): void { this.carScript.setTopSpeed(topSpeed); }
+  public setAcceleration(acceleration: number): void { this.carScript.setAcceleration(acceleration); }
+  public getAcceleration(): number { return this.carScript.getAcceleration(); }
+  public getHandling(): number { return this.carScript.HANDLING; }
 
-    writer
-      .unsignedInt16(scaledX)
-      .unsignedInt16(scaledY)
-      .signedInt16(angle)
-      .signedInt16(speed)
-      .boolean(this.boosting)
-      .unsignedInt8(boost)
-      .boolean(this.demolished);
+  public demolish(respawnX: number, respawnY: number, delay: number): void {
+    this.carScript.demolish(respawnX, respawnY, delay);
+  }
+  public isDemolished(): boolean { return this.carScript.isDemolished(); }
+  public activateBoost(): void { this.carScript.activateBoost(); }
+  public deactivateBoost(): void { this.carScript.deactivateBoost(); }
+  public setWeatherFrictionMultiplier(multiplier: number): void {
+    this.carScript.setWeatherFrictionMultiplier(multiplier);
+  }
+  public refillBoost(): void { this.carScript.refillBoost(); }
+  public setCanvas(canvas: HTMLCanvasElement): void { this.carScript.canvas = canvas; }
+  public getCanvas(): HTMLCanvasElement | null { return this.carScript.canvas; }
+  public getMaxBoost(): number { return this.carScript.maxBoost; }
+  public setAngle(v: number): void { this.carScript.setAngle(v); }
+  public getAngle(): number { return this.carScript.getAngle(); }
+  public updateHitbox(): void { this.carScript.updateHitbox(); }
+
+  public override teleport(x: number, y: number, angle?: number): void {
+    this.carScript.teleport(x, y, angle);
   }
 
   public override serialize(): ArrayBuffer {
     const writer = BinaryWriter.build();
-    this.serializeNetworkData(writer);
+    this.carScript.serializeNetworkData(writer);
     return writer.toArrayBuffer();
   }
 
   public override getReplayState(): ArrayBuffer | null {
     const owner = this.getOwner();
     const playerName = owner?.getName() ?? "Unknown";
-
-    // Determine car type: 0 = local, 1 = remote, 2 = npc
     let carType = 0;
-    if (owner && owner.isNpc()) {
-      carType = 2; // NPC
-    } else if (this.remote) {
-      carType = 1; // Remote
-    }
-
-    const binaryWriter = BinaryWriter.build();
-    binaryWriter.variableLengthString(playerName);
-    binaryWriter.unsignedInt8(carType);
-    this.serializeNetworkData(binaryWriter);
-
-    return binaryWriter.toArrayBuffer();
+    if (owner?.isNpc()) carType = 2;
+    else if (this.remote) carType = 1;
+    const writer = BinaryWriter.build();
+    writer.variableLengthString(playerName);
+    writer.unsignedInt8(carType);
+    this.carScript.serializeNetworkData(writer);
+    return writer.toArrayBuffer();
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
-    const binaryReader = BinaryReader.fromArrayBuffer(arrayBuffer);
-
-    // Read player name from replay data
-    const playerName = binaryReader.variableLengthString();
-
-    // Read car type: 0 = local, 1 = remote, 2 = npc
-    const carType = binaryReader.unsignedInt8();
+    const r = BinaryReader.fromArrayBuffer(arrayBuffer);
+    const playerName = r.variableLengthString();
+    const carType = r.unsignedInt8();
     const isNpc = carType === 2;
     const isRemote = carType === 1;
-
-    // Update remote flag and image path based on car type
     this.remote = isRemote || isNpc;
-    this.imagePath = this.remote ? this.IMAGE_RED_PATH : this.IMAGE_BLUE_PATH;
-
-    // Reload the car image to reflect the new path
-    this.loadCarImage();
-
-    // Update or create owner with the player name from replay
+    this.carScript.setRemote(this.remote);
+    this.carScript.loadCarImage(() => {});
     if (!this.getOwner()) {
-      this.setOwner(
-        new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
-      );
+      this.setOwner(new GamePlayer("replay-player", playerName, false, 0, 0, isNpc));
     } else if (this.getOwner()!.getName() !== playerName) {
-      // Owner name changed, create new player with updated name
-      this.setOwner(
-        new GamePlayer("replay-player", playerName, false, 0, 0, isNpc)
-      );
+      this.setOwner(new GamePlayer("replay-player", playerName, false, 0, 0, isNpc));
     }
-
-    const scaledX = binaryReader.unsignedInt16();
-    const scaledY = binaryReader.unsignedInt16();
-    const newX = scaledX / SCALE_FACTOR_FOR_COORDINATES;
-    const newY = scaledY / SCALE_FACTOR_FOR_COORDINATES;
-    const newAngle = binaryReader.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
-    const newSpeed = binaryReader.signedInt16() / SCALE_FACTOR_FOR_SPEED;
-    const newBoosting = binaryReader.boolean();
-    const newBoost = binaryReader.unsignedInt8();
-
-    const newDemolished = binaryReader.boolean();
-
-    this.x = newX;
-    this.y = newY;
-    this.angle = newAngle;
-    this.speed = newSpeed;
-    this.boosting = newBoosting;
-    this.boost = newBoost;
-    this.demolished = newDemolished;
-    this.setOpacity(newDemolished ? 0 : 1);
-
-    this.updateHitbox();
+    this.carScript.transform.x = r.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
+    this.carScript.transform.y = r.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
+    this.carScript.transform.angle = r.signedInt16() / SCALE_FACTOR_FOR_ANGLES;
+    this.carScript.applyReplaySyncData(r);
+    this.carScript.updateHitbox();
   }
 
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.demolished) {
-      this.respawnTimer -= deltaTimeStamp;
-      if (this.respawnTimer <= 0) {
-        this.demolished = false;
-        this.physics.rigidBody = true;
-        this.setOpacity(1);
-        // Use teleport instead of setting position directly
-        this.teleport(this.respawnX, this.respawnY, SPAWN_ANGLE);
-      }
-      super.update(deltaTimeStamp);
-      return;
-    }
-
-    this.handleBoostPads();
-
-    if (this.boosting) {
-      this.smokeSpawnElapsed += deltaTimeStamp;
-      if (this.smokeSpawnElapsed >= this.SMOKE_SPAWN_INTERVAL) {
-        this.smokeSpawnElapsed = 0;
-        this.spawnSmokeParticle();
-      }
-    } else {
-      this.smokeSpawnElapsed = 0;
-    }
-
-    this.updateSmokeParticles(deltaTimeStamp);
-
-    if (this.isCollidingWithStatic()) {
-      this.speed = 0;
-    } else {
-      this.applyFriction(deltaTimeStamp);
-    }
-
-    this.applyBoost(deltaTimeStamp);
-
-    this.calculateMovement(deltaTimeStamp);
-    this.updateHitbox();
-
-    super.update(deltaTimeStamp);
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    if (this.demolished) {
-      return;
-    }
-    this.renderSmokeTrail(context);
-    context.save();
-
-    context.translate(this.x, this.y); // Centered position
-    context.rotate(this.angle);
-    if (this.boosting) {
-      this.renderTurboEffect(context);
-    }
-    context.drawImage(
-      this.carImage!,
-      -this.width / 2,
-      -this.height / 2,
-      this.width,
-      this.height
-    );
-
-    context.restore();
-
-    if (this.getOwner()?.isHost()) {
-      this.renderHostIndicator(context);
-    } else {
-      this.renderPingLevel(context);
-    }
-
-    this.renderPlayerName(context);
-
-    if (this.debugSettings?.isDebugging()) {
-      this.renderDebugInformation(context);
-    }
-
-    // Hitbox debug
-    super.render(context);
-  }
-
-  public getPlayer(): GamePlayer | null {
-    return this.getOwner() as GamePlayer | null;
-  }
-
-  public getBoost(): number {
-    return this.boost;
-  }
-
-  public setBoost(boost: number): void {
-    this.boost = Math.max(0, Math.min(this.MAX_BOOST, boost));
-  }
-
-  public isBoosting(): boolean {
-    return this.boosting;
-  }
-
-  public getSpeed(): number {
-    return this.speed;
-  }
-
-  public setSpeed(speed: number): void {
-    this.speed = speed;
-  }
-
-  public getTopSpeed(): number {
-    return this.topSpeed;
-  }
-
-  public getBoostTopSpeedMultiplier(): number {
-    return this.BOOST_TOP_SPEED_MULTIPLIER;
-  }
-
-  public setTopSpeed(topSpeed: number): void {
-    this.topSpeed = topSpeed;
-  }
-
-  public setAcceleration(acceleration: number): void {
-    this.acceleration = acceleration;
-  }
-
-  public demolish(respawnX: number, respawnY: number, delay: number): void {
-    this.demolished = true;
-    this.respawnTimer = delay;
-    this.respawnX = respawnX;
-    this.respawnY = respawnY;
-    this.speed = 0;
-    this.physics.vx = 0;
-    this.physics.vy = 0;
-    this.boosting = false;
-    this.opacity = 0;
-    this.physics.rigidBody = false;
-  }
-
-  public isDemolished(): boolean {
-    return this.demolished;
-  }
-
-  public activateBoost(): void {
-    if (this.boost > 0) {
-      this.boosting = true;
-    }
-  }
-
-  public deactivateBoost(): void {
-    this.boosting = false;
-  }
-
-  public setWeatherFrictionMultiplier(multiplier: number): void {
-    this.weatherFrictionMultiplier = multiplier;
-  }
-
-  public refillBoost(): void {
-    this.boost = this.MAX_BOOST;
-  }
-
-  public setCanvas(canvas: HTMLCanvasElement): void {
-    this.canvas = canvas;
-  }
-
-  public override teleport(x: number, y: number, angle?: number): void {
-    // Call parent teleport method (resets position and physics)
-    super.teleport(x, y, angle);
-
-    // Reset car-specific state for instant teleportation
-    this.speed = 0;
-    this.updateHitbox();
-  }
-
-  private createHitbox(): void {
-    this.setHitboxEntities([
-      new HitboxEntity(
-        this.x - this.width / 2,
-        this.y - this.height / 2,
-        this.width,
-        this.height
-      ),
-    ]);
-  }
-
-  public updateHitbox(): void {
-    this.getHitboxEntities().forEach((entity) => {
-      entity.setX(this.x - this.width / 2);
-      entity.setY(this.y - this.height / 2);
-    });
-  }
-
-  private loadCarImage(): void {
-    this.carImage = new Image();
-    this.carImage.onload = () => {
-      super.load();
-    };
-
-    this.carImage.src = this.imagePath;
-  }
-
-  private applyFriction(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.speed !== 0) {
-      // Apply weather-modified friction
-      const friction =
-        this.FRICTION * deltaTimeStamp * this.weatherFrictionMultiplier;
-
-      if (Math.abs(this.speed) <= friction) {
-        this.speed = 0;
-      } else {
-        this.speed += -Math.sign(this.speed) * friction;
-      }
-    }
-  }
-
-  private applyBoost(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (!this.boosting || this.boost <= 0) {
-      this.boosting = false;
-      return;
-    }
-
-    this.boost -= (this.BOOST_DRAIN_RATE * deltaTimeStamp) / 1000;
-
-    if (this.speed < this.topSpeed * this.BOOST_TOP_SPEED_MULTIPLIER) {
-      this.speed +=
-        this.acceleration * this.BOOST_ACCELERATION_MULTIPLIER * deltaTimeStamp;
-    }
-
-    if (this.boost <= 0) {
-      this.boost = 0;
-      this.boosting = false;
-    }
-  }
-
-  private handleBoostPads(): void {
-    this.getCollidingEntities().forEach((entity) => {
-      if (entity instanceof BoostPadEntity && this.boost < this.MAX_BOOST) {
-        const playerId = this.getOwner()?.getNetworkId();
-
-        if (playerId && entity.tryConsume(playerId)) {
-          this.refillBoost();
-        }
-      }
-    });
-  }
-
-  private calculateMovement(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.isColliding()) {
-      // Let the collision resolution handle the velocity
-    } else {
-      // Scale velocity by deltaTime to make movement frame-rate independent
-      this.physics.vx = Math.cos(this.angle) * this.speed * deltaTimeStamp;
-      this.physics.vy = Math.sin(this.angle) * this.speed * deltaTimeStamp;
-    }
-
-    this.x -= this.physics.vx;
-    this.y -= this.physics.vy;
-  }
-
-  private renderHostIndicator(context: CanvasRenderingContext2D): void {
-    const startY = this.y - this.height / 2 - this.PLAYER_NAME_RECT_HEIGHT - 15;
-
-    context.beginPath();
-    context.arc(this.x, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
-    context.fillStyle = this.PING_ACTIVE_COLOR;
-    context.fill();
-    context.closePath();
-  }
-
-  private renderPingLevel(context: CanvasRenderingContext2D): void {
-    const pingTime = (this.getOwner() as GamePlayer | null)?.getPingTime() ?? null;
-
-    if (pingTime === null) {
-      return;
-    }
-
-    let activeCircles = 3;
-
-    if (pingTime > 800) {
-      activeCircles = 0;
-    } else if (pingTime > 400) {
-      activeCircles = 2;
-    } else if (pingTime > 200) {
-      activeCircles = 1;
-    }
-
-    const totalWidth =
-      3 * (2 * this.PING_CIRCLE_RADIUS) + 2 * this.PING_CIRCLE_SPACING;
-
-    const startX = this.x - totalWidth / 2 + 3;
-    const startY = this.y - this.height / 2 - this.PLAYER_NAME_RECT_HEIGHT - 15;
-
-    context.save();
-
-    for (let i = 0; i < 3; i++) {
-      const x =
-        startX + i * (2 * this.PING_CIRCLE_RADIUS + this.PING_CIRCLE_SPACING);
-      const color =
-        i < activeCircles ? this.PING_ACTIVE_COLOR : this.PING_INACTIVE_COLOR;
-
-      context.beginPath();
-      context.arc(x, startY, this.PING_CIRCLE_RADIUS, 0, Math.PI * 2);
-      context.fillStyle = color;
-      context.fill();
-      context.closePath();
-    }
-
-    context.restore();
-  }
-
-  private renderPlayerName(context: CanvasRenderingContext2D): void {
-    context.save();
-
-    const playerName = this.getOwner()?.getName() ?? "Unknown";
-    context.font = "16px system-ui";
-
-    const textWidth = context.measureText(playerName).width;
-    const rectWidth = textWidth + this.PLAYER_NAME_PADDING * 1.8;
-
-    const rectX = this.x - rectWidth / 2;
-    const rectY = this.y - this.height / 2 - this.PLAYER_NAME_RECT_HEIGHT - 5;
-
-    if (this.remote) {
-      context.fillStyle = RED_TEAM_TRANSPARENCY_COLOR;
-    } else {
-      context.fillStyle = BLUE_TEAM_TRANSPARENCY_COLOR;
-    }
-
-    context.beginPath();
-    context.moveTo(rectX + this.PLAYER_NAME_RADIUS, rectY);
-    context.lineTo(rectX + rectWidth - this.PLAYER_NAME_RADIUS, rectY);
-    context.arcTo(
-      rectX + rectWidth,
-      rectY,
-      rectX + rectWidth,
-      rectY + this.PLAYER_NAME_RADIUS,
-      this.PLAYER_NAME_RADIUS
-    );
-    context.lineTo(
-      rectX + rectWidth,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT - this.PLAYER_NAME_RADIUS
-    );
-    context.arcTo(
-      rectX + rectWidth,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT,
-      rectX + rectWidth - this.PLAYER_NAME_RADIUS,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT,
-      this.PLAYER_NAME_RADIUS
-    );
-    context.lineTo(
-      rectX + this.PLAYER_NAME_RADIUS,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT
-    );
-    context.arcTo(
-      rectX,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT,
-      rectX,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT - this.PLAYER_NAME_RADIUS,
-      this.PLAYER_NAME_RADIUS
-    );
-    context.lineTo(rectX, rectY + this.PLAYER_NAME_RADIUS);
-    context.arcTo(
-      rectX,
-      rectY,
-      rectX + this.PLAYER_NAME_RADIUS,
-      rectY,
-      this.PLAYER_NAME_RADIUS
-    );
-    context.closePath();
-    context.fill();
-
-    context.fillStyle = "white";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-
-    context.fillText(
-      playerName,
-      rectX + rectWidth / 2,
-      rectY + this.PLAYER_NAME_RECT_HEIGHT / 2 - 0.5
-    );
-
-    context.restore();
-  }
-
-  private renderDebugInformation(context: CanvasRenderingContext2D): void {
-    this.renderDebugPosition(context);
-  }
-
-  private renderDebugPosition(context: CanvasRenderingContext2D): void {
-    DebugUtils.renderText(
-      context,
-      this.x - this.width / 2,
-      this.y + this.height / 2 + 5,
-      `X(${Math.round(this.x)}) Y(${Math.round(this.y)})`
-    );
-  }
-
-  private spawnSmokeParticle(): void {
-    const offset = this.width / 2;
-    const x = this.x + Math.cos(this.angle) * offset;
-    const y = this.y + Math.sin(this.angle) * offset;
-    const dir = this.angle + Math.PI + (Math.random() - 0.5) * 0.4;
-    const speed = 0.1 + Math.random() * 0.1;
-    this.smokeParticles.push({
-      x,
-      y,
-      size: 4 + Math.random() * 2,
-      life: this.SMOKE_DURATION,
-      vx: Math.cos(dir) * speed,
-      vy: Math.sin(dir) * speed,
-    });
-  }
-
-  private updateSmokeParticles(delta: DOMHighResTimeStamp): void {
-    // Scale particle movement by delta so behaviour is frame-rate independent.
-    // Velocities are calibrated for 60 fps; divide by the reference delta.
-    const scale = delta / this.REFERENCE_DELTA;
-    this.smokeParticles.forEach((p) => {
-      p.x += p.vx * scale;
-      p.y += p.vy * scale;
-      p.size += 0.03 * scale;
-      p.life -= delta;
-    });
-    this.smokeParticles = this.smokeParticles.filter((p) => p.life > 0);
-  }
-
-  private renderSmokeTrail(context: CanvasRenderingContext2D): void {
-    context.save();
-    this.smokeParticles.forEach((p) => {
-      const progress = Math.max(p.life / this.SMOKE_DURATION, 0);
-      const shade = Math.floor(80 + (1 - progress) * 50);
-      context.globalAlpha = 0.5 * progress;
-      context.fillStyle = `rgb(${shade},${shade},${shade})`;
-      context.beginPath();
-      context.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      context.fill();
-    });
-    context.restore();
-  }
-
-  private renderTurboEffect(context: CanvasRenderingContext2D): void {
-    context.save();
-
-    const length =
-      this.TURBO_MIN_LENGTH +
-      Math.random() * (this.TURBO_MAX_LENGTH - this.TURBO_MIN_LENGTH);
-    const jitter = (Math.random() - 0.5) * 4;
-    const gradient = context.createLinearGradient(
-      this.width / 2,
-      0,
-      this.width / 2 + length,
-      0
-    );
-    gradient.addColorStop(0, "#ffffff");
-    gradient.addColorStop(0.2, "#ffe066");
-    gradient.addColorStop(1, "#ff5722");
-
-    context.globalAlpha = 0.6 + Math.random() * 0.4;
-    context.fillStyle = gradient;
-    context.beginPath();
-    context.moveTo(this.width / 2, 0);
-    context.quadraticCurveTo(
-      this.width / 2 + length / 2 + jitter,
-      -this.TURBO_WIDTH / 2,
-      this.width / 2 + length,
-      0
-    );
-    context.quadraticCurveTo(
-      this.width / 2 + length / 2 + jitter,
-      this.TURBO_WIDTH / 2,
-      this.width / 2,
-      0
-    );
-    context.fill();
-
-    context.restore();
-  }
+  public override update(dt: DOMHighResTimeStamp): void { super.update(dt); }
+  public override render(ctx: CanvasRenderingContext2D): void { super.render(ctx); }
 }

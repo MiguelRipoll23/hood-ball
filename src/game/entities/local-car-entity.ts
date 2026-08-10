@@ -3,257 +3,51 @@ import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { CarEntity } from "./car-entity.js";
 import { JoystickEntity } from "./joystick-entity.js";
 import type { GameKeyboardContract } from "../../engine/interfaces/input/game-keyboard-interface.js";
-import { EntityUtils } from "../../engine/utils/entity-utils.js";
 import type { GameGamepadContract } from "../../engine/interfaces/input/game-gamepad-interface.js";
-import { GamepadButton } from "../../engine/enums/gamepad-button.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatButtonEntity } from "./chat-button-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { LocalInputScript } from "../scripts/local-input-script.js";
 
+/**
+ * Thin container. Input handling lives in {@link LocalInputScript}, attached
+ * at priority -1 so it runs before CarScript each frame.
+ */
 export class LocalCarEntity extends CarEntity {
-  private readonly joystickEntity: JoystickEntity | null;
-  private active = true;
-  private boostMeterEntity: BoostMeterEntity | null = null;
-  private chatButtonEntity: ChatButtonEntity | null = null;
+  private readonly inputScript: LocalInputScript;
 
   constructor(
-    x: number,
-    y: number,
-    angle: number,
+    x: number, y: number, angle: number,
     protected readonly canvas: HTMLCanvasElement,
-    protected gamePointer?: GamePointerContract,
-    protected gameKeyboard?: GameKeyboardContract,
-    protected gameGamepad?: GameGamepadContract
+    gamePointer?: GamePointerContract,
+    gameKeyboard?: GameKeyboardContract,
+    gameGamepad?: GameGamepadContract,
   ) {
     super(x, y, angle);
-    this.gamePointer = gamePointer;
-    this.gameKeyboard = gameKeyboard;
-    this.gameGamepad = gameGamepad;
-    this.setSyncableValues();
-    this.joystickEntity = gamePointer ? new JoystickEntity(gamePointer) : null;
+    this.setCanvas(canvas);
+
+    this.setSyncable(true);
+    this.setId(crypto.randomUUID().replaceAll("-", ""));
+    this.setTypeId(EntityRegistryType.RemoteCar);
+
+    this.inputScript = new LocalInputScript(gamePointer, gameKeyboard, gameGamepad);
+    this.inputScript.resolveEntity(this);
+    this.addComponent(new ScriptComponent(this.inputScript, -1));
   }
 
   public override mustSync(): boolean {
-    return super.mustSync() || this.speed !== 0;
+    return super.mustSync() || this.carScript.speed !== 0;
   }
 
   public override reset(): void {
     super.reset();
-    this.active = true;
+    this.inputScript.reset();
   }
 
-  public setActive(active: boolean): void {
-    this.active = active;
-  }
-
-  public getJoystickEntity(): JoystickEntity | null {
-    return this.joystickEntity;
-  }
-
-  public setBoostMeterEntity(meter: BoostMeterEntity): void {
-    this.boostMeterEntity = meter;
-  }
-
-  public getBoostMeterEntity(): BoostMeterEntity | null {
-    return this.boostMeterEntity;
-  }
-
-  public setChatButtonEntity(chatButton: ChatButtonEntity): void {
-    this.chatButtonEntity = chatButton;
-  }
-
-  private canProcessInput(): boolean {
-    // Skip input processing during replay (when input handlers are undefined)
-    if (!this.gamePointer || !this.gameKeyboard || !this.gameGamepad) {
-      return false;
-    }
-    const isChatActive = this.chatButtonEntity?.isInputVisible() ?? false;
-    return this.active && !isChatActive;
-  }
-
-  public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.canProcessInput()) {
-      if (this.gameGamepad!.get()) {
-        this.handleGamepadControls(deltaTimeStamp);
-      } else if (this.gamePointer!.isTouch()) {
-        this.handleTouchControls(deltaTimeStamp);
-      } else {
-        this.handleKeyboardControls(deltaTimeStamp);
-      }
-    }
-
-    if (this.canProcessInput()) {
-      this.handleBoostInput();
-    } else {
-      this.deactivateBoost();
-    }
-
-    super.update(deltaTimeStamp);
-
-    if (this.canvas) {
-      EntityUtils.fixEntityPositionIfOutOfBounds(this, this.canvas);
-    }
-
-    this.boostMeterEntity?.setBoostLevel(this.getBoost() / this.MAX_BOOST);
-  }
-
-  private setSyncableValues(): void {
-    this.setSyncable(true);
-    this.setId(crypto.randomUUID().replaceAll("-", ""));
-    this.setTypeId(EntityRegistryType.RemoteCar);
-  }
-
-  private handleTouchControls(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (!this.joystickEntity || !this.joystickEntity.isActive()) return;
-
-    const magnitude = this.joystickEntity.getMagnitude();
-    this.accelerate(magnitude, deltaTimeStamp);
-
-    if (this.speed != 0) {
-      this.angle = this.smoothAngleTransition(
-        this.angle,
-        this.joystickEntity.getAngle(),
-        deltaTimeStamp
-      );
-    }
-  }
-
-  private handleKeyboardControls(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (!this.gameKeyboard) return;
-    const pressedKeys = this.gameKeyboard.getPressedKeys();
-
-    const isAccelerating = pressedKeys.has("ArrowUp") || pressedKeys.has("w");
-    const isDecelerating = pressedKeys.has("ArrowDown") || pressedKeys.has("s");
-    const isTurningLeft = pressedKeys.has("ArrowLeft") || pressedKeys.has("a");
-    const isTurningRight =
-      pressedKeys.has("ArrowRight") || pressedKeys.has("d");
-
-    if (isAccelerating && !isDecelerating) {
-      this.accelerate(1, deltaTimeStamp);
-    } else if (!isAccelerating && isDecelerating) {
-      this.decelerate(deltaTimeStamp);
-    }
-
-    if (this.speed !== 0) {
-      this.adjustAngleUsingDirection(
-        isTurningLeft,
-        isTurningRight,
-        deltaTimeStamp
-      ); // Pass deltaTimeStamp to adjust angle
-    }
-  }
-
-  private handleGamepadControls(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (!this.gameGamepad) return;
-    const gamepad = this.gameGamepad.get();
-    if (!gamepad) return;
-
-    const isAccelerating = this.gameGamepad.isButtonPressed(GamepadButton.R2);
-
-    const isDecelerating = this.gameGamepad.isButtonPressed(GamepadButton.L2);
-
-    const turnAxis = this.gameGamepad.getAxisValue(0);
-
-    if (isAccelerating && !isDecelerating) {
-      this.accelerate(1, deltaTimeStamp);
-    } else if (!isAccelerating && isDecelerating) {
-      this.decelerate(deltaTimeStamp);
-    }
-
-    if (this.speed !== 0) {
-      this.angle += turnAxis * this.HANDLING * deltaTimeStamp;
-    }
-
-    if (this.isColliding()) {
-      this.gameGamepad.vibrate(100);
-    }
-  }
-
-  private accelerate(
-    magnitude: number = 1,
-    deltaTimeStamp: DOMHighResTimeStamp
-  ): void {
-    if (this.speed < this.topSpeed) {
-      this.speed += this.acceleration * magnitude * deltaTimeStamp;
-    }
-  }
-
-  private decelerate(deltaTimeStamp: DOMHighResTimeStamp): void {
-    if (this.speed > -this.topSpeed) {
-      this.speed -= this.acceleration * deltaTimeStamp;
-    }
-  }
-
-  private adjustAngleUsingDirection(
-    isTurningLeft: boolean,
-    isTurningRight: boolean,
-    deltaTimeStamp: DOMHighResTimeStamp
-  ): void {
-    const direction = this.speed > 0 ? 1 : -1;
-
-    if (isTurningLeft && !isTurningRight) {
-      this.angle -= this.HANDLING * direction * deltaTimeStamp;
-    } else if (!isTurningLeft && isTurningRight) {
-      this.angle += this.HANDLING * direction * deltaTimeStamp;
-    }
-  }
-
-  private smoothAngleTransition(
-    currentAngle: number,
-    targetAngle: number,
-    deltaTimeStamp: DOMHighResTimeStamp
-  ): number {
-    currentAngle = (currentAngle + Math.PI * 2) % (Math.PI * 2);
-    targetAngle = (targetAngle + Math.PI * 2) % (Math.PI * 2);
-
-    let angleDifference = targetAngle - currentAngle;
-
-    if (angleDifference > Math.PI) angleDifference -= Math.PI * 2;
-    if (angleDifference < -Math.PI) angleDifference += Math.PI * 2;
-
-    return (
-      currentAngle +
-      Math.sign(angleDifference) *
-        Math.min(Math.abs(angleDifference), this.HANDLING * deltaTimeStamp)
-    );
-  }
-
-  private handleBoostInput(): void {
-    if (!this.gameKeyboard || !this.gamePointer || !this.gameGamepad) return;
-
-    let activating = false;
-    let attemptingWhileEmpty = false;
-
-    const pressedKeys = this.gameKeyboard.getPressedKeys();
-
-    const spacePressed = pressedKeys.has(" ");
-    if (pressedKeys.has("Shift") || spacePressed) {
-      activating = true;
-      if (spacePressed && this.getBoost() === 0) {
-        attemptingWhileEmpty = true;
-      }
-    }
-
-    if (this.boostMeterEntity) {
-      const touches = this.gamePointer.getTouchPoints();
-      const twoFingers = touches.filter((t) => t.pressing).length >= 2;
-      if (twoFingers) {
-        activating = true;
-        if (this.getBoost() === 0) {
-          attemptingWhileEmpty = true;
-        }
-      }
-      this.boostMeterEntity.setAttemptingBoostWhileEmpty(attemptingWhileEmpty);
-    }
-
-    if (this.gameGamepad.isButtonPressed(GamepadButton.R1)) {
-      activating = true;
-    }
-
-    if (activating) {
-      this.activateBoost();
-    } else {
-      this.deactivateBoost();
-      this.boostMeterEntity?.setAttemptingBoostWhileEmpty(false);
-    }
-  }
+  public setActive(active: boolean): void { this.inputScript.inputActive = active; }
+  public isActive(): boolean { return this.inputScript.inputActive; }
+  public getJoystickEntity(): JoystickEntity | null { return this.inputScript.getJoystickEntity(); }
+  public setBoostMeterEntity(meter: BoostMeterEntity): void { this.inputScript.setBoostMeterEntity(meter); }
+  public getBoostMeterEntity(): BoostMeterEntity | null { return this.inputScript.getBoostMeterEntity(); }
+  public setChatButtonEntity(chatButton: ChatButtonEntity): void { this.inputScript.setChatButtonEntity(chatButton); }
 }

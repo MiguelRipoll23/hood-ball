@@ -1,24 +1,26 @@
 import { BaseGameEntity } from "../../../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../../../engine/components/script-component.js";
 
 export class MatchWindowElement extends BaseGameEntity {
   private readonly BORDER_RADIUS = 12;
 
   constructor(
-    private x: number,
-    private y: number,
-    private width: number,
-    private readonly height: number
+    private _mx: number,
+    private _my: number,
+    private _mw: number,
+    private readonly _h: number
   ) {
     super();
+    this.addComponent(new ScriptComponent({ render: (ctx) => this.scriptRender(ctx) }));
   }
 
   public setLayout(x: number, y: number, width: number): void {
-    this.x = x;
-    this.y = y;
-    this.width = width;
+    this._mx = x;
+    this._my = y;
+    this._mw = width;
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     context.shadowColor = "rgba(0, 0, 0, 0.5)";
     context.shadowBlur = 20;
     context.shadowOffsetX = 0;
@@ -27,10 +29,10 @@ export class MatchWindowElement extends BaseGameEntity {
     context.fillStyle = "#ffffff";
     this.drawRoundedRect(
       context,
-      this.x,
-      this.y,
-      this.width,
-      this.height,
+      this._mx,
+      this._my,
+      this._mw,
+      this._h,
       this.BORDER_RADIUS
     );
     context.fill();
@@ -61,4 +63,5 @@ export class MatchWindowElement extends BaseGameEntity {
     context.quadraticCurveTo(x, y, x + radius, y);
     context.closePath();
   }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

@@ -1,8 +1,8 @@
-import { BaseCollidingGameEntity } from "../../../engine/entities/base-colliding-game-entity.js";
+import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
 import { HitboxEntity } from "../../../engine/entities/hitbox-entity.js";
 import type { GameEntity } from "../../../engine/models/game-entity.js";
 
-export class WorldBackgroundEntity extends BaseCollidingGameEntity {
+export class WorldBackgroundEntity extends BaseGameEntity {
   private readonly BACKGROUND_COLOR: string = "#00a000";
   private readonly BOUNDARY_COLOR: string = "#ffffff";
 

@@ -1,7 +1,7 @@
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 
-export class GoalEntity extends BaseCollidingGameEntity {
+export class GoalEntity extends BaseGameEntity {
   private readonly WIDTH: number = 100; // Width of the goal
   private readonly HEIGHT: number = 40; // Height of the goal (adjusted)
   private readonly BORDER_SIZE: number = 2; // Border size

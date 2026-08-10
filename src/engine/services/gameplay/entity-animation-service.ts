@@ -1,10 +1,12 @@
 import { AnimationType } from "../../enums/animation-type.js";
-import type { AnimatableEntity } from "../../interfaces/entities/animatable-entity-interface.js";
+import type { BaseGameEntity } from "../../entities/base-game-entity.js";
+import { TransformComponent } from "../../components/transform-component.js";
 import { animationLogService } from "./animation-log-service.js";
 import { EngineLogger } from "../engine-logger.js";
 
 export class EntityAnimationService {
-  private readonly entity: AnimatableEntity;
+  private readonly entity: BaseGameEntity;
+  private readonly transform: TransformComponent | null;
 
   private completed: boolean = false;
 
@@ -17,13 +19,14 @@ export class EntityAnimationService {
   private animationType: AnimationType;
 
   constructor(
-    entity: AnimatableEntity,
+    entity: BaseGameEntity,
     animationType: AnimationType,
     startValue: number,
     endValue: number,
-    durationSeconds: number
+    durationSeconds: number,
   ) {
     this.entity = entity;
+    this.transform = entity.getComponent(TransformComponent as unknown as new (...args: never[]) => TransformComponent);
     this.startValue = startValue;
     this.endValue = endValue;
     this.durationMilliseconds = durationSeconds * 1000;
@@ -33,7 +36,7 @@ export class EntityAnimationService {
 
     EngineLogger.info(
       "EntityAnimation",
-      `${this.constructor.name} [${AnimationType[animationType]}] created for ${entity.constructor.name}`
+      `${this.constructor.name} [${AnimationType[animationType]}] created for ${entity.constructor.name}`,
     );
   }
 
@@ -42,7 +45,7 @@ export class EntityAnimationService {
 
     const progress = Math.min(
       this.elapsedMilliseconds / this.durationMilliseconds,
-      1
+      1,
     );
 
     const newValue =
@@ -55,19 +58,19 @@ export class EntityAnimationService {
         break;
 
       case AnimationType.MoveX:
-        this.entity.setX(newValue);
+        if (this.transform) this.transform.x = newValue;
         break;
 
       case AnimationType.MoveY:
-        this.entity.setY(newValue);
+        if (this.transform) this.transform.y = newValue;
         break;
 
       case AnimationType.Rotate:
-        this.entity.setAngle(newValue);
+        if (this.transform) this.transform.angle = newValue;
         break;
 
       case AnimationType.Scale:
-        this.entity.setScale(newValue);
+        if (this.transform) this.transform.scale = newValue;
         break;
     }
 

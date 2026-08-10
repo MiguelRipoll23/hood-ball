@@ -1,11 +1,14 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { ChatService } from "../services/network/chat-service.js";
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import type { GameKeyboardContract } from "../../engine/interfaces/input/game-keyboard-interface.js";
 import { HelpEntity } from "./help-entity.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
-export class ChatButtonEntity extends BaseTappableGameEntity {
+export class ChatButtonEntity extends BaseGameEntity {
   private readonly SIZE = 32;
   private readonly OFFSET = 20;
   private readonly emoji = "\uD83D\uDCAC"; // chat emoji
@@ -27,8 +30,11 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     private readonly helpEntity: HelpEntity
   ) {
     super();
-    this.width = this.SIZE;
-    this.height = this.SIZE;
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
+    this.getComponent(TransformComponent)!.width = this.SIZE;
+    this.getComponent(TransformComponent)!.height = this.SIZE;
     this.opacity = this.DEFAULT_OPACITY;
     this.setPosition();
     this.inputElement.addEventListener("blur", () => {
@@ -63,7 +69,7 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.inputElement.focus();
     this.gamePointer.setPreventDefault(false);
     this.inputVisible = true;
-    this.setActive(false);
+    this.getComponent(InputComponent)!.active = false;
   }
 
   private hideInput(): void {
@@ -81,15 +87,15 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.gamePointer.setPreventDefault(true);
     this.inputVisible = false;
     this.lastHideTimestamp = Date.now();
-    this.setActive(true);
+    this.getComponent(InputComponent)!.active = true;
   }
 
   private setPosition(): void {
-    this.x =
+    this.getComponent(TransformComponent)!.x =
       this.boostMeterEntity.getX() +
       this.boostMeterEntity.getWidth() +
       this.OFFSET;
-    this.y =
+    this.getComponent(TransformComponent)!.y =
       this.boostMeterEntity.getY() +
       this.boostMeterEntity.getHeight() / 2 -
       this.SIZE / 2;
@@ -114,9 +120,9 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     this.prevEscapePressed = escapePressed;
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
+  private scriptUpdate(delta: DOMHighResTimeStamp): void {
     // Only show input on a new button press (not just hover/held)
-    if (this.pressed && !this.prevButtonPressed && !this.inputVisible) {
+    if (this.getComponent(InputComponent)!.pressed && !this.prevButtonPressed && !this.inputVisible) {
       this.showInput();
     }
 
@@ -124,11 +130,11 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
       this.handleKeyboardInput();
     }
 
-    this.prevButtonPressed = this.pressed;
+    this.prevButtonPressed = this.getComponent(InputComponent)!.pressed;
     super.update(delta);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     if (this.inputVisible || this.helpEntity.getOpacity() > 0) {
       return;
     }
@@ -140,10 +146,12 @@ export class ChatButtonEntity extends BaseTappableGameEntity {
     context.textBaseline = "middle";
     context.fillText(
       this.emoji,
-      this.x + this.SIZE / 2,
-      this.y + this.SIZE / 2 + 1
+      this.getComponent(TransformComponent)!.x + this.SIZE / 2,
+      this.getComponent(TransformComponent)!.y + this.SIZE / 2 + 1
     );
     context.restore();
     super.render(context);
   }
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

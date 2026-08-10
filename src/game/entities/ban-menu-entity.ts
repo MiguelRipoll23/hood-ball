@@ -1,10 +1,12 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import type { GamePlayer } from "../models/game-player.js";
 import type { BanOption } from "../interfaces/ui/ban-option.js";
 import type { DurationUnit } from "../interfaces/ui/duration-unit.js";
 import type { ActionMenuContract } from "../interfaces/ui/action-menu-contract.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
-export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuContract {
+export class BanMenuEntity extends BaseGameEntity implements ActionMenuContract {
   private readonly WINDOW_WIDTH = 400;
   private readonly WINDOW_HEIGHT = 500;
   private readonly TITLE_BAR_HEIGHT = 50;
@@ -88,7 +90,9 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
   private permanentCheckboxHovered = false;
 
   constructor(canvas: HTMLCanvasElement) {
-    super(false);
+    super();
+    this.addComponent(new InputComponent());
+    this.addComponent(new ScriptComponent({ update: (dt) => this.scriptUpdate(dt), render: (ctx) => this.scriptRender(ctx) }));
     this.canvas = canvas;
     this.opacity = 0;
   }
@@ -124,7 +128,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     this.confirmedData = null;
     this.cancelled = false;
     this.opacity = 1;
-    this.active = true;
+    this.getComponent(InputComponent)!.active = true;
     
     // Reset duration defaults
     this.durationValue = 1;
@@ -139,7 +143,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     this.bannedPlayer = null;
     this.selectedReason = null;
     this.opacity = 0;
-    this.active = false;
+    this.getComponent(InputComponent)!.active = false;
   }
 
   private calculateLayout(): void {
@@ -197,13 +201,13 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     this.cancelButtonY = buttonY;
   }
 
-  public override handlePointerEvent(
+  public handlePointerEvent(
     gamePointer: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract
   ): void {
     const touches = gamePointer.getTouchPoints();
     
-    this.hovering = false;
-    this.pressed = false;
+    this.getComponent(InputComponent)!.hovering = false;
+    this.getComponent(InputComponent)!.pressed = false;
     this.confirmButtonHovered = false;
     this.cancelButtonHovered = false;
     this.decreaseValueBtnHovered = false;
@@ -244,7 +248,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
       const isHoveringSomething = !!(isInConfirm || isInCancel || isInDecrease || isInIncrease || isInUnit || isInCheckbox || touchedOption);
 
       if (isHoveringSomething) {
-        this.hovering = true;
+        this.getComponent(InputComponent)!.hovering = true;
         
         if (isInConfirm) this.confirmButtonHovered = true;
         if (isInCancel) this.cancelButtonHovered = true;
@@ -255,7 +259,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
         if (touchedOption) touchedOption.hovered = true;
 
         if (touch.pressed) {
-          this.pressed = true;
+          this.getComponent(InputComponent)!.pressed = true;
           // Hover locking
           this.confirmButtonHovered = isInConfirm;
           this.cancelButtonHovered = isInCancel;
@@ -274,8 +278,8 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
   }
 
-  public override update(delta: DOMHighResTimeStamp): void {
-    if (this.pressed) {
+  private scriptUpdate(delta: DOMHighResTimeStamp): void {
+    if (this.getComponent(InputComponent)!.pressed) {
       if (this.confirmButtonHovered && this.selectedReason) {
         this.confirmedData = {
           reason: this.selectedReason,
@@ -306,7 +310,7 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     super.update(delta);
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     if (!this.isOpened || this.opacity === 0) return;
 
     context.save();
@@ -491,4 +495,6 @@ export class BanMenuEntity extends BaseTappableGameEntity implements ActionMenuC
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
   }
+  public override update(deltaTimeStamp: DOMHighResTimeStamp): void { super.update(deltaTimeStamp); }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

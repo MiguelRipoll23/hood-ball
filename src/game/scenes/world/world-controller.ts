@@ -16,7 +16,7 @@ import { CarEntity } from "../../entities/car-entity.js";
 import { SPAWN_ANGLE } from "../../constants/entity-constants.js";
 import type { GameEntity } from "../../../engine/models/game-entity.js";
 import { MatchAction } from "../../models/match-action.js";
-import type { BaseMultiplayerGameEntity } from "../../../engine/entities/base-multiplayer-entity.js";
+import type { MultiplayerGameEntity } from "../../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import type { CarDemolishedPayload } from "../../interfaces/events/car-demolished-payload-interface.js";
 import type { MatchmakingServiceContract } from "../../interfaces/services/matchmaking/matchmaking-service-contract-interface.js";
 import type { SpawnPointService } from "../../services/gameplay/spawn-point-service.js";
@@ -45,7 +45,7 @@ export class WorldController {
   private readonly spawnPointEntities: SpawnPointEntity[];
   private readonly getEntitiesByOwner: (
     player: GamePlayer
-  ) => BaseMultiplayerGameEntity[];
+  ) => MultiplayerGameEntity[];
   private readonly npcService: NpcService;
   private isSoloMatchWithNpc = false;
 
@@ -358,7 +358,7 @@ export class WorldController {
 
   public handleRemoteCarDemolished(
     data: ArrayBuffer | null,
-    getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[],
+    getEntitiesByOwner: (player: GamePlayer) => MultiplayerGameEntity[],
     triggerCarExplosion: (x: number, y: number) => void
   ): void {
     if (data === null) {
@@ -426,7 +426,7 @@ export class WorldController {
 
   public handleRemoteBoostPadConsumed(
     data: ArrayBuffer | null,
-    getEntitiesByOwner: (player: GamePlayer) => BaseMultiplayerGameEntity[]
+    getEntitiesByOwner: (player: GamePlayer) => MultiplayerGameEntity[]
   ): void {
     if (data === null) {
       EngineLogger.warn("WorldController", "Array buffer is null");

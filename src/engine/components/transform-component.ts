@@ -2,7 +2,7 @@ import type { Component } from "./component.js";
 
 /**
  * Holds an entity's spatial transform: position, size, rotation, and scale.
- * Replaces the state previously spread across BaseMoveableGameEntity and
+ * Replaces the state previously spread across BaseGameEntity and
  * BaseAnimatedGameEntity.
  */
 export class TransformComponent implements Component {

@@ -1,7 +1,8 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import { GamePlayer } from "../models/game-player.js";
 
-export class WelcomeMessageEntity extends BaseMoveableGameEntity {
+export class WelcomeMessageEntity extends BaseGameEntity {
   private readonly gamePlayer: GamePlayer;
 
   constructor(
@@ -9,10 +10,11 @@ export class WelcomeMessageEntity extends BaseMoveableGameEntity {
     gamePlayer: GamePlayer
   ) {
     super();
+    this.addComponent(new ScriptComponent({ render: (ctx) => this.scriptRender(ctx) }));
     this.gamePlayer = gamePlayer;
   }
 
-  public override render(context: CanvasRenderingContext2D): void {
+  private scriptRender(context: CanvasRenderingContext2D): void {
     const playerName = this.gamePlayer.getName() || "Unknown";
 
     context.save();
@@ -35,4 +37,5 @@ export class WelcomeMessageEntity extends BaseMoveableGameEntity {
     );
     context.restore();
   }
+  public override render(context: CanvasRenderingContext2D): void { super.render(context); }
 }

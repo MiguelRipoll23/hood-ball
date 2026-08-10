@@ -1,5 +1,5 @@
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
-import { BaseCollidingGameEntity } from "../../engine/entities/base-colliding-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import { CarEntity } from "./car-entity.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import { EntityRegistryType } from "../enums/entity-registry-type.js";
@@ -15,7 +15,7 @@ import { TELEPORT_SKIP_FRAMES, BALL_NETWORK_ID } from "../constants/entity-const
 import { EngineLogger } from "../../engine/services/engine-logger.js";
 
 export class BallEntity
-  extends BaseCollidingGameEntity
+  extends BaseGameEntity
   implements MultiplayerGameEntity
 {
   private readonly MASS: number = 1;
@@ -47,11 +47,11 @@ export class BallEntity
     this.setSyncableValues();
   }
 
-  public static override getTypeId(): EntityRegistryType {
+  public static getTypeId(): EntityRegistryType {
     return EntityRegistryType.Ball;
   }
 
-  public static override deserialize(
+  public static deserialize(
     id: string,
     arrayBuffer: ArrayBuffer
   ): MultiplayerGameEntity {

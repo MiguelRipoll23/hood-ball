@@ -1,19 +1,21 @@
 import { TimerService } from "../services/gameplay/timer-service.js";
-import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
+import { BaseGameEntity } from "./base-game-entity.js";
+import { AnimationComponent } from "../../engine/components/animation-component.js";
 
-export class DebugEntity extends BaseMoveableGameEntity {
+export class DebugEntity extends BaseGameEntity {
   private text: string = "Unknown";
   private timer: TimerService | null = null;
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
+    this.addComponent(new AnimationComponent());
     this.reset();
   }
 
   public show(text: string, duration = 0): void {
     this.text = text;
     this.reset();
-    this.fadeIn(0.2);
+    this.getComponent(AnimationComponent)!.fadeIn(0.2);
 
     if (duration > 0) {
       this.timer = new TimerService(duration, this.hide.bind(this));
@@ -21,8 +23,8 @@ export class DebugEntity extends BaseMoveableGameEntity {
   }
 
   public hide(): void {
-    this.fadeOut(0.2);
-    this.scaleTo(0, 0.2);
+    this.getComponent(AnimationComponent)!.fadeOut(0.2);
+    this.getComponent(AnimationComponent)!.scaleTo(0, 0.2);
   }
 
   public override reset(): void {

@@ -1,8 +1,9 @@
-import { BaseMoveableGameEntity } from "./base-moveable-game-entity.js";
+import { BaseGameEntity } from "./base-game-entity.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
 
 const LIGHT_GREEN_COLOR = "#90EE90";
 
-export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
+export class LoadingIndicatorEntity extends BaseGameEntity {
   private readonly SIZE = 20;
   private readonly MARGIN = 20;
   private readonly SPEED = 0.005;
@@ -11,7 +12,8 @@ export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
 
   constructor(private readonly canvas: HTMLCanvasElement) {
     super();
-    this.angle = 0;
+    this.addComponent(new TransformComponent());
+    this.getComponent(TransformComponent)!.angle = 0;
   }
 
   public show(): void {
@@ -23,11 +25,11 @@ export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
   }
 
   public override update(deltaTimeStamp: DOMHighResTimeStamp): void {
-    this.x = this.MARGIN;
-    this.y = this.canvas.height - this.SIZE - this.MARGIN;
+    this.getComponent(TransformComponent)!.x = this.MARGIN;
+    this.getComponent(TransformComponent)!.y = this.canvas.height - this.SIZE - this.MARGIN;
 
     if (this.visible) {
-      this.angle += deltaTimeStamp * this.SPEED;
+      this.getComponent(TransformComponent)!.angle += deltaTimeStamp * this.SPEED;
     }
   }
 
@@ -37,16 +39,16 @@ export class LoadingIndicatorEntity extends BaseMoveableGameEntity {
     }
 
     context.save();
-    context.translate(this.x + this.SIZE / 2, this.y + this.SIZE / 2);
-    context.rotate(this.angle);
-    context.translate(-(this.x + this.SIZE / 2), -(this.y + this.SIZE / 2));
+    context.translate(this.getComponent(TransformComponent)!.x + this.SIZE / 2, this.getComponent(TransformComponent)!.y + this.SIZE / 2);
+    context.rotate(this.getComponent(TransformComponent)!.angle);
+    context.translate(-(this.getComponent(TransformComponent)!.x + this.SIZE / 2), -(this.getComponent(TransformComponent)!.y + this.SIZE / 2));
 
     context.strokeStyle = LIGHT_GREEN_COLOR;
     context.lineWidth = 3;
     context.beginPath();
     context.arc(
-      this.x + this.SIZE / 2,
-      this.y + this.SIZE / 2,
+      this.getComponent(TransformComponent)!.x + this.SIZE / 2,
+      this.getComponent(TransformComponent)!.y + this.SIZE / 2,
       this.SIZE / 2,
       0,
       Math.PI * 1.5

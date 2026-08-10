@@ -1,4 +1,6 @@
-import { BaseMoveableGameEntity } from "../../engine/entities/base-moveable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
+import { GoalExplosionScript } from "../scripts/goal-explosion-script.js";
 import {
   BLUE_TEAM_COLOR,
   RED_TEAM_COLOR,
@@ -7,145 +9,42 @@ import { TeamType } from "../enums/team-type.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  life: number;
-}
+export class GoalExplosionEntity extends BaseGameEntity {
+  private readonly script: GoalExplosionScript;
 
-export class GoalExplosionEntity extends BaseMoveableGameEntity {
-  private particles: Particle[] = [];
-  private elapsed = 0;
-  private readonly duration = 2000; // ms
-  private shockwaveRadius = 0;
-  private distortionRadius = 0;
-  private distortionOpacity = 1;
-  private flashOpacity = 1;
-  private color: string;
-  private team: TeamType;
-
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
-    x: number,
-    y: number,
-    team: TeamType
-  ) {
+  constructor(canvas: HTMLCanvasElement, x: number, y: number, team: TeamType) {
     super();
-    this.x = x;
-    this.y = y;
-    this.team = team;
-    this.color = team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
-    this.createParticles();
+    this.script = new GoalExplosionScript(canvas, x, y, team);
+    this.addComponent(new ScriptComponent(this.script));
   }
 
-  private createParticles(): void {
-    for (let i = 0; i < 30; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 2 + Math.random() * 3;
-      this.particles.push({
-        x: this.x,
-        y: this.y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 1,
-      });
-    }
-  }
-
-  public override update(delta: DOMHighResTimeStamp): void {
-    this.elapsed += delta;
-    const t = Math.min(this.elapsed / this.duration, 1);
-    this.shockwaveRadius = 120 * t;
-    this.distortionRadius = 80 * t;
-    this.flashOpacity = 1 - Math.min(this.elapsed / 200, 1);
-    this.distortionOpacity = 1 - t;
-    this.particles.forEach((p) => {
-      p.x += p.vx;
-      p.y += p.vy;
-      p.life -= delta / this.duration;
-    });
-    this.particles = this.particles.filter((p) => p.life > 0);
-
-    if (this.elapsed >= this.duration && this.particles.length === 0) {
-      this.setRemoved(true);
-    }
-  }
-
-  public override render(context: CanvasRenderingContext2D): void {
-    context.save();
-
-    // Flash
-    if (this.flashOpacity > 0) {
-      context.fillStyle = `rgba(255,255,255,${this.flashOpacity})`;
-      context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      context.fillStyle = this.color;
-      context.globalAlpha = this.flashOpacity * 0.5;
-      context.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      context.globalAlpha = 1;
-    }
-
-    // Shockwave
-    context.strokeStyle = this.color;
-    context.lineWidth = 4 * (1 - Math.min(this.elapsed / this.duration, 1));
-    context.beginPath();
-    context.arc(this.x, this.y, this.shockwaveRadius, 0, Math.PI * 2);
-    context.stroke();
-
-    // Distortion ripple
-    const grad = context.createRadialGradient(
-      this.x,
-      this.y,
-      this.distortionRadius * 0.8,
-      this.x,
-      this.y,
-      this.distortionRadius
-    );
-    grad.addColorStop(0, `rgba(255,255,255,${0.3 * this.distortionOpacity})`);
-    grad.addColorStop(1, "rgba(255,255,255,0)");
-    context.fillStyle = grad;
-    context.beginPath();
-    context.arc(this.x, this.y, this.distortionRadius, 0, Math.PI * 2);
-    context.fill();
-
-    // Particles
-    this.particles.forEach((p) => {
-      context.globalAlpha = Math.max(p.life, 0);
-      context.fillStyle = this.color;
-      context.beginPath();
-      context.arc(p.x, p.y, 3, 0, Math.PI * 2);
-      context.fill();
-    });
-    context.globalAlpha = 1;
-
-    context.restore();
+  public override update(_delta: DOMHighResTimeStamp): void {
+    super.update(_delta);
+    if (this.script.isFinished()) this.setRemoved(true);
   }
 
   public override getReplayState(): ArrayBuffer | null {
     return BinaryWriter.build()
-      .unsignedInt16(this.x)
-      .unsignedInt16(this.y)
-      .unsignedInt8(this.team)
-      .unsignedInt16(this.elapsed)
+      .unsignedInt16(this.script.x)
+      .unsignedInt16(this.script.y)
+      .unsignedInt8(this.script.team)
+      .unsignedInt16(this.script.elapsed)
       .toArrayBuffer();
   }
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
     const reader = BinaryReader.fromArrayBuffer(arrayBuffer);
-    this.x = reader.unsignedInt16();
-    this.y = reader.unsignedInt16();
-    this.team = reader.unsignedInt8();
-    this.elapsed = reader.unsignedInt16();
-
-    // Update color based on restored team
-    this.color = this.team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
-
-    // Recalculate visual state based on elapsed time
-    const t = Math.min(this.elapsed / this.duration, 1);
-    this.shockwaveRadius = 120 * t;
-    this.distortionRadius = 80 * t;
-    this.flashOpacity = 1 - Math.min(this.elapsed / 200, 1);
-    this.distortionOpacity = 1 - t;
+    this.script.x = reader.unsignedInt16();
+    this.script.y = reader.unsignedInt16();
+    this.script.team = reader.unsignedInt8();
+    this.script.elapsed = reader.unsignedInt16();
+    this.script.color =
+      this.script.team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
+    const t = Math.min(this.script.elapsed / 2000, 1);
+    // Recalc visual state from elapsed
+    this.script.shockwaveRadius = 120 * t;
+    this.script.distortionRadius = 80 * t;
+    this.script.flashOpacity = 1 - Math.min(this.script.elapsed / 200, 1);
+    this.script.distortionOpacity = 1 - t;
   }
 }

@@ -1,8 +1,10 @@
-import { BaseTappableGameEntity } from "../../engine/entities/base-tappable-game-entity.js";
+import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import { BoostMeterEntity } from "./boost-meter-entity.js";
 import { HelpEntity } from "./help-entity.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
+import { InputComponent } from "../../engine/components/input-component.js";
 
-export class MatchMenuButtonEntity extends BaseTappableGameEntity {
+export class MatchMenuButtonEntity extends BaseGameEntity {
   private readonly SIZE = 32;
   private readonly OFFSET = 20;
   private readonly emoji = "🍔"; // menu emoji
@@ -18,8 +20,10 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
     private readonly helpEntity: HelpEntity
   ) {
     super();
-    this.width = this.SIZE;
-    this.height = this.SIZE;
+    this.addComponent(new InputComponent());
+    this.addComponent(new TransformComponent());
+    this.getComponent(TransformComponent)!.width = this.SIZE;
+    this.getComponent(TransformComponent)!.height = this.SIZE;
     this.opacity = this.DEFAULT_OPACITY;
     this.setPosition();
   }
@@ -34,8 +38,8 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
 
   private setPosition(): void {
     // Position to the left of boost meter entity
-    this.x = this.boostMeterEntity.getX() - this.OFFSET - this.SIZE;
-    this.y =
+    this.getComponent(TransformComponent)!.x = this.boostMeterEntity.getX() - this.OFFSET - this.SIZE;
+    this.getComponent(TransformComponent)!.y =
       this.boostMeterEntity.getY() +
       this.boostMeterEntity.getHeight() / 2 -
       this.SIZE / 2;
@@ -43,13 +47,13 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
 
   public override update(delta: DOMHighResTimeStamp): void {
     // Only toggle on a new button press (not just hover/held)
-    if (this.pressed && !this.prevButtonPressed) {
+    if (this.getComponent(InputComponent)!.pressed && !this.prevButtonPressed) {
       if (this.onToggleMenu) {
         this.onToggleMenu();
       }
     }
 
-    this.prevButtonPressed = this.pressed;
+    this.prevButtonPressed = this.getComponent(InputComponent)!.pressed;
     super.update(delta);
   }
 
@@ -65,8 +69,8 @@ export class MatchMenuButtonEntity extends BaseTappableGameEntity {
     context.textBaseline = "middle";
     context.fillText(
       this.emoji,
-      this.x + this.SIZE / 2,
-      this.y + this.SIZE / 2 + 1
+      this.getComponent(TransformComponent)!.x + this.SIZE / 2,
+      this.getComponent(TransformComponent)!.y + this.SIZE / 2 + 1
     );
     context.restore();
     super.render(context);

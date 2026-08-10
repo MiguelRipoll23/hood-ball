@@ -3,7 +3,21 @@ import {
   CANVAS_EXTRA_MARGIN,
   CANVAS_MARGIN,
 } from "../constants/canvas-constants.js";
-import { BaseMoveableGameEntity } from "../entities/base-moveable-game-entity.js";
+import type { GameEntity } from "../models/game-entity.js";
+
+/**
+ * Duck-type interface for entities that have position and size.
+ * Replaces the removed {@code BaseGameEntity} base class.
+ */
+interface MoveableEntity extends GameEntity {
+  getX(): number;
+  setX(x: number): void;
+  getY(): number;
+  setY(y: number): void;
+  getWidth(): number;
+  getHeight(): number;
+  setSyncReliably?(sync: boolean): void;
+}
 
 export class EntityUtils {
   public static hasInvalidOwner(
@@ -18,7 +32,7 @@ export class EntityUtils {
   }
 
   public static fixEntityPositionIfOutOfBounds(
-    moveableEntity: BaseMoveableGameEntity,
+    moveableEntity: MoveableEntity,
     canvas: HTMLCanvasElement
   ) {
     let hasChanged = false;
@@ -55,7 +69,7 @@ export class EntityUtils {
     }
 
     if (hasChanged) {
-      moveableEntity.setSyncReliably(true);
+      moveableEntity.setSyncReliably?.(true);
     }
   }
 }
