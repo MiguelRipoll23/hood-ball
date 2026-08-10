@@ -8,6 +8,8 @@ import type { GamePlayer } from "../models/game-player.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import { MathUtils } from "../../engine/utils/math-utils.js";
+import { DebugUtils } from "../../engine/utils/debug-utils.js";
+import type { DebugSettings } from "../../engine/models/debug-settings.js";
 import { TELEPORT_SKIP_FRAMES } from "../constants/entity-constants.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
 
@@ -25,6 +27,7 @@ export class BallScript implements ScriptLifecycle {
   inactive: boolean = false;
   lastPlayer: GamePlayer | null = null;
   weatherFrictionMultiplier = 1.0;
+  debugSettings: DebugSettings | null = null;
   private teleportFrameCount = 0;
 
   setInactive(v: boolean): void { this.inactive = v; }
@@ -138,6 +141,32 @@ export class BallScript implements ScriptLifecycle {
     if (this.physics.vx !== 0 || this.physics.vy !== 0) {
       this.transform.angle = Math.atan2(-this.physics.vy, -this.physics.vx);
     }
+  }
+
+  render(context: CanvasRenderingContext2D): void {
+    context.save();
+    this.drawBall(context);
+    if (this.inactive) {
+      context.shadowColor = "rgba(255, 215, 0, 1)"; context.shadowBlur = 25; context.shadowOffsetX = 0; context.shadowOffsetY = 0;
+      context.beginPath(); context.fillStyle = "rgba(255, 255, 255, 1)";
+      context.arc(this.transform.x, this.transform.y, this.radius, 0, Math.PI * 2);
+      context.fill(); context.closePath();
+    }
+    context.restore();
+    if (this.debugSettings?.isDebugging()) {
+      DebugUtils.renderText(context, this.transform.x - this.radius, this.transform.y + this.radius + 5,
+        `X(${Math.round(this.transform.x)}) Y(${Math.round(this.transform.y)})`);
+    }
+  }
+
+  private drawBall(context: CanvasRenderingContext2D): void {
+    const g = context.createRadialGradient(
+      this.transform.x - this.radius * 0.3, this.transform.y - this.radius * 0.3, this.radius * 0.1,
+      this.transform.x, this.transform.y, this.radius);
+    g.addColorStop(0, "white"); g.addColorStop(1, "rgba(200, 200, 200, 1)");
+    context.beginPath(); context.fillStyle = g;
+    context.arc(this.transform.x, this.transform.y, this.radius, 0, Math.PI * 2);
+    context.fill(); context.closePath();
   }
 
   // ── Hitbox ────────────────────────────────────────────────────
