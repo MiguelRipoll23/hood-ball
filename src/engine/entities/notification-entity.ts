@@ -26,7 +26,7 @@ export class NotificationEntity extends BaseGameEntity {
     const _s = this;
     this.addComponent(new ScriptComponent({
       update: () => {
-        if (!_s._nactive || _s.animationTasks.length > 0) return;
+        if (!_s._nactive || anim.hasActiveAnimations()) return;
         _s.textX -= _s.TEXT_SPEED;
         const tw = _s.context.measureText(_s.text).width;
         if (_s.textX < -tw) {

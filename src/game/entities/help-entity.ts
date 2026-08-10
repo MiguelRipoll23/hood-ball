@@ -30,14 +30,23 @@ export class HelpEntity extends BaseGameEntity {
     this.reset();
     this.getComponent(AnimationComponent)!.fadeIn(0.2);
     this.getComponent(AnimationComponent)!.scaleTo(1, 0.2);
+
+    // Cancel any pending hide from a previous show.
+    this.timer?.stop(false);
+    this.timer = null;
+
     if (duration > 0) {
       this.timer = new TimerService(duration, this.hide.bind(this));
     }
   }
 
   public hide(): void {
+    // Skip when already hidden so fadeOut's reset-to-1 doesn't flash the help box.
+    if (this.opacity === 0) return;
     this.getComponent(AnimationComponent)!.fadeOut(0.2);
     this.getComponent(AnimationComponent)!.scaleTo(0, 0.2);
+    this.timer?.stop(false);
+    this.timer = null;
   }
 
   public override reset(): void {

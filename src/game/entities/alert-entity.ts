@@ -66,10 +66,17 @@ export class AlertEntity
 
     if (duration > 0) {
       this.timer = this.getTimerService(duration);
+    } else {
+      // Cancel a stale hide timer so a re-shown no-duration alert isn't
+      // hidden by a previous show's timer.
+      this.timer?.stop(false);
+      this.timer = null;
     }
   }
 
   public hide(): void {
+    // Skip when already hidden so fadeOut's reset-to-1 doesn't flash the alert.
+    if (this.opacity === 0) return;
     this.getComponent(AnimationComponent)!.fadeOut(0.3);
     this.getComponent(AnimationComponent)!.scaleTo(0, 0.3);
   }
