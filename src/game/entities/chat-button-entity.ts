@@ -38,4 +38,10 @@ export class ChatButtonEntity extends BaseGameEntity {
   }
 
   public isInputVisible(): boolean { return this.script.inputVisible; }
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public handlePointerEvent(gp: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
 }

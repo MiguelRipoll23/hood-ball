@@ -26,6 +26,7 @@ export class SmallButtonEntity extends BaseGameEntity {
   public setPosition(x: number, y: number): void { const t = this.getComponent(TransformComponent)!; t.x = x; t.y = y; }
   public setDisabled(d: boolean): void { this.script.disabled = d; if (d) { const i = this.getComponent(InputComponent)!; i.hovering = false; i.pressed = false; } }
   public isDisabled(): boolean { return this.script.disabled; }
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
   public isButtonPressed(): boolean { return this.script.isButtonPressed(); }
   public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
   public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }

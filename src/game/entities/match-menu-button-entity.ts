@@ -30,4 +30,10 @@ export class MatchMenuButtonEntity extends BaseGameEntity {
   public setOnToggleMenu(cb: () => void): void { this.script.setOnToggleMenu(cb); }
   public setMenuVisible(v: boolean): void { this.script.menuVisible = v; }
   public setActive(v: boolean): void { this.getComponent(InputComponent)!.active = v; }
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public handlePointerEvent(gp: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
 }
