@@ -1,26 +1,20 @@
 import { BaseGameEntity } from "../../../engine/entities/base-game-entity.js";
 import { TransformComponent } from "../../../engine/components/transform-component.js";
+import { TitleScript } from "../../scripts/title-script.js";
+import { ScriptComponent } from "../../../engine/components/script-component.js";
 
 export class TitleEntity extends BaseGameEntity {
-  private text: string = "Unknown";
+  private readonly script: TitleScript;
 
   constructor() {
     super();
-    this.addComponent(new TransformComponent());
-    this.getComponent(TransformComponent)!.x = 30;
-    this.getComponent(TransformComponent)!.y = 55;
+    const transform = this.addComponent(new TransformComponent());
+    transform.x = 30; transform.y = 55;
+
+    this.script = new TitleScript();
+    this.addComponent(new ScriptComponent(this.script));
+    this.script.resolveTransform(transform);
   }
 
-  public setText(text: string): void {
-    this.text = text;
-  }
-
-  public render(context: CanvasRenderingContext2D): void {
-    context.save();
-    context.fillStyle = "white";
-    context.font = "lighter 38px system-ui";
-    context.textAlign = "left";
-    context.fillText(this.text, this.getComponent(TransformComponent)!.x, this.getComponent(TransformComponent)!.y);
-    context.restore();
-  }
+  public setText(text: string): void { this.script.text = text; }
 }
