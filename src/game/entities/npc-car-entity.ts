@@ -4,6 +4,7 @@ import { GamePlayer } from "../models/game-player.js";
 import { NetworkComponent } from "../../engine/components/network-component.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
 import { NpcScript } from "../scripts/npc-script.js";
+import { EntityUtils, type MoveableEntity } from "../../engine/utils/entity-utils.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 
@@ -36,6 +37,28 @@ export class NpcCarEntity extends CarEntity {
     this.npcScript = new NpcScript(ballEntity);
     this.npcScript.resolveEntity(this);
     this.addComponent(new ScriptComponent(this.npcScript, -1));
+
+    // Bounds safety check, matching the pre-refactor NpcCarEntity.update()
+    // behavior (which only ran while the NPC was active). Runs after
+    // CarScript (priority 0) so it corrects the position produced by this
+    // frame's movement.
+    this.addComponent(
+      new ScriptComponent(
+        {
+          update: () => {
+            if (!this.npcScript.inputActive) return;
+            const canvas = this.getCanvas();
+            if (canvas) {
+              EntityUtils.fixEntityPositionIfOutOfBounds(
+                this as unknown as MoveableEntity,
+                canvas,
+              );
+            }
+          },
+        },
+        1,
+      ),
+    );
   }
 
   public setActive(active: boolean): void { this.npcScript.inputActive = active; }

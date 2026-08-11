@@ -5,7 +5,7 @@
  * Reduces collision detection from O(n²) brute-force to O(n) in typical
  * cases by only checking entities in the same or adjacent cells.
  */
-export class SpatialGrid<T extends { getX: () => number; getY: () => number }> {
+export class SpatialGrid<T> {
   private readonly cells = new Map<number, T[]>();
 
   constructor(
@@ -32,16 +32,32 @@ export class SpatialGrid<T extends { getX: () => number; getY: () => number }> {
     this.cells.clear();
   }
 
-  /** Insert an entity into the appropriate cell. */
-  public insert(entity: T): void {
-    const { cx, cy } = this.cellCoords(entity.getX(), entity.getY());
-    const key = this.cellKey(cx, cy);
-    let bucket = this.cells.get(key);
-    if (!bucket) {
-      bucket = [];
-      this.cells.set(key, bucket);
+  /**
+   * Insert an entity into every cell its bounding box overlaps. Use for
+   * large static colliders (e.g. field border walls whose hitboxes span
+   * the whole arena) so they get paired with entities anywhere on the field.
+   */
+  public insertWithBounds(
+    entity: T,
+    minX: number,
+    minY: number,
+    maxX: number,
+    maxY: number,
+  ): void {
+    const minCell = this.cellCoords(minX, minY);
+    const maxCell = this.cellCoords(maxX, maxY);
+
+    for (let cy = minCell.cy; cy <= maxCell.cy; cy++) {
+      for (let cx = minCell.cx; cx <= maxCell.cx; cx++) {
+        const key = this.cellKey(cx, cy);
+        let bucket = this.cells.get(key);
+        if (!bucket) {
+          bucket = [];
+          this.cells.set(key, bucket);
+        }
+        bucket.push(entity);
+      }
     }
-    bucket.push(entity);
   }
 
   /**

@@ -15,6 +15,7 @@ export class SpawnPointEntity extends BaseGameEntity {
     this.script = new SpawnPointScript(index);
     this.addComponent(new ScriptComponent(this.script));
     this.script.resolveTransform(transform);
+    this.script.resolveEntity(this);
   }
 
   public getIndex(): number { return this.script.getIndex(); }
