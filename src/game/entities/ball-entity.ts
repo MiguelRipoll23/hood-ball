@@ -112,7 +112,11 @@ export class BallEntity
   // ── Transform queries (used by external callers) ──────────────
 
   public getX(): number { return this.getComponent(TransformComponent)?.x ?? 0; }
+  public setX(x: number): void { const t = this.getComponent(TransformComponent); if (t) t.x = x; }
   public getY(): number { return this.getComponent(TransformComponent)?.y ?? 0; }
+  public setY(y: number): void { const t = this.getComponent(TransformComponent); if (t) t.y = y; }
+  public getWidth(): number { return this.getComponent(TransformComponent)?.width ?? 0; }
+  public getHeight(): number { return this.getComponent(TransformComponent)?.height ?? 0; }
   public setVX(vx: number): void { const p = this.getComponent(PhysicsComponent); if (p) p.vx = vx; }
   public setVY(vy: number): void { const p = this.getComponent(PhysicsComponent); if (p) p.vy = vy; }
 

@@ -17,6 +17,9 @@ export class CloseableWindowEntity extends BaseGameEntity {
     this.script = new CloseableWindowScript(canvas);
     this.addComponent(new ScriptComponent(this.script));
     this.script.resolveComponents(transform, anim, input);
+    // Route tap-to-close through the entity so subclasses (e.g.
+    // ServerMessageWindowEntity) can override close() behaviour.
+    this.script.closeCallback = () => this.close();
 
     this.opacity = 0;
     input.active = false;
@@ -31,4 +34,16 @@ export class CloseableWindowEntity extends BaseGameEntity {
   }
 
   public close(): void { this.script.close(); }
+
+  // ── TappableEntity contract ───────────────────────────────────
+
+  public handlePointerEvent(
+    gp: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract,
+  ): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
+
+  public isActive(): boolean { return this.script.opened; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)?.hovering ?? false; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)?.pressed ?? false; }
 }

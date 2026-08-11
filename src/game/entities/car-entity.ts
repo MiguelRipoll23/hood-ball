@@ -53,7 +53,9 @@ export class CarEntity extends BaseGameEntity {
   // ── Transform / Collision queries (used by external callers) ──
 
   public getX(): number { return this.carScript.transform.x; }
+  public setX(x: number): void { this.carScript.transform.x = x; }
   public getY(): number { return this.carScript.transform.y; }
+  public setY(y: number): void { this.carScript.transform.y = y; }
   public getWidth(): number { return this.carScript.transform.width; }
   public getHeight(): number { return this.carScript.transform.height; }
   public isColliding(): boolean { return this.carScript.collision.isColliding(); }
