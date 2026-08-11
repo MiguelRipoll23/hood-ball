@@ -22,12 +22,8 @@ export class BoostMeterEntity extends BaseGameEntity {
     this.setPosition(canvas.width / 2, canvas.height - RADIUS - 30);
   }
 
-  public setBoostLevel(level: number): void {
-    this.script.boostLevel = Math.max(0, Math.min(1, level));
-  }
-  public setAttemptingBoostWhileEmpty(active: boolean): void {
-    this.script.boostAttemptWhileEmpty = active;
-  }
+  public setBoostLevel(level: number): void { this.script.boostLevel = Math.max(0, Math.min(1, level)); }
+  public setAttemptingBoostWhileEmpty(active: boolean): void { this.script.boostAttemptWhileEmpty = active; }
   public getBoostLevel(): number { return this.script.boostLevel; }
   public getX(): number { return this.getComponent(TransformComponent)!.x; }
   public getY(): number { return this.getComponent(TransformComponent)!.y; }
@@ -35,10 +31,11 @@ export class BoostMeterEntity extends BaseGameEntity {
   public getHeight(): number { return this.getComponent(TransformComponent)!.height; }
 
   public setPosition(x: number, y: number): void {
-    this.getComponent(TransformComponent)!.x = x - this.getComponent(TransformComponent)!.width / 2;
-    this.getComponent(TransformComponent)!.y = y - this.getComponent(TransformComponent)!.height / 2;
-    this.script.x = this.getComponent(TransformComponent)!.x;
-    this.script.y = this.getComponent(TransformComponent)!.y;
+    const t = this.getComponent(TransformComponent)!;
+    t.x = x - t.width / 2;
+    t.y = y - t.height / 2;
+    this.script.x = t.x;
+    this.script.y = t.y;
   }
 
   public override getReplayState(): ArrayBuffer | null {
@@ -50,9 +47,7 @@ export class BoostMeterEntity extends BaseGameEntity {
 
   public override applyReplayState(arrayBuffer: ArrayBuffer): void {
     if (!arrayBuffer || arrayBuffer.byteLength < 5) {
-      EngineLogger.warn("BoostMeterEntity",
-        `applyReplayState received invalid buffer size: ${arrayBuffer ? arrayBuffer.byteLength : 0}`,
-      );
+      EngineLogger.warn("BoostMeterEntity", `applyReplayState received invalid buffer size: ${arrayBuffer ? arrayBuffer.byteLength : 0}`);
       return;
     }
     try {
@@ -61,9 +56,7 @@ export class BoostMeterEntity extends BaseGameEntity {
       this.script.boostAttemptWhileEmpty = reader.boolean();
       this.script.displayLevel = this.script.boostLevel;
     } catch (error) {
-      EngineLogger.error("BoostMeterEntity",
-        "Error applying replay state, buffer length:", arrayBuffer.byteLength, error,
-      );
+      EngineLogger.error("BoostMeterEntity", "Error applying replay state, buffer length:", arrayBuffer.byteLength, error);
     }
   }
 
