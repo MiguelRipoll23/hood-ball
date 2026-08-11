@@ -19,6 +19,13 @@ export class CloseableWindowScript implements ScriptLifecycle {
   protected content = "Content goes here";
   protected timestamp: number | null = null;
 
+  /**
+   * Called when the input triggers a close. Set by the owning entity so
+   * that subclasses can override close behaviour (e.g. server messages
+   * set {@code next = true} instead of closing).
+   */
+  closeCallback?: () => void;
+
   private transform!: TransformComponent;
   private animation!: AnimationComponent;
   private input!: InputComponent;
@@ -62,7 +69,13 @@ export class CloseableWindowScript implements ScriptLifecycle {
   }
 
   update(delta: DOMHighResTimeStamp): void {
-    if (this.input.pressed) this.close();
+    if (this.input.pressed) {
+      if (this.closeCallback) {
+        this.closeCallback();
+      } else {
+        this.close();
+      }
+    }
     this.backdropEntity.update(delta);
   }
 
