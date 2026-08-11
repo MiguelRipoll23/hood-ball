@@ -54,7 +54,7 @@ export class SmallButtonEntity extends BaseGameEntity {
 
   public handlePointerEvent(gamePointer: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
     if (this.disabled) return;
-    super.handlePointerEvent(gamePointer);
+    this.getComponent(InputComponent)!.handlePointerEvent(gamePointer);
   }
 
   private scriptUpdate(_delta: DOMHighResTimeStamp): void {
@@ -72,6 +72,9 @@ export class SmallButtonEntity extends BaseGameEntity {
     this.wasPressed = false;
     return result;
   }
+
+  public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
 
   private scriptRender(context: CanvasRenderingContext2D): void {
     if (!this.getComponent(InputComponent)!.active) return;

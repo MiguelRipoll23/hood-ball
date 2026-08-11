@@ -52,9 +52,10 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     for (const e of entities) {
       const c = e.getComponent(CollisionComponent)!;
       for (const other of [...c.collidingEntities]) {
-        const oc = (other as BaseGameEntity).getComponent(CollisionComponent);
-        c.collidingEntities = c.collidingEntities.filter((x) => x !== other);
-        if (oc) oc.collidingEntities = oc.collidingEntities.filter((x) => x !== e);
+        const otherBase = other as unknown as BaseGameEntity;
+        const oc = otherBase.getComponent(CollisionComponent);
+        c.collidingEntities = c.collidingEntities.filter((x) => (x as unknown) !== (other as unknown));
+        if (oc) oc.collidingEntities = oc.collidingEntities.filter((x) => (x as unknown) !== (e as unknown));
       }
       c.hitboxEntities.forEach((h) => h.setColliding(false));
     }
@@ -85,13 +86,13 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     const cb = b.getComponent(CollisionComponent)!;
 
     if (!this.doesHitboxesIntersect(ca.hitboxEntities, cb.hitboxEntities)) {
-      ca.collidingEntities = ca.collidingEntities.filter((x) => x !== b);
-      cb.collidingEntities = cb.collidingEntities.filter((x) => x !== a);
+      ca.collidingEntities = ca.collidingEntities.filter((x) => (x as unknown) !== (b as unknown));
+      cb.collidingEntities = cb.collidingEntities.filter((x) => (x as unknown) !== (a as unknown));
       return;
     }
 
-    ca.collidingEntities.push(b);
-    cb.collidingEntities.push(a);
+    (ca.collidingEntities as unknown[]).push(b);
+    (cb.collidingEntities as unknown[]).push(a);
 
     const pa = a.getComponent(PhysicsComponent)!;
     const pb = b.getComponent(PhysicsComponent)!;
@@ -137,7 +138,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     let corrY = 0;
 
     for (const other of c.collidingEntities) {
-      const otherEntity = other as BaseGameEntity;
+      const otherEntity = other as unknown as BaseGameEntity;
       const op = otherEntity.getComponent(PhysicsComponent);
       if (!op || op.isDynamic || !op.rigidBody) continue;
 

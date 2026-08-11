@@ -34,7 +34,13 @@ export class MenuOptionEntity extends BaseGameEntity {
     return this.requiresOnlineConnection;
   }
 
-    public setActive(v: boolean): void { this.getComponent(InputComponent)!.active = v; }
+  public setActive(v: boolean): void { this.getComponent(InputComponent)!.active = v; }
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
+  public handlePointerEvent(gp: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
 
   public setRequiresOnlineConnection(requiresOnlineConnection: boolean): void {
     this.requiresOnlineConnection = requiresOnlineConnection;

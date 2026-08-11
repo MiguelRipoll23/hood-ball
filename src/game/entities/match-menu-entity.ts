@@ -214,7 +214,7 @@ export class MatchMenuEntity extends BaseGameEntity {
       return;
     }
 
-    super.handlePointerEvent(gamePointer);
+    this.getComponent(InputComponent)!.handlePointerEvent(gamePointer);
   }
 
   private scriptUpdate(delta: DOMHighResTimeStamp): void {

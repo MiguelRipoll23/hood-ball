@@ -1,11 +1,10 @@
 import type { Component } from "./component.js";
 import type { HitboxEntity } from "../entities/hitbox-entity.js";
 import type { DebugSettings } from "../models/debug-settings.js";
+import { PhysicsComponent } from "./physics-component.js";
 
 type CollidingEntity = {
-  hasRigidBody(): boolean;
-  isDynamic(): boolean;
-  getHitboxEntities(): HitboxEntity[];
+  getComponent<T extends Component>(ctor: new (...args: never[]) => T): T | null;
 };
 
 type CollisionExclusionCtor = new (...args: never[]) => CollidingEntity;
@@ -37,18 +36,22 @@ export class CollisionComponent implements Component {
 
   public isColliding(): boolean {
     return this.collidingEntities.some(
-      (entity) =>
-        this.isCollisionClassIncluded(entity.constructor as CollisionExclusionCtor) &&
-        entity.hasRigidBody(),
+      (entity) => {
+        const phys = entity.getComponent(PhysicsComponent);
+        return this.isCollisionClassIncluded(entity.constructor as CollisionExclusionCtor) &&
+          (phys?.rigidBody ?? false);
+      },
     );
   }
 
   public isCollidingWithStatic(): boolean {
     return this.collidingEntities.some(
-      (entity) =>
-        this.isCollisionClassIncluded(entity.constructor as CollisionExclusionCtor) &&
-        !entity.isDynamic() &&
-        entity.hasRigidBody(),
+      (entity) => {
+        const phys = entity.getComponent(PhysicsComponent);
+        return this.isCollisionClassIncluded(entity.constructor as CollisionExclusionCtor) &&
+          !(phys?.isDynamic ?? false) &&
+          (phys?.rigidBody ?? false);
+      },
     );
   }
 

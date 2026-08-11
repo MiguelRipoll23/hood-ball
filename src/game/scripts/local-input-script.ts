@@ -4,7 +4,7 @@ import type { GameKeyboardContract } from "../../engine/interfaces/input/game-ke
 import type { GameGamepadContract } from "../../engine/interfaces/input/game-gamepad-interface.js";
 import { JoystickEntity } from "../entities/joystick-entity.js";
 import { GamepadButton } from "../../engine/enums/gamepad-button.js";
-import { EntityUtils } from "../../engine/utils/entity-utils.js";
+import { EntityUtils, type MoveableEntity } from "../../engine/utils/entity-utils.js";
 import type { BoostMeterEntity } from "../entities/boost-meter-entity.js";
 import type { ChatButtonEntity } from "../entities/chat-button-entity.js";
 import type { CarEntity } from "../entities/car-entity.js";
@@ -78,7 +78,7 @@ export class LocalInputScript implements ScriptLifecycle {
     // Bounds safety
     const canvas = this.entity.getCanvas();
     if (canvas) {
-      EntityUtils.fixEntityPositionIfOutOfBounds(this.entity, canvas);
+      EntityUtils.fixEntityPositionIfOutOfBounds(this.entity as unknown as MoveableEntity, canvas);
     }
 
     this.boostMeterEntity?.setBoostLevel(

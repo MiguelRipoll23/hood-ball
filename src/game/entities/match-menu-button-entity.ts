@@ -39,4 +39,5 @@ export class MatchMenuButtonEntity extends BaseGameEntity {
 
   public setOnToggleMenu(c: () => void): void { this.onToggleMenu = c; }
   public setMenuVisible(v: boolean): void { this.menuVisible = v; }
+  public setActive(v: boolean): void { this.getComponent(InputComponent)!.active = v; }
 }

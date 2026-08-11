@@ -7,9 +7,8 @@ import type { GameEntity } from "../models/game-entity.js";
 
 /**
  * Duck-type interface for entities that have position and size.
- * Replaces the removed {@code BaseGameEntity} base class.
  */
-interface MoveableEntity extends GameEntity {
+export interface MoveableEntity extends GameEntity {
   getX(): number;
   setX(x: number): void;
   getY(): number;

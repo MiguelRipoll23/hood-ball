@@ -20,6 +20,9 @@ export class SpawnPointEntity extends BaseGameEntity {
     return this.index;
   }
 
+  public getX(): number { return this.getComponent(TransformComponent)!.x; }
+  public getY(): number { return this.getComponent(TransformComponent)!.y; }
+
   public setMatchSessionService(matchSessionService: MatchSessionService): void {
     this.matchSessionService = matchSessionService;
   }

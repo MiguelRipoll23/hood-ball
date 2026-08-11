@@ -353,7 +353,7 @@ export class MatchLogEntity extends BaseGameEntity {
     this.isFadingOut = false;
     this.isFadingIn = true;
     this.getComponent(AnimationComponent)!.clearAnimations();
-    this.fadeIn(this.fadeInDurationSeconds);
+    this.getComponent(AnimationComponent)!.fadeIn(this.fadeInDurationSeconds);
   }
 
   private startFadeOut(durationSeconds?: number): void {
@@ -364,7 +364,8 @@ export class MatchLogEntity extends BaseGameEntity {
       durationSeconds !== undefined && durationSeconds > 0
         ? durationSeconds
         : this.fallbackFadeOutDurationSeconds;
-    this.fadeOut(fadeDuration);
+    const anim = this.getComponent(AnimationComponent)!;
+    anim.fadeOut(fadeDuration);
   }
 
   private getCanvasContext(): CanvasRenderingContext2D {

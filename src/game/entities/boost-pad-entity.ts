@@ -48,4 +48,6 @@ export class BoostPadEntity extends BaseGameEntity {
   public reset(): void { this.script.reset(); }
   public getIndex(): number { return this.index; }
   public isActive(): boolean { return this.script.active; }
+  public getX(): number { return this.getComponent(TransformComponent)!.x; }
+  public getY(): number { return this.getComponent(TransformComponent)!.y; }
 }

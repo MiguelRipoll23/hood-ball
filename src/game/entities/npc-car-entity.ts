@@ -1,6 +1,7 @@
 import { CarEntity } from "./car-entity.js";
 import { BallEntity } from "./ball-entity.js";
 import { GamePlayer } from "../models/game-player.js";
+import { NetworkComponent } from "../../engine/components/network-component.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
 import { NpcScript } from "../scripts/npc-script.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
@@ -29,7 +30,8 @@ export class NpcCarEntity extends CarEntity {
       "npc-00000000-0000-0000-0000-000000000000",
       "🤖 NPC", false, 0, spawnPointIndex, true,
     );
-    this.setOwner(npcPlayer);
+    const net = this.getComponent(NetworkComponent)!;
+    net.owner = npcPlayer;
 
     this.npcScript = new NpcScript(ballEntity);
     this.npcScript.resolveEntity(this);

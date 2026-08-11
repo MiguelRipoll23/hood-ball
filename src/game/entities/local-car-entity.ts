@@ -1,6 +1,7 @@
 import type { GamePointerContract } from "../../engine/interfaces/input/game-pointer-interface.js";
 import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { CarEntity } from "./car-entity.js";
+import { NetworkComponent } from "../../engine/components/network-component.js";
 import { JoystickEntity } from "./joystick-entity.js";
 import type { GameKeyboardContract } from "../../engine/interfaces/input/game-keyboard-interface.js";
 import type { GameGamepadContract } from "../../engine/interfaces/input/game-gamepad-interface.js";
@@ -26,17 +27,18 @@ export class LocalCarEntity extends CarEntity {
     super(x, y, angle);
     this.setCanvas(canvas);
 
-    this.setSyncable(true);
+    const n = this.getComponent(NetworkComponent)!;
+    n.syncable = true;
     this.setId(crypto.randomUUID().replaceAll("-", ""));
-    this.setTypeId(EntityRegistryType.RemoteCar);
+    n.typeId = EntityRegistryType.RemoteCar;
 
     this.inputScript = new LocalInputScript(gamePointer, gameKeyboard, gameGamepad);
     this.inputScript.resolveEntity(this);
     this.addComponent(new ScriptComponent(this.inputScript, -1));
   }
 
-  public override mustSync(): boolean {
-    return super.mustSync() || this.carScript.speed !== 0;
+  public mustSync(): boolean {
+    return (this.getComponent(NetworkComponent)?.mustSyncFlag ?? false) || this.carScript.speed !== 0;
   }
 
   public override reset(): void {
