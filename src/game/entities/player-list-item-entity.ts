@@ -101,7 +101,7 @@ export class PlayerListItemEntity extends BaseGameEntity {
     }
   }
 
-  public override handlePointerEvent(
+  public handlePointerEvent(
     gamePointer: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract
   ): void {
     this.reportButton?.handlePointerEvent(gamePointer);

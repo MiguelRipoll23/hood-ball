@@ -39,6 +39,12 @@ export class GoalEntity extends BaseGameEntity {
     }));
   }
 
+  public getX(): number { return this.getComponent(TransformComponent)!.x; }
+  public getY(): number { return this.getComponent(TransformComponent)!.y; }
+  public getWidth(): number { return this.getComponent(TransformComponent)!.width; }
+  public getHeight(): number { return this.getComponent(TransformComponent)!.height; }
+  public getCollidingEntities(): BaseGameEntity[] { return (this.getComponent(CollisionComponent)?.collidingEntities as unknown as BaseGameEntity[]) ?? []; }
+
   public override load(): void {
     const t = this.getComponent(TransformComponent)!;
     this.getComponent(CollisionComponent)!.hitboxEntities = [

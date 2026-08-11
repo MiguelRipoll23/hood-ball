@@ -49,6 +49,9 @@ export class SettingEntity extends BaseGameEntity {
     this.updated = updated;
   }
 
+  public setX(x: number): void { this.getComponent(TransformComponent)!.x = x; }
+  public setY(y: number): void { this.getComponent(TransformComponent)!.y = y; }
+
   private scriptUpdate(_deltaTimeStamp: DOMHighResTimeStamp): void {
     if (this.getComponent(InputComponent)!.pressed) {
       this.settingState = !this.settingState;

@@ -17,6 +17,9 @@ export class ToggleEntity extends BaseGameEntity {
     this.toggleState = toggleState;
   }
 
+  public setX(x: number): void { this.getComponent(TransformComponent)!.x = x; }
+  public setY(y: number): void { this.getComponent(TransformComponent)!.y = y; }
+
   private scriptRender(context: CanvasRenderingContext2D): void {
 
     // Draw the background (rounded rectangle)

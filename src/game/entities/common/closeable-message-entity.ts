@@ -35,6 +35,12 @@ export class CloseableMessageEntity extends BaseGameEntity {
     this.getComponent(InputComponent)!.active = true;
   }
 
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public handlePointerEvent(gp: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
+
   public close(): void {
     if (this.opacity === 0) {
       EngineLogger.warn("CloseableMessageEntity", "CloseableMessageEntity is already closed");

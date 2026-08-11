@@ -13,6 +13,7 @@ import { AlertEntity } from "../../entities/alert-entity.js";
 import { BoostPadEntity } from "../../entities/boost-pad-entity.js";
 import type { SpawnPointEntity } from "../../entities/common/spawn-point-entity.js";
 import { CarEntity } from "../../entities/car-entity.js";
+import { TransformComponent } from "../../../engine/components/transform-component.js";
 import { SPAWN_ANGLE } from "../../constants/entity-constants.js";
 import type { GameEntity } from "../../../engine/models/game-entity.js";
 import { MatchAction } from "../../models/match-action.js";
@@ -349,7 +350,7 @@ export class WorldController {
             EngineLogger.warn("WorldController", 
               `No spawn point found for player ${player.getName()}, skipping teleport`
             );
-            entity.setSkipInterpolation();
+            entity.getComponent(TransformComponent)!.skipInterpolation = true;
           }
         }
       });
@@ -392,8 +393,8 @@ export class WorldController {
     }
 
     const victimCar = getEntitiesByOwner(victim).find(
-      (e): e is CarEntity => e instanceof CarEntity
-    );
+      (e) => e instanceof CarEntity
+    ) as CarEntity | undefined;
 
     if (!victimCar) {
       EngineLogger.warn("WorldController", `Cannot find car for victim ${payload.victimId}`);
@@ -508,8 +509,8 @@ export class WorldController {
     }
 
     const cars = worldEntities.filter(
-      (e): e is CarEntity => e instanceof CarEntity
-    );
+      (e) => e instanceof CarEntity
+    ) as CarEntity[];
 
     cars.forEach((car) => {
       car.getCollidingEntities().forEach((other) => {

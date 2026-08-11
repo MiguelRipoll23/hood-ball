@@ -19,8 +19,11 @@ export class CloseButtonEntity extends BaseGameEntity {
     this.getComponent(TransformComponent)!.height = this.BUTTON_SIZE;
   }
 
-    public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
   public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
+  public handlePointerEvent(gp: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
 
   public setPosition(x: number, y: number): void {
     this.getComponent(TransformComponent)!.x = x;

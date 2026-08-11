@@ -5,9 +5,12 @@ import {
 import { TimerService } from "../../engine/services/gameplay/timer-service.js";
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
+import { NetworkComponent } from "../../engine/components/network-component.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
+import type { EntityType } from "../../engine/enums/entity-type.js";
+import type { Player } from "../../engine/interfaces/models/player-interface.js";
 import { EngineLogger } from "../../engine/services/engine-logger.js";
 import { TransformComponent } from "../../engine/components/transform-component.js";
 import { AnimationComponent } from "../../engine/components/animation-component.js";
@@ -214,6 +217,20 @@ export class AlertEntity
         return /^#([0-9A-F]{3}){1,2}$/i.test(color) ? color : "#FFFFFF";
     }
   }
+
+  // ── MultiplayerGameEntity (thin wrappers) ─────────────────────
+
+  public getTypeId(): EntityType | null { return this.getComponent(NetworkComponent)?.typeId ?? null; }
+  public getOwner(): Player | null { return this.getComponent(NetworkComponent)?.owner ?? null; }
+  public setOwner(p: Player | null): void { const n = this.getComponent(NetworkComponent); if (n) n.owner = p; }
+  public isSyncable(): boolean { return this.getComponent(NetworkComponent)?.syncable ?? false; }
+  public isSyncableByHost(): boolean { return this.getComponent(NetworkComponent)?.syncableByHost ?? false; }
+  public mustSync(): boolean { return this.getComponent(NetworkComponent)?.mustSyncFlag ?? false; }
+  public setSync(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncFlag = v; }
+  public mustSyncReliably(): boolean { return this.getComponent(NetworkComponent)?.mustSyncReliablyFlag ?? false; }
+  public setSyncReliably(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncReliablyFlag = v; }
+  public serialize(): ArrayBuffer { return new ArrayBuffer(0); }
+  public synchronize(_arrayBuffer: ArrayBuffer): void { /* not synchronised */ }
 
   private setInitialValues() {
     this.opacity = 0;

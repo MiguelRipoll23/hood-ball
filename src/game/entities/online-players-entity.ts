@@ -57,7 +57,7 @@ export class OnlinePlayersEntity extends BaseGameEntity {
     if (previousTotal === 0 && total > 0) {
       // Fade in with bounce when going from 0 to more
       this.setOpacity(0);
-      this.fadeIn(0.3);
+      this.getComponent(AnimationComponent)!.fadeIn(0.3);
       this.startBounce();
     } else if (total === 0) {
       // Hide immediately when reaching 0

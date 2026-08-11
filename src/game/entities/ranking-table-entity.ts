@@ -51,6 +51,6 @@ export class RankingTableEntity extends BaseGameEntity {
   }
 
   public fadeIn(seconds: number): void {
-    super.fadeIn(seconds);
+    this.getComponent(AnimationComponent)!.fadeIn(seconds);
   }
 }

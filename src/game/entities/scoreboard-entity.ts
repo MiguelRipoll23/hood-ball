@@ -3,6 +3,8 @@ import {
   RED_TEAM_COLOR,
 } from "../constants/colors-constants.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
+import type { EntityType } from "../../engine/enums/entity-type.js";
+import type { Player } from "../../engine/interfaces/models/player-interface.js";
 import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
@@ -63,6 +65,18 @@ export class ScoreboardEntity
   public static getTypeId(): EntityRegistryType {
     return EntityRegistryType.Scoreboard;
   }
+
+  // ── MultiplayerGameEntity (thin wrappers) ─────────────────────
+
+  public getTypeId(): EntityType | null { return this.getComponent(NetworkComponent)?.typeId ?? null; }
+  public getOwner(): Player | null { return this.getComponent(NetworkComponent)?.owner ?? null; }
+  public setOwner(p: Player | null): void { const n = this.getComponent(NetworkComponent); if (n) n.owner = p; }
+  public isSyncable(): boolean { return this.getComponent(NetworkComponent)?.syncable ?? false; }
+  public isSyncableByHost(): boolean { return this.getComponent(NetworkComponent)?.syncableByHost ?? false; }
+  public mustSync(): boolean { return this.getComponent(NetworkComponent)?.mustSyncFlag ?? false; }
+  public setSync(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncFlag = v; }
+  public mustSyncReliably(): boolean { return this.getComponent(NetworkComponent)?.mustSyncReliablyFlag ?? false; }
+  public setSyncReliably(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncReliablyFlag = v; }
 
   public isActive(): boolean {
     return this._sactive;
@@ -157,8 +171,9 @@ export class ScoreboardEntity
 
   private setSyncableValues() {
     this.setId("d4e5f6a78b9c0d1e2f3a4b5c6d7e8f9a");
-    this.setTypeId(EntityRegistryType.Scoreboard);
-    this.setSyncableByHost(true);
+    const n = this.getComponent(NetworkComponent)!;
+    n.typeId = EntityRegistryType.Scoreboard;
+    n.syncableByHost = true;
   }
 
   private renderSquare(
