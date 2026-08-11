@@ -99,6 +99,7 @@ export class BaseGameEntity implements GameEntity {
   }
 
   public render(context: CanvasRenderingContext2D): void {
+    this.applyOpacity(context);
     this.components.forEach((component) => component.render?.(context));
   }
 }

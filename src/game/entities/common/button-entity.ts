@@ -26,6 +26,7 @@ export class ButtonEntity extends BaseGameEntity {
   public getY(): number { return this.getComponent(TransformComponent)!.y; }
   public getWidth(): number { return this.getComponent(TransformComponent)!.width; }
   public getHeight(): number { return this.getComponent(TransformComponent)!.height; }
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
   public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
   public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
   public handlePointerEvent(gp: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract): void {

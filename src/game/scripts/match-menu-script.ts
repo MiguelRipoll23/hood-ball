@@ -44,6 +44,10 @@ export class MatchMenuScript {
   private pendingAction: (() => void) | null = null;
   pendingClose = false;
 
+  /** Exposed for the entity to report to the scene's tappable loop. */
+  isHovering = false;
+  isPressed = false;
+
   // ── Misc ──────────────────────────────────────────────────────
   private onClose: () => void;
   private onLeaveMatch: () => void;
@@ -175,18 +179,25 @@ export class MatchMenuScript {
   handlePointerEvent(gamePointer: GamePointerContract, entityOpacity: number): void {
     if (entityOpacity === 0) return;
 
+    // Reset per-frame state (called before child entities are updated)
+    this.isHovering = false;
+    this.isPressed = false;
+
     if (this.pendingClose && this.messageEntity.isActive()) {
       this.messageEntity.handlePointerEvent(gamePointer);
+      this.isHovering = true;
       return;
     }
 
     if (this.confirmationEntity.isOpen()) {
       this.confirmationEntity.handlePointerEvent(gamePointer);
+      this.isHovering = true;
       return;
     }
 
     if (this.playersListEntity.isActionMenuOpen()) {
       this.playersListEntity.handlePointerEvent(gamePointer);
+      this.isHovering = true;
       return;
     }
 
@@ -200,6 +211,8 @@ export class MatchMenuScript {
       this.leaveMatchButton.isHovering() ||
       this.leaveMatchButton.isPressed()
     ) {
+      this.isHovering = this.closeButtonEntity.isHovering() || this.leaveMatchButton.isHovering();
+      this.isPressed = this.closeButtonEntity.isPressed() || this.leaveMatchButton.isPressed();
       return;
     }
   }

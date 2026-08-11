@@ -51,6 +51,10 @@ export class MatchMenuEntity extends BaseGameEntity {
     this.script.setPlayers(players, localPlayerId);
   }
 
+  public isActive(): boolean { return this.opacity > 0; }
+  public isHovering(): boolean { return this.script.isHovering; }
+  public isPressed(): boolean { return this.script.isPressed; }
+
   public handlePointerEvent(gamePointer: GamePointerContract): void {
     if (!this.getComponent(InputComponent)!.active || this.opacity === 0) return;
     this.script.handlePointerEvent(gamePointer, this.opacity);

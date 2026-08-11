@@ -25,6 +25,7 @@ export class CloseButtonEntity extends BaseGameEntity {
     transform.y = y;
   }
 
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
   public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
   public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
   public handlePointerEvent(
