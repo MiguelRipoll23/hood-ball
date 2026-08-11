@@ -74,6 +74,7 @@ export class SpatialGrid<T> {
       // Within the same cell
       for (let i = 0; i < bucket.length; i++) {
         for (let j = i + 1; j < bucket.length; j++) {
+          if (bucket[i] === bucket[j]) continue;
           callback(bucket[i], bucket[j]);
         }
       }
@@ -99,6 +100,7 @@ export class SpatialGrid<T> {
 
         for (const a of bucket) {
           for (const b of neighborBucket) {
+            if (a === b) continue;
             callback(a, b);
           }
         }
