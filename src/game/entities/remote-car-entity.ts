@@ -2,7 +2,6 @@ import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { CarEntity } from "./car-entity.js";
 import { NetworkComponent } from "../../engine/components/network-component.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
-import type { EntityType } from "../../engine/enums/entity-type.js";
 import {
   SCALE_FACTOR_FOR_ANGLES, SCALE_FACTOR_FOR_SPEED, SCALE_FACTOR_FOR_COORDINATES,
 } from "../constants/webrtc-constants.js";
@@ -32,15 +31,11 @@ export class RemoteCarEntity extends CarEntity {
     return EntityRegistryType.RemoteCar;
   }
 
-  // ── MultiplayerGameEntity instance methods (thin wrappers) ────
+  // ── MultiplayerGameEntity instance methods (inherit from CarEntity) ────
 
-  public getTypeId(): EntityType | null { return this.getComponent(NetworkComponent)?.typeId ?? null; }
-  public isSyncable(): boolean { return this.getComponent(NetworkComponent)?.syncable ?? false; }
-  public isSyncableByHost(): boolean { return this.getComponent(NetworkComponent)?.syncableByHost ?? false; }
-  public mustSync(): boolean { return this.getComponent(NetworkComponent)?.mustSyncFlag ?? false; }
-  public setSync(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncFlag = v; }
-  public mustSyncReliably(): boolean { return this.getComponent(NetworkComponent)?.mustSyncReliablyFlag ?? false; }
-  public setSyncReliably(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncReliablyFlag = v; }
+  // All network wrapper methods (getTypeId, isSyncable, isSyncableByHost,
+  // mustSync, setSync, mustSyncReliably, setSyncReliably) are inherited
+  // from CarEntity, which delegates to NetworkComponent.
 
   public static deserialize(
     syncableId: string, arrayBuffer: ArrayBuffer,
