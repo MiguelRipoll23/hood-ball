@@ -1,21 +1,28 @@
 import type { ScriptLifecycle } from "../../engine/components/script-component.js";
 import type { TransformComponent } from "../../engine/components/transform-component.js";
+import type { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import type { MatchSessionService } from "../services/session/match-session-service.js";
 import { DebugUtils } from "../../engine/utils/debug-utils.js";
 
 export class SpawnPointScript implements ScriptLifecycle {
   private matchSessionService: MatchSessionService | null = null;
+  private entity: BaseGameEntity | null = null;
   private index: number;
   private transform!: TransformComponent;
 
   constructor(index: number) { this.index = index; }
 
   resolveTransform(transform: TransformComponent): void { this.transform = transform; }
+  resolveEntity(entity: BaseGameEntity): void { this.entity = entity; }
 
   getIndex(): number { return this.index; }
   setMatchSessionService(s: MatchSessionService): void { this.matchSessionService = s; }
 
   render(context: CanvasRenderingContext2D): void {
+    // Spawn points are debug-only markers — only render in debug mode
+    // (matches the pre-refactor behavior).
+    if (!this.entity?.debugSettings?.isDebugging()) return;
+
     context.save();
     const radius = 12;
     const t = this.transform;

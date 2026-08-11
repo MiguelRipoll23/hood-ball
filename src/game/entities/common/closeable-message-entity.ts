@@ -27,7 +27,8 @@ export class CloseableMessageEntity extends BaseGameEntity {
 
   public show(value: string): void { this.script.show(value); }
   public isActive(): boolean { return this.script.active; }
-  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)?.hovering ?? false; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)?.pressed ?? false; }
 
   public handlePointerEvent(
     gp: import("../../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract,

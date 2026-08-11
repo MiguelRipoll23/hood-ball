@@ -22,6 +22,8 @@ export class ChatUISystem {
   private chatButtonEntity: ChatButtonEntity | null = null;
   private matchMenuButtonEntity: MatchMenuButtonEntity | null = null;
   private matchMenuEntity: MatchMenuEntity | null = null;
+  private matchSessionService: MatchSessionService | null = null;
+  private gamePlayer: GamePlayer | null = null;
 
   /**
    * Set up chat UI: makes chat input visible, creates chat button,
@@ -39,6 +41,8 @@ export class ChatUISystem {
     matchmakingService: MatchmakingServiceContract | null,
     uiEntities: GameEntity[],
     onReturnToMainMenu: () => Promise<void>,
+    matchSessionService: MatchSessionService,
+    gamePlayer: GamePlayer,
   ): ChatButtonEntity | null {
     const chatInputElement = document.querySelector(
       "#chat-input",
@@ -48,6 +52,9 @@ export class ChatUISystem {
       EngineLogger.error("ChatUiSystem", "Chat input element not found");
       return null;
     }
+
+    this.matchSessionService = matchSessionService;
+    this.gamePlayer = gamePlayer;
 
     chatInputElement.removeAttribute("hidden");
 
@@ -133,6 +140,14 @@ export class ChatUISystem {
 
   private showMatchMenu(): void {
     if (!this.matchMenuEntity || !this.matchMenuButtonEntity) return;
+
+    // Refresh the player list on every open so the menu always reflects
+    // the current match players (e.g. solo matches, where no
+    // PlayerConnected/PlayerDisconnected event fires to trigger a refresh).
+    if (this.matchSessionService && this.gamePlayer) {
+      this.refreshPlayers(this.matchSessionService, this.gamePlayer);
+    }
+
     this.matchMenuEntity.show();
     this.matchMenuButtonEntity.setMenuVisible(true);
     this.matchMenuButtonEntity.setActive(false);

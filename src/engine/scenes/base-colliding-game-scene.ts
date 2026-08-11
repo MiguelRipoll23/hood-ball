@@ -11,7 +11,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../constants/canvas-constants.js";
 
 const GRID_CELL_SIZE = 100;
 
-interface GridEntry { getX(): number; getY(): number; entity: BaseGameEntity }
+interface GridEntry { entity: BaseGameEntity }
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   protected isReplayMode = false;
@@ -63,10 +63,24 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     this.spatialGrid.clear();
     for (const e of entities) {
       const t = e.getComponent(TransformComponent)!;
-      this.spatialGrid.insert({ getX: () => t.x, getY: () => t.y, entity: e });
+      const c = e.getComponent(CollisionComponent)!;
+      this.spatialGrid.insertWithBounds(
+        { entity: e },
+        ...this.getCollisionBounds(t, c),
+      );
     }
 
+    // An entity inserted into several cells can be paired with the same
+    // neighbor more than once; track visited pairs to keep exactly one
+    // collision resolution per pair per frame.
+    const visitedPairs = new Set<string>();
     this.spatialGrid.forEachPair((a, b) => {
+      const key =
+        a.entity.getId() < b.entity.getId()
+          ? `${a.entity.getId()}|${b.entity.getId()}`
+          : `${b.entity.getId()}|${a.entity.getId()}`;
+      if (visitedPairs.has(key)) return;
+      visitedPairs.add(key);
       this.detectCollisionsBetween(a.entity, b.entity);
     });
 
@@ -76,6 +90,33 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
         c.avoidingCollision = false;
       }
     }
+  }
+
+  /**
+   * Compute the union bounding box of an entity's hitboxes, falling back
+   * to the transform position when it has no hitboxes yet.
+   */
+  private getCollisionBounds(
+    t: TransformComponent,
+    c: CollisionComponent,
+  ): [number, number, number, number] {
+    if (c.hitboxEntities.length === 0) {
+      return [t.x, t.y, t.x, t.y];
+    }
+
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (const h of c.hitboxEntities) {
+      minX = Math.min(minX, h.getX());
+      minY = Math.min(minY, h.getY());
+      maxX = Math.max(maxX, h.getX() + h.getWidth());
+      maxY = Math.max(maxY, h.getY() + h.getHeight());
+    }
+
+    return [minX, minY, maxX, maxY];
   }
 
   private detectCollisionsBetween(
