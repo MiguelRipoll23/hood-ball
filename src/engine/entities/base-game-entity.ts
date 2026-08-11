@@ -99,7 +99,11 @@ export class BaseGameEntity implements GameEntity {
   }
 
   public render(context: CanvasRenderingContext2D): void {
+    // Isolate this entity's opacity with save/restore so a hidden entity
+    // (opacity 0) cannot leak globalAlpha to entities rendered after it.
+    context.save();
     this.applyOpacity(context);
     this.components.forEach((component) => component.render?.(context));
+    context.restore();
   }
 }
