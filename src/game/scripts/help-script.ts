@@ -42,10 +42,16 @@ export class HelpScript implements ScriptLifecycle {
   show(text: string, duration = 0): void {
     this.lines = text.split("\n");
     this.measure();
-    this.transform.scale = 0;
     this.setPosition();
-    this.animation.fadeIn(0.2);
-    this.animation.scaleTo(1, 0.2);
+
+    // Only play the entrance animation if the help box is not already visible.
+    // Calling fadeIn while visible resets opacity to 0, causing a flash.
+    const isVisible = this.transform.scale > 0.5;
+    if (!isVisible) {
+      this.transform.scale = 0;
+      this.animation.fadeIn(0.2);
+      this.animation.scaleTo(1, 0.2);
+    }
 
     this.timer?.stop(false);
     this.timer = null;

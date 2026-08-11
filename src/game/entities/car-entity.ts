@@ -5,7 +5,9 @@ import { CollisionComponent } from "../../engine/components/collision-component.
 import { NetworkComponent } from "../../engine/components/network-component.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
 import { CarScript } from "../scripts/car-script.js";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import type { Player } from "../../engine/interfaces/models/player-interface.js";
+import type { EntityType } from "../../engine/enums/entity-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
@@ -15,7 +17,7 @@ import { SCALE_FACTOR_FOR_ANGLES, SCALE_FACTOR_FOR_COORDINATES } from "../consta
  * Pure component container. All per-frame game logic, rendering, physics,
  * boost, smoke, and networking live in {@link CarScript}.
  */
-export class CarEntity extends BaseGameEntity {
+export class CarEntity extends BaseGameEntity implements MultiplayerGameEntity {
   protected readonly carScript: CarScript;
   protected remote: boolean;
 
@@ -49,6 +51,16 @@ export class CarEntity extends BaseGameEntity {
 
   public getOwner(): Player | null { return this.getComponent(NetworkComponent)?.owner ?? null; }
   public setOwner(p: Player | null): void { const n = this.getComponent(NetworkComponent); if (n) n.owner = p; }
+  public getTypeId(): EntityType | null { return this.getComponent(NetworkComponent)?.typeId ?? null; }
+  public setTypeId(id: EntityType): void { const n = this.getComponent(NetworkComponent); if (n) n.typeId = id; }
+  public isSyncable(): boolean { return this.getComponent(NetworkComponent)?.syncable ?? false; }
+  public setSyncable(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.syncable = v; }
+  public isSyncableByHost(): boolean { return this.getComponent(NetworkComponent)?.syncableByHost ?? false; }
+  public setSyncableByHost(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.syncableByHost = v; }
+  public mustSync(): boolean { return this.getComponent(NetworkComponent)?.mustSyncFlag ?? false; }
+  public setSync(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncFlag = v; }
+  public mustSyncReliably(): boolean { return this.getComponent(NetworkComponent)?.mustSyncReliablyFlag ?? false; }
+  public setSyncReliably(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncReliablyFlag = v; }
 
   // ── Transform / Collision queries (used by external callers) ──
 
