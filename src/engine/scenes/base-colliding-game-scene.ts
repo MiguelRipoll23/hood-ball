@@ -75,6 +75,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     // collision resolution per pair per frame.
     const visitedPairs = new Set<string>();
     this.spatialGrid.forEachPair((a, b) => {
+      if (a.entity.getId() === b.entity.getId()) return;
       const key =
         a.entity.getId() < b.entity.getId()
           ? `${a.entity.getId()}|${b.entity.getId()}`
