@@ -231,10 +231,15 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     }
 
     const rest = phys.bounciness;
+    // Reflect velocity with restitution, but don't artificially amplify
+    // slow approaches — a gentle impact should produce a gentle bounce.
+    // Only clamp velocities that would be essentially zero to prevent
+    // the ball from getting stuck against walls.
+    const MIN_BOUNCE = 0.1;
     let vx = -phys.vx * rest;
     let vy = -phys.vy * rest;
-    if (vx > -1 && vx < 1) vx = vx < 0 ? -1 : 1;
-    if (vy > -1 && vy < 1) vy = vy < 0 ? -1 : 1;
+    if (Math.abs(vx) < MIN_BOUNCE) vx = vx < 0 ? -MIN_BOUNCE : MIN_BOUNCE;
+    if (Math.abs(vy) < MIN_BOUNCE) vy = vy < 0 ? -MIN_BOUNCE : MIN_BOUNCE;
 
     entity.getComponent(CollisionComponent)!.avoidingCollision = true;
     phys.vx = vx;
