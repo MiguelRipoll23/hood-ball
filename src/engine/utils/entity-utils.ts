@@ -1,8 +1,5 @@
 import type { WebRTCPeer } from "../interfaces/network/webrtc-peer-interface.js";
-import {
-  CANVAS_EXTRA_MARGIN,
-  FIELD_BORDER_MARGIN,
-} from "../constants/canvas-constants.js";
+import { CANVAS_EXTRA_MARGIN } from "../constants/canvas-constants.js";
 import type { GameEntity } from "../models/game-entity.js";
 
 /**
@@ -50,22 +47,22 @@ export class EntityUtils {
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
-    // Only correct when the entity has crossed the visible field border
-    // (which is inset FIELD_BORDER_MARGIN from the canvas edge), instead of
-    // firing while the entity is still inside the playable field.
-    if (entityLeft < FIELD_BORDER_MARGIN) {
+    // Only teleport when the entity has truly escaped past the field walls
+    // (which sit at the canvas edge). The wall hitboxes handle normal bounces;
+    // this is a last-resort safety net for tunneling or physics glitches.
+    if (entityLeft < 0) {
       moveableEntity.setX(entityX + CANVAS_EXTRA_MARGIN); // Prevent going out of the left boundary
       hasChanged = true;
-    } else if (entityRight > canvasWidth - FIELD_BORDER_MARGIN) {
+    } else if (entityRight > canvasWidth) {
       moveableEntity.setX(entityX - CANVAS_EXTRA_MARGIN); // Prevent going out of the right boundary
       hasChanged = true;
     }
 
     // Adjust Y position if out of bounds
-    if (entityTop < FIELD_BORDER_MARGIN) {
+    if (entityTop < 0) {
       moveableEntity.setY(entityY + CANVAS_EXTRA_MARGIN); // Prevent going out of the top boundary
       hasChanged = true;
-    } else if (entityBottom > canvasHeight - FIELD_BORDER_MARGIN) {
+    } else if (entityBottom > canvasHeight) {
       moveableEntity.setY(entityY - CANVAS_EXTRA_MARGIN); // Prevent going out of the bottom boundary
       hasChanged = true;
     }
