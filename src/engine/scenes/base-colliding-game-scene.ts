@@ -146,6 +146,15 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     } else if (pa.isDynamic && !pb.isDynamic) {
       if (ca.avoidingCollision) return;
       this.simulateCollisionBetweenDynamicAndStaticEntities(a, pa);
+    } else if (!pa.isDynamic && pb.isDynamic) {
+      // The spatial grid pairs each entity exactly once per frame, but does
+      // not guarantee the dynamic entity is the first argument. Static
+      // colliders (e.g. the field border) are inserted before dynamic ones,
+      // so this branch resolves the pair when the static entity came first.
+      // Without it the wall bounce never fires and entities pass through the
+      // border, relying on the OOB safety net to teleport them back.
+      if (cb.avoidingCollision) return;
+      this.simulateCollisionBetweenDynamicAndStaticEntities(b, pb);
     }
   }
 
