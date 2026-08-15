@@ -241,7 +241,7 @@ export class MatchMenuScript {
   private handlePlayerReport(playerId: string, reason: string, playerName: string): void {
     this.pendingAction = () => {
       this.moderationService
-        .reportUser(playerId, reason, false)
+        .reportUser(playerId, reason)
         .then(() => { this.messageEntity.show("Report sent"); this.pendingClose = true; })
         .catch((error) => {
           EngineLogger.error("MatchMenuEntity", "Failed to report user:", error);
