@@ -38,4 +38,13 @@ export class SettingEntity extends BaseGameEntity {
   public setUpdated(updated: boolean): void { this.script.updated = updated; }
   public setX(x: number): void { this.getComponent(TransformComponent)!.x = x; }
   public setY(y: number): void { this.getComponent(TransformComponent)!.y = y; }
+
+  public isActive(): boolean { return this.getComponent(InputComponent)!.active; }
+  public isHovering(): boolean { return this.getComponent(InputComponent)!.hovering; }
+  public isPressed(): boolean { return this.getComponent(InputComponent)!.pressed; }
+  public handlePointerEvent(
+    gp: import("../../engine/interfaces/input/game-pointer-interface.js").GamePointerContract,
+  ): void {
+    this.getComponent(InputComponent)!.handlePointerEvent(gp);
+  }
 }
