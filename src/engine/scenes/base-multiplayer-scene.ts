@@ -16,6 +16,13 @@ export class BaseMultiplayerScene
   protected syncableEntityTypes: Map<EntityType, StaticMultiplayerGameEntity> =
     new Map();
 
+  /**
+   * Cached result of {@link getSyncableEntities}, rebuilt only when the
+   * scene's entity lists change. Avoids allocating a new array every frame
+   * in the entity orchestrator's per-frame send loop.
+   */
+  private syncableEntitiesCache: MultiplayerGameEntity[] | null = null;
+
   public addSyncableEntity(entityClass: StaticMultiplayerGameEntity): void {
     const typeId = entityClass.getTypeId();
     this.syncableEntityTypes.set(typeId, entityClass);
@@ -28,6 +35,29 @@ export class BaseMultiplayerScene
   }
 
   public getSyncableEntities(): MultiplayerGameEntity[] {
+    if (this.syncableEntitiesCache === null) {
+      this.syncableEntitiesCache = this.buildSyncableEntities();
+    }
+
+    return this.syncableEntitiesCache;
+  }
+
+  public override addEntityToSceneLayer(entity: GameEntity): void {
+    super.addEntityToSceneLayer(entity);
+    this.syncableEntitiesCache = null;
+  }
+
+  protected override deleteEntityIfRemoved(
+    layer: GameEntity[],
+    entity: GameEntity
+  ): void {
+    if (entity.isRemoved()) {
+      super.deleteEntityIfRemoved(layer, entity);
+      this.syncableEntitiesCache = null;
+    }
+  }
+
+  private buildSyncableEntities(): MultiplayerGameEntity[] {
     const result: MultiplayerGameEntity[] = [];
 
     for (const entity of this.uiEntities) {
