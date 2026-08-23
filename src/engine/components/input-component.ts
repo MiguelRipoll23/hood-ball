@@ -30,6 +30,11 @@ export class InputComponent implements Component {
     const entity = this.entity;
     if (!entity) return;
 
+    // Reset per-frame state before processing new events. This used to
+    // happen in update() but was moved here so scripts can consume the
+    // previous frame's pressed/hovering state during their own update().
+    this.resetFrame();
+
     const transform = entity.getComponent(
       TransformComponent as unknown as new (...args: never[]) => TransformComponent,
     );
@@ -58,13 +63,10 @@ export class InputComponent implements Component {
   }
 
   /**
-   * Reset per-frame input state. Called automatically by BaseGameEntity each
-   * frame (after scripts have consumed the previous frame's events), matching
-   * the pre-migration BaseTappableGameEntity.update() behaviour.
+   * No longer resets per-frame state — that now happens at the start of
+   * {@link handlePointerEvent} so scripts can consume the previous frame's
+   * pressed/hovering state before it is cleared.
    */
-  public update(): void {
-    this.resetFrame();
-  }
 
   public resetFrame(): void {
     this.hovering = false;

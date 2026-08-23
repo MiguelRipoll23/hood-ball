@@ -53,8 +53,7 @@ export class AntiCheatReportingService {
     };
     this.violations.push(violation);
 
-    const fullReason = `Rule #${ruleId}: ${reason}`;
-    this.send(userId, fullReason);
+    this.send(userId, ruleId);
 
     EngineLogger.warn(
       "AntiCheatReportingService",
@@ -62,9 +61,9 @@ export class AntiCheatReportingService {
     );
   }
 
-  private send(userId: string, reason: string): void {
+  private send(userId: string, ruleId: number): void {
     this.playerModerationService
-      .reportUser(userId, `[AntiCheat] ${reason}`, true)
+      .reportAutomaticViolation(userId, ruleId)
       .catch((error: unknown) => {
         EngineLogger.error(
           "AntiCheatReportingService",

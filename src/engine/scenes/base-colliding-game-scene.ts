@@ -11,7 +11,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../constants/canvas-constants.js";
 
 const GRID_CELL_SIZE = 100;
 
-interface GridEntry { getX(): number; getY(): number; entity: BaseGameEntity }
+interface GridEntry { entity: BaseGameEntity }
 
 export class BaseCollidingGameScene extends BaseMultiplayerScene {
   protected isReplayMode = false;
@@ -52,9 +52,10 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     for (const e of entities) {
       const c = e.getComponent(CollisionComponent)!;
       for (const other of [...c.collidingEntities]) {
-        const oc = (other as BaseGameEntity).getComponent(CollisionComponent);
-        c.collidingEntities = c.collidingEntities.filter((x) => x !== other);
-        if (oc) oc.collidingEntities = oc.collidingEntities.filter((x) => x !== e);
+        const otherBase = other as unknown as BaseGameEntity;
+        const oc = otherBase.getComponent(CollisionComponent);
+        c.collidingEntities = c.collidingEntities.filter((x) => (x as unknown) !== (other as unknown));
+        if (oc) oc.collidingEntities = oc.collidingEntities.filter((x) => (x as unknown) !== (e as unknown));
       }
       c.hitboxEntities.forEach((h) => h.setColliding(false));
     }
@@ -62,10 +63,25 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     this.spatialGrid.clear();
     for (const e of entities) {
       const t = e.getComponent(TransformComponent)!;
-      this.spatialGrid.insert({ getX: () => t.x, getY: () => t.y, entity: e });
+      const c = e.getComponent(CollisionComponent)!;
+      this.spatialGrid.insertWithBounds(
+        { entity: e },
+        ...this.getCollisionBounds(t, c),
+      );
     }
 
+    // An entity inserted into several cells can be paired with the same
+    // neighbor more than once; track visited pairs to keep exactly one
+    // collision resolution per pair per frame.
+    const visitedPairs = new Set<string>();
     this.spatialGrid.forEachPair((a, b) => {
+      if (a.entity.getId() === b.entity.getId()) return;
+      const key =
+        a.entity.getId() < b.entity.getId()
+          ? `${a.entity.getId()}|${b.entity.getId()}`
+          : `${b.entity.getId()}|${a.entity.getId()}`;
+      if (visitedPairs.has(key)) return;
+      visitedPairs.add(key);
       this.detectCollisionsBetween(a.entity, b.entity);
     });
 
@@ -77,6 +93,33 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     }
   }
 
+  /**
+   * Compute the union bounding box of an entity's hitboxes, falling back
+   * to the transform position when it has no hitboxes yet.
+   */
+  private getCollisionBounds(
+    t: TransformComponent,
+    c: CollisionComponent,
+  ): [number, number, number, number] {
+    if (c.hitboxEntities.length === 0) {
+      return [t.x, t.y, t.x, t.y];
+    }
+
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    for (const h of c.hitboxEntities) {
+      minX = Math.min(minX, h.getX());
+      minY = Math.min(minY, h.getY());
+      maxX = Math.max(maxX, h.getX() + h.getWidth());
+      maxY = Math.max(maxY, h.getY() + h.getHeight());
+    }
+
+    return [minX, minY, maxX, maxY];
+  }
+
   private detectCollisionsBetween(
     a: BaseGameEntity,
     b: BaseGameEntity,
@@ -85,13 +128,13 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     const cb = b.getComponent(CollisionComponent)!;
 
     if (!this.doesHitboxesIntersect(ca.hitboxEntities, cb.hitboxEntities)) {
-      ca.collidingEntities = ca.collidingEntities.filter((x) => x !== b);
-      cb.collidingEntities = cb.collidingEntities.filter((x) => x !== a);
+      ca.collidingEntities = ca.collidingEntities.filter((x) => (x as unknown) !== (b as unknown));
+      cb.collidingEntities = cb.collidingEntities.filter((x) => (x as unknown) !== (a as unknown));
       return;
     }
 
-    ca.collidingEntities.push(b);
-    cb.collidingEntities.push(a);
+    (ca.collidingEntities as unknown[]).push(b);
+    (cb.collidingEntities as unknown[]).push(a);
 
     const pa = a.getComponent(PhysicsComponent)!;
     const pb = b.getComponent(PhysicsComponent)!;
@@ -103,6 +146,15 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     } else if (pa.isDynamic && !pb.isDynamic) {
       if (ca.avoidingCollision) return;
       this.simulateCollisionBetweenDynamicAndStaticEntities(a, pa);
+    } else if (!pa.isDynamic && pb.isDynamic) {
+      // The spatial grid pairs each entity exactly once per frame, but does
+      // not guarantee the dynamic entity is the first argument. Static
+      // colliders (e.g. the field border) are inserted before dynamic ones,
+      // so this branch resolves the pair when the static entity came first.
+      // Without it the wall bounce never fires and entities pass through the
+      // border, relying on the OOB safety net to teleport them back.
+      if (cb.avoidingCollision) return;
+      this.simulateCollisionBetweenDynamicAndStaticEntities(b, pb);
     }
   }
 
@@ -137,7 +189,7 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     let corrY = 0;
 
     for (const other of c.collidingEntities) {
-      const otherEntity = other as BaseGameEntity;
+      const otherEntity = other as unknown as BaseGameEntity;
       const op = otherEntity.getComponent(PhysicsComponent);
       if (!op || op.isDynamic || !op.rigidBody) continue;
 
@@ -188,10 +240,15 @@ export class BaseCollidingGameScene extends BaseMultiplayerScene {
     }
 
     const rest = phys.bounciness;
+    // Reflect velocity with restitution, but don't artificially amplify
+    // slow approaches — a gentle impact should produce a gentle bounce.
+    // Only clamp velocities that would be essentially zero to prevent
+    // the ball from getting stuck against walls.
+    const MIN_BOUNCE = 0.1;
     let vx = -phys.vx * rest;
     let vy = -phys.vy * rest;
-    if (vx > -1 && vx < 1) vx = vx < 0 ? -1 : 1;
-    if (vy > -1 && vy < 1) vy = vy < 0 ? -1 : 1;
+    if (Math.abs(vx) < MIN_BOUNCE) vx = vx < 0 ? -MIN_BOUNCE : MIN_BOUNCE;
+    if (Math.abs(vy) < MIN_BOUNCE) vy = vy < 0 ? -MIN_BOUNCE : MIN_BOUNCE;
 
     entity.getComponent(CollisionComponent)!.avoidingCollision = true;
     phys.vx = vx;

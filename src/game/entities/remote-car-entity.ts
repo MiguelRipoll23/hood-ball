@@ -1,5 +1,6 @@
 import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { CarEntity } from "./car-entity.js";
+import { NetworkComponent } from "../../engine/components/network-component.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
 import {
   SCALE_FACTOR_FOR_ANGLES, SCALE_FACTOR_FOR_SPEED, SCALE_FACTOR_FOR_COORDINATES,
@@ -30,6 +31,12 @@ export class RemoteCarEntity extends CarEntity {
     return EntityRegistryType.RemoteCar;
   }
 
+  // ── MultiplayerGameEntity instance methods (inherit from CarEntity) ────
+
+  // All network wrapper methods (getTypeId, isSyncable, isSyncableByHost,
+  // mustSync, setSync, mustSyncReliably, setSyncReliably) are inherited
+  // from CarEntity, which delegates to NetworkComponent.
+
   public static deserialize(
     syncableId: string, arrayBuffer: ArrayBuffer,
   ): MultiplayerGameEntity {
@@ -50,15 +57,16 @@ export class RemoteCarEntity extends CarEntity {
     );
   }
 
-  public override teleport(x: number, y: number, angle?: number): void {
+  public teleport(x: number, y: number, angle?: number): void {
     this.carScript.teleport(x, y, angle);
     this.teleportFrameCount = TELEPORT_SKIP_FRAMES;
   }
 
   private setSyncableValues(syncableId: string): void {
-    this.setSyncable(true);
+    const n = this.getComponent(NetworkComponent)!;
+    n.syncable = true;
     this.setId(syncableId);
-    this.setTypeId(EntityRegistryType.RemoteCar);
-    this.setSyncableByHost(true);
+    n.typeId = EntityRegistryType.RemoteCar;
+    n.syncableByHost = true;
   }
 }

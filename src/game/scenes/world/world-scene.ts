@@ -503,6 +503,8 @@ export class WorldScene extends BaseCollidingGameScene {
       this.matchmakingService,
       this.uiEntities,
       () => this.returnToMainMenuScene(),
+      this.matchSessionService,
+      this.gamePlayer,
     );
 
     // Connect chat button to local car to disable controls during chat

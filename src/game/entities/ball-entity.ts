@@ -6,6 +6,8 @@ import { NetworkComponent } from "../../engine/components/network-component.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
 import { BallScript } from "../scripts/ball-script.js";
 import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
+import type { EntityType } from "../../engine/enums/entity-type.js";
+import type { Player } from "../../engine/interfaces/models/player-interface.js";
 import { EntityRegistryType } from "../enums/entity-registry-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { container } from "../../engine/services/di-container.js";
@@ -77,8 +79,9 @@ export class BallEntity
     // periodic 500ms sync alone would leave remote balls off-center).
     // Only the host broadcasts the ball — on non-hosts the flag would stick
     // because the orchestrator skips host-owned entities without clearing it.
-    if (this.getOwner() === container.get(GamePlayer)) {
-      this.setSyncReliably(true);
+    if (this.getComponent(NetworkComponent)?.owner === container.get(GamePlayer)) {
+      const n = this.getComponent(NetworkComponent);
+      if (n) n.mustSyncReliablyFlag = true;
     }
     super.reset();
   }
@@ -87,15 +90,37 @@ export class BallEntity
     this.ballScript.setCenterPosition(this.canvas.width, this.canvas.height);
   }
 
-  public override teleport(x: number, y: number, angle?: number): void {
+  public teleport(x: number, y: number, angle?: number): void {
     this.ballScript.teleport(x, y, angle);
   }
 
-  // ── Network (delegates to BallScript) ─────────────────────────
+  // ── MultiplayerGameEntity (thin wrappers over NetworkComponent) ──
 
-  public override mustSync(): boolean {
-    return this.ballScript.mustSync();
-  }
+  public getTypeId(): EntityType | null { return this.getComponent(NetworkComponent)?.typeId ?? null; }
+  public setTypeId(id: EntityType): void { const n = this.getComponent(NetworkComponent); if (n) n.typeId = id; }
+  public getOwner(): Player | null { return this.getComponent(NetworkComponent)?.owner ?? null; }
+  public setOwner(p: Player | null): void { const n = this.getComponent(NetworkComponent); if (n) n.owner = p; }
+  public isSyncable(): boolean { return this.getComponent(NetworkComponent)?.syncable ?? false; }
+  public setSyncable(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.syncable = v; }
+  public isSyncableByHost(): boolean { return this.getComponent(NetworkComponent)?.syncableByHost ?? false; }
+  public setSyncableByHost(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.syncableByHost = v; }
+  public mustSync(): boolean { return this.ballScript.mustSync() || (this.getComponent(NetworkComponent)?.mustSyncFlag ?? false); }
+  public setSync(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncFlag = v; }
+  public mustSyncReliably(): boolean { return this.getComponent(NetworkComponent)?.mustSyncReliablyFlag ?? false; }
+  public setSyncReliably(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncReliablyFlag = v; }
+
+  // ── Transform queries (used by external callers) ──────────────
+
+  public getX(): number { return this.getComponent(TransformComponent)?.x ?? 0; }
+  public setX(x: number): void { const t = this.getComponent(TransformComponent); if (t) t.x = x; }
+  public getY(): number { return this.getComponent(TransformComponent)?.y ?? 0; }
+  public setY(y: number): void { const t = this.getComponent(TransformComponent); if (t) t.y = y; }
+  public getWidth(): number { return this.getComponent(TransformComponent)?.width ?? 0; }
+  public getHeight(): number { return this.getComponent(TransformComponent)?.height ?? 0; }
+  public setVX(vx: number): void { const p = this.getComponent(PhysicsComponent); if (p) p.vx = vx; }
+  public setVY(vy: number): void { const p = this.getComponent(PhysicsComponent); if (p) p.vy = vy; }
+
+  // ── Network (delegates to BallScript) ─────────────────────────
 
   public override serialize(): ArrayBuffer {
     return this.ballScript.serialize();
@@ -148,9 +173,10 @@ export class BallEntity
   }
 
   private setSyncableValues(): void {
-    this.setSyncable(true);
+    const n = this.getComponent(NetworkComponent)!;
+    n.syncable = true;
     this.setId(BALL_NETWORK_ID);
-    this.setTypeId(EntityRegistryType.Ball);
-    this.setSyncableByHost(true);
+    n.typeId = EntityRegistryType.Ball;
+    n.syncableByHost = true;
   }
 }

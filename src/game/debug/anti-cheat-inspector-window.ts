@@ -133,16 +133,11 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       ImGui.TableFlags.SizingStretchProp;
 
     const outerSize = new ImVec2(0, VIOLATIONS_TABLE_ROWS * 20 + ImGui.GetTextLineHeightWithSpacing());
-    if (!ImGui.BeginTable("AntiCheatViolations", 5, flags, outerSize)) return;
+    if (!ImGui.BeginTable("AntiCheatViolations", 4, flags, outerSize)) return;
 
     ImGui.TableSetupColumn("Rule", ImGui.TableColumnFlags.WidthFixed, 40);
     ImGui.TableSetupColumn("Player", ImGui.TableColumnFlags.WidthStretch);
     ImGui.TableSetupColumn("Reason", ImGui.TableColumnFlags.WidthStretch);
-    ImGui.TableSetupColumn(
-      "Time",
-      ImGui.TableColumnFlags.WidthFixed,
-      90,
-    );
     ImGui.TableSetupColumn(
       "Relative",
       ImGui.TableColumnFlags.WidthFixed,
@@ -174,14 +169,8 @@ export class AntiCheatInspectorWindow extends BaseWindow {
       ImGui.TableSetColumnIndex(2);
       ImGui.Text(v.reason);
 
-      // Player time (absolute)
-      ImGui.TableSetColumnIndex(3);
-      const date = new Date(v.timestamp);
-      const timeStr = date.toLocaleTimeString();
-      ImGui.Text(timeStr);
-
       // Relative time
-      ImGui.TableSetColumnIndex(4);
+      ImGui.TableSetColumnIndex(3);
       const elapsedMs = now - v.timestamp;
       const elapsedStr = this.formatElapsed(elapsedMs);
       ImGui.Text(elapsedStr);

@@ -1,56 +1,20 @@
 import { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
 import { AnimationComponent } from "../../engine/components/animation-component.js";
+import { ScriptComponent } from "../../engine/components/script-component.js";
 import type { UserScore } from "../interfaces/responses/user-scores-response-interface.js";
+import { RankingTableScript } from "../scripts/ranking-table-script.js";
 
 export class RankingTableEntity extends BaseGameEntity {
-  private ranking: UserScore[] = [];
+  private readonly script: RankingTableScript;
 
   constructor() {
     super();
-    this.addComponent(new AnimationComponent());
+    const anim = this.addComponent(new AnimationComponent());
+    this.script = new RankingTableScript();
+    this.addComponent(new ScriptComponent(this.script));
+    this.script.resolveAnimation(anim);
   }
 
-  public setRanking(ranking: UserScore[]): void {
-    this.ranking = ranking;
-  }
-
-  public render(context: CanvasRenderingContext2D): void {
-    context.save();
-    this.applyOpacity(context);
-
-    context.font = "bold 24px system-ui";
-
-    const startX = 30;
-    let startY = 100;
-
-    this.ranking.forEach((player, index) => {
-      context.fillStyle = "white";
-      context.textAlign = "left";
-      context.fillText(`#${index + 1}`, startX, startY);
-      context.fillText(player.userDisplayName, startX + 50, startY);
-      context.textAlign = "right";
-      context.fillText(
-        player.totalScore.toString(),
-        context.canvas.width - 25,
-        startY
-      );
-      startY += 40;
-
-      // Draw dashed line between rows
-      if (index < this.ranking.length - 1) {
-        context.strokeStyle = "#BDBDBD";
-        context.setLineDash([5, 5]);
-        context.beginPath();
-        context.moveTo(startX, startY - 27.5);
-        context.lineTo(context.canvas.width - 25, startY - 27.5);
-        context.stroke();
-      }
-    });
-
-    context.restore();
-  }
-
-  public fadeIn(seconds: number): void {
-    super.fadeIn(seconds);
-  }
+  public setRanking(ranking: UserScore[]): void { this.script.ranking = ranking; }
+  public fadeIn(seconds: number): void { this.script.fadeIn(seconds); }
 }

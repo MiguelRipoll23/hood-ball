@@ -1,10 +1,11 @@
 import type { ScriptLifecycle } from "../../engine/components/script-component.js";
-import type { TransformComponent } from "../../engine/components/transform-component.js";
+import { TransformComponent } from "../../engine/components/transform-component.js";
 import type { PhysicsComponent } from "../../engine/components/physics-component.js";
 import type { CollisionComponent } from "../../engine/components/collision-component.js";
 import { HitboxEntity } from "../../engine/entities/hitbox-entity.js";
 import { CarEntity } from "../entities/car-entity.js";
 import type { BaseGameEntity } from "../../engine/entities/base-game-entity.js";
+import type { MoveableEntity } from "../../engine/utils/entity-utils.js";
 import type { GamePlayer } from "../models/game-player.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
@@ -163,8 +164,9 @@ export class BallScript implements ScriptLifecycle {
       this.transform.angle = Math.atan2(-this.physics.vy, -this.physics.vx);
     }
     if (this.canvas) {
-      EntityUtils.fixEntityPositionIfOutOfBounds(this.entity, this.canvas);
+      EntityUtils.fixEntityPositionIfOutOfBounds(this.entity as unknown as MoveableEntity, this.canvas);
     }
+    this.transform.skipInterpolation = false;
   }
 
   render(context: CanvasRenderingContext2D): void {

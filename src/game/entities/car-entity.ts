@@ -5,6 +5,9 @@ import { CollisionComponent } from "../../engine/components/collision-component.
 import { NetworkComponent } from "../../engine/components/network-component.js";
 import { ScriptComponent } from "../../engine/components/script-component.js";
 import { CarScript } from "../scripts/car-script.js";
+import type { MultiplayerGameEntity } from "../../engine/interfaces/entities/multiplayer-game-entity-interface.js";
+import type { Player } from "../../engine/interfaces/models/player-interface.js";
+import type { EntityType } from "../../engine/enums/entity-type.js";
 import { GamePlayer } from "../models/game-player.js";
 import { BinaryWriter } from "../../engine/utils/binary-writer-utils.js";
 import { BinaryReader } from "../../engine/utils/binary-reader-utils.js";
@@ -14,7 +17,7 @@ import { SCALE_FACTOR_FOR_ANGLES, SCALE_FACTOR_FOR_COORDINATES } from "../consta
  * Pure component container. All per-frame game logic, rendering, physics,
  * boost, smoke, and networking live in {@link CarScript}.
  */
-export class CarEntity extends BaseGameEntity {
+export class CarEntity extends BaseGameEntity implements MultiplayerGameEntity {
   protected readonly carScript: CarScript;
   protected remote: boolean;
 
@@ -25,11 +28,11 @@ export class CarEntity extends BaseGameEntity {
     const transform = this.addComponent(new TransformComponent());
     const physics = this.addComponent(new PhysicsComponent());
     const collision = this.addComponent(new CollisionComponent());
-    this.addComponent(new NetworkComponent());
+    const network = this.addComponent(new NetworkComponent());
 
     this.carScript = new CarScript();
     this.addComponent(new ScriptComponent(this.carScript));
-    this.carScript.resolveComponents(this, transform, physics, collision);
+    this.carScript.resolveComponents(this, transform, physics, collision, network);
 
     this.carScript.init(x, y, angle, remote);
   }
@@ -43,6 +46,32 @@ export class CarEntity extends BaseGameEntity {
     this.carScript.reset();
     super.reset();
   }
+
+  // ── NetworkComponent wrappers ─────────────────────────────────
+
+  public getOwner(): Player | null { return this.getComponent(NetworkComponent)?.owner ?? null; }
+  public setOwner(p: Player | null): void { const n = this.getComponent(NetworkComponent); if (n) n.owner = p; }
+  public getTypeId(): EntityType | null { return this.getComponent(NetworkComponent)?.typeId ?? null; }
+  public setTypeId(id: EntityType): void { const n = this.getComponent(NetworkComponent); if (n) n.typeId = id; }
+  public isSyncable(): boolean { return this.getComponent(NetworkComponent)?.syncable ?? false; }
+  public setSyncable(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.syncable = v; }
+  public isSyncableByHost(): boolean { return this.getComponent(NetworkComponent)?.syncableByHost ?? false; }
+  public setSyncableByHost(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.syncableByHost = v; }
+  public mustSync(): boolean { return this.getComponent(NetworkComponent)?.mustSyncFlag ?? false; }
+  public setSync(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncFlag = v; }
+  public mustSyncReliably(): boolean { return this.getComponent(NetworkComponent)?.mustSyncReliablyFlag ?? false; }
+  public setSyncReliably(v: boolean): void { const n = this.getComponent(NetworkComponent); if (n) n.mustSyncReliablyFlag = v; }
+
+  // ── Transform / Collision queries (used by external callers) ──
+
+  public getX(): number { return this.carScript.transform.x; }
+  public setX(x: number): void { this.carScript.transform.x = x; }
+  public getY(): number { return this.carScript.transform.y; }
+  public setY(y: number): void { this.carScript.transform.y = y; }
+  public getWidth(): number { return this.carScript.transform.width; }
+  public getHeight(): number { return this.carScript.transform.height; }
+  public isColliding(): boolean { return this.carScript.collision.isColliding(); }
+  public getCollidingEntities(): BaseGameEntity[] { return this.carScript.collision.collidingEntities as unknown as BaseGameEntity[]; }
 
   // ── Public API (delegates to CarScript) ───────────────────────
 
@@ -76,7 +105,7 @@ export class CarEntity extends BaseGameEntity {
   public getAngle(): number { return this.carScript.getAngle(); }
   public updateHitbox(): void { this.carScript.updateHitbox(); }
 
-  public override teleport(x: number, y: number, angle?: number): void {
+  public teleport(x: number, y: number, angle?: number): void {
     this.carScript.teleport(x, y, angle);
   }
 
@@ -108,10 +137,11 @@ export class CarEntity extends BaseGameEntity {
     this.remote = isRemote || isNpc;
     this.carScript.setRemote(this.remote);
     this.carScript.loadCarImage(() => {});
-    if (!this.getOwner()) {
-      this.setOwner(new GamePlayer("replay-player", playerName, false, 0, 0, isNpc));
-    } else if (this.getOwner()!.getName() !== playerName) {
-      this.setOwner(new GamePlayer("replay-player", playerName, false, 0, 0, isNpc));
+    const net = this.getComponent(NetworkComponent)!;
+    if (!net.owner) {
+      net.owner = new GamePlayer("replay-player", playerName, false, 0, 0, isNpc);
+    } else if (net.owner.getName() !== playerName) {
+      net.owner = new GamePlayer("replay-player", playerName, false, 0, 0, isNpc);
     }
     this.carScript.transform.x = r.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;
     this.carScript.transform.y = r.unsignedInt16() / SCALE_FACTOR_FOR_COORDINATES;

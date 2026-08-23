@@ -41,7 +41,6 @@ export class GoalExplosionEntity extends BaseGameEntity {
     this.script.color =
       this.script.team === TeamType.Blue ? BLUE_TEAM_COLOR : RED_TEAM_COLOR;
     const t = Math.min(this.script.elapsed / 2000, 1);
-    // Recalc visual state from elapsed
     this.script.shockwaveRadius = 120 * t;
     this.script.distortionRadius = 80 * t;
     this.script.flashOpacity = 1 - Math.min(this.script.elapsed / 200, 1);

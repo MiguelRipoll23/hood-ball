@@ -79,6 +79,7 @@ export class CarScript implements ScriptLifecycle {
   public transform!: TransformComponent;
   public physics!: PhysicsComponent;
   public collision!: CollisionComponent;
+  public network!: NetworkComponent;
   public entity!: BaseGameEntity;
 
   // ── Smoke ─────────────────────────────────────────────────────
@@ -124,11 +125,13 @@ export class CarScript implements ScriptLifecycle {
     transform: TransformComponent,
     physics: PhysicsComponent,
     collision: CollisionComponent,
+    network: NetworkComponent,
   ): void {
     this.entity = entity;
     this.transform = transform;
     this.physics = physics;
     this.collision = collision;
+    this.network = network;
   }
 
   // ── Public API for subclasses / external callers ─────────────
@@ -213,6 +216,7 @@ export class CarScript implements ScriptLifecycle {
     this.applyBoost(deltaTimeStamp);
     this.calculateMovement(deltaTimeStamp);
     this.updateHitbox();
+    this.transform.skipInterpolation = false;
   }
 
   render(context: CanvasRenderingContext2D): void {
@@ -235,7 +239,7 @@ export class CarScript implements ScriptLifecycle {
     );
     context.restore();
 
-    const owner = this.entity.getOwner() as GamePlayer | null;
+    const owner = this.network.owner as GamePlayer | null;
     if (owner?.isHost()) {
       this.renderHostIndicator(context);
     } else {
@@ -373,7 +377,7 @@ export class CarScript implements ScriptLifecycle {
   private handleBoostPads(): void {
     this.collision.collidingEntities.forEach((entity) => {
       if (entity instanceof BoostPadEntity && this.boost < this.maxBoost) {
-        const playerId = this.entity.getOwner()?.getNetworkId();
+        const playerId = (this.network.owner as GamePlayer | null)?.getNetworkId();
         if (playerId && entity.tryConsume(playerId)) {
           this.refillBoost();
         }
