@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@mori2003/jsimgui": "^0.13.0",
-    "@needle-di/core": "^1.2.0",
+    "@needle-di/core": "^1.2.1",
     "@vercel/analytics": "^2.0.1"
   }
 }
